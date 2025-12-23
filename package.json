@@ -1,0 +1,21 @@
+{
+  "name": "swarm-base44-revenue-events",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "emit:revenue": "node ./src/emit-revenue-events.mjs",
+    "prepare:sweep": "node ./src/prepare-revenue-sweep.mjs",
+    "ap2:verify": "node ./src/ap2-verify.mjs",
+    "ap2:orchestrate": "node ./src/orchestrate-settlement.mjs",
+    "prepare:external:settlement": "node ./src/prepare-external-settlement.mjs",
+    "paypal:webhook": "node ./src/paypal-webhook-server.mjs",
+    "paypal:sync:payout": "node ./src/sync-paypal-payout-batch.mjs",
+    "paypal:create:order": "node ./src/create-paypal-order.mjs",
+    "monitor:health": "node ./src/monitor-health.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@base44/sdk": "^0.8.5"
+  }
+}
+
