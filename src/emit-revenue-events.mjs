@@ -298,10 +298,122 @@ function normalizeEmail(value) {
   return s || null;
 }
 
+function parseDestinationJson(value) {
+  if (!value) return {};
+  if (typeof value !== "string") return {};
+  const trimmed = value.trim();
+  if (!trimmed) return {};
+
+  const direct = safeJsonParse(trimmed, null);
+  if (direct && typeof direct === "object") return direct;
+
+  const unescaped = safeJsonParse(trimmed.replace(/\\"/g, '"'), null);
+  if (unescaped && typeof unescaped === "object") return unescaped;
+
+  return {};
+}
+
+function mask(value, { keepStart = 0, keepEnd = 4 } = {}) {
+  const s = String(value ?? "");
+  if (!s) return "";
+  const start = s.slice(0, keepStart);
+  const end = s.slice(Math.max(keepStart, s.length - keepEnd));
+  const maskedLen = Math.max(0, s.length - start.length - end.length);
+  return `${start}${"*".repeat(maskedLen)}${end}`;
+}
+
+function sanitizeDestination(dest) {
+  const bank = dest?.bank ? String(dest.bank).trim() : "";
+  const swift = dest?.swift ? String(dest.swift).trim() : "";
+  const account = dest?.account ? String(dest.account).trim() : "";
+  const beneficiary = dest?.beneficiary ? String(dest.beneficiary).trim() : "";
+
+  return {
+    bank,
+    swift,
+    accountMasked: account ? mask(account, { keepStart: 0, keepEnd: 4 }) : "",
+    beneficiaryMasked: beneficiary ? mask(beneficiary, { keepStart: 1, keepEnd: 0 }) : ""
+  };
+}
+
+function normalizeDestinationObject(dest) {
+  const bank = dest?.bank ?? dest?.bank_name ?? dest?.bankName ?? "";
+  const swift = dest?.swift ?? dest?.swift_code ?? dest?.swiftCode ?? "";
+  const account =
+    dest?.account ??
+    dest?.rib ??
+    dest?.rib_code ??
+    dest?.ribCode ??
+    dest?.iban ??
+    dest?.iban_code ??
+    dest?.ibanCode ??
+    dest?.account_number ??
+    dest?.accountNumber ??
+    "";
+  const beneficiary =
+    dest?.beneficiary ?? dest?.beneficiary_name ?? dest?.beneficiaryName ?? dest?.account_holder ?? dest?.accountHolder ?? "";
+
+  return {
+    bank: String(bank ?? "").trim(),
+    swift: String(swift ?? "").trim(),
+    account: String(account ?? "").trim(),
+    beneficiary: String(beneficiary ?? "").trim()
+  };
+}
+
+function resolveBankWireDestinationFromMeta(meta) {
+  if (!meta || typeof meta !== "object" || Array.isArray(meta)) return null;
+
+  const direct =
+    meta.bank_wire_destination ??
+    meta.bankWireDestination ??
+    meta.payout_destination ??
+    meta.payoutDestination ??
+    meta.destination ??
+    meta.bank_destination ??
+    meta.bankDestination ??
+    null;
+  if (direct && typeof direct === "object" && !Array.isArray(direct)) {
+    const norm = normalizeDestinationObject(direct);
+    return norm.account ? norm : null;
+  }
+
+  const json =
+    meta.bank_wire_destination_json ??
+    meta.bankWireDestinationJson ??
+    meta.payout_destination_json ??
+    meta.payoutDestinationJson ??
+    meta.destination_json ??
+    meta.destinationJson ??
+    null;
+  if (typeof json === "string") {
+    const parsed = parseDestinationJson(json);
+    const norm = normalizeDestinationObject(parsed);
+    return norm.account ? norm : null;
+  }
+
+  const norm = normalizeDestinationObject(meta);
+  return norm.account ? norm : null;
+}
+
+function destinationsEqual(a, b) {
+  const aa = normalizeDestinationObject(a);
+  const bb = normalizeDestinationObject(b);
+  return aa.bank === bb.bank && aa.swift === bb.swift && aa.account === bb.account && aa.beneficiary === bb.beneficiary;
+}
+
+function normalizeRecipientLabel(value) {
+  const s = String(value ?? "").trim();
+  return s || null;
+}
+
 function resolveRecipientAddress(recipientType, meta, fallback) {
   const t = normalizeRecipientType(recipientType ?? null);
   if (t === "paypal") return normalizeEmail(meta?.paypal_email ?? meta?.paypalEmail ?? fallback ?? null);
   if (t === "payoneer") return normalizeEmail(meta?.payoneer_id ?? meta?.payoneerId ?? fallback ?? null);
+  if (t === "bank_wire") {
+    return normalizeRecipientLabel(meta?.bank_beneficiary_name ?? meta?.bankBeneficiaryName ?? meta?.beneficiary_name ?? fallback ?? null);
+  }
   return normalizeEmail(fallback ?? null);
 }
 
@@ -711,7 +823,8 @@ async function getPayoutItemsForBatch(base44, batchId) {
     payoutItemCfg.fieldMap.recipientType,
     payoutItemCfg.fieldMap.amount,
     payoutItemCfg.fieldMap.currency,
-    payoutItemCfg.fieldMap.status
+    payoutItemCfg.fieldMap.status,
+    payoutItemCfg.fieldMap.earningId
   ].filter(Boolean);
   const items = await filterAll(itemEntity, { [payoutItemCfg.fieldMap.batchId]: String(batchId) }, { fields, pageSize: 500 });
   return Array.isArray(items) ? items : [];
@@ -882,6 +995,101 @@ async function exportPayoneerBatch(base44, { batchId, outPath }) {
   const targetPath = outPath ? String(outPath) : `payoneer_payout_${String(batchId)}.csv`;
   fs.writeFileSync(targetPath, csv, "utf8");
   return { batchId: String(batchId), outPath: targetPath, bytes: Buffer.byteLength(csv, "utf8"), itemCount: items.length };
+}
+
+async function exportBankWireBatch(base44, { batchId, outPath, destination }) {
+  const payoutBatchCfg = getPayoutBatchConfigFromEnv();
+  const batchEntity = base44.asServiceRole.entities[payoutBatchCfg.entityName];
+  const rec = await findOneBy(batchEntity, { [payoutBatchCfg.fieldMap.batchId]: String(batchId) });
+  if (!rec?.id) throw new Error(`PayoutBatch not found: ${batchId}`);
+
+  const notes = payoutBatchCfg.fieldMap.notes ? rec?.[payoutBatchCfg.fieldMap.notes] : null;
+  const recipientType = notes?.recipient_type ?? notes?.recipientType ?? null;
+  if (normalizeRecipientType(recipientType, "bank_wire") !== "bank_wire") {
+    throw new Error(`Refusing bank wire export for non-bank batch (recipient_type=${String(recipientType ?? "")})`);
+  }
+
+  const items = await getPayoutItemsForBatch(base44, batchId);
+  const payoutItemCfg = getPayoutItemConfigFromEnv();
+
+  let inferred = null;
+  if (!destination || !normalizeDestinationObject(destination).account) {
+    const earningCfg = getEarningConfigFromEnv();
+    const earningEntity = base44.asServiceRole.entities[earningCfg.entityName];
+    const cache = new Map();
+    for (const it of items) {
+      const earningId = payoutItemCfg.fieldMap.earningId ? it?.[payoutItemCfg.fieldMap.earningId] : null;
+      if (!earningId || !earningCfg.fieldMap.earningId) continue;
+      const key = String(earningId);
+      let earning = cache.get(key);
+      if (earning === undefined) {
+        earning = await findOneBy(earningEntity, { [earningCfg.fieldMap.earningId]: key });
+        cache.set(key, earning ?? null);
+      }
+      const meta = earningCfg.fieldMap.metadata ? earning?.[earningCfg.fieldMap.metadata] : null;
+      const d = resolveBankWireDestinationFromMeta(meta);
+      if (!d) continue;
+      if (!inferred) inferred = d;
+      else if (!destinationsEqual(inferred, d)) {
+        throw new Error("Multiple bank wire destinations detected across earnings in the same batch");
+      }
+    }
+  }
+
+  const dest = normalizeDestinationObject(destination ?? inferred ?? {});
+  const bank = dest.bank;
+  const swift = dest.swift;
+  const account = dest.account;
+  const beneficiaryName = dest.beneficiary;
+  if (!bank && !swift && !account && !beneficiaryName) {
+    throw new Error("Missing destination details for bank wire export");
+  }
+  if (!account) throw new Error("Missing destination account for bank wire export");
+
+  const header = [
+    "batch_id",
+    "item_id",
+    "amount",
+    "currency",
+    "recipient",
+    "reference",
+    "bank_beneficiary_name",
+    "bank_name",
+    "bank_swift",
+    "bank_account"
+  ];
+  const lines = [header.map(csvEscape).join(",")];
+  for (const it of items) {
+    const itemId = payoutItemCfg.fieldMap.itemId ? it?.[payoutItemCfg.fieldMap.itemId] : null;
+    const recipient = payoutItemCfg.fieldMap.recipient ? it?.[payoutItemCfg.fieldMap.recipient] : null;
+    const amount = payoutItemCfg.fieldMap.amount ? it?.[payoutItemCfg.fieldMap.amount] : null;
+    const currency = payoutItemCfg.fieldMap.currency ? it?.[payoutItemCfg.fieldMap.currency] : null;
+    lines.push(
+      [
+        batchId,
+        itemId,
+        amount,
+        currency,
+        recipient,
+        batchId,
+        beneficiaryName,
+        bank,
+        swift,
+        account
+      ].map(csvEscape).join(",")
+    );
+  }
+
+  const csv = `${lines.join("\n")}\n`;
+  const targetPath = outPath ? String(outPath) : `bank_wire_payout_${String(batchId)}.csv`;
+  fs.writeFileSync(targetPath, csv, "utf8");
+  return {
+    batchId: String(batchId),
+    outPath: targetPath,
+    bytes: Buffer.byteLength(csv, "utf8"),
+    itemCount: items.length,
+    destinationSummary: sanitizeDestination(dest)
+  };
 }
 
 async function reportPendingApprovalBatches(base44) {
@@ -1412,6 +1620,33 @@ async function main() {
     if (!batchId) throw new Error("Missing --batch-id for export-payoneer-batch");
     const outPath = args.out ?? args["out"] ?? args["out-path"] ?? args.outPath ?? null;
     const out = await exportPayoneerBatch(base44, { batchId: String(batchId), outPath });
+    process.stdout.write(`${JSON.stringify({ ok: true, ...out })}\n`);
+    return;
+  }
+
+  if (
+    args["export-bank-wire-batch"] === true ||
+    args.exportBankWireBatch === true ||
+    getEnvBool("npm_config_export_bank_wire_batch", false) ||
+    getEnvBool("NPM_CONFIG_EXPORT_BANK_WIRE_BATCH", false)
+  ) {
+    const batchId =
+      args["batch-id"] ??
+      args.batchId ??
+      args.batch ??
+      process.env.npm_config_batch_id ??
+      process.env.NPM_CONFIG_BATCH_ID ??
+      null;
+    if (!batchId) throw new Error("Missing --batch-id for export-bank-wire-batch");
+    const outPath = args.out ?? args["out"] ?? args["out-path"] ?? args.outPath ?? null;
+    const destination = {
+      ...(args.destination ? parseDestinationJson(String(args.destination)) : parseDestinationJson(process.env.BASE44_PAYOUT_DESTINATION_JSON)),
+      ...(args["dest-bank"] ? { bank: String(args["dest-bank"]) } : {}),
+      ...(args["dest-swift"] ? { swift: String(args["dest-swift"]) } : {}),
+      ...(args["dest-account"] ? { account: String(args["dest-account"]) } : {}),
+      ...(args["dest-beneficiary"] ? { beneficiary: String(args["dest-beneficiary"]) } : {})
+    };
+    const out = await exportBankWireBatch(base44, { batchId: String(batchId), outPath, destination });
     process.stdout.write(`${JSON.stringify({ ok: true, ...out })}\n`);
     return;
   }
