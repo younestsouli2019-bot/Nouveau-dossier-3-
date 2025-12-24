@@ -12,6 +12,8 @@
     "paypal:sync:payout": "node ./src/sync-paypal-payout-batch.mjs",
     "paypal:create:order": "node ./src/create-paypal-order.mjs",
     "monitor:health": "node ./src/monitor-health.mjs",
+    "autonomous:daemon": "node ./src/autonomous-daemon.mjs",
+    "autonomous:once": "node ./src/autonomous-daemon.mjs --once",
     "test": "node --test"
   },
   "dependencies": {

@@ -90,6 +90,16 @@ function getEnvBool(name, fallback = false) {
   return String(v).toLowerCase() === "true";
 }
 
+function getEnvFirst(names) {
+  for (const name of names) {
+    const v = process.env[name];
+    if (v == null) continue;
+    const s = String(v).trim();
+    if (s) return s;
+  }
+  return null;
+}
+
 function getEarningSharePct() {
   const raw = process.env.EARNING_SHARE_PCT ?? process.env.SWARM_EARNING_SHARE_PCT ?? "1";
   const pct = Number(raw);
@@ -171,7 +181,14 @@ function runSettlementExportCli(settlement) {
 }
 
 function shouldUseOfflineMode(args) {
-  return args.offline === true || args["offline"] === true;
+  return (
+    args.offline === true ||
+    args["offline"] === true ||
+    getEnvBool("BASE44_OFFLINE", false) ||
+    getEnvBool("BASE44_OFFLINE_MODE", false) ||
+    getEnvBool("npm_config_offline", false) ||
+    getEnvBool("NPM_CONFIG_OFFLINE", false)
+  );
 }
 
 function getRevenueConfig() {
@@ -672,9 +689,16 @@ async function reportPendingApprovalBatches(base44) {
   const payoutBatchCfg = getPayoutBatchConfigFromEnv();
   const payoutBatchEntity = base44.asServiceRole.entities[payoutBatchCfg.entityName];
 
-  const fields = ["id", payoutBatchCfg.fieldMap.batchId, payoutBatchCfg.fieldMap.totalAmount, payoutBatchCfg.fieldMap.currency, payoutBatchCfg.fieldMap.status].filter(
-    Boolean
-  );
+  const fields = [
+    "id",
+    payoutBatchCfg.fieldMap.batchId,
+    payoutBatchCfg.fieldMap.totalAmount,
+    payoutBatchCfg.fieldMap.currency,
+    payoutBatchCfg.fieldMap.status,
+    payoutBatchCfg.fieldMap.approvedAt,
+    payoutBatchCfg.fieldMap.submittedAt,
+    "created_date"
+  ].filter(Boolean);
   let batches;
   try {
     batches = await filterAll(
@@ -1031,9 +1055,15 @@ async function emitFromMissionsCsv(base44, cfg, earningCfg, csvPath, { dryRun, l
 
 async function main() {
   const args = parseArgs(process.argv);
-  const dryRun = args["dry-run"] === true || args.dryRun === true;
+  const positional = process.argv.slice(2).filter((v) => !String(v).startsWith("--"));
+  const dryRun =
+    args["dry-run"] === true ||
+    args.dryRun === true ||
+    getEnvBool("npm_config_dry_run", false) ||
+    getEnvBool("NPM_CONFIG_DRY_RUN", false);
   const limit = args.limit ? Number(args.limit) : null;
-  const exportSettlement = shouldExportSettlement(args);
+  const exportSettlement =
+    shouldExportSettlement(args) || getEnvBool("npm_config_export_settlement", false) || getEnvBool("NPM_CONFIG_EXPORT_SETTLEMENT", false);
 
   const offlineStorePath = args["offline-store"] ?? args.offlineStore ?? null;
   if (offlineStorePath) process.env.BASE44_OFFLINE_STORE_PATH = String(offlineStorePath);
@@ -1041,24 +1071,54 @@ async function main() {
 
   const base44 = buildBase44Client({ allowMissing: dryRun, mode: shouldUseOfflineMode(args) ? "offline" : "auto" });
 
-  if (args["available-balance"] === true || args.availableBalance === true) {
+  if (
+    args["available-balance"] === true ||
+    args.availableBalance === true ||
+    getEnvBool("npm_config_available_balance", false) ||
+    getEnvBool("NPM_CONFIG_AVAILABLE_BALANCE", false)
+  ) {
     const bal = await computeAvailableBalance(base44);
     process.stdout.write(`${JSON.stringify({ ok: true, ...bal })}\n`);
     return;
   }
 
-  if (args["create-payout-batches"] === true || args.createPayoutBatches === true) {
+  if (
+    args["create-payout-batches"] === true ||
+    args.createPayoutBatches === true ||
+    getEnvBool("npm_config_create_payout_batches", false) ||
+    getEnvBool("NPM_CONFIG_CREATE_PAYOUT_BATCHES", false)
+  ) {
     if (!dryRun) {
       if (!shouldWritePayoutLedger()) throw new Error("Refusing to write payout ledger without BASE44_ENABLE_PAYOUT_LEDGER_WRITE=true");
       requireLiveMode("create payout batches");
     }
-    const settlementId = args["payout-settlement-id"] ?? args["settlement-id"] ?? args.settlementId ?? null;
-    const payoutBeneficiary = args["payout-beneficiary"] ?? args["earning-beneficiary"] ?? args.earningBeneficiary ?? null;
+    const settlementId =
+      args["payout-settlement-id"] ??
+      args["settlement-id"] ??
+      args.settlementId ??
+      process.env.npm_config_payout_settlement_id ??
+      process.env.NPM_CONFIG_PAYOUT_SETTLEMENT_ID ??
+      process.env.npm_config_settlement_id ??
+      process.env.NPM_CONFIG_SETTLEMENT_ID ??
+      null;
+    const payoutBeneficiary =
+      args["payout-beneficiary"] ??
+      args["earning-beneficiary"] ??
+      args.earningBeneficiary ??
+      process.env.npm_config_payout_beneficiary ??
+      process.env.NPM_CONFIG_PAYOUT_BENEFICIARY ??
+      process.env.npm_config_earning_beneficiary ??
+      process.env.NPM_CONFIG_EARNING_BENEFICIARY ??
+      null;
     const payoutRecipientType =
       args["payout-recipient-type"] ??
       args.payoutRecipientType ??
       args["recipient-type"] ??
       args.recipientType ??
+      process.env.npm_config_payout_recipient_type ??
+      process.env.NPM_CONFIG_PAYOUT_RECIPIENT_TYPE ??
+      process.env.npm_config_recipient_type ??
+      process.env.NPM_CONFIG_RECIPIENT_TYPE ??
       null;
     const fromIso = args["payout-from"] ?? args["settlement-from"] ?? args.from ?? null;
     const toIso = args["payout-to"] ?? args["settlement-to"] ?? args.to ?? null;
@@ -1075,29 +1135,61 @@ async function main() {
     return;
   }
 
-  if (args["report-pending-approval"] === true || args.reportPendingApproval === true) {
+  if (
+    args["report-pending-approval"] === true ||
+    args.reportPendingApproval === true ||
+    getEnvBool("npm_config_report_pending_approval", false) ||
+    getEnvBool("NPM_CONFIG_REPORT_PENDING_APPROVAL", false)
+  ) {
     const batches = await reportPendingApprovalBatches(base44);
     process.stdout.write(`${JSON.stringify({ ok: true, count: batches.length, batches })}\n`);
     return;
   }
 
-  if (args["approve-payout-batch"] === true || args.approvePayoutBatch === true) {
-    const batchId = args["batch-id"] ?? args.batchId ?? args.batch ?? null;
+  if (
+    args["approve-payout-batch"] === true ||
+    args.approvePayoutBatch === true ||
+    getEnvBool("npm_config_approve_payout_batch", false) ||
+    getEnvBool("NPM_CONFIG_APPROVE_PAYOUT_BATCH", false)
+  ) {
+    const batchId =
+      args["batch-id"] ??
+      args.batchId ??
+      args.batch ??
+      process.env.npm_config_batch_id ??
+      process.env.NPM_CONFIG_BATCH_ID ??
+      null;
     if (!batchId) throw new Error("Missing --batch-id for approve-payout-batch");
     const out = await approvePayoutBatch(base44, { batchId: String(batchId), args, dryRun: !!dryRun });
     process.stdout.write(`${JSON.stringify({ ok: true, ...out })}\n`);
     return;
   }
 
-  if (args["cancel-payout-batch"] === true || args.cancelPayoutBatch === true) {
-    const batchId = args["batch-id"] ?? args.batchId ?? args.batch ?? null;
+  if (
+    args["cancel-payout-batch"] === true ||
+    args.cancelPayoutBatch === true ||
+    getEnvBool("npm_config_cancel_payout_batch", false) ||
+    getEnvBool("NPM_CONFIG_CANCEL_PAYOUT_BATCH", false)
+  ) {
+    const batchId =
+      args["batch-id"] ??
+      args.batchId ??
+      args.batch ??
+      process.env.npm_config_batch_id ??
+      process.env.NPM_CONFIG_BATCH_ID ??
+      null;
     if (!batchId) throw new Error("Missing --batch-id for cancel-payout-batch");
     const out = await cancelPayoutBatch(base44, { batchId: String(batchId), dryRun: !!dryRun });
     process.stdout.write(`${JSON.stringify({ ok: true, ...out })}\n`);
     return;
   }
 
-  if (args["report-stuck-payouts"] === true || args.reportStuckPayouts === true) {
+  if (
+    args["report-stuck-payouts"] === true ||
+    args.reportStuckPayouts === true ||
+    getEnvBool("npm_config_report_stuck_payouts", false) ||
+    getEnvBool("NPM_CONFIG_REPORT_STUCK_PAYOUTS", false)
+  ) {
     const batchHours = Number(args["batch-hours"] ?? args.batchHours ?? args.hours ?? "24");
     const itemHours = Number(args["item-hours"] ?? args.itemHours ?? args.hours ?? "24");
     const out = await reportStuckPayouts(base44, { batchHours, itemHours });
@@ -1107,7 +1199,12 @@ async function main() {
     return;
   }
 
-  if (args["report-transaction-logs"] === true || args.reportTransactionLogs === true) {
+  if (
+    args["report-transaction-logs"] === true ||
+    args.reportTransactionLogs === true ||
+    getEnvBool("npm_config_report_transaction_logs", false) ||
+    getEnvBool("NPM_CONFIG_REPORT_TRANSACTION_LOGS", false)
+  ) {
     const fromIso = args.from ?? args["from-iso"] ?? null;
     const toIso = args.to ?? args["to-iso"] ?? null;
     const type = args.type ?? args["transaction-type"] ?? null;
@@ -1148,11 +1245,31 @@ async function main() {
     return;
   }
 
-  const amount = args.amount ? Number(args.amount) : null;
-  const currency = (args.currency ?? cfg.defaultCurrency).toString();
-  const externalId = args.externalId?.toString() ?? `manual_${Date.now()}`;
-  const occurredAt = (args.occurredAt ?? new Date().toISOString()).toString();
-  const source = (args.source ?? "manual").toString();
+  const amountRaw = args.amount ?? getEnvFirst(["npm_config_amount", "NPM_CONFIG_AMOUNT"]) ?? positional[0] ?? null;
+  const amount = amountRaw ? Number(amountRaw) : null;
+  const currencyRaw =
+    args.currency ?? getEnvFirst(["npm_config_currency", "NPM_CONFIG_CURRENCY"]) ?? positional[1] ?? cfg.defaultCurrency;
+  const currency = String(currencyRaw);
+  const externalIdRaw =
+    args.externalId ??
+    args["external-id"] ??
+    getEnvFirst(["npm_config_externalid", "npm_config_external_id", "NPM_CONFIG_EXTERNALID", "NPM_CONFIG_EXTERNAL_ID"]) ??
+    positional[3] ??
+    null;
+  const externalId = (externalIdRaw ? String(externalIdRaw) : `manual_${Date.now()}`).toString();
+  const occurredAtRaw =
+    args.occurredAt ??
+    args["occurred-at"] ??
+    getEnvFirst([
+      "npm_config_occurredat",
+      "npm_config_occurred_at",
+      "NPM_CONFIG_OCCURREDAT",
+      "NPM_CONFIG_OCCURRED_AT"
+    ]) ??
+    new Date().toISOString();
+  const occurredAt = String(occurredAtRaw);
+  const sourceRaw = args.source ?? getEnvFirst(["npm_config_source", "NPM_CONFIG_SOURCE"]) ?? positional[2] ?? "manual";
+  const source = String(sourceRaw);
 
   const event = {
     amount,
@@ -1160,7 +1277,8 @@ async function main() {
     occurredAt,
     source,
     externalId,
-    metadata: safeJsonParse(args.metadata, {}) ?? {}
+    metadata:
+      safeJsonParse(args.metadata ?? getEnvFirst(["npm_config_metadata", "NPM_CONFIG_METADATA"]), {}) ?? {}
   };
 
   const created = await createBase44RevenueEventIdempotent(base44, cfg, event, { dryRun });

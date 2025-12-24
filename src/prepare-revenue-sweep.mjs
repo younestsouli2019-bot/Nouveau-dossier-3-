@@ -19,8 +19,21 @@ function parseArgs(argv) {
   return args;
 }
 
+function getEnvBool(name, fallback = false) {
+  const v = process.env[name];
+  if (v == null) return fallback;
+  return String(v).toLowerCase() === "true";
+}
+
 function shouldUseOfflineMode(args) {
-  return args.offline === true || args["offline"] === true;
+  return (
+    args.offline === true ||
+    args["offline"] === true ||
+    getEnvBool("BASE44_OFFLINE", false) ||
+    getEnvBool("BASE44_OFFLINE_MODE", false) ||
+    getEnvBool("npm_config_offline", false) ||
+    getEnvBool("NPM_CONFIG_OFFLINE", false)
+  );
 }
 
 function parseCsvLine(line) {
@@ -192,7 +205,14 @@ function buildPayoutPlan({
 }
 
 function shouldUseOfflineMode(args) {
-  return args.offline === true || args["offline"] === true;
+  return (
+    args.offline === true ||
+    args["offline"] === true ||
+    getEnvBool("BASE44_OFFLINE", false) ||
+    getEnvBool("BASE44_OFFLINE_MODE", false) ||
+    getEnvBool("npm_config_offline", false) ||
+    getEnvBool("NPM_CONFIG_OFFLINE", false)
+  );
 }
 
 function requireLiveMode(reason) {
