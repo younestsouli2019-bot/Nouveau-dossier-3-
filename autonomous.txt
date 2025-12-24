@@ -1,0 +1,25 @@
+{
+  "intervalMs": 60000,
+  "offline": {
+    "enabled": false,
+    "auto": true,
+    "storePath": ".base44-offline-store.json"
+  },
+  "payout": {
+    "settlementId": null,
+    "beneficiary": null,
+    "recipientType": "payoneer",
+    "dryRun": true
+  },
+  "tasks": {
+    "health": true,
+    "availableBalance": true,
+    "reportPendingApproval": true,
+    "reportStuckPayouts": true,
+    "createPayoutBatches": false
+  },
+  "alerts": {
+    "enabled": false,
+    "cooldownMs": 900000
+  }
+}

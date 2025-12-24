@@ -162,7 +162,8 @@ function defaultConfig() {
       reportPendingApproval: true,
       reportStuckPayouts: true,
       createPayoutBatches: false,
-      autoApprovePayoutBatches: false
+      autoApprovePayoutBatches: false,
+      autoSubmitPayPalPayoutBatches: false
     },
     alerts: {
       enabled: false,
@@ -270,7 +271,8 @@ function resolveRuntimeConfig(args, fileCfg) {
       reportPendingApproval: cfg.tasks?.reportPendingApproval !== false,
       reportStuckPayouts: cfg.tasks?.reportStuckPayouts !== false,
       createPayoutBatches: cfg.tasks?.createPayoutBatches === true,
-      autoApprovePayoutBatches: cfg.tasks?.autoApprovePayoutBatches === true
+      autoApprovePayoutBatches: cfg.tasks?.autoApprovePayoutBatches === true,
+      autoSubmitPayPalPayoutBatches: cfg.tasks?.autoSubmitPayPalPayoutBatches === true
     },
     alerts: { enabled: alertsEnabled, cooldownMs: alertCooldownMs },
     state: { path: String(statePath) },
@@ -595,6 +597,30 @@ async function runTick(cfg, state) {
     };
     out.results.autoApproval = summary;
     await maybeAlertOnAutoApproval(cfg, summary, state);
+  }
+
+  if (cfg.tasks.autoSubmitPayPalPayoutBatches) {
+    const windowOk = isWithinWindowUtc(cfg.payout?.windowUtc ?? { startHourUtc: 0, endHourUtc: 0 });
+    if (!windowOk) {
+      out.results.autoSubmitPayPal = { ok: true, skipped: true, reason: "outside_payout_window_utc", windowUtc: cfg.payout?.windowUtc ?? null };
+    } else if (cfg.payout?.dryRun) {
+      out.results.autoSubmitPayPal = { ok: true, skipped: true, reason: "payout_dry_run_enabled" };
+    } else {
+      const approvedRes = await runEmitWithOfflineFallback(["--report-approved-batches"], cfg);
+      out.results.approvedBatches = approvedRes;
+      const batches = effectiveOk(approvedRes) ? (approvedRes.result?.batches ?? []) : [];
+      const attempts = [];
+      for (const b of Array.isArray(batches) ? batches : []) {
+        const batchId = getBatchId(b);
+        const notes = b?.notes ?? b?.Notes ?? null;
+        const recipientType = String(notes?.recipient_type ?? notes?.recipientType ?? "").toLowerCase();
+        if (!batchId) continue;
+        if (recipientType && recipientType !== "paypal" && recipientType !== "paypal_email") continue;
+        const res = await runEmitWithOfflineFallback(["--submit-payout-batch", "--batch-id", String(batchId)], cfg);
+        attempts.push({ batchId, res });
+      }
+      out.results.autoSubmitPayPal = { ok: true, attemptedCount: attempts.length, attempts };
+    }
   }
 
   out.ok = true;

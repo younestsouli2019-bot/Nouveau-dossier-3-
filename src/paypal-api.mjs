@@ -137,3 +137,16 @@ export async function getPayoutBatchDetails(batchId) {
   const token = await getPayPalAccessToken();
   return paypalRequest(`/v1/payments/payouts/${encodeURIComponent(batchId)}`, { token });
 }
+
+export async function createPayPalPayoutBatch({ senderBatchId, items, emailSubject, emailMessage } = {}) {
+  const token = await getPayPalAccessToken();
+  const body = {
+    sender_batch_header: {
+      sender_batch_id: String(senderBatchId ?? ""),
+      ...(emailSubject ? { email_subject: String(emailSubject) } : {}),
+      ...(emailMessage ? { email_message: String(emailMessage) } : {})
+    },
+    items: Array.isArray(items) ? items : []
+  };
+  return paypalRequest("/v1/payments/payouts", { method: "POST", token, body });
+}

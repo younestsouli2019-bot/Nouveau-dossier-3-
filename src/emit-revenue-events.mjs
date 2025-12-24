@@ -5,6 +5,7 @@ import readline from "node:readline";
 import { createBase44RevenueEventIdempotent, getRevenueConfigFromEnv } from "./base44-revenue.mjs";
 import { createBase44EarningIdempotent, getEarningConfigFromEnv } from "./base44-earning.mjs";
 import { buildBase44Client } from "./base44-client.mjs";
+import { createPayPalPayoutBatch } from "./paypal-api.mjs";
 
 function parseArgs(argv) {
   const args = {};
@@ -290,6 +291,18 @@ function normalizeRecipientType(value, fallback = "beneficiary") {
     wire: "bank_wire"
   };
   return aliases[v] ?? fallback;
+}
+
+function normalizeEmail(value) {
+  const s = String(value ?? "").trim();
+  return s || null;
+}
+
+function resolveRecipientAddress(recipientType, meta, fallback) {
+  const t = normalizeRecipientType(recipientType ?? null);
+  if (t === "paypal") return normalizeEmail(meta?.paypal_email ?? meta?.paypalEmail ?? fallback ?? null);
+  if (t === "payoneer") return normalizeEmail(meta?.payoneer_id ?? meta?.payoneerId ?? fallback ?? null);
+  return normalizeEmail(fallback ?? null);
 }
 
 function makeStableBatchId({ settlementId, beneficiary, recipientType, currency, earningIds, day }) {
@@ -648,6 +661,8 @@ async function createPayoutBatchesFromEarnings(
         const amount = Number(earningCfg.fieldMap.amount ? e?.[earningCfg.fieldMap.amount] : 0);
         const cur = earningCfg.fieldMap.currency ? e?.[earningCfg.fieldMap.currency] : null;
         const rid = await resolveRevenueEventId(e);
+        const meta = earningCfg.fieldMap.metadata ? e?.[earningCfg.fieldMap.metadata] : null;
+        const recipient = resolveRecipientAddress(recipType, meta, benefKey || null);
 
         if (dryRun) {
           itemsCreated.push({ itemId, dryRun: true });
@@ -657,7 +672,7 @@ async function createPayoutBatchesFromEarnings(
         const createdItem = await payoutItemEntity.create({
           [payoutItemCfg.fieldMap.itemId]: itemId,
           [payoutItemCfg.fieldMap.batchId]: batchId,
-          [payoutItemCfg.fieldMap.recipient]: benefKey || null,
+          [payoutItemCfg.fieldMap.recipient]: recipient,
           [payoutItemCfg.fieldMap.recipientType]: recipType || "beneficiary",
           [payoutItemCfg.fieldMap.amount]: Number(amount.toFixed(2)),
           [payoutItemCfg.fieldMap.currency]: cur || null,
@@ -683,6 +698,190 @@ async function createPayoutBatchesFromEarnings(
   }
 
   return { batches: created, earningsConsidered: filtered.length };
+}
+
+async function getPayoutItemsForBatch(base44, batchId) {
+  const payoutItemCfg = getPayoutItemConfigFromEnv();
+  const itemEntity = base44.asServiceRole.entities[payoutItemCfg.entityName];
+  const fields = [
+    "id",
+    payoutItemCfg.fieldMap.itemId,
+    payoutItemCfg.fieldMap.batchId,
+    payoutItemCfg.fieldMap.recipient,
+    payoutItemCfg.fieldMap.recipientType,
+    payoutItemCfg.fieldMap.amount,
+    payoutItemCfg.fieldMap.currency,
+    payoutItemCfg.fieldMap.status
+  ].filter(Boolean);
+  const items = await filterAll(itemEntity, { [payoutItemCfg.fieldMap.batchId]: String(batchId) }, { fields, pageSize: 500 });
+  return Array.isArray(items) ? items : [];
+}
+
+async function reportApprovedBatches(base44) {
+  const payoutBatchCfg = getPayoutBatchConfigFromEnv();
+  const batchEntity = base44.asServiceRole.entities[payoutBatchCfg.entityName];
+  const fields = [
+    "id",
+    payoutBatchCfg.fieldMap.batchId,
+    payoutBatchCfg.fieldMap.totalAmount,
+    payoutBatchCfg.fieldMap.currency,
+    payoutBatchCfg.fieldMap.status,
+    payoutBatchCfg.fieldMap.approvedAt,
+    payoutBatchCfg.fieldMap.submittedAt,
+    payoutBatchCfg.fieldMap.notes,
+    "created_date"
+  ].filter(Boolean);
+  let batches;
+  try {
+    batches = await filterAll(batchEntity, { [payoutBatchCfg.fieldMap.status]: "approved" }, { fields, pageSize: 250 });
+  } catch {
+    batches = await listAll(batchEntity, { fields, pageSize: 250 });
+    batches = batches.filter((b) => b?.[payoutBatchCfg.fieldMap.status] === "approved");
+  }
+  return batches;
+}
+
+async function submitPayPalPayoutBatch(base44, { batchId, args, dryRun }) {
+  const payoutBatchCfg = getPayoutBatchConfigFromEnv();
+  const payoutItemCfg = getPayoutItemConfigFromEnv();
+  const batchEntity = base44.asServiceRole.entities[payoutBatchCfg.entityName];
+  const itemEntity = base44.asServiceRole.entities[payoutItemCfg.entityName];
+
+  const rec = await findOneBy(batchEntity, { [payoutBatchCfg.fieldMap.batchId]: String(batchId) });
+  if (!rec?.id) throw new Error(`PayoutBatch not found: ${batchId}`);
+
+  const status = payoutBatchCfg.fieldMap.status ? rec?.[payoutBatchCfg.fieldMap.status] : null;
+  if (status !== "approved") throw new Error(`PayoutBatch not approved (status=${String(status ?? "")})`);
+
+  const batchCurrency = payoutBatchCfg.fieldMap.currency ? rec?.[payoutBatchCfg.fieldMap.currency] : null;
+  const items = await getPayoutItemsForBatch(base44, batchId);
+  if (items.length === 0) throw new Error(`No PayoutItems found for batch: ${batchId}`);
+
+  const notes = payoutBatchCfg.fieldMap.notes ? rec?.[payoutBatchCfg.fieldMap.notes] : null;
+  const recipientType = notes?.recipient_type ?? notes?.recipientType ?? null;
+  if (normalizeRecipientType(recipientType, "paypal") !== "paypal") {
+    throw new Error(`Refusing PayPal submit for non-paypal batch (recipient_type=${String(recipientType ?? "")})`);
+  }
+
+  const mapped = [];
+  for (const it of items) {
+    const senderItemId = payoutItemCfg.fieldMap.itemId ? it?.[payoutItemCfg.fieldMap.itemId] : null;
+    const recipient = payoutItemCfg.fieldMap.recipient ? it?.[payoutItemCfg.fieldMap.recipient] : null;
+    const amount = Number(payoutItemCfg.fieldMap.amount ? it?.[payoutItemCfg.fieldMap.amount] : 0);
+    const currency = String((payoutItemCfg.fieldMap.currency ? it?.[payoutItemCfg.fieldMap.currency] : null) ?? batchCurrency ?? "");
+    if (!senderItemId) continue;
+    if (!recipient) throw new Error(`Missing recipient for item ${String(senderItemId)}`);
+    if (!Number.isFinite(amount) || amount <= 0) throw new Error(`Invalid amount for item ${String(senderItemId)}`);
+    if (!currency) throw new Error(`Missing currency for item ${String(senderItemId)}`);
+    mapped.push({
+      senderItemId: String(senderItemId),
+      recipient: String(recipient),
+      amount: Number(amount.toFixed(2)),
+      currency
+    });
+  }
+  if (mapped.length === 0) throw new Error(`No valid payout items for batch: ${batchId}`);
+
+  if (dryRun) {
+    return { dryRun: true, batchId: String(batchId), itemCount: mapped.length };
+  }
+
+  if (!shouldWritePayoutLedger()) throw new Error("Refusing submit without BASE44_ENABLE_PAYOUT_LEDGER_WRITE=true");
+  requireLiveMode("submit PayPal payout batch");
+
+  const paypalItems = mapped.map((x) => ({
+    recipient_type: "EMAIL",
+    receiver: x.recipient,
+    amount: { value: x.amount.toFixed(2), currency: x.currency },
+    note: `Payout ${String(batchId)}`,
+    sender_item_id: x.senderItemId
+  }));
+  const response = await createPayPalPayoutBatch({
+    senderBatchId: String(batchId),
+    items: paypalItems,
+    emailSubject: "You have a payout",
+    emailMessage: `Payout batch ${String(batchId)}`
+  });
+
+  const paypalBatchId = response?.batch_header?.payout_batch_id ?? null;
+  const submittedAt = new Date().toISOString();
+
+  const existingNotes = payoutBatchCfg.fieldMap.notes ? (rec?.[payoutBatchCfg.fieldMap.notes] ?? {}) : null;
+  const mergedNotes =
+    existingNotes && typeof existingNotes === "object" && !Array.isArray(existingNotes)
+      ? { ...existingNotes, paypal_payout_batch_id: paypalBatchId }
+      : { paypal_payout_batch_id: paypalBatchId };
+
+  await batchEntity.update(rec.id, {
+    ...(payoutBatchCfg.fieldMap.status ? { [payoutBatchCfg.fieldMap.status]: "submitted_to_paypal" } : {}),
+    ...(payoutBatchCfg.fieldMap.submittedAt ? { [payoutBatchCfg.fieldMap.submittedAt]: submittedAt } : {}),
+    ...(payoutBatchCfg.fieldMap.notes ? { [payoutBatchCfg.fieldMap.notes]: mergedNotes } : {})
+  });
+
+  const bySenderId = new Map();
+  for (const it of items) {
+    const sid = payoutItemCfg.fieldMap.itemId ? it?.[payoutItemCfg.fieldMap.itemId] : null;
+    if (!sid || !it?.id) continue;
+    bySenderId.set(String(sid), String(it.id));
+  }
+
+  const respItems = Array.isArray(response?.items) ? response.items : [];
+  for (const ri of respItems) {
+    const payoutItemId = ri?.payout_item_id ?? ri?.payout_item?.payout_item_id ?? null;
+    const senderItemId = ri?.payout_item?.sender_item_id ?? ri?.payout_item?.sender_item_id ?? null;
+    const transactionStatus = ri?.transaction_status ?? ri?.payout_item?.transaction_status ?? null;
+    const internalId = senderItemId ? bySenderId.get(String(senderItemId)) : null;
+    if (!internalId) continue;
+    await itemEntity.update(internalId, {
+      ...(payoutItemCfg.fieldMap.status ? { [payoutItemCfg.fieldMap.status]: "processing" } : {}),
+      ...(payoutItemCfg.fieldMap.paypalStatus && transactionStatus ? { [payoutItemCfg.fieldMap.paypalStatus]: String(transactionStatus) } : {}),
+      ...(payoutItemCfg.fieldMap.paypalItemId && payoutItemId ? { [payoutItemCfg.fieldMap.paypalItemId]: String(payoutItemId) } : {})
+    }).catch(() => null);
+  }
+
+  return {
+    batchId: String(batchId),
+    submittedAt,
+    paypalBatchId
+  };
+}
+
+function csvEscape(value) {
+  const s = String(value ?? "");
+  if (s.includes('"') || s.includes(",") || s.includes("\n") || s.includes("\r")) {
+    return `"${s.replace(/"/g, '""')}"`;
+  }
+  return s;
+}
+
+async function exportPayoneerBatch(base44, { batchId, outPath }) {
+  const payoutBatchCfg = getPayoutBatchConfigFromEnv();
+  const batchEntity = base44.asServiceRole.entities[payoutBatchCfg.entityName];
+  const rec = await findOneBy(batchEntity, { [payoutBatchCfg.fieldMap.batchId]: String(batchId) });
+  if (!rec?.id) throw new Error(`PayoutBatch not found: ${batchId}`);
+
+  const notes = payoutBatchCfg.fieldMap.notes ? rec?.[payoutBatchCfg.fieldMap.notes] : null;
+  const recipientType = notes?.recipient_type ?? notes?.recipientType ?? null;
+  if (normalizeRecipientType(recipientType, "payoneer") !== "payoneer") {
+    throw new Error(`Refusing Payoneer export for non-payoneer batch (recipient_type=${String(recipientType ?? "")})`);
+  }
+
+  const items = await getPayoutItemsForBatch(base44, batchId);
+  const lines = [];
+  lines.push(["recipient", "amount", "currency", "batch_id", "item_id"].map(csvEscape).join(","));
+  const payoutItemCfg = getPayoutItemConfigFromEnv();
+  for (const it of items) {
+    const recipient = payoutItemCfg.fieldMap.recipient ? it?.[payoutItemCfg.fieldMap.recipient] : null;
+    const amount = payoutItemCfg.fieldMap.amount ? it?.[payoutItemCfg.fieldMap.amount] : null;
+    const currency = payoutItemCfg.fieldMap.currency ? it?.[payoutItemCfg.fieldMap.currency] : null;
+    const itemId = payoutItemCfg.fieldMap.itemId ? it?.[payoutItemCfg.fieldMap.itemId] : null;
+    lines.push([recipient, amount, currency, batchId, itemId].map(csvEscape).join(","));
+  }
+
+  const csv = `${lines.join("\n")}\n`;
+  const targetPath = outPath ? String(outPath) : `payoneer_payout_${String(batchId)}.csv`;
+  fs.writeFileSync(targetPath, csv, "utf8");
+  return { batchId: String(batchId), outPath: targetPath, bytes: Buffer.byteLength(csv, "utf8"), itemCount: items.length };
 }
 
 async function reportPendingApprovalBatches(base44) {
@@ -1147,6 +1346,17 @@ async function main() {
   }
 
   if (
+    args["report-approved-batches"] === true ||
+    args.reportApprovedBatches === true ||
+    getEnvBool("npm_config_report_approved_batches", false) ||
+    getEnvBool("NPM_CONFIG_REPORT_APPROVED_BATCHES", false)
+  ) {
+    const batches = await reportApprovedBatches(base44);
+    process.stdout.write(`${JSON.stringify({ ok: true, count: batches.length, batches })}\n`);
+    return;
+  }
+
+  if (
     args["approve-payout-batch"] === true ||
     args.approvePayoutBatch === true ||
     getEnvBool("npm_config_approve_payout_batch", false) ||
@@ -1161,6 +1371,47 @@ async function main() {
       null;
     if (!batchId) throw new Error("Missing --batch-id for approve-payout-batch");
     const out = await approvePayoutBatch(base44, { batchId: String(batchId), args, dryRun: !!dryRun });
+    process.stdout.write(`${JSON.stringify({ ok: true, ...out })}\n`);
+    return;
+  }
+
+  if (
+    args["submit-payout-batch"] === true ||
+    args.submitPayoutBatch === true ||
+    args["submit-paypal-payout-batch"] === true ||
+    args.submitPayPalPayoutBatch === true ||
+    getEnvBool("npm_config_submit_payout_batch", false) ||
+    getEnvBool("NPM_CONFIG_SUBMIT_PAYOUT_BATCH", false)
+  ) {
+    const batchId =
+      args["batch-id"] ??
+      args.batchId ??
+      args.batch ??
+      process.env.npm_config_batch_id ??
+      process.env.NPM_CONFIG_BATCH_ID ??
+      null;
+    if (!batchId) throw new Error("Missing --batch-id for submit-payout-batch");
+    const out = await submitPayPalPayoutBatch(base44, { batchId: String(batchId), args, dryRun: !!dryRun });
+    process.stdout.write(`${JSON.stringify({ ok: true, ...out })}\n`);
+    return;
+  }
+
+  if (
+    args["export-payoneer-batch"] === true ||
+    args.exportPayoneerBatch === true ||
+    getEnvBool("npm_config_export_payoneer_batch", false) ||
+    getEnvBool("NPM_CONFIG_EXPORT_PAYONEER_BATCH", false)
+  ) {
+    const batchId =
+      args["batch-id"] ??
+      args.batchId ??
+      args.batch ??
+      process.env.npm_config_batch_id ??
+      process.env.NPM_CONFIG_BATCH_ID ??
+      null;
+    if (!batchId) throw new Error("Missing --batch-id for export-payoneer-batch");
+    const outPath = args.out ?? args["out"] ?? args["out-path"] ?? args.outPath ?? null;
+    const out = await exportPayoneerBatch(base44, { batchId: String(batchId), outPath });
     process.stdout.write(`${JSON.stringify({ ok: true, ...out })}\n`);
     return;
   }
@@ -1288,6 +1539,10 @@ async function main() {
   let earningDeduped = false;
   if (createEarnings && beneficiary) {
     const pct = getEarningSharePct();
+    const payoutMethod = args["payout-method"] ?? args.payoutMethod ?? null;
+    const earningRecipientType = args["earning-recipient-type"] ?? args.earningRecipientType ?? args["recipient-type"] ?? args.recipientType ?? null;
+    const paypalEmail = args["paypal-email"] ?? args.paypalEmail ?? null;
+    const payoneerId = args["payoneer-id"] ?? args.payoneerId ?? null;
     const earning = {
       earningId: `earn:${event.source}:${event.externalId}`,
       amount: Number((Number(event.amount) * pct).toFixed(2)),
@@ -1300,7 +1555,11 @@ async function main() {
         revenue_external_id: event.externalId,
         revenue_source: event.source,
         revenue_amount: event.amount,
-        share_pct: pct
+        share_pct: pct,
+        ...(earningRecipientType ? { recipient_type: String(earningRecipientType) } : {}),
+        ...(payoutMethod ? { payout_method: String(payoutMethod) } : {}),
+        ...(paypalEmail ? { paypal_email: String(paypalEmail) } : {}),
+        ...(payoneerId ? { payoneer_id: String(payoneerId) } : {})
       }
     };
     const earningCreated = await createBase44EarningIdempotent(base44, earningCfg, earning, { dryRun });
