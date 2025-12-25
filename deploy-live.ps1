@@ -52,6 +52,13 @@ function Mask([string]$v) {
   return "(set)"
 }
 
+function InvokeChecked([string]$label, [scriptblock]$cmd) {
+  & $cmd
+  if ($LASTEXITCODE -ne 0) {
+    throw "$label failed (exit=$LASTEXITCODE)"
+  }
+}
+
 $payoneerEmail = $null
 foreach ($l in $lines) {
   if ($l -match "^Payoneer:(.+)$") { $payoneerEmail = $Matches[1].Trim(); break }
@@ -138,10 +145,17 @@ if ($paypalEmail) { Write-Host ("PayPal email: " + $paypalEmail) }
 
 switch ($Action.ToLowerInvariant()) {
   "setup" { npm ci; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; npm test; break }
+  "all" {
+    InvokeChecked "npm ci" { npm ci }
+    InvokeChecked "npm test" { npm test }
+    InvokeChecked "readiness" { npm run live:readiness:ping }
+    npm run autonomous:daemon
+    break
+  }
   "readiness" { npm run live:readiness:ping; break }
   "webhook" { npm run paypal:webhook; break }
   "daemon" { npm run autonomous:daemon; break }
   "once" { npm run autonomous:once; break }
   "shell" { Write-Host "Environment is set in this window."; break }
-  default { Write-Host ("Unknown action: " + $Action); Write-Host "Actions: setup, readiness, webhook, daemon, once, shell"; break }
+  default { Write-Host ("Unknown action: " + $Action); Write-Host "Actions: all, setup, readiness, webhook, daemon, once, shell"; break }
 }
