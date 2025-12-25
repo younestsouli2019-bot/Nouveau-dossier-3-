@@ -538,7 +538,20 @@ if (args.check === true || args["config-check"] === true) {
   process.stdout.write(`${JSON.stringify({ ok: out.ok, config: out })}\n`);
   process.exitCode = out.ok ? 0 : 1;
 } else {
-  validateConfig();
+  let startupConfigError = null;
+  try {
+    validateConfig();
+  } catch (e) {
+    startupConfigError = e?.message ?? String(e);
+    process.stderr.write(
+      `${JSON.stringify({
+        ok: false,
+        warning: "webhook_server_started_with_invalid_config",
+        error: startupConfigError,
+        config: getConfigCheck()
+      })}\n`
+    );
+  }
 
   const dedupeStore = createDedupeStore({
     filePath: getWebhookDedupeStorePath(),
@@ -572,7 +585,9 @@ if (args.check === true || args["config-check"] === true) {
       json(res, 200, {
         ok: true,
         live: getEnvBool("SWARM_LIVE", false),
-        dedupe: dedupeStore.stats()
+        dedupe: dedupeStore.stats(),
+        config: getConfigCheck(),
+        startupConfigError
       });
       return;
     }
@@ -584,6 +599,12 @@ if (args.check === true || args["config-check"] === true) {
 
     if (req.method !== "POST") {
       json(res, 405, { ok: false, error: "Method not allowed" });
+      return;
+    }
+
+    const config = getConfigCheck();
+    if (!config.ok) {
+      json(res, 503, { ok: false, error: "Webhook server not configured", config });
       return;
     }
 

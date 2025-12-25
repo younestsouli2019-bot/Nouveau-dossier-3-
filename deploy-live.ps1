@@ -73,8 +73,10 @@ foreach ($l in $lines) {
   if ($l -match "^paypal:(.+)$") { $paypalEmail = $Matches[1].Trim(); break }
 }
 
-$paypalClientId = NextNonEmptyAfter "Client ID"
-$paypalClientSecret = NextNonEmptyAfter "Secret key 2"
+$paypalClientId = GetCredValue "PAYPAL_CLIENT_ID"
+if (-not $paypalClientId) { $paypalClientId = NextNonEmptyAfter "Client ID" }
+$paypalClientSecret = GetCredValue "PAYPAL_CLIENT_SECRET"
+if (-not $paypalClientSecret) { $paypalClientSecret = NextNonEmptyAfter "Secret key 2" }
 
 $swiftMatch = FirstMatch("^CODE SWIFT\s*:\s*(.+)$")
 $bankSwift = if ($swiftMatch) { $swiftMatch[1].Trim() } else { $null }
@@ -136,6 +138,15 @@ if ([string]::IsNullOrWhiteSpace($env:BASE44_SERVICE_TOKEN)) {
 }
 if ([string]::IsNullOrWhiteSpace($env:PAYPAL_WEBHOOK_ID)) {
   $env:PAYPAL_WEBHOOK_ID = Read-Host "PAYPAL_WEBHOOK_ID"
+}
+if ([string]::IsNullOrWhiteSpace($env:PAYPAL_CLIENT_ID)) {
+  $env:PAYPAL_CLIENT_ID = Read-Host "PAYPAL_CLIENT_ID"
+}
+if ([string]::IsNullOrWhiteSpace($env:PAYPAL_CLIENT_SECRET)) {
+  $sec = Read-Host "PAYPAL_CLIENT_SECRET" -AsSecureString
+  $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($sec)
+  try { $env:PAYPAL_CLIENT_SECRET = [Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr) }
+  finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
 }
 
 Write-Host ("SWARM_LIVE=" + $env:SWARM_LIVE)
