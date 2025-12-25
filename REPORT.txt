@@ -1,0 +1,500 @@
+AUTONOMOUS SWARM LIVE-ENABLEMENT REPORT
+Project: Transition Swarm System From Simulation → LIVE Revenue + Real Payment Rails
+Workspace: C:\Users\Dell\Downloads\Nouveau dossier (3)
+Date: 2025-12-25
+
+EXECUTIVE SUMMARY (URGENT, NO ABSTRACTION)
+The current system has two different “truth sources”:
+1) A Base44 app preview UI that claims “Automated PayPal Transfer System” with pending/completed transfers.
+2) A Node-based operational repo (this workspace) that can actually submit PayPal Payouts batches and reconcile them.
+
+If “nothing received” is true, the operational interpretation is straightforward:
+- Either no PayPal Payouts batch was ever actually submitted (missing PayPal payout batch id in ledger), or
+- A PayPal batch was submitted but webhook/API reconciliation is not wired/authorized/live, so the ledger/UI is drifting from reality.
+
+The repo already contains concrete gates that prevent accidental “simulation pretending to be live”:
+- SWARM_LIVE must be true for live operations.
+- Ledger writes must be explicitly enabled.
+- PayPal credentials must be present to call PayPal APIs.
+
+Immediate objective: make the payment status and payouts auditable and grounded in external provider truth (PayPal API + webhooks), and ensure the Base44 UI reads from that ledger rather than static/demo data.
+
+LATEST IMPLEMENTED CHANGES (2025-12-25)
+- deploy-live now supports: setup, readiness, webhook, daemon, once, shell, and all (setup → readiness → daemon).
+- CREDS parsing now ignores placeholder values like <YOUR_WEBHOOK_ID> and forces secure prompt instead.
+- Webhook server listens on PORT (default 8787) and accepts POST on /paypal/webhook (also exposes /health).
+
+LIVE PAYPAL WEBHOOK URL (WHAT TO ENTER IN PAYPAL)
+- https://<YOUR_PUBLIC_DOMAIN>/paypal/webhook
+  - The Node server itself listens on http://127.0.0.1:8787/paypal/webhook by default; put HTTPS (reverse proxy / tunnel) in front for PayPal live delivery.
+
+BASE44 APP MUST MATCH THESE ENTITIES/FIELDS (DEFAULTS)
+- Revenue events:
+  - Entity: RevenueEvent
+  - Fields: amount, currency, occurred_at, source, external_id, status, payout_batch_id, event_hash, mission_id, mission_title, agent_ids, metadata
+- Earnings:
+  - Entity: Earning
+  - Fields: earning_id, amount, currency, occurred_at, source, beneficiary, status, settlement_id, metadata
+- Payout ledger:
+  - Entity: PayoutBatch
+  - Fields: batch_id, total_amount, currency, status, revenue_event_ids, earning_ids, settlement_id, notes, approved_at, submitted_at, completed_at, cancelled_at
+  - Entity: PayoutItem
+  - Fields: item_id, batch_id, recipient, recipient_type, amount, currency, status, revenue_event_id, earning_id, processed_at, error_message, paypal_status, paypal_transaction_id, paypal_item_id
+  - Entity: TransactionLog
+  - Fields: transaction_type, amount, description, transaction_date, category, payment_method, reference_id, status, payout_batch_id, payout_item_id
+- PayPal webhook observability (optional but recommended when enabling metrics/event storage):
+  - Entity: PayPalWebhookEvent (event_type, event_id, created_at, summary, payload)
+  - Entity: PayPalMetric (at, kind, ok, summary)
+
+PAYPAL EVENT TYPES TO SUBSCRIBE (MINIMUM THAT THIS REPO USES)
+- Revenue ingestion: PAYMENT.CAPTURE.COMPLETED
+- Payout reconciliation: any PAYOUTS item events (e.g. PAYMENT.PAYOUTS-ITEM.SUCCEEDED / FAILED / REFUNDED / UNCLAIMED)
+
+
+1) CURRENT STATE DIAGNOSIS
+
+1.1 Architecture Overview (as implemented in this repo)
+Core components and loops:
+
+- Revenue ingestion → RevenueEvent ledger
+  - Script: src/emit-revenue-events.mjs
+  - Creates/updates RevenueEvent records via Base44 SDK.
+
+- Earnings computation → Earning ledger
+  - Script: src/emit-revenue-events.mjs (earnings creation path)
+  - Deduped/idempotent “your share” or beneficiary share.
+
+- Payout ledger (internal approvals)
+  - Script: src/emit-revenue-events.mjs
+  - Entities: PayoutBatch, PayoutItem, TransactionLog (names configurable via env field maps)
+  - Approval gates: daily limit + TOTP for high value approvals.
+
+- External payout execution (PayPal Payouts API)
+  - Script: src/emit-revenue-events.mjs (submitPayPalPayoutBatch)
+  - External API: PayPal Payouts (create payout batch)
+  - Trust anchors: PayPal access token + webhook signature verification.
+
+- Reconciliation / audit
+  - Webhook server: src/paypal-webhook-server.mjs (updates ledger on PayPal payout-item webhooks)
+  - Optional PayPal batch sync: src/sync-paypal-payout-batch.mjs (stores PayPal batch details as a separate entity)
+  - Ledger reports: src/emit-revenue-events.mjs (stuck payouts, transaction logs, etc.)
+
+Operational entry points (package.json):
+- npm run emit:revenue
+- npm run paypal:webhook
+- npm run paypal:sync:payout
+- npm test
+
+1.2 Simulation vs Reality Gaps (root cause of “nothing received”)
+Observed symptom:
+- The Base44 app UI says pending/completed transfers and “All systems ready”.
+- The recipient reports no funds received.
+
+Reality checks that must exist for “funds received”:
+A) A PayPal Payouts API batch exists in PayPal under the sender’s account.
+B) The internal PayoutBatch has a notes.paypal_payout_batch_id recorded on submission.
+C) PayPal payout-item webhooks (or API sync) updated the internal ledger to final statuses.
+D) The UI reads from that internal ledger (not hard-coded/demo data).
+
+The Base44 preview UI is not proven to be backed by A–D. In this repo, “money moves” only when:
+- A batch is approved, AND
+- submitPayPalPayoutBatch is executed, AND
+- SWARM_LIVE=true, AND
+- BASE44_ENABLE_PAYOUT_LEDGER_WRITE=true, AND
+- PAYPAL_CLIENT_ID + PAYPAL_CLIENT_SECRET exist.
+
+If any gate is missing, the UI can show “ready” while zero external money movement happens.
+
+1.3 Authority Gaps (who/what is allowed to act)
+Concrete authorization requirements in this repo:
+- SWARM_LIVE gate: blocks live ops unless explicitly set.
+- BASE44_ENABLE_PAYOUT_LEDGER_WRITE gate: blocks writing approvals/submission/cancel operations.
+- PAYOUT_APPROVAL_TOTP_SECRET + PAYOUT_APPROVAL_2FA_THRESHOLD gate: blocks high-value approvals without 2FA.
+
+Authority gap in the Base44 UI:
+- If the UI allows “Execute All ($80,223)” without checking these gates and without verifying PayPal batch creation, it is not an authoritative execution surface.
+
+1.4 Payment, Identity, and Trust Blockers
+PayPal Payouts is KYC/AML constrained:
+- PayPal can restrict payout capability by region/account status (Morocco risk noted).
+- PayPal requires verified sender account, compliant business identity, and risk checks.
+
+Therefore, “UI-ready” does not imply “provider-ready”.
+The system must be able to prove:
+- Which PayPal account is the sender (credentials),
+- Which PayPal batch id exists,
+- Which payout items succeeded/failed/unclaimed,
+- Which ledger entries correspond to those items.
+
+
+2) LIVE-ENABLEMENT ARCHITECTURE (CONCRETE)
+
+2.1 Roles and Hierarchy (minimum viable)
+Human Owner (Root Authority)
+  - Owns credentials (PayPal, bank, Payoneer)
+  - Owns kill-switch and budget policy
+  - Approves large payouts (TOTP)
+
+Financial Supervisor Agent (Ledger Authority)
+  - Creates PayoutBatch/PayoutItem from Earnings
+  - Enforces budgets, spending limits, 2FA threshold
+  - Blocks execution if policy is violated
+
+Payout Executor Agent (Rail Authority)
+  - Calls PayPal Payouts API (or exports Payoneer/bank-wire files)
+  - Cannot approve its own payouts
+
+Reconciliation Agent (Truth Authority)
+  - Consumes PayPal webhooks and/or PayPal batch API polling
+  - Updates internal ledger statuses
+  - Produces discrepancy reports
+
+Observability Agent (Resilience Authority)
+  - Monitors stuck payouts, failures, rate limits
+  - Escalates to Human Owner
+
+2.2 Control vs Autonomy Boundaries
+Autonomous:
+- Create ledger entries (RevenueEvent, Earning) idempotently.
+- Propose payout batches (pending_approval).
+- Export bank/payoneer payout files.
+- Reconcile statuses from webhooks/API.
+
+Human-controlled:
+- Approve payouts above threshold.
+- Enable live money movement (set SWARM_LIVE and write flags).
+- Rotate credentials and disable rails on anomaly.
+
+2.3 Kill Switches (must be real, not UI)
+Hard kill switches:
+- SWARM_LIVE=false: blocks all “money moving” operations in scripts.
+- BASE44_ENABLE_PAYOUT_LEDGER_WRITE=false: blocks approvals/submissions/cancel.
+- Disable PayPal keys (unset PAYPAL_CLIENT_ID/SECRET) to prevent execution.
+
+Soft kill switches:
+- Set DAILY_SPENDING_LIMIT low to slow down or block approvals.
+- Set PAYOUT_APPROVAL_2FA_THRESHOLD low so more actions require 2FA.
+
+2.4 Persistence and Auditability
+Authoritative state is Base44 entities:
+- RevenueEvent
+- Earning
+- PayoutBatch
+- PayoutItem
+- TransactionLog
+
+External truth sources:
+- PayPal webhook events
+- PayPal Payouts batch details API
+
+Audit requirement:
+- Every external payout action must have an immutable external id stored in ledger notes/fields.
+- Every status change must be replayable from provider truth.
+
+2.5 Rate Limits, Budgets, Safeguards
+Built-in or configurable safeguards (present in code):
+- DAILY_SPENDING_LIMIT / window
+- TOTP approvals above threshold
+- “stuck payout” reporting
+- idempotent ids for batches/items (prevents double-pay on rerun)
+
+
+3) REAL-WORLD PAYMENT & VALUE FLOW (WORKABLE PATHS, NO HAND-WAVING)
+
+3.1 Value Movement Overview (recommended operational truth)
+Money-in (revenue):
+Customer → Payment Provider → Swarm-Controlled Receiver Account
+
+Money-out (payouts to you/beneficiaries):
+Receiver Account → Payout Rail (PayPal/Payoneer/Bank wire) → Beneficiary
+
+3.2 Path A (Primary): Bank Wire / Payoneer Export + Manual Execution
+This is the most jurisdiction-tolerant for Morocco where PayPal can be constrained.
+
+Who pays whom:
+- Customers pay the product/service.
+- The system exports settlements/payout files.
+- Human (or a compliant provider integration) executes transfers via bank/Payoneer portal.
+
+Rails used:
+- Bank wire CSV export (this repo can export bank-wire payout batches)
+- Payoneer CSV export (this repo can export payoneer payout batches)
+
+Authorization:
+- Ledger creates a batch.
+- Human approves batch (2FA gate).
+- System exports file for execution.
+
+Fraud/runaway prevention:
+- Spending limits + 2FA.
+- Exports are auditable artifacts tied to batch IDs.
+
+Reconciliation:
+- Human marks issued/processed based on bank confirmation.
+- TransactionLog entries reflect confirmed outgoing transfers.
+
+3.3 Path B (Secondary): PayPal Payouts API (only if sender account is approved)
+Who pays whom:
+- Your PayPal sender account pays recipients (email) via Payouts API.
+
+Rails:
+- PayPal Payouts API: create payout batch.
+- PayPal webhooks: payout-item status updates.
+
+Authorization to initiate payouts:
+- Batch must be approved in ledger.
+- SWARM_LIVE=true
+- BASE44_ENABLE_PAYOUT_LEDGER_WRITE=true
+- PAYPAL_CLIENT_ID + PAYPAL_CLIENT_SECRET present.
+
+Fraud/runaway prevention:
+- Same approval + budgets.
+- Idempotent sender_batch_id prevents accidental duplicates.
+
+Reconciliation:
+- Webhook server updates PayoutItem status to success/failed/unclaimed and marks RevenueEvent paid_out when applicable.
+- API sync can reconcile drift when webhooks fail or were not configured.
+
+
+4) DISCREPANCY ANALYSIS: “UI SHOWS TRANSFERS, NOTHING RECEIVED”
+
+4.1 Most Likely Root Causes (ordered)
+1) UI is not reading from the ledger and is showing demo data.
+2) Payout batches were created/approved internally but never submitted to PayPal (missing PayPal payout batch id).
+3) PayPal payout submission happened but:
+   - webhooks are not configured/verified, and no API sync is running, OR
+   - PayPal sender account cannot actually send due to restrictions/holds/limits.
+4) Recipient-side issues:
+   - wrong email, unclaimed payouts, PayPal account limitations, currency issues.
+
+4.2 Immediate Technical Proof Checklist (this repo)
+Run these to produce authoritative evidence:
+
+A) List internal batches requiring attention:
+- npm run emit:revenue -- --report-pending-approval
+- npm run emit:revenue -- --report-approved-batches
+
+B) For an approved batch, confirm if PayPal submission happened:
+- If PayoutBatch.notes.paypal_payout_batch_id is absent: nothing could have been received.
+
+C) If PayPal payout batch id exists, confirm status from PayPal:
+- Use PayPal webhooks (preferred real-time), or
+- Use PayPal batch details API polling (sync)
+
+4.3 Reconciliation Capability (added in this workspace)
+Two reconciliation channels exist:
+- Webhook-driven: src/paypal-webhook-server.mjs updates PayoutItem/RevenueEvent on PayPal payout-item events.
+- API-driven: this workspace adds a ledger sync command that pulls PayPal payout batch details and updates PayoutItem status to match provider truth.
+
+Operational gate:
+- BASE44_ENABLE_PAYPAL_PAYOUT_STATUS_WRITE must be true to write sync results.
+
+
+5) LEGAL, FINANCIAL & JURISDICTIONAL CONSTRAINTS (MOROCCO AWARE)
+
+5.1 Regulatory Exposure
+- Any system executing outbound payouts is a financial workflow subject to AML/KYC controls via providers.
+- Providers (PayPal/Payoneer/banks) can suspend service based on risk triggers.
+
+5.2 Contractual Authority
+- The only “authority” recognized by payment rails is:
+  - the verified account holder’s credentials and account permissions,
+  - plus any enterprise contract terms.
+- UI screens do not grant authority to initiate transfers.
+
+5.3 KYC/AML Considerations
+- Keep identity data out of code; load via environment variables or secrets manager.
+- Maintain audit logs for:
+  - payout decisions, approvals, external ids, and reconciliation events.
+
+5.4 Jurisdiction-Aware Deployment Strategy
+Recommended:
+- Default to bank wire / Payoneer (compliance-first) when PayPal sending is restricted.
+- Use PayPal Payouts API only where the sender account is explicitly approved and enabled.
+
+5.5 Liability Containment
+Practical containment:
+- Separate operational accounts (business accounts) from personal.
+- Limit daily payouts; require 2FA for large approvals.
+- Keep immutable logs (Base44 TransactionLog + provider exports).
+
+
+6) MONETIZATION PATHWAYS (PRIORITIZED, CONCRETE)
+
+6.1 Fastest Path to First Dollar (days)
+Offer: B2B “Swarm Ops” services (automation, reporting, lead-gen, content) with human review.
+Customer: small businesses and creators.
+Pricing: fixed packages (e.g., $200–$1,000) + performance bonus.
+Collection rail: invoice + bank transfer/Payoneer (lowest friction).
+Time-to-revenue: 1–7 days.
+
+6.2 Scalable Recurring Revenue (weeks)
+Offer: subscription to a managed agent pipeline (content, research, outreach).
+Customer: SMBs.
+Pricing: $49–$499/mo + usage tiers.
+Collection rail: merchant-of-record platform / card processor; payout to bank.
+Time-to-revenue: 2–6 weeks.
+
+6.3 High-Risk / High-Reward (months)
+Offer: platform-integrated marketplace where agents sell deliverables.
+Customer: broader market; requires platform compliance.
+Pricing: take-rate + premium features.
+Time-to-revenue: 2–6 months.
+
+
+7) AUTONOMOUS GOVERNANCE & SAFETY (NON-NEGOTIABLE)
+
+7.1 Budget Ceilings Per Agent
+Hard-coded policy inputs (environment-configured):
+- DAILY_SPENDING_LIMIT
+- PAYOUT_APPROVAL_2FA_THRESHOLD
+- SWARM_LIVE gate
+
+7.2 Behavioral Constraints
+- No direct execution without approved batch.
+- No retry loops that change sender_batch_id (prevents double payout).
+- No status “success” unless verified by provider webhook/API.
+
+7.3 Rollback and Freeze Mechanisms
+- cancel payout batches before submission (ledger rollback).
+- disable live mode immediately (SWARM_LIVE=false).
+
+7.4 Abuse Detection
+- Report stuck payouts; flag high failure rates; alert human.
+- Detect multiple destinations in one bank-wire batch (refuse export).
+
+7.5 Reputation / Trust Scoring
+Minimum:
+- Score rails by failure rate and dispute rate.
+- Score payees by unclaimed/failed pattern.
+
+
+8) FAILURE MODES & ADVERSARIAL ANALYSIS
+
+8.1 Payments Fail
+Failure: PayPal rejects payout batch; items fail/unclaimed.
+Containment:
+- Mark items failed/unclaimed; do not retry blindly.
+- Escalate to human; switch rails (bank wire/Payoneer).
+
+8.2 APIs Revoked / Rate-Limited
+Failure: token request fails, 429, policy ban.
+Containment:
+- Freeze payouts.
+- Export offline bank/Payoneer settlement files for manual execution.
+
+8.3 Agents Hallucinate Authority
+Failure: agent marks status success without proof.
+Containment:
+- Only allow status transitions from webhook/API evidence.
+- Gate writes behind explicit env flags and SWARM_LIVE.
+
+8.4 External Actors Exploit System
+Failure: malicious recipient changes payout destination or injects metadata.
+Containment:
+- Restrict who can edit destination fields.
+- Validate destination schema; enforce single destination per batch.
+- Mask sensitive fields in outputs/logging.
+
+
+9) ASCII DIAGRAMS (AUTHORITATIVE DATA FLOW)
+
+9.1 Ledger + Execution Flow
+
+  [Mission/Revenue Source] 
+          |
+          v
+  +-------------------+        +-------------------+
+  | RevenueEvent      |<------>| Base44 Entities   |
+  +-------------------+        +-------------------+
+          |
+          v
+  +-------------------+
+  | Earning           |
+  +-------------------+
+          |
+          v
+  +-------------------+        +-------------------+
+  | PayoutBatch       |------->| Human Approval    |
+  | PayoutItem        |        | (limits + TOTP)   |
+  +-------------------+        +-------------------+
+          |
+          v
+  +-------------------+
+  | Execute / Export   |
+  | - PayPal API        |
+  | - Payoneer CSV      |
+  | - Bank-wire CSV     |
+  +-------------------+
+          |
+          v
+  +-------------------+        +-------------------+
+  | Reconcile Status   |<-------| Provider Truth    |
+  | - Webhooks          |        | (PayPal API)      |
+  | - API Sync          |        +-------------------+
+  +-------------------+
+          |
+          v
+  +-------------------+
+  | TransactionLog     |
+  +-------------------+
+
+
+10) FAILURE POINTS PREVENTING REAL-WORLD EXECUTION (ACTIONABLE)
+
+Critical blockers:
+1) UI/preview page is not proven to read from ledger/provider truth.
+2) PayPal sending may be restricted in Morocco unless explicitly approved by PayPal.
+3) Webhooks may not be configured/verified, causing “ledger drift”.
+4) Credentials (PayPal/Base44 service token) may be missing or not set in the runtime environment.
+
+Immediate remediation actions:
+- Make the Base44 app use authoritative ledger fields (PayoutBatch/PayoutItem/TransactionLog) rather than static/demo values.
+- Require every displayed “Completed/Pending” transfer to have:
+  - internal batch id,
+  - provider external id,
+  - last synced time,
+  - current provider status.
+- Prefer bank wire / Payoneer as default for Morocco; treat PayPal Payouts API as optional.
+
+
+11) OPERATIONAL COMMANDS (THIS REPO)
+
+11.1 Preconditions (live)
+- SWARM_LIVE=true
+- BASE44_APP_ID and BASE44_SERVICE_TOKEN set for Base44 reads/writes
+- For PayPal Payouts:
+  - PAYPAL_CLIENT_ID
+  - PAYPAL_CLIENT_SECRET
+  - PAYPAL_WEBHOOK_ID (webhook signature verification)
+  - BASE44_ENABLE_PAYOUT_LEDGER_WRITE=true (submission/approval/cancel)
+  - BASE44_ENABLE_REVENUE_FROM_PAYPAL=true (create RevenueEvent from PayPal webhooks)
+  - BASE44_ENABLE_PAYPAL_WEBHOOK_WRITE=true (store PayPal webhook events)
+  - BASE44_ENABLE_PAYPAL_PAYOUT_STATUS_WRITE=true (webhook/sync status writes)
+
+11.2 Minimum audit commands
+- npm run live:readiness
+- npm run live:readiness:ping
+- npm run emit:revenue -- --export-payout-truth
+- npm run emit:revenue -- --repair-payout-truth --dry-run
+- npm run emit:revenue -- --report-pending-approval
+- npm run emit:revenue -- --report-approved-batches
+- npm run emit:revenue -- --report-stuck-payouts
+- npm run emit:revenue -- --report-transaction-logs
+- npm run paypal:webhook:check
+- npm run monitor:once
+
+
+12) WORKSPACE CHANGELOG (MOST RECENT)
+Recent commits:
+- 36186cb Bank wire export: infer destination from Earning metadata
+- b51be5a Enable PayPal payout submission; add mission and agent exports
+- bc76245 Implement autonomy guidelines in autonomous daemon
+- 419444e Base44 system: offline mode + payout batching
+
+Latest safeguards (this workspace):
+- PayPal submit now refuses to mark a batch submitted unless PayPal returned a real payout_batch_id.
+- PayPal submit now refuses to run if PayPal is configured for sandbox while live mode is enabled.
+
+Verification:
+- npm test: PASS (29/29)
