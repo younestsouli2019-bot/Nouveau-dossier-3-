@@ -23,7 +23,7 @@ function shouldWriteToBase44() {
 }
 
 function requireLiveMode(reason) {
-  const live = (process.env.SWARM_LIVE ?? "true").toLowerCase() === "true";
+  const live = (process.env.SWARM_LIVE ?? "false").toLowerCase() === "true";
   if (!live) throw new Error(`Refusing live operation without SWARM_LIVE=true (${reason})`);
 }
 

@@ -9,6 +9,23 @@ import {
 import { maybeSendAlert } from "./alerts.mjs";
 import { createDedupeStore } from "./dedupe-store.mjs";
 
+function parseArgs(argv) {
+  const args = {};
+  for (let i = 2; i < argv.length; i++) {
+    const a = argv[i];
+    if (!a.startsWith("--")) continue;
+    const key = a.slice(2);
+    const next = argv[i + 1];
+    if (!next || next.startsWith("--")) {
+      args[key] = true;
+    } else {
+      args[key] = next;
+      i++;
+    }
+  }
+  return args;
+}
+
 function getEnvOrThrow(name) {
   const v = process.env[name];
   if (!v) throw new Error(`Missing required env var: ${name}`);
@@ -22,7 +39,7 @@ function getEnvBool(name, defaultValue = false) {
 }
 
 function requireLiveMode(reason) {
-  if (!getEnvBool("SWARM_LIVE", true)) {
+  if (!getEnvBool("SWARM_LIVE", false)) {
     throw new Error(`Refusing live operation without SWARM_LIVE=true (${reason})`);
   }
 }
@@ -80,6 +97,10 @@ function shouldWritePayoutStatusFromPayPal() {
   return (process.env.BASE44_ENABLE_PAYPAL_PAYOUT_STATUS_WRITE ?? "false").toLowerCase() === "true";
 }
 
+function shouldWritePayoutLedger() {
+  return (process.env.BASE44_ENABLE_PAYOUT_LEDGER_WRITE ?? "false").toLowerCase() === "true";
+}
+
 function shouldAlertOnWebhookErrors() {
   return (process.env.BASE44_ENABLE_ALERTS_ON_WEBHOOK_ERRORS ?? "false").toLowerCase() === "true";
 }
@@ -135,10 +156,51 @@ function validateConfig() {
     getEnvOrThrow("BASE44_SERVICE_TOKEN");
   }
 
+  if (wantWritePayoutStatus && !shouldWritePayoutLedger()) {
+    throw new Error("Refusing payout status writes without BASE44_ENABLE_PAYOUT_LEDGER_WRITE=true");
+  }
+
   if (wantAlerts || wantPayoutFailureAlerts) {
     getEnvOrThrow("BASE44_APP_ID");
     getEnvOrThrow("BASE44_SERVICE_TOKEN");
   }
+}
+
+function getConfigCheck() {
+  const missing = [];
+  const have = (name) => {
+    const v = process.env[name];
+    return v != null && String(v).trim() !== "";
+  };
+
+  if (!have("PAYPAL_WEBHOOK_ID")) missing.push("PAYPAL_WEBHOOK_ID");
+  if (!have("PAYPAL_CLIENT_ID")) missing.push("PAYPAL_CLIENT_ID");
+  if (!have("PAYPAL_CLIENT_SECRET")) missing.push("PAYPAL_CLIENT_SECRET");
+
+  const wantWriteEvent = shouldWriteToBase44();
+  const wantWriteRevenue = shouldWriteRevenueFromPayPal();
+  const wantWritePayoutStatus = shouldWritePayoutStatusFromPayPal();
+  const wantWriteMetrics = shouldWriteMetricsToBase44();
+  const wantAlerts = shouldAlertOnWebhookErrors() || shouldAlertOnPayoutFailures();
+  const anyWrites = wantWriteEvent || wantWriteRevenue || wantWriteMetrics || wantWritePayoutStatus;
+
+  if (anyWrites && String(process.env.SWARM_LIVE ?? "false").toLowerCase() !== "true") missing.push("SWARM_LIVE");
+  if ((anyWrites || wantAlerts) && (!have("BASE44_APP_ID") || !have("BASE44_SERVICE_TOKEN"))) missing.push("BASE44_APP_ID/BASE44_SERVICE_TOKEN");
+  if (wantWritePayoutStatus && !shouldWritePayoutLedger()) missing.push("BASE44_ENABLE_PAYOUT_LEDGER_WRITE");
+
+  return {
+    ok: missing.length === 0,
+    missing,
+    flags: {
+      SWARM_LIVE: String(process.env.SWARM_LIVE ?? "false").toLowerCase() === "true",
+      BASE44_ENABLE_PAYPAL_WEBHOOK_WRITE: wantWriteEvent,
+      BASE44_ENABLE_REVENUE_FROM_PAYPAL: wantWriteRevenue,
+      BASE44_ENABLE_PAYPAL_PAYOUT_STATUS_WRITE: wantWritePayoutStatus,
+      BASE44_ENABLE_PAYPAL_METRICS: wantWriteMetrics,
+      BASE44_ENABLE_ALERTS_ON_WEBHOOK_ERRORS: shouldAlertOnWebhookErrors(),
+      BASE44_ENABLE_ALERTS_ON_PAYOUT_FAILURES: shouldAlertOnPayoutFailures()
+    }
+  };
 }
 
 function getMetricsConfig() {
@@ -260,7 +322,9 @@ function mapPayPalWebhookToPayoutItemUpdate(evt) {
     paypalStatus: paypalStatus != null ? String(paypalStatus) : null,
     processedAt: String(processedAt),
     status,
-    errorMessage
+    errorMessage,
+    webhookEventId: evt?.id != null ? String(evt.id) : null,
+    webhookEventType: type || null
   };
 }
 
@@ -299,6 +363,27 @@ async function applyPayoutItemUpdate(base44, update) {
   const revenueEventId = payoutItemCfg.fieldMap.revenueEventId ? item?.[payoutItemCfg.fieldMap.revenueEventId] : null;
   const batchId = payoutItemCfg.fieldMap.batchId ? item?.[payoutItemCfg.fieldMap.batchId] : null;
 
+  if (batchId && payoutBatchCfg.fieldMap.notes) {
+    const batch = await findOneBy(batchEntity, { [payoutBatchCfg.fieldMap.batchId]: batchId }).catch(() => null);
+    if (batch?.id) {
+      const existingNotes = batch?.[payoutBatchCfg.fieldMap.notes] ?? {};
+      const mergedNotes =
+        existingNotes && typeof existingNotes === "object" && !Array.isArray(existingNotes)
+          ? {
+              ...existingNotes,
+              paypal_synced_at: new Date().toISOString(),
+              paypal_webhook_last_event_id: update.webhookEventId ?? null,
+              paypal_webhook_last_event_type: update.webhookEventType ?? null
+            }
+          : {
+              paypal_synced_at: new Date().toISOString(),
+              paypal_webhook_last_event_id: update.webhookEventId ?? null,
+              paypal_webhook_last_event_type: update.webhookEventType ?? null
+            };
+      await batchEntity.update(batch.id, { [payoutBatchCfg.fieldMap.notes]: mergedNotes }).catch(() => null);
+    }
+  }
+
   let revenueUpdated = false;
   if (update.status === "success" && revenueEventId && revenueCfg.fieldMap.status) {
     const revPatch = { [revenueCfg.fieldMap.status]: "paid_out" };
@@ -328,20 +413,25 @@ async function applyPayoutItemUpdate(base44, update) {
   }
 
   let batchCompleted = false;
+  let batchFailed = false;
   if (batchId) {
     const items = await itemEntity.filter({ [payoutItemCfg.fieldMap.batchId]: batchId }, "-created_date", 500, 0);
     const allFinal = Array.isArray(items) && items.length > 0
       ? items.every((it) => isFinalItemStatus(it?.[payoutItemCfg.fieldMap.status] ?? null))
+      : false;
+    const allSuccess = Array.isArray(items) && items.length > 0
+      ? items.every((it) => (it?.[payoutItemCfg.fieldMap.status] ?? null) === "success")
       : false;
     if (allFinal && payoutBatchCfg.fieldMap.status) {
       const batch = await findOneBy(batchEntity, { [payoutBatchCfg.fieldMap.batchId]: batchId });
       if (batch?.id) {
         const completedAt = new Date().toISOString();
         await batchEntity.update(batch.id, {
-          [payoutBatchCfg.fieldMap.status]: "completed",
+          [payoutBatchCfg.fieldMap.status]: allSuccess ? "completed" : "failed",
           ...(payoutBatchCfg.fieldMap.completedAt ? { [payoutBatchCfg.fieldMap.completedAt]: completedAt } : {})
         });
-        batchCompleted = true;
+        batchCompleted = allSuccess;
+        batchFailed = !allSuccess;
       }
     }
   }
@@ -353,7 +443,8 @@ async function applyPayoutItemUpdate(base44, update) {
     payoutItemStatus: update.status,
     revenueUpdated,
     txCreatedId,
-    batchCompleted
+    batchCompleted,
+    batchFailed
   };
 }
 
@@ -441,32 +532,38 @@ async function writeMetricToBase44(base44, evt, { kind, ok, summaryExtra = null 
 
 let lastWebhookAlertAt = 0;
 
-validateConfig();
+const args = parseArgs(process.argv);
+if (args.check === true || args["config-check"] === true) {
+  const out = getConfigCheck();
+  process.stdout.write(`${JSON.stringify({ ok: out.ok, config: out })}\n`);
+  process.exitCode = out.ok ? 0 : 1;
+} else {
+  validateConfig();
 
-const dedupeStore = createDedupeStore({
-  filePath: getWebhookDedupeStorePath(),
-  ttlMs: getWebhookDedupeTtlMs(),
-  maxEntries: getWebhookDedupeMaxEntries(),
-  flushIntervalMs: getWebhookDedupeFlushIntervalMs()
-});
-await dedupeStore.load().catch(() => {});
-dedupeStore.start();
+  const dedupeStore = createDedupeStore({
+    filePath: getWebhookDedupeStorePath(),
+    ttlMs: getWebhookDedupeTtlMs(),
+    maxEntries: getWebhookDedupeMaxEntries(),
+    flushIntervalMs: getWebhookDedupeFlushIntervalMs()
+  });
+  await dedupeStore.load().catch(() => {});
+  dedupeStore.start();
 
-function attachFlushOnSignals() {
-  if (!dedupeStore.stats().enabled) return;
-  const shutdown = async (code) => {
-    try {
-      await dedupeStore.flush();
-    } catch {}
-    process.exit(code);
-  };
-  process.once("SIGINT", () => shutdown(0));
-  process.once("SIGTERM", () => shutdown(0));
-}
+  function attachFlushOnSignals() {
+    if (!dedupeStore.stats().enabled) return;
+    const shutdown = async (code) => {
+      try {
+        await dedupeStore.flush();
+      } catch {}
+      process.exit(code);
+    };
+    process.once("SIGINT", () => shutdown(0));
+    process.once("SIGTERM", () => shutdown(0));
+  }
 
-attachFlushOnSignals();
+  attachFlushOnSignals();
 
-const server = http.createServer(async (req, res) => {
+  const server = http.createServer(async (req, res) => {
   const startMs = Date.now();
   try {
     const pathname = getPathname(req);
@@ -474,7 +571,7 @@ const server = http.createServer(async (req, res) => {
     if (pathname === "/health") {
       json(res, 200, {
         ok: true,
-        live: getEnvBool("SWARM_LIVE", true),
+        live: getEnvBool("SWARM_LIVE", false),
         dedupe: dedupeStore.stats()
       });
       return;
@@ -731,11 +828,12 @@ const server = http.createServer(async (req, res) => {
     }
     json(res, 500, { ok: false, error: e?.message ?? String(e), processingMs: Date.now() - startMs });
   }
-});
+  });
 
-const port = Number(process.env.PORT ?? "8787");
-server.listen(port, () => {
-  process.stdout.write(
-    `${JSON.stringify({ ok: true, listening: true, port, path: "/paypal/webhook" })}\n`
-  );
-});
+  const port = Number(process.env.PORT ?? "8787");
+  server.listen(port, () => {
+    process.stdout.write(
+      `${JSON.stringify({ ok: true, listening: true, port, path: "/paypal/webhook" })}\n`
+    );
+  });
+}

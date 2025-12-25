@@ -76,7 +76,7 @@ async function main() {
     throw new Error("Refusing to create live PayPal orders without PAYPAL_ENABLE_ORDER_CREATE=true");
   }
 
-  if (!getEnvBool("SWARM_LIVE", "true")) {
+  if (!getEnvBool("SWARM_LIVE")) {
     throw new Error("Refusing live operation without SWARM_LIVE=true (create PayPal order)");
   }
 

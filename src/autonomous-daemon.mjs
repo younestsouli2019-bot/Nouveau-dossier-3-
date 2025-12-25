@@ -154,6 +154,8 @@ function defaultConfig() {
       dryRun: true,
       minAvailableBalance: 0,
       windowUtc: { startHourUtc: 0, endHourUtc: 0 },
+      syncPayPalLimit: 25,
+      syncPayPalMinAgeMinutes: 10,
       autoApprove: { enabled: false, pendingAgeMinutes: 120, maxBatchAmount: null, totp: null }
     },
     tasks: {
@@ -163,7 +165,8 @@ function defaultConfig() {
       reportStuckPayouts: true,
       createPayoutBatches: false,
       autoApprovePayoutBatches: false,
-      autoSubmitPayPalPayoutBatches: false
+      autoSubmitPayPalPayoutBatches: false,
+      syncPayPalLedgerBatches: false
     },
     alerts: {
       enabled: false,
@@ -223,6 +226,19 @@ function resolveRuntimeConfig(args, fileCfg) {
     0
   );
 
+  const syncPayPalLedgerEnabled =
+    args["sync-paypal-ledger"] === true ||
+    getEnvBool("AUTONOMOUS_SYNC_PAYPAL_LEDGER", false) ||
+    cfg.tasks?.syncPayPalLedgerBatches === true;
+  const syncPayPalLimit = normalizeNumber(
+    args["sync-paypal-limit"] ?? process.env.AUTONOMOUS_SYNC_PAYPAL_LIMIT ?? cfg.payout?.syncPayPalLimit ?? 25,
+    25
+  );
+  const syncPayPalMinAgeMinutes = normalizeNumber(
+    args["sync-paypal-min-age-minutes"] ?? process.env.AUTONOMOUS_SYNC_PAYPAL_MIN_AGE_MINUTES ?? cfg.payout?.syncPayPalMinAgeMinutes ?? 10,
+    10
+  );
+
   const autoApproveEnabled =
     args["auto-approve-payouts"] === true ||
     getEnvBool("AUTONOMOUS_AUTO_APPROVE_PAYOUTS", false) ||
@@ -235,7 +251,7 @@ function resolveRuntimeConfig(args, fileCfg) {
     args["auto-approve-max-batch-amount"] ?? process.env.AUTONOMOUS_AUTO_APPROVE_MAX_BATCH_AMOUNT ?? cfg.payout?.autoApprove?.maxBatchAmount ?? "",
     null
   );
-  const totp = (args.totp ?? args["totp"] ?? process.env.AUTONOMOUS_PAYOUT_TOTP ?? cfg.payout?.autoApprove?.totp ?? null) || null;
+  const totp = (args.totp ?? args["totp"] ?? process.env.AUTONOMOUS_PAYOUT_TOTP ?? null) || null;
 
   const requirePayPal =
     args["require-paypal"] === true ||
@@ -258,6 +274,8 @@ function resolveRuntimeConfig(args, fileCfg) {
       dryRun: payoutDryRun,
       minAvailableBalance: Number(minAvailableBalance ?? 0),
       windowUtc: { startHourUtc, endHourUtc },
+      syncPayPalLimit: Number(syncPayPalLimit ?? 25),
+      syncPayPalMinAgeMinutes: Number(syncPayPalMinAgeMinutes ?? 10),
       autoApprove: {
         enabled: autoApproveEnabled === true,
         pendingAgeMinutes: Number(pendingAgeMinutes ?? 120),
@@ -272,7 +290,8 @@ function resolveRuntimeConfig(args, fileCfg) {
       reportStuckPayouts: cfg.tasks?.reportStuckPayouts !== false,
       createPayoutBatches: cfg.tasks?.createPayoutBatches === true,
       autoApprovePayoutBatches: cfg.tasks?.autoApprovePayoutBatches === true,
-      autoSubmitPayPalPayoutBatches: cfg.tasks?.autoSubmitPayPalPayoutBatches === true
+      autoSubmitPayPalPayoutBatches: cfg.tasks?.autoSubmitPayPalPayoutBatches === true,
+      syncPayPalLedgerBatches: syncPayPalLedgerEnabled === true
     },
     alerts: { enabled: alertsEnabled, cooldownMs: alertCooldownMs },
     state: { path: String(statePath) },
@@ -559,6 +578,7 @@ async function runTick(cfg, state) {
     const batches = Array.isArray(pending?.batches) ? pending.batches : [];
     const nowMs = Date.now();
     const thresholdMs = Math.max(0, Number(cfg.payout.autoApprove.pendingAgeMinutes ?? 120)) * 60 * 1000;
+    const twoFaThreshold = Number(process.env.PAYOUT_APPROVAL_2FA_THRESHOLD ?? "500");
     const approvals = [];
     const needsReview = [];
 
@@ -572,6 +592,14 @@ async function runTick(cfg, state) {
         continue;
       }
       if (nowMs - createdAtMs < thresholdMs) continue;
+      if (amount == null) {
+        needsReview.push({ batchId, reason: "missing_amount" });
+        continue;
+      }
+      if (Number.isFinite(twoFaThreshold) && twoFaThreshold > 0 && amount > twoFaThreshold) {
+        needsReview.push({ batchId, reason: "above_2fa_threshold", amount, threshold: twoFaThreshold });
+        continue;
+      }
       if (cfg.payout.autoApprove.maxBatchAmount != null && amount != null && amount > cfg.payout.autoApprove.maxBatchAmount) {
         needsReview.push({ batchId, reason: "amount_above_max", amount, max: cfg.payout.autoApprove.maxBatchAmount });
         continue;
@@ -621,6 +649,40 @@ async function runTick(cfg, state) {
       }
       out.results.autoSubmitPayPal = { ok: true, attemptedCount: attempts.length, attempts };
     }
+  }
+
+  if (cfg.tasks.syncPayPalLedgerBatches) {
+    const limit = Math.max(1, Math.floor(Number(cfg.payout?.syncPayPalLimit ?? 25)));
+    const minAgeMs = Math.max(0, Number(cfg.payout?.syncPayPalMinAgeMinutes ?? 10)) * 60 * 1000;
+    const truthArgs = [];
+    if (cfg.payout.dryRun) truthArgs.push("--dry-run");
+    truthArgs.push("--export-payout-truth", "--limit", String(limit));
+    const truthRes = await runEmitWithOfflineFallback(truthArgs, cfg);
+    out.results.payoutTruth = truthRes;
+
+    const rows = effectiveOk(truthRes) ? (truthRes.result?.rows ?? []) : [];
+    const nowMs = Date.now();
+    const attempts = [];
+    for (const r of Array.isArray(rows) ? rows : []) {
+      const internalBatchId = r?.internalPayoutBatchId ?? null;
+      const externalProviderId = r?.externalProviderId ?? null;
+      const truthStatus = r?.truthStatus ?? null;
+      if (!internalBatchId) continue;
+      if (!externalProviderId || String(externalProviderId) === "NOT_SUBMITTED") continue;
+      if (String(truthStatus) === "COMPLETED") continue;
+      const lastAt = r?.lastProviderSyncAt ?? null;
+      if (lastAt && minAgeMs > 0) {
+        const ms = Date.parse(String(lastAt));
+        if (!Number.isNaN(ms) && nowMs - ms < minAgeMs) continue;
+      }
+
+      const syncArgs = [];
+      if (cfg.payout.dryRun) syncArgs.push("--dry-run");
+      syncArgs.push("--sync-paypal-ledger-batch", "--batch-id", String(internalBatchId));
+      const res = await runEmitWithOfflineFallback(syncArgs, cfg);
+      attempts.push({ batchId: String(internalBatchId), res });
+    }
+    out.results.syncPayPalLedger = { ok: true, attemptedCount: attempts.length, attempts };
   }
 
   out.ok = true;

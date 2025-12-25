@@ -5,7 +5,7 @@ import readline from "node:readline";
 import { createBase44RevenueEventIdempotent, getRevenueConfigFromEnv } from "./base44-revenue.mjs";
 import { createBase44EarningIdempotent, getEarningConfigFromEnv } from "./base44-earning.mjs";
 import { buildBase44Client } from "./base44-client.mjs";
-import { createPayPalPayoutBatch } from "./paypal-api.mjs";
+import { createPayPalPayoutBatch, getPayoutBatchDetails } from "./paypal-api.mjs";
 
 function parseArgs(argv) {
   const args = {};
@@ -81,7 +81,7 @@ function getEnvOrThrow(name) {
 }
 
 function requireLiveMode(reason) {
-  const live = (process.env.SWARM_LIVE ?? "true").toLowerCase() === "true";
+  const live = (process.env.SWARM_LIVE ?? "false").toLowerCase() === "true";
   if (!live) throw new Error(`Refusing live operation without SWARM_LIVE=true (${reason})`);
 }
 
@@ -260,6 +260,10 @@ function shouldWritePayoutLedger() {
   return (process.env.BASE44_ENABLE_PAYOUT_LEDGER_WRITE ?? "false").toLowerCase() === "true";
 }
 
+function shouldWritePayPalPayoutStatus() {
+  return (process.env.BASE44_ENABLE_PAYPAL_PAYOUT_STATUS_WRITE ?? "false").toLowerCase() === "true";
+}
+
 function parseDateMs(value) {
   const t = Date.parse(String(value ?? ""));
   return Number.isNaN(t) ? null : t;
@@ -432,6 +436,36 @@ function makeStableBatchId({ settlementId, beneficiary, recipientType, currency,
 function makeStableItemId({ earningId, batchId, day }) {
   const h = sha256Hex(`${batchId}|${earningId}`).slice(0, 12).toUpperCase();
   return `PAYITEM-${day}-${h}`;
+}
+
+function makeProofOfLifeBatchId({ recipientType, recipient, amount, currency, day }) {
+  const base = JSON.stringify({
+    kind: "proof_of_life",
+    recipientType: recipientType ?? null,
+    recipient: recipient ?? null,
+    amount: amount ?? null,
+    currency: currency ?? null
+  });
+  const h = sha256Hex(base).slice(0, 10).toUpperCase();
+  return `PROOF-${day}-${h}`;
+}
+
+function makeProofOfLifeItemId({ batchId, recipient, amount, currency, day }) {
+  const base = JSON.stringify({
+    kind: "proof_of_life_item",
+    batchId: batchId ?? null,
+    recipient: recipient ?? null,
+    amount: amount ?? null,
+    currency: currency ?? null
+  });
+  const h = sha256Hex(base).slice(0, 12).toUpperCase();
+  return `PROOFITEM-${day}-${h}`;
+}
+
+function normalizeMoneyAmount(value, fallback) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return fallback;
+  return Number(n.toFixed(2));
 }
 
 async function listAll(entity, { fields = null, pageSize = 200, sort = "-created_date" } = {}) {
@@ -901,6 +935,11 @@ async function submitPayPalPayoutBatch(base44, { batchId, args, dryRun }) {
 
   if (!shouldWritePayoutLedger()) throw new Error("Refusing submit without BASE44_ENABLE_PAYOUT_LEDGER_WRITE=true");
   requireLiveMode("submit PayPal payout batch");
+  const paypalMode = String(process.env.PAYPAL_MODE ?? "live").toLowerCase();
+  const paypalBase = String(process.env.PAYPAL_API_BASE_URL ?? "");
+  if (paypalMode === "sandbox" || paypalBase.toLowerCase().includes("sandbox.paypal.com")) {
+    throw new Error("Refusing PayPal payout submit while PayPal is configured for sandbox");
+  }
 
   const paypalItems = mapped.map((x) => ({
     recipient_type: "EMAIL",
@@ -917,13 +956,25 @@ async function submitPayPalPayoutBatch(base44, { batchId, args, dryRun }) {
   });
 
   const paypalBatchId = response?.batch_header?.payout_batch_id ?? null;
+  if (!paypalBatchId) {
+    throw new Error("PayPal create payout response missing batch_header.payout_batch_id");
+  }
   const submittedAt = new Date().toISOString();
 
   const existingNotes = payoutBatchCfg.fieldMap.notes ? (rec?.[payoutBatchCfg.fieldMap.notes] ?? {}) : null;
   const mergedNotes =
     existingNotes && typeof existingNotes === "object" && !Array.isArray(existingNotes)
-      ? { ...existingNotes, paypal_payout_batch_id: paypalBatchId }
-      : { paypal_payout_batch_id: paypalBatchId };
+      ? {
+          ...existingNotes,
+          paypal_payout_batch_id: String(paypalBatchId),
+          paypal_batch_status: response?.batch_header?.batch_status ?? existingNotes?.paypal_batch_status ?? null,
+          paypal_time_created: response?.batch_header?.time_created ?? existingNotes?.paypal_time_created ?? null
+        }
+      : {
+          paypal_payout_batch_id: String(paypalBatchId),
+          paypal_batch_status: response?.batch_header?.batch_status ?? null,
+          paypal_time_created: response?.batch_header?.time_created ?? null
+        };
 
   await batchEntity.update(rec.id, {
     ...(payoutBatchCfg.fieldMap.status ? { [payoutBatchCfg.fieldMap.status]: "submitted_to_paypal" } : {}),
@@ -941,7 +992,7 @@ async function submitPayPalPayoutBatch(base44, { batchId, args, dryRun }) {
   const respItems = Array.isArray(response?.items) ? response.items : [];
   for (const ri of respItems) {
     const payoutItemId = ri?.payout_item_id ?? ri?.payout_item?.payout_item_id ?? null;
-    const senderItemId = ri?.payout_item?.sender_item_id ?? ri?.payout_item?.sender_item_id ?? null;
+    const senderItemId = ri?.payout_item?.sender_item_id ?? ri?.sender_item_id ?? null;
     const transactionStatus = ri?.transaction_status ?? ri?.payout_item?.transaction_status ?? null;
     const internalId = senderItemId ? bySenderId.get(String(senderItemId)) : null;
     if (!internalId) continue;
@@ -956,6 +1007,462 @@ async function submitPayPalPayoutBatch(base44, { batchId, args, dryRun }) {
     batchId: String(batchId),
     submittedAt,
     paypalBatchId
+  };
+}
+
+async function ensureProofOfLifePayout(base44, { recipientType, recipient, amount, currency, batchId, dryRun }) {
+  const payoutBatchCfg = getPayoutBatchConfigFromEnv();
+  const payoutItemCfg = getPayoutItemConfigFromEnv();
+  const batchEntity = base44.asServiceRole.entities[payoutBatchCfg.entityName];
+  const itemEntity = base44.asServiceRole.entities[payoutItemCfg.entityName];
+
+  const day = formatDay();
+  const proofAmount = normalizeMoneyAmount(amount, 0.01);
+  const proofCurrency = String(currency ?? "USD");
+  const proofRecipientType = normalizeRecipientType(recipientType ?? "paypal", "paypal");
+  const proofRecipient = String(recipient ?? "").trim();
+  if (!proofRecipient) throw new Error("Missing recipient for proof-of-life payout");
+
+  const proofBatchId =
+    batchId != null && String(batchId).trim()
+      ? String(batchId).trim()
+      : makeProofOfLifeBatchId({
+          recipientType: proofRecipientType,
+          recipient: proofRecipient,
+          amount: proofAmount,
+          currency: proofCurrency,
+          day
+        });
+
+  const proofItemId = makeProofOfLifeItemId({
+    batchId: proofBatchId,
+    recipient: proofRecipient,
+    amount: proofAmount,
+    currency: proofCurrency,
+    day
+  });
+
+  if (dryRun) {
+    return {
+      dryRun: true,
+      batchId: proofBatchId,
+      itemId: proofItemId,
+      recipientType: proofRecipientType,
+      recipient: proofRecipient,
+      amount: proofAmount,
+      currency: proofCurrency
+    };
+  }
+
+  const existingBatch = await findOneBy(batchEntity, { [payoutBatchCfg.fieldMap.batchId]: proofBatchId });
+  const batch =
+    existingBatch?.id
+      ? existingBatch
+      : await batchEntity.create({
+          [payoutBatchCfg.fieldMap.batchId]: proofBatchId,
+          [payoutBatchCfg.fieldMap.totalAmount]: proofAmount,
+          [payoutBatchCfg.fieldMap.currency]: proofCurrency,
+          [payoutBatchCfg.fieldMap.status]: "pending_approval",
+          ...(payoutBatchCfg.fieldMap.notes
+            ? {
+                [payoutBatchCfg.fieldMap.notes]: {
+                  recipient_type: proofRecipientType,
+                  proof_of_life: true,
+                  recipient: proofRecipient,
+                  amount: proofAmount,
+                  currency: proofCurrency,
+                  created_by: "emit-revenue-events"
+                }
+              }
+            : {})
+        });
+
+  const existingItem = await findOneBy(itemEntity, { [payoutItemCfg.fieldMap.itemId]: proofItemId });
+  const item =
+    existingItem?.id
+      ? existingItem
+      : await itemEntity.create({
+          [payoutItemCfg.fieldMap.itemId]: proofItemId,
+          [payoutItemCfg.fieldMap.batchId]: proofBatchId,
+          [payoutItemCfg.fieldMap.recipient]: proofRecipient,
+          [payoutItemCfg.fieldMap.recipientType]: proofRecipientType,
+          [payoutItemCfg.fieldMap.amount]: proofAmount,
+          [payoutItemCfg.fieldMap.currency]: proofCurrency,
+          [payoutItemCfg.fieldMap.status]: "pending"
+        });
+
+  return {
+    dryRun: false,
+    batchId: proofBatchId,
+    batchInternalId: batch?.id ?? null,
+    itemId: proofItemId,
+    itemInternalId: item?.id ?? null,
+    recipientType: proofRecipientType,
+    recipient: proofRecipient,
+    amount: proofAmount,
+    currency: proofCurrency
+  };
+}
+
+function mapPayPalTransactionStatusToLedgerStatus(value) {
+  const t = String(value ?? "").trim().toUpperCase();
+  if (!t) return null;
+  if (t.includes("SUCCESS")) return "success";
+  if (t.includes("UNCLAIMED")) return "unclaimed";
+  if (t.includes("REFUNDED")) return "refunded";
+  if (t.includes("FAILED")) return "failed";
+  if (t.includes("RETURNED")) return "failed";
+  if (t.includes("BLOCKED")) return "failed";
+  if (t.includes("DENIED")) return "failed";
+  if (t.includes("PENDING")) return "processing";
+  return "processing";
+}
+
+async function findPayoutBatchByBatchId(base44, batchId) {
+  const payoutBatchCfg = getPayoutBatchConfigFromEnv();
+  const batchEntity = base44.asServiceRole.entities[payoutBatchCfg.entityName];
+  return findOneBy(batchEntity, { [payoutBatchCfg.fieldMap.batchId]: String(batchId) });
+}
+
+async function findPayoutBatchByPayPalBatchId(base44, paypalBatchId) {
+  const payoutBatchCfg = getPayoutBatchConfigFromEnv();
+  const batchEntity = base44.asServiceRole.entities[payoutBatchCfg.entityName];
+  const fields = ["id", payoutBatchCfg.fieldMap.batchId, payoutBatchCfg.fieldMap.notes].filter(Boolean);
+  const batches = await listAll(batchEntity, { fields, pageSize: 250 });
+  for (const b of batches) {
+    const notes = payoutBatchCfg.fieldMap.notes ? b?.[payoutBatchCfg.fieldMap.notes] : null;
+    const pid = notes?.paypal_payout_batch_id ?? notes?.paypalPayoutBatchId ?? null;
+    if (pid && String(pid) === String(paypalBatchId)) return b;
+  }
+  return null;
+}
+
+async function syncPayPalBatchToLedger(base44, { batchId, paypalBatchId, dryRun }) {
+  const payoutBatchCfg = getPayoutBatchConfigFromEnv();
+  const payoutItemCfg = getPayoutItemConfigFromEnv();
+  const revenueCfg = getRevenueConfigFromEnv();
+
+  const batchEntity = base44.asServiceRole.entities[payoutBatchCfg.entityName];
+  const itemEntity = base44.asServiceRole.entities[payoutItemCfg.entityName];
+  const revenueEntity = base44.asServiceRole.entities[revenueCfg.entityName];
+
+  const batch =
+    batchId != null
+      ? await findPayoutBatchByBatchId(base44, batchId)
+      : paypalBatchId != null
+        ? await findPayoutBatchByPayPalBatchId(base44, paypalBatchId)
+        : null;
+  if (!batch?.id) throw new Error("PayoutBatch not found");
+
+  const notes = payoutBatchCfg.fieldMap.notes ? batch?.[payoutBatchCfg.fieldMap.notes] : null;
+  const recipientType = notes?.recipient_type ?? notes?.recipientType ?? null;
+  if (normalizeRecipientType(recipientType, "paypal") !== "paypal") {
+    throw new Error(`Refusing PayPal sync for non-paypal batch (recipient_type=${String(recipientType ?? "")})`);
+  }
+
+  const paypalId = notes?.paypal_payout_batch_id ?? notes?.paypalPayoutBatchId ?? null;
+  if (!paypalId) {
+    return { ok: true, synced: false, reason: "missing_paypal_payout_batch_id", batchId: batch?.[payoutBatchCfg.fieldMap.batchId] ?? null };
+  }
+
+  const details = await getPayoutBatchDetails(String(paypalId));
+  const respItems = Array.isArray(details?.items) ? details.items : [];
+
+  const items = await getPayoutItemsForBatch(base44, batch?.[payoutBatchCfg.fieldMap.batchId] ?? batchId);
+  const bySenderItemId = new Map();
+  for (const it of items) {
+    const sid = payoutItemCfg.fieldMap.itemId ? it?.[payoutItemCfg.fieldMap.itemId] : null;
+    if (!sid || !it?.id) continue;
+    bySenderItemId.set(String(sid), it);
+  }
+
+  const updates = [];
+  const revenueUpdates = [];
+  for (const ri of respItems) {
+    const payoutItemId = ri?.payout_item_id ?? ri?.payout_item?.payout_item_id ?? null;
+    const senderItemId = ri?.payout_item?.sender_item_id ?? null;
+    const transactionStatus = ri?.transaction_status ?? ri?.payout_item?.transaction_status ?? null;
+    const transactionId = ri?.transaction_id ?? ri?.payout_item?.transaction_id ?? null;
+    const timeProcessed = ri?.time_processed ?? ri?.time_completed ?? details?.batch_header?.time_completed ?? null;
+
+    if (!senderItemId) continue;
+    const internal = bySenderItemId.get(String(senderItemId));
+    if (!internal?.id) continue;
+
+    const ledgerStatus = mapPayPalTransactionStatusToLedgerStatus(transactionStatus);
+
+    const patch = {
+      ...(payoutItemCfg.fieldMap.status && ledgerStatus ? { [payoutItemCfg.fieldMap.status]: ledgerStatus } : {}),
+      ...(payoutItemCfg.fieldMap.paypalStatus && transactionStatus ? { [payoutItemCfg.fieldMap.paypalStatus]: String(transactionStatus) } : {}),
+      ...(payoutItemCfg.fieldMap.paypalTransactionId && transactionId ? { [payoutItemCfg.fieldMap.paypalTransactionId]: String(transactionId) } : {}),
+      ...(payoutItemCfg.fieldMap.paypalItemId && payoutItemId ? { [payoutItemCfg.fieldMap.paypalItemId]: String(payoutItemId) } : {}),
+      ...(payoutItemCfg.fieldMap.processedAt && timeProcessed ? { [payoutItemCfg.fieldMap.processedAt]: String(timeProcessed) } : {})
+    };
+
+    updates.push({ senderItemId: String(senderItemId), internalId: String(internal.id), patch });
+
+    if (ledgerStatus === "success" && payoutItemCfg.fieldMap.revenueEventId && revenueCfg.fieldMap.status) {
+      const revenueEventId = internal?.[payoutItemCfg.fieldMap.revenueEventId] ?? null;
+      if (revenueEventId) {
+        revenueUpdates.push({
+          revenueEventId: String(revenueEventId),
+          patch: {
+            [revenueCfg.fieldMap.status]: "paid_out",
+            ...(revenueCfg.fieldMap.payoutBatchId
+              ? { [revenueCfg.fieldMap.payoutBatchId]: batch?.[payoutBatchCfg.fieldMap.batchId] ?? null }
+              : {})
+          }
+        });
+      }
+    }
+  }
+
+  const batchStatus = details?.batch_header?.batch_status ?? null;
+  const timeCompleted = details?.batch_header?.time_completed ?? null;
+  const existingNotes = payoutBatchCfg.fieldMap.notes ? (batch?.[payoutBatchCfg.fieldMap.notes] ?? {}) : null;
+  const mergedNotes =
+    existingNotes && typeof existingNotes === "object" && !Array.isArray(existingNotes)
+      ? {
+          ...existingNotes,
+          paypal_batch_status: batchStatus,
+          paypal_time_completed: timeCompleted,
+          paypal_synced_at: new Date().toISOString()
+        }
+      : { paypal_batch_status: batchStatus, paypal_time_completed: timeCompleted, paypal_synced_at: new Date().toISOString() };
+
+  const batchPatch = {
+    ...(payoutBatchCfg.fieldMap.notes ? { [payoutBatchCfg.fieldMap.notes]: mergedNotes } : {})
+  };
+
+  if (!dryRun) {
+    if (!shouldWritePayPalPayoutStatus()) throw new Error("Refusing PayPal sync without BASE44_ENABLE_PAYPAL_PAYOUT_STATUS_WRITE=true");
+    if (!shouldWritePayoutLedger()) throw new Error("Refusing PayPal sync without BASE44_ENABLE_PAYOUT_LEDGER_WRITE=true");
+    requireLiveMode("sync PayPal payout batch to ledger");
+
+    for (const u of updates) {
+      if (!u.internalId) continue;
+      await itemEntity.update(u.internalId, u.patch).catch(() => null);
+    }
+
+    for (const r of revenueUpdates) {
+      await revenueEntity.update(r.revenueEventId, r.patch).catch(() => null);
+    }
+
+    if (payoutBatchCfg.fieldMap.notes && batch?.id) {
+      await batchEntity.update(batch.id, batchPatch).catch(() => null);
+    }
+
+    if (batchStatus && String(batchStatus).toUpperCase().includes("SUCCESS")) {
+      const updatedItems = await getPayoutItemsForBatch(base44, batch?.[payoutBatchCfg.fieldMap.batchId] ?? batchId);
+      const allFinal = Array.isArray(updatedItems) && updatedItems.length > 0
+        ? updatedItems.every((it) => {
+            const st = payoutItemCfg.fieldMap.status ? it?.[payoutItemCfg.fieldMap.status] : null;
+            return st === "success" || st === "failed" || st === "refunded" || st === "unclaimed" || st === "cancelled";
+          })
+        : false;
+      const allSuccess = Array.isArray(updatedItems) && updatedItems.length > 0
+        ? updatedItems.every((it) => (payoutItemCfg.fieldMap.status ? it?.[payoutItemCfg.fieldMap.status] : null) === "success")
+        : false;
+      if (allFinal && payoutBatchCfg.fieldMap.status && batch?.id) {
+        const completedAt = new Date().toISOString();
+        await batchEntity.update(batch.id, {
+          [payoutBatchCfg.fieldMap.status]: allSuccess ? "completed" : "failed",
+          ...(payoutBatchCfg.fieldMap.completedAt ? { [payoutBatchCfg.fieldMap.completedAt]: completedAt } : {})
+        }).catch(() => null);
+      }
+    }
+  }
+
+  return {
+    ok: true,
+    synced: !dryRun,
+    dryRun: !!dryRun,
+    internalBatchId: batch?.[payoutBatchCfg.fieldMap.batchId] ?? null,
+    paypalBatchId: String(paypalId),
+    paypalBatchStatus: batchStatus,
+    payoutItemCount: items.length,
+    paypalItemCount: respItems.length,
+    matchedCount: updates.length
+  };
+}
+
+function coalesceIsoTimestamp(values) {
+  let bestMs = null;
+  let bestIso = null;
+  for (const v of values) {
+    const ms = parseDateMs(v);
+    if (ms == null) continue;
+    if (bestMs == null || ms > bestMs) {
+      bestMs = ms;
+      bestIso = new Date(ms).toISOString();
+    }
+  }
+  return bestIso;
+}
+
+function computeTruthSourceForBatch({ externalProviderId, notes, anyPayPalSignals }) {
+  if (!externalProviderId || externalProviderId === "NOT_SUBMITTED") return "ledger";
+  if (notes?.paypal_batch_status != null || notes?.paypal_time_completed != null || notes?.paypal_synced_at != null) return "paypal_api";
+  if (anyPayPalSignals) return "paypal_webhook";
+  return "ledger";
+}
+
+function computeTruthStatusForBatch({ externalProviderId, notes, itemStatuses }) {
+  if (!externalProviderId || externalProviderId === "NOT_SUBMITTED") return "SIMULATION / UNEXECUTED";
+  const bs = String(notes?.paypal_batch_status ?? "").toUpperCase();
+  const anyFailed = itemStatuses.some((s) => s === "failed" || s === "refunded" || s === "unclaimed" || s === "cancelled");
+  const anySuccess = itemStatuses.some((s) => s === "success");
+  const allFinal = itemStatuses.length > 0 && itemStatuses.every((s) => s === "success" || s === "failed" || s === "refunded" || s === "unclaimed" || s === "cancelled");
+  const allSuccess = itemStatuses.length > 0 && itemStatuses.every((s) => s === "success");
+  if (bs.includes("SUCCESS") && allSuccess) return "COMPLETED";
+  if (anyFailed && allFinal && !allSuccess) return "FAILED";
+  if (bs.includes("PENDING") || bs.includes("PROCESSING")) return "PROCESSING";
+  if (anySuccess || anyFailed) return "PARTIAL / PROCESSING";
+  return "SUBMITTED / UNCONFIRMED";
+}
+
+async function exportPayoutTruth(base44, { batchId, limit }) {
+  const payoutBatchCfg = getPayoutBatchConfigFromEnv();
+  const payoutItemCfg = getPayoutItemConfigFromEnv();
+  const batchEntity = base44.asServiceRole.entities[payoutBatchCfg.entityName];
+  const itemEntity = base44.asServiceRole.entities[payoutItemCfg.entityName];
+
+  const fields = [
+    "id",
+    payoutBatchCfg.fieldMap.batchId,
+    payoutBatchCfg.fieldMap.status,
+    payoutBatchCfg.fieldMap.submittedAt,
+    payoutBatchCfg.fieldMap.completedAt,
+    payoutBatchCfg.fieldMap.notes,
+    "created_date",
+    "updated_date"
+  ].filter(Boolean);
+  let batches = await listAll(batchEntity, { fields, pageSize: 250 });
+  if (batchId) {
+    batches = batches.filter((b) => String(b?.[payoutBatchCfg.fieldMap.batchId] ?? "") === String(batchId));
+  }
+  if (limit && Number.isFinite(Number(limit)) && Number(limit) > 0) {
+    batches = batches.slice(0, Number(limit));
+  }
+
+  const rows = [];
+  for (const b of batches) {
+    const internalBatchId = payoutBatchCfg.fieldMap.batchId ? b?.[payoutBatchCfg.fieldMap.batchId] : null;
+    const notes = payoutBatchCfg.fieldMap.notes ? b?.[payoutBatchCfg.fieldMap.notes] : null;
+    const externalProviderId = notes?.paypal_payout_batch_id ?? notes?.paypalPayoutBatchId ?? "NOT_SUBMITTED";
+
+    const items = internalBatchId
+      ? await filterAll(itemEntity, { [payoutItemCfg.fieldMap.batchId]: String(internalBatchId) }, { pageSize: 500 })
+      : [];
+    const itemStatuses = items
+      .map((it) => (payoutItemCfg.fieldMap.status ? it?.[payoutItemCfg.fieldMap.status] : null))
+      .filter((x) => x != null)
+      .map((x) => String(x));
+    const anyPayPalSignals = items.some((it) => {
+      const ps = payoutItemCfg.fieldMap.paypalStatus ? it?.[payoutItemCfg.fieldMap.paypalStatus] : null;
+      const pt = payoutItemCfg.fieldMap.paypalTransactionId ? it?.[payoutItemCfg.fieldMap.paypalTransactionId] : null;
+      return !!ps || !!pt;
+    });
+
+    const lastProviderSyncAt = coalesceIsoTimestamp([
+      notes?.paypal_synced_at ?? null,
+      notes?.paypal_time_completed ?? null,
+      ...items.map((it) => (payoutItemCfg.fieldMap.processedAt ? it?.[payoutItemCfg.fieldMap.processedAt] : null))
+    ]);
+
+    const truthSource = computeTruthSourceForBatch({ externalProviderId, notes, anyPayPalSignals });
+    const truthStatus = computeTruthStatusForBatch({ externalProviderId, notes, itemStatuses });
+
+    rows.push({
+      internalPayoutBatchId: internalBatchId,
+      externalProviderId,
+      lastProviderSyncAt,
+      truthSource,
+      truthStatus,
+      ledgerStatus: payoutBatchCfg.fieldMap.status ? b?.[payoutBatchCfg.fieldMap.status] : null
+    });
+  }
+
+  return { ok: true, count: rows.length, rows };
+}
+
+async function repairSubmittedWithoutProviderId(base44, { limit, dryRun }) {
+  const payoutBatchCfg = getPayoutBatchConfigFromEnv();
+  const batchEntity = base44.asServiceRole.entities[payoutBatchCfg.entityName];
+  const fields = [
+    "id",
+    payoutBatchCfg.fieldMap.batchId,
+    payoutBatchCfg.fieldMap.status,
+    payoutBatchCfg.fieldMap.submittedAt,
+    payoutBatchCfg.fieldMap.approvedAt,
+    payoutBatchCfg.fieldMap.notes,
+    "created_date",
+    "updated_date"
+  ].filter(Boolean);
+
+  let batches = await listAll(batchEntity, { fields, pageSize: 250 });
+  if (limit && Number.isFinite(Number(limit)) && Number(limit) > 0) {
+    batches = batches.slice(0, Number(limit));
+  }
+
+  const repaired = [];
+  const skipped = [];
+  const now = new Date().toISOString();
+
+  for (const b of batches) {
+    const ledgerStatus = payoutBatchCfg.fieldMap.status ? b?.[payoutBatchCfg.fieldMap.status] : null;
+    if (ledgerStatus !== "submitted_to_paypal") {
+      skipped.push({ batchId: payoutBatchCfg.fieldMap.batchId ? b?.[payoutBatchCfg.fieldMap.batchId] : null, reason: "not_submitted_to_paypal" });
+      continue;
+    }
+
+    const notes = payoutBatchCfg.fieldMap.notes ? b?.[payoutBatchCfg.fieldMap.notes] : null;
+    const externalProviderId = notes?.paypal_payout_batch_id ?? notes?.paypalPayoutBatchId ?? null;
+    if (externalProviderId) {
+      skipped.push({
+        batchId: payoutBatchCfg.fieldMap.batchId ? b?.[payoutBatchCfg.fieldMap.batchId] : null,
+        reason: "has_paypal_payout_batch_id"
+      });
+      continue;
+    }
+
+    const patchNotesBase = notes && typeof notes === "object" && !Array.isArray(notes) ? { ...notes } : {};
+    const patchNotes = {
+      ...patchNotesBase,
+      truth_enforced_at: now,
+      truth_enforced_reason: "missing_paypal_payout_batch_id",
+      truth_enforced_previous_status: ledgerStatus
+    };
+
+    const patch = {
+      ...(payoutBatchCfg.fieldMap.status ? { [payoutBatchCfg.fieldMap.status]: "approved" } : {}),
+      ...(payoutBatchCfg.fieldMap.submittedAt ? { [payoutBatchCfg.fieldMap.submittedAt]: null } : {}),
+      ...(payoutBatchCfg.fieldMap.approvedAt
+        ? { [payoutBatchCfg.fieldMap.approvedAt]: b?.[payoutBatchCfg.fieldMap.approvedAt] ?? now }
+        : {}),
+      ...(payoutBatchCfg.fieldMap.notes ? { [payoutBatchCfg.fieldMap.notes]: patchNotes } : {})
+    };
+
+    const internalBatchId = payoutBatchCfg.fieldMap.batchId ? b?.[payoutBatchCfg.fieldMap.batchId] : null;
+    if (dryRun) {
+      repaired.push({ dryRun: true, internalPayoutBatchId: internalBatchId, patch });
+      continue;
+    }
+
+    if (!shouldWritePayoutLedger()) {
+      throw new Error("Refusing repair without BASE44_ENABLE_PAYOUT_LEDGER_WRITE=true");
+    }
+
+    const updated = await batchEntity.update(b.id, patch);
+    repaired.push({ dryRun: false, internalPayoutBatchId: internalBatchId, id: updated?.id ?? b.id });
+  }
+
+  return {
+    ok: true,
+    repairedCount: repaired.length,
+    skippedCount: skipped.length,
+    repaired,
+    skipped
   };
 }
 
@@ -1478,6 +1985,104 @@ async function main() {
 
   const base44 = buildBase44Client({ allowMissing: dryRun, mode: shouldUseOfflineMode(args) ? "offline" : "auto" });
 
+  if (args["export-payout-truth"] === true || args.exportPayoutTruth === true) {
+    if (!base44) throw new Error("Missing Base44 client; set BASE44_APP_ID/BASE44_SERVICE_TOKEN or use --offline");
+    const batchId =
+      args["batch-id"] ??
+      args.batchId ??
+      args.batch ??
+      process.env.npm_config_batch_id ??
+      process.env.NPM_CONFIG_BATCH_ID ??
+      null;
+    const out = await exportPayoutTruth(base44, { batchId: batchId != null ? String(batchId) : null, limit });
+    process.stdout.write(
+      `${JSON.stringify({
+        ...out,
+        liveExecutionEnabled: (process.env.SWARM_LIVE ?? "false").toLowerCase() === "true",
+        truthOnlyUiEnabled: (process.env.BASE44_ENABLE_TRUTH_ONLY_UI ?? "false").toLowerCase() === "true"
+      })}\n`
+    );
+    return;
+  }
+
+  if (args["repair-payout-truth"] === true || args.repairPayoutTruth === true) {
+    if (!base44) throw new Error("Missing Base44 client; set BASE44_APP_ID/BASE44_SERVICE_TOKEN or use --offline");
+    const out = await repairSubmittedWithoutProviderId(base44, { limit, dryRun: !!dryRun });
+    process.stdout.write(`${JSON.stringify(out)}\n`);
+    return;
+  }
+
+  if (args["proof-of-life-payout"] === true || args.proofOfLifePayout === true) {
+    const recipient =
+      args.recipient ??
+      args["recipient-email"] ??
+      args.email ??
+      positional[0] ??
+      null;
+    if (!String(recipient ?? "").trim()) throw new Error("Missing --recipient for proof-of-life-payout");
+    const recipientType =
+      args["recipient-type"] ??
+      args.recipientType ??
+      args["payout-recipient-type"] ??
+      args.payoutRecipientType ??
+      "paypal";
+    const amountRaw = args.amount ?? args["payout-amount"] ?? args.payoutAmount ?? "0.01";
+    const currencyRaw = args.currency ?? args["payout-currency"] ?? args.payoutCurrency ?? "USD";
+    const batchId =
+      args["batch-id"] ??
+      args.batchId ??
+      args.batch ??
+      process.env.npm_config_batch_id ??
+      process.env.NPM_CONFIG_BATCH_ID ??
+      null;
+
+    if (dryRun || !base44) {
+      const day = formatDay();
+      const plan = {
+        ok: true,
+        dryRun: true,
+        liveExecutionEnabled: (process.env.SWARM_LIVE ?? "false").toLowerCase() === "true",
+        requiredFlags: {
+          SWARM_LIVE: "true",
+          BASE44_ENABLE_PAYOUT_LEDGER_WRITE: "true",
+          PAYPAL_CLIENT_ID: "(set)",
+          PAYPAL_CLIENT_SECRET: "(set)"
+        },
+        payout: {
+          batchId:
+            batchId != null && String(batchId).trim()
+              ? String(batchId).trim()
+              : makeProofOfLifeBatchId({
+                  recipientType: normalizeRecipientType(recipientType ?? "paypal", "paypal"),
+                  recipient: String(recipient ?? "").trim(),
+                  amount: normalizeMoneyAmount(amountRaw, 0.01),
+                  currency: String(currencyRaw ?? "USD"),
+                  day
+                }),
+          recipientType: normalizeRecipientType(recipientType ?? "paypal", "paypal"),
+          recipient: String(recipient ?? "").trim(),
+          amount: normalizeMoneyAmount(amountRaw, 0.01),
+          currency: String(currencyRaw ?? "USD")
+        }
+      };
+      process.stdout.write(`${JSON.stringify(plan)}\n`);
+      return;
+    }
+
+    const ensured = await ensureProofOfLifePayout(base44, {
+      recipientType,
+      recipient,
+      amount: amountRaw,
+      currency: currencyRaw,
+      batchId,
+      dryRun: false
+    });
+    const approved = await approvePayoutBatch(base44, { batchId: ensured.batchId, args, dryRun: false });
+    const submitted = await submitPayPalPayoutBatch(base44, { batchId: ensured.batchId, args, dryRun: false });
+    process.stdout.write(`${JSON.stringify({ ok: true, ensured, approved, submitted })}\n`);
+    return;
+  }
+
   if (
     args["available-balance"] === true ||
     args.availableBalance === true ||
@@ -1601,6 +2206,26 @@ async function main() {
     if (!batchId) throw new Error("Missing --batch-id for submit-payout-batch");
     const out = await submitPayPalPayoutBatch(base44, { batchId: String(batchId), args, dryRun: !!dryRun });
     process.stdout.write(`${JSON.stringify({ ok: true, ...out })}\n`);
+    return;
+  }
+
+  if (
+    args["sync-paypal-ledger-batch"] === true ||
+    args.syncPayPalLedgerBatch === true ||
+    getEnvBool("npm_config_sync_paypal_ledger_batch", false) ||
+    getEnvBool("NPM_CONFIG_SYNC_PAYPAL_LEDGER_BATCH", false)
+  ) {
+    const batchId =
+      args["batch-id"] ??
+      args.batchId ??
+      args.batch ??
+      process.env.npm_config_batch_id ??
+      process.env.NPM_CONFIG_BATCH_ID ??
+      null;
+    const paypalBatchId = args["paypal-batch-id"] ?? args.paypalBatchId ?? null;
+    if (!batchId && !paypalBatchId) throw new Error("Missing --batch-id or --paypal-batch-id for sync-paypal-ledger-batch");
+    const out = await syncPayPalBatchToLedger(base44, { batchId: batchId != null ? String(batchId) : null, paypalBatchId: paypalBatchId != null ? String(paypalBatchId) : null, dryRun: !!dryRun });
+    process.stdout.write(`${JSON.stringify(out)}\n`);
     return;
   }
 

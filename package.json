@@ -9,9 +9,13 @@
     "ap2:orchestrate": "node ./src/orchestrate-settlement.mjs",
     "prepare:external:settlement": "node ./src/prepare-external-settlement.mjs",
     "paypal:webhook": "node ./src/paypal-webhook-server.mjs",
+    "paypal:webhook:check": "node ./src/paypal-webhook-server.mjs --check",
     "paypal:sync:payout": "node ./src/sync-paypal-payout-batch.mjs",
     "paypal:create:order": "node ./src/create-paypal-order.mjs",
     "monitor:health": "node ./src/monitor-health.mjs",
+    "monitor:once": "node ./src/monitor-health.mjs --once",
+    "live:readiness": "node ./src/monitor-health.mjs --readiness",
+    "live:readiness:ping": "node ./src/monitor-health.mjs --readiness --ping",
     "autonomous:daemon": "node ./src/autonomous-daemon.mjs",
     "autonomous:once": "node ./src/autonomous-daemon.mjs --once",
     "test": "node --test"
