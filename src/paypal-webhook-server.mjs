@@ -1,5 +1,4 @@
 import http from "node:http";
-import https from "node:https";
 import { buildBase44ServiceClient } from "./base44-client.mjs";
 import { extractPayPalWebhookHeaders, verifyPayPalWebhookSignature } from "./paypal-api.mjs";
 import { mapPayPalWebhookToRevenueEvent } from "./paypal-event-mapper.mjs";
@@ -84,37 +83,6 @@ function json(res, status, data) {
     "Content-Length": Buffer.byteLength(body)
   });
   res.end(body);
-}
-
-function fetchPublicHttpsUrlFromLocalhostRun() {
-  return new Promise((resolve) => {
-    const req = https.request(
-      {
-        method: "GET",
-        host: "localhost.run",
-        path: "/?port=8787",
-        headers: { "User-Agent": "swarm-base44-revenue-events" },
-        timeout: 8000
-      },
-      (res) => {
-        let raw = "";
-        res.setEncoding("utf8");
-        res.on("data", (chunk) => {
-          raw += chunk;
-        });
-        res.on("end", () => {
-          const m = raw.match(/https:\/\/[a-z0-9.-]+\.[a-z0-9.-]+/i);
-          resolve(m ? m[0] : null);
-        });
-      }
-    );
-    req.on("timeout", () => {
-      req.destroy();
-      resolve(null);
-    });
-    req.on("error", () => resolve(null));
-    req.end();
-  });
 }
 
 function shouldWriteToBase44() {
@@ -888,18 +856,17 @@ if (args.check === true || args["config-check"] === true) {
     const localUrl = `http://127.0.0.1:${port}/paypal/webhook`;
     const healthUrl = `http://127.0.0.1:${port}/health`;
     process.stdout.write(`${JSON.stringify({ ok: true, listening: true, port, path: "/paypal/webhook", localUrl, healthUrl })}\n`);
-    fetchPublicHttpsUrlFromLocalhostRun()
-      .then((publicBase) => {
-        if (!publicBase) return;
-        process.stdout.write(
-          `${JSON.stringify({
-            ok: true,
-            publicBase,
-            webhookUrl: `${publicBase}/paypal/webhook`,
-            healthUrl: `${publicBase}/health`
-          })}\n`
-        );
-      })
-      .catch(() => {});
+    const publicBase = (process.env.PUBLIC_BASE_URL ?? process.env.PUBLIC_WEBHOOK_BASE_URL ?? "").trim();
+    if (publicBase) {
+      const base = publicBase.replace(/\/+$/g, "");
+      process.stdout.write(
+        `${JSON.stringify({
+          ok: true,
+          publicBase: base,
+          webhookUrl: `${base}/paypal/webhook`,
+          healthUrl: `${base}/health`
+        })}\n`
+      );
+    }
   });
 }

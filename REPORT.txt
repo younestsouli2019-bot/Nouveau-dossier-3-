@@ -27,6 +27,10 @@ LATEST IMPLEMENTED CHANGES (2025-12-25)
 LIVE PAYPAL WEBHOOK URL (WHAT TO ENTER IN PAYPAL)
 - https://<YOUR_PUBLIC_DOMAIN>/paypal/webhook
   - The Node server itself listens on http://127.0.0.1:8787/paypal/webhook by default; put HTTPS (reverse proxy / tunnel) in front for PayPal live delivery.
+ - If you have no domain yet, a practical option is a reverse SSH tunnel:
+   - Start the server: deploy-live.bat webhook
+   - Start a temporary public HTTPS tunnel: ssh -R 80:localhost:8787 nokey@localhost.run
+   - Use the printed HTTPS URL and append /paypal/webhook
 
 BASE44 APP MUST MATCH THESE ENTITIES/FIELDS (DEFAULTS)
 - Revenue events:
