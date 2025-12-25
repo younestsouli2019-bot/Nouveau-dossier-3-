@@ -27,8 +27,12 @@ function GetCredValue([string]$name) {
     $t = $l.Trim()
     if (-not $t) { continue }
     if ($t -match ("^" + [regex]::Escape($name) + "\s*[:=]\s*(.+)$")) {
-      $v = $Matches[1].Trim()
-      if ($v) { return $v }
+      $v = $Matches[1].Trim().Trim('"').Trim("'")
+      if (-not $v) { continue }
+      if ($v -match "^\s*<\s*YOUR_[A-Z0-9_]+\s*>\s*$") { return $null }
+      if ($v -match "^\s*YOUR_[A-Z0-9_]+\s*$") { return $null }
+      if ($v -match "^\s*(REPLACE_ME|CHANGEME|TODO)\s*$") { return $null }
+      return $v
     }
   }
   return $null
