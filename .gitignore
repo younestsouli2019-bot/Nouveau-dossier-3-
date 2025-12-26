@@ -7,3 +7,17 @@ ngrok.tgz
 ngrok.zip
 cloudflared
 cloudflared.tgz
+out/
+archive/
+.autonomous-state.json
+autonomous*.txt
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.zip
+*.tgz
+*.tar.gz
+*.csv
