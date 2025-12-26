@@ -104,6 +104,8 @@ if ($paypalClientSecret) { $env:PAYPAL_CLIENT_SECRET = $paypalClientSecret }
 $env:PAYPAL_MODE = "live"
 $env:SWARM_LIVE = "true"
 if (-not $env:BASE44_ENABLE_REVENUE_FROM_PAYPAL) { $env:BASE44_ENABLE_REVENUE_FROM_PAYPAL = "true" }
+if (-not $env:AUTONOMOUS_PAYOUT_LIVE) { $env:AUTONOMOUS_PAYOUT_LIVE = "true" }
+if (-not $env:BASE44_ENABLE_PAYOUT_LEDGER_WRITE) { $env:BASE44_ENABLE_PAYOUT_LEDGER_WRITE = "true" }
 
 if (-not $env:BASE44_APP_ID) { $env:BASE44_APP_ID = GetCredValue "BASE44_APP_ID" }
 if (-not $env:BASE44_SERVICE_TOKEN) { $env:BASE44_SERVICE_TOKEN = GetCredValue "BASE44_SERVICE_TOKEN" }

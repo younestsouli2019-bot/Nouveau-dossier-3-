@@ -1,6 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import os from "node:os";
 import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { buildBase44ServiceClient } from "./base44-client.mjs";
 import { getPayPalAccessToken } from "./paypal-api.mjs";
 import { maybeSendAlert } from "./alerts.mjs";
@@ -32,6 +34,57 @@ function getEnvBool(name, fallback = false) {
   return String(v).toLowerCase() === "true";
 }
 
+function envIsTrue(value, fallback = "true") {
+  return String(value ?? fallback).toLowerCase() === "true";
+}
+
+function isUnsafePath(p) {
+  const abs = path.resolve(process.cwd(), String(p ?? ""));
+  const lower = abs.toLowerCase();
+  const tmp = os.tmpdir().toLowerCase();
+  if (tmp && lower.startsWith(tmp)) return true;
+  const needles = ["\\test\\", "/test/", "\\mock\\", "/mock/", "\\tmp\\", "/tmp/", "\\temp\\", "/temp/"];
+  return needles.some((n) => lower.includes(n));
+}
+
+function enforceSwarmLiveHardInvariant({ component, action }) {
+  if (!envIsTrue(process.env.SWARM_LIVE, "false")) {
+    throw new Error(`LIVE MODE NOT GUARANTEED (${component} ${action})`);
+  }
+  return { forced: false };
+}
+
+function isMoneyMovingTasks(cfg) {
+  const t = cfg?.tasks ?? {};
+  return (
+    t.createPayoutBatches === true ||
+    t.autoApprovePayoutBatches === true ||
+    t.autoSubmitPayPalPayoutBatches === true ||
+    t.autoExportPayoneerPayoutBatches === true ||
+    t.syncPayPalLedgerBatches === true
+  );
+}
+
+function verifyNoSandboxPayPal() {
+  const paypalMode = String(process.env.PAYPAL_MODE ?? "live").toLowerCase();
+  const paypalBase = String(process.env.PAYPAL_API_BASE_URL ?? "").toLowerCase();
+  if (paypalMode === "sandbox" || paypalBase.includes("sandbox.paypal.com")) {
+    throw new Error("LIVE MODE NOT GUARANTEED (PayPal sandbox configured)");
+  }
+}
+
+function validateDaemonLiveModeOrThrow(cfg) {
+  if (!envIsTrue(process.env.SWARM_LIVE, "true")) throw new Error("LIVE MODE NOT GUARANTEED (SWARM_LIVE not true)");
+  if (cfg?.offline?.enabled === true) throw new Error("LIVE MODE NOT GUARANTEED (offline enabled)");
+  if (cfg?.payout?.dryRun === true) throw new Error("LIVE MODE NOT GUARANTEED (dry-run enabled)");
+  if (cfg?.tasks?.autoExportPayoneerPayoutBatches === true && isUnsafePath(cfg?.payout?.export?.payoneerOutDir ?? "")) {
+    throw new Error("LIVE MODE NOT GUARANTEED (unsafe Payoneer out dir)");
+  }
+  if (cfg?.tasks?.autoSubmitPayPalPayoutBatches === true || cfg?.tasks?.syncPayPalLedgerBatches === true) {
+    verifyNoSandboxPayPal();
+  }
+}
+
 function normalizeIntervalMs(value, fallback) {
   const ms = Number(value);
   if (!ms || Number.isNaN(ms) || ms < 1000) return fallback;
@@ -40,6 +93,15 @@ function normalizeIntervalMs(value, fallback) {
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
+}
+
+async function fileExists(filePath) {
+  try {
+    await fs.stat(filePath);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function normalizeNumber(value, fallback) {
@@ -126,6 +188,18 @@ function deepMerge(a, b) {
   return out;
 }
 
+function parseJsonMaybe(value) {
+  if (value == null) return null;
+  if (typeof value === "object") return value;
+  const s = String(value).trim();
+  if (!s) return null;
+  try {
+    return JSON.parse(s);
+  } catch {
+    return null;
+  }
+}
+
 async function loadAutonomousConfig({ configPath }) {
   const resolved = configPath ? path.resolve(process.cwd(), String(configPath)) : path.resolve(process.cwd(), "autonomous.txt");
   const raw = await fs.readFile(resolved, "utf8").catch(() => "");
@@ -156,6 +230,9 @@ function defaultConfig() {
       windowUtc: { startHourUtc: 0, endHourUtc: 0 },
       syncPayPalLimit: 25,
       syncPayPalMinAgeMinutes: 10,
+      export: {
+        payoneerOutDir: "out/payoneer"
+      },
       autoApprove: { enabled: false, pendingAgeMinutes: 120, maxBatchAmount: null, totp: null }
     },
     tasks: {
@@ -166,7 +243,8 @@ function defaultConfig() {
       createPayoutBatches: false,
       autoApprovePayoutBatches: false,
       autoSubmitPayPalPayoutBatches: false,
-      syncPayPalLedgerBatches: false
+      syncPayPalLedgerBatches: false,
+      autoExportPayoneerPayoutBatches: false
     },
     alerts: {
       enabled: false,
@@ -207,6 +285,13 @@ function resolveRuntimeConfig(args, fileCfg) {
   const payoutBeneficiary = args["payout-beneficiary"] ?? process.env.PAYOUT_BENEFICIARY ?? cfg.payout?.beneficiary ?? null;
   const payoutRecipientType = args["payout-recipient-type"] ?? process.env.PAYOUT_RECIPIENT_TYPE ?? cfg.payout?.recipientType ?? null;
 
+  const payoneerOutDir =
+    args["payoneer-out-dir"] ??
+    args.payoneerOutDir ??
+    process.env.AUTONOMOUS_PAYONEER_OUT_DIR ??
+    cfg.payout?.export?.payoneerOutDir ??
+    "out/payoneer";
+
   const payoutDryRun =
     args["payout-live"] === true
       ? false
@@ -239,10 +324,22 @@ function resolveRuntimeConfig(args, fileCfg) {
     10
   );
 
+  const createPayoutBatchesEnabled =
+    args["create-payout-batches"] === true ||
+    args.createPayoutBatches === true ||
+    getEnvBool("AUTONOMOUS_CREATE_PAYOUT_BATCHES", false) ||
+    cfg.tasks?.createPayoutBatches === true;
+
   const autoApproveEnabled =
     args["auto-approve-payouts"] === true ||
     getEnvBool("AUTONOMOUS_AUTO_APPROVE_PAYOUTS", false) ||
     cfg.payout?.autoApprove?.enabled === true;
+  const autoApprovePayoutBatchesEnabled =
+    args["auto-approve-payout-batches"] === true ||
+    args.autoApprovePayoutBatches === true ||
+    autoApproveEnabled === true ||
+    getEnvBool("AUTONOMOUS_AUTO_APPROVE_PAYOUT_BATCHES", false) ||
+    cfg.tasks?.autoApprovePayoutBatches === true;
   const pendingAgeMinutes = normalizeNumber(
     args["auto-approve-age-minutes"] ?? process.env.AUTONOMOUS_AUTO_APPROVE_AGE_MINUTES ?? cfg.payout?.autoApprove?.pendingAgeMinutes ?? 120,
     120
@@ -263,6 +360,20 @@ function resolveRuntimeConfig(args, fileCfg) {
   const statePath = args["state-path"] ?? args.statePath ?? process.env.AUTONOMOUS_STATE_PATH ?? cfg.state?.path ?? ".autonomous-state.json";
   const backoffMaxMs = normalizeIntervalMs(process.env.AUTONOMOUS_BACKOFF_MAX_MS ?? cfg.backoff?.maxMs, 300000);
 
+  const autoSubmitPayPalPayoutBatchesEnabled =
+    args["auto-submit-paypal"] === true ||
+    args["auto-submit-paypal-payout-batches"] === true ||
+    args.autoSubmitPayPalPayoutBatches === true ||
+    getEnvBool("AUTONOMOUS_AUTO_SUBMIT_PAYPAL_PAYOUT_BATCHES", false) ||
+    cfg.tasks?.autoSubmitPayPalPayoutBatches === true;
+
+  const autoExportPayoneerPayoutBatchesEnabled =
+    args["auto-export-payoneer"] === true ||
+    args["auto-export-payoneer-payout-batches"] === true ||
+    args.autoExportPayoneerPayoutBatches === true ||
+    getEnvBool("AUTONOMOUS_AUTO_EXPORT_PAYONEER_PAYOUT_BATCHES", false) ||
+    cfg.tasks?.autoExportPayoneerPayoutBatches === true;
+
   return {
     intervalMs,
     offline: { enabled: offlineEnabled, auto: offlineAuto, storePath: String(offlineStorePath) },
@@ -276,6 +387,7 @@ function resolveRuntimeConfig(args, fileCfg) {
       windowUtc: { startHourUtc, endHourUtc },
       syncPayPalLimit: Number(syncPayPalLimit ?? 25),
       syncPayPalMinAgeMinutes: Number(syncPayPalMinAgeMinutes ?? 10),
+      export: { payoneerOutDir: String(payoneerOutDir) },
       autoApprove: {
         enabled: autoApproveEnabled === true,
         pendingAgeMinutes: Number(pendingAgeMinutes ?? 120),
@@ -288,10 +400,11 @@ function resolveRuntimeConfig(args, fileCfg) {
       availableBalance: cfg.tasks?.availableBalance !== false,
       reportPendingApproval: cfg.tasks?.reportPendingApproval !== false,
       reportStuckPayouts: cfg.tasks?.reportStuckPayouts !== false,
-      createPayoutBatches: cfg.tasks?.createPayoutBatches === true,
-      autoApprovePayoutBatches: cfg.tasks?.autoApprovePayoutBatches === true,
-      autoSubmitPayPalPayoutBatches: cfg.tasks?.autoSubmitPayPalPayoutBatches === true,
-      syncPayPalLedgerBatches: syncPayPalLedgerEnabled === true
+      createPayoutBatches: createPayoutBatchesEnabled === true,
+      autoApprovePayoutBatches: autoApprovePayoutBatchesEnabled === true,
+      autoSubmitPayPalPayoutBatches: autoSubmitPayPalPayoutBatchesEnabled === true,
+      syncPayPalLedgerBatches: syncPayPalLedgerEnabled === true,
+      autoExportPayoneerPayoutBatches: autoExportPayoneerPayoutBatchesEnabled === true
     },
     alerts: { enabled: alertsEnabled, cooldownMs: alertCooldownMs },
     state: { path: String(statePath) },
@@ -512,6 +625,12 @@ async function runTick(cfg, state) {
   const startedAt = nowIso();
   const out = { ok: true, at: startedAt, mode: cfg.offline.enabled ? "offline" : "auto", results: {}, meta: {} };
 
+  if (isMoneyMovingTasks(cfg)) {
+    if (!envIsTrue(process.env.SWARM_LIVE, "true")) {
+      throw new Error("LIVE MODE NOT GUARANTEED (SWARM_LIVE downgraded)");
+    }
+  }
+
   if (cfg.tasks.health) {
     const health = await checkHealthOnce(cfg);
     out.results.health = health;
@@ -631,6 +750,8 @@ async function runTick(cfg, state) {
     const windowOk = isWithinWindowUtc(cfg.payout?.windowUtc ?? { startHourUtc: 0, endHourUtc: 0 });
     if (!windowOk) {
       out.results.autoSubmitPayPal = { ok: true, skipped: true, reason: "outside_payout_window_utc", windowUtc: cfg.payout?.windowUtc ?? null };
+    } else if (cfg.tasks.health && out.results.health && out.results.health.paypalOk === false) {
+      out.results.autoSubmitPayPal = { ok: true, skipped: true, reason: "paypal_unhealthy", health: out.results.health };
     } else if (cfg.payout?.dryRun) {
       out.results.autoSubmitPayPal = { ok: true, skipped: true, reason: "payout_dry_run_enabled" };
     } else {
@@ -640,18 +761,80 @@ async function runTick(cfg, state) {
       const attempts = [];
       for (const b of Array.isArray(batches) ? batches : []) {
         const batchId = getBatchId(b);
-        const notes = b?.notes ?? b?.Notes ?? null;
+        const submittedAt = b?.submitted_at ?? b?.submittedAt ?? b?.submitted_date ?? null;
+        const notesRaw = b?.notes ?? b?.Notes ?? null;
+        const notes = parseJsonMaybe(notesRaw) ?? notesRaw;
         const recipientType = String(notes?.recipient_type ?? notes?.recipientType ?? "").toLowerCase();
         if (!batchId) continue;
+        if (submittedAt) continue;
         if (recipientType && recipientType !== "paypal" && recipientType !== "paypal_email") continue;
         const res = await runEmitWithOfflineFallback(["--submit-payout-batch", "--batch-id", String(batchId)], cfg);
         attempts.push({ batchId, res });
       }
-      out.results.autoSubmitPayPal = { ok: true, attemptedCount: attempts.length, attempts };
+      const failures = attempts.filter((a) => !effectiveOk(a.res));
+      out.results.autoSubmitPayPal = {
+        ok: failures.length === 0,
+        attemptedCount: attempts.length,
+        failedCount: failures.length,
+        failures,
+        attempts
+      };
+    }
+  }
+
+  if (cfg.tasks.autoExportPayoneerPayoutBatches) {
+    const windowOk = isWithinWindowUtc(cfg.payout?.windowUtc ?? { startHourUtc: 0, endHourUtc: 0 });
+    if (!windowOk) {
+      out.results.autoExportPayoneer = { ok: true, skipped: true, reason: "outside_payout_window_utc", windowUtc: cfg.payout?.windowUtc ?? null };
+    } else {
+      const approvedRes = await runEmitWithOfflineFallback(["--report-approved-batches"], cfg);
+      out.results.approvedBatchesForPayoneer = approvedRes;
+      const batches = effectiveOk(approvedRes) ? (approvedRes.result?.batches ?? []) : [];
+      const attempts = [];
+      const outDir = cfg.payout?.export?.payoneerOutDir ? String(cfg.payout.export.payoneerOutDir) : "out/payoneer";
+      const absOutDir = path.resolve(process.cwd(), outDir);
+      await fs.mkdir(absOutDir, { recursive: true });
+      const exported = state.exportedPayoneerBatches && typeof state.exportedPayoneerBatches === "object" ? state.exportedPayoneerBatches : {};
+      state.exportedPayoneerBatches = exported;
+
+      for (const b of Array.isArray(batches) ? batches : []) {
+        const batchId = getBatchId(b);
+        const notesRaw = b?.notes ?? b?.Notes ?? null;
+        const notes = parseJsonMaybe(notesRaw) ?? notesRaw;
+        const recipientType = String(notes?.recipient_type ?? notes?.recipientType ?? "").toLowerCase();
+        if (!batchId) continue;
+        if (recipientType !== "payoneer" && recipientType !== "payoneer_id") continue;
+
+        const outPath = path.join(absOutDir, `payoneer_payout_${String(batchId)}.csv`);
+        const already = exported[String(batchId)]?.outPath ? String(exported[String(batchId)].outPath) : null;
+        if (already && (await fileExists(already))) continue;
+        if (!already && (await fileExists(outPath))) {
+          exported[String(batchId)] = { outPath, exportedAt: nowIso() };
+          continue;
+        }
+
+        const res = await runEmitWithOfflineFallback(["--export-payoneer-batch", "--batch-id", String(batchId), "--out", outPath], cfg);
+        attempts.push({ batchId, outPath, res });
+        if (effectiveOk(res)) {
+          exported[String(batchId)] = { outPath, exportedAt: nowIso() };
+        }
+      }
+
+      const failures = attempts.filter((a) => !effectiveOk(a.res));
+      out.results.autoExportPayoneer = {
+        ok: failures.length === 0,
+        attemptedCount: attempts.length,
+        failedCount: failures.length,
+        failures,
+        attempts
+      };
     }
   }
 
   if (cfg.tasks.syncPayPalLedgerBatches) {
+    if (cfg.tasks.health && out.results.health && out.results.health.paypalOk === false) {
+      out.results.syncPayPalLedger = { ok: true, skipped: true, reason: "paypal_unhealthy", health: out.results.health };
+    } else {
     const limit = Math.max(1, Math.floor(Number(cfg.payout?.syncPayPalLimit ?? 25)));
     const minAgeMs = Math.max(0, Number(cfg.payout?.syncPayPalMinAgeMinutes ?? 10)) * 60 * 1000;
     const truthArgs = [];
@@ -683,6 +866,7 @@ async function runTick(cfg, state) {
       attempts.push({ batchId: String(internalBatchId), res });
     }
     out.results.syncPayPalLedger = { ok: true, attemptedCount: attempts.length, attempts };
+    }
   }
 
   out.ok = true;
@@ -701,14 +885,25 @@ async function main() {
   const once = args.once === true;
 
   const loaded = await loadAutonomousConfig({ configPath: args.config ?? args["config"] ?? null });
-  const cfg = resolveRuntimeConfig(args, loaded.config);
+  let cfg = resolveRuntimeConfig(args, loaded.config);
+
+  if (isMoneyMovingTasks(cfg)) {
+    enforceSwarmLiveHardInvariant({ component: "autonomous-daemon", action: "startup" });
+    validateDaemonLiveModeOrThrow(cfg);
+    const health = await checkHealthOnce({
+      ...cfg,
+      health: { requirePayPal: cfg.health?.requirePayPal === true || cfg.tasks?.autoSubmitPayPalPayoutBatches === true || cfg.tasks?.syncPayPalLedgerBatches === true }
+    });
+    if (!health.ok) throw new Error("LIVE MODE NOT GUARANTEED (endpoints/credentials)");
+  }
 
   const statePath = path.resolve(process.cwd(), cfg.state.path);
   const persisted = await readJsonFile(statePath, null);
   const state = {
     lastAlertAt: Number(persisted?.lastAlertAt ?? 0) || 0,
     lastApprovalAlertAt: Number(persisted?.lastApprovalAlertAt ?? 0) || 0,
-    consecutiveFailures: Number(persisted?.consecutiveFailures ?? 0) || 0
+    consecutiveFailures: Number(persisted?.consecutiveFailures ?? 0) || 0,
+    exportedPayoneerBatches: persisted?.exportedPayoneerBatches && typeof persisted.exportedPayoneerBatches === "object" ? persisted.exportedPayoneerBatches : {}
   };
   process.stdout.write(`${JSON.stringify({ ok: true, daemon: true, once, configPath: loaded.configPath, cfg })}\n`);
 
@@ -725,6 +920,12 @@ async function main() {
       const out = await runTick(cfg, state);
       state.consecutiveFailures = out.ok ? 0 : state.consecutiveFailures + 1;
     } catch (e) {
+      const msg = e?.message ?? String(e);
+      if (String(msg).includes("LIVE MODE NOT GUARANTEED")) {
+        process.stderr.write(`${JSON.stringify({ ok: false, at: nowIso(), error: msg })}\n`);
+        process.exitCode = 1;
+        break;
+      }
       process.stderr.write(`${JSON.stringify({ ok: false, at: nowIso(), error: e?.message ?? String(e) })}\n`);
       state.consecutiveFailures += 1;
     }
@@ -732,6 +933,7 @@ async function main() {
       lastAlertAt: state.lastAlertAt,
       lastApprovalAlertAt: state.lastApprovalAlertAt,
       consecutiveFailures: state.consecutiveFailures,
+      exportedPayoneerBatches: state.exportedPayoneerBatches,
       updatedAt: nowIso()
     }).catch(() => {});
     if (once) break;
@@ -743,7 +945,15 @@ async function main() {
   } while (!stop);
 }
 
-main().catch((err) => {
-  process.stderr.write(`${JSON.stringify({ ok: false, error: err?.message ?? String(err) })}\n`);
-  process.exitCode = 1;
-});
+const selfPath = fileURLToPath(import.meta.url);
+const argvPath = process.argv[1] ? path.resolve(process.argv[1]) : null;
+const isMain = argvPath && path.resolve(selfPath) === argvPath;
+
+if (isMain) {
+  main().catch((err) => {
+    process.stderr.write(`${JSON.stringify({ ok: false, error: err?.message ?? String(err) })}\n`);
+    process.exitCode = 1;
+  });
+}
+
+export { resolveRuntimeConfig, isWithinWindowUtc };

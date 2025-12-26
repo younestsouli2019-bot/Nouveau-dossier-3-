@@ -33,6 +33,18 @@ function required(value, name) {
   return String(value).trim();
 }
 
+function slug(value, maxLen) {
+  if (!value) return "";
+  const s = String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .replace(/_+/g, "_");
+  if (!maxLen || maxLen <= 0) return s;
+  return s.slice(0, maxLen);
+}
+
 function pickApprovalUrl(order) {
   const links = order?.links ?? [];
   const approval = links.find((l) => l?.rel === "approve");
@@ -76,7 +88,7 @@ async function main() {
     throw new Error("Refusing to create live PayPal orders without PAYPAL_ENABLE_ORDER_CREATE=true");
   }
 
-  if (!getEnvBool("SWARM_LIVE")) {
+  if (!getEnvBool("SWARM_LIVE", "true")) {
     throw new Error("Refusing live operation without SWARM_LIVE=true (create PayPal order)");
   }
 
@@ -85,7 +97,23 @@ async function main() {
 
   const currency = normalizeCurrency(args.currency, process.env.PAYPAL_CURRENCY ?? "USD");
   const description = args.description ? String(args.description) : null;
-  const customId = args.customId ? String(args.customId) : `swarm_${Date.now()}`;
+  const utmSource = args.utmSource ? String(args.utmSource) : null;
+  const utmMedium = args.utmMedium ? String(args.utmMedium) : null;
+  const utmCampaign = args.utmCampaign ? String(args.utmCampaign) : null;
+  const utmContent = args.utmContent ? String(args.utmContent) : null;
+
+  let customId = args.customId ? String(args.customId) : null;
+  if (!customId) {
+    const parts = [
+      "rwc",
+      slug(utmSource, 24),
+      slug(utmMedium, 16),
+      slug(utmCampaign, 24),
+      slug(utmContent, 24),
+      String(Date.now())
+    ].filter((p) => p);
+    customId = parts.length > 2 ? parts.join("_").slice(0, 120) : `swarm_${Date.now()}`;
+  }
 
   const returnUrl = required(args.returnUrl ?? process.env.PAYPAL_RETURN_URL, "returnUrl");
   const cancelUrl = required(args.cancelUrl ?? process.env.PAYPAL_CANCEL_URL, "cancelUrl");

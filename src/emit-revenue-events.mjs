@@ -1,7 +1,10 @@
 import fs from "node:fs";
 import { spawnSync } from "node:child_process";
 import crypto from "node:crypto";
+import path from "node:path";
+import os from "node:os";
 import readline from "node:readline";
+import { fileURLToPath } from "node:url";
 import { createBase44RevenueEventIdempotent, getRevenueConfigFromEnv } from "./base44-revenue.mjs";
 import { createBase44EarningIdempotent, getEarningConfigFromEnv } from "./base44-earning.mjs";
 import { buildBase44Client } from "./base44-client.mjs";
@@ -80,9 +83,62 @@ function getEnvOrThrow(name) {
   return v;
 }
 
+function envIsTrue(value, fallback = "true") {
+  return String(value ?? fallback).toLowerCase() === "true";
+}
+
+function isUnsafePath(p) {
+  const abs = path.resolve(process.cwd(), String(p ?? ""));
+  const lower = abs.toLowerCase();
+  const tmp = os.tmpdir().toLowerCase();
+  if (tmp && lower.startsWith(tmp)) return true;
+  const needles = ["\\test\\", "/test/", "\\mock\\", "/mock/", "\\tmp\\", "/tmp/", "\\temp\\", "/temp/"];
+  return needles.some((n) => lower.includes(n));
+}
+
+function enforceSwarmLiveHardInvariant({ action }) {
+  if (!envIsTrue(process.env.SWARM_LIVE, "false")) {
+    throw new Error(`LIVE MODE NOT GUARANTEED (${action})`);
+  }
+  return { forced: false };
+}
+
+function verifyNoOfflineInLive() {
+  if (envIsTrue(process.env.BASE44_OFFLINE, "false") || envIsTrue(process.env.BASE44_OFFLINE_MODE, "false")) {
+    throw new Error("LIVE MODE NOT GUARANTEED (offline mode enabled)");
+  }
+}
+
+function verifyNoSandboxPayPal() {
+  const paypalMode = String(process.env.PAYPAL_MODE ?? "live").toLowerCase();
+  const paypalBase = String(process.env.PAYPAL_API_BASE_URL ?? "").toLowerCase();
+  if (paypalMode === "sandbox" || paypalBase.includes("sandbox.paypal.com")) {
+    throw new Error("LIVE MODE NOT GUARANTEED (PayPal sandbox configured)");
+  }
+}
+
+function buildLiveProofBase(action) {
+  return {
+    at: new Date().toISOString(),
+    action: String(action),
+    SWARM_LIVE: envIsTrue(process.env.SWARM_LIVE, "true"),
+    endpoints: {
+      paypalMode: String(process.env.PAYPAL_MODE ?? "live").toLowerCase(),
+      paypalApiBaseUrl: process.env.PAYPAL_API_BASE_URL ? String(process.env.PAYPAL_API_BASE_URL) : "(default)",
+      base44ServerUrl: process.env.BASE44_SERVER_URL ? String(process.env.BASE44_SERVER_URL) : "(default)"
+    }
+  };
+}
+
+function sha256FileSync(filePath) {
+  const buf = fs.readFileSync(filePath);
+  return crypto.createHash("sha256").update(buf).digest("hex");
+}
+
 function requireLiveMode(reason) {
-  const live = (process.env.SWARM_LIVE ?? "false").toLowerCase() === "true";
-  if (!live) throw new Error(`Refusing live operation without SWARM_LIVE=true (${reason})`);
+  enforceSwarmLiveHardInvariant({ action: reason });
+  verifyNoOfflineInLive();
+  verifyNoSandboxPayPal();
 }
 
 function getEnvBool(name, fallback = false) {
@@ -302,6 +358,14 @@ function normalizeEmail(value) {
   return s || null;
 }
 
+function normalizeEmailAddress(value) {
+  const s = String(value ?? "").trim();
+  if (!s) return null;
+  if (/\s/.test(s)) return null;
+  if (!s.includes("@")) return null;
+  return s;
+}
+
 function parseDestinationJson(value) {
   if (!value) return {};
   if (typeof value !== "string") return {};
@@ -413,8 +477,8 @@ function normalizeRecipientLabel(value) {
 
 function resolveRecipientAddress(recipientType, meta, fallback) {
   const t = normalizeRecipientType(recipientType ?? null);
-  if (t === "paypal") return normalizeEmail(meta?.paypal_email ?? meta?.paypalEmail ?? fallback ?? null);
-  if (t === "payoneer") return normalizeEmail(meta?.payoneer_id ?? meta?.payoneerId ?? fallback ?? null);
+  if (t === "paypal") return normalizeEmailAddress(meta?.paypal_email ?? meta?.paypalEmail ?? fallback ?? null);
+  if (t === "payoneer") return normalizeEmailAddress(meta?.payoneer_id ?? meta?.payoneerId ?? fallback ?? null);
   if (t === "bank_wire") {
     return normalizeRecipientLabel(meta?.bank_beneficiary_name ?? meta?.bankBeneficiaryName ?? meta?.beneficiary_name ?? fallback ?? null);
   }
@@ -745,6 +809,32 @@ async function createPayoutBatchesFromEarnings(
         day
       });
 
+      const missingRecipientEarningIds = [];
+      for (const e of list) {
+        const meta = earningCfg.fieldMap.metadata ? e?.[earningCfg.fieldMap.metadata] : null;
+        const recipient = resolveRecipientAddress(recipType, meta, benefKey || null);
+        if (String(recipient ?? "").trim()) continue;
+        const eid = earningCfg.fieldMap.earningId ? e?.[earningCfg.fieldMap.earningId] : null;
+        missingRecipientEarningIds.push(eid ? String(eid) : String(e?.id ?? ""));
+      }
+
+      if (missingRecipientEarningIds.length > 0) {
+        created.push({
+          batchId,
+          batchInternalId: null,
+          beneficiary: benefKey || null,
+          recipientType: recipType || null,
+          currency: currencyKey || null,
+          earningCount: list.length,
+          itemCount: 0,
+          skipped: true,
+          reason: "missing_recipient",
+          missingRecipientEarningIds,
+          dryRun: !!dryRun
+        });
+        continue;
+      }
+
       const existingBatch = await findOneBy(payoutBatchEntity, { [payoutBatchCfg.fieldMap.batchId]: batchId });
       const batchRecord = existingBatch
         ? existingBatch
@@ -935,11 +1025,7 @@ async function submitPayPalPayoutBatch(base44, { batchId, args, dryRun }) {
 
   if (!shouldWritePayoutLedger()) throw new Error("Refusing submit without BASE44_ENABLE_PAYOUT_LEDGER_WRITE=true");
   requireLiveMode("submit PayPal payout batch");
-  const paypalMode = String(process.env.PAYPAL_MODE ?? "live").toLowerCase();
-  const paypalBase = String(process.env.PAYPAL_API_BASE_URL ?? "");
-  if (paypalMode === "sandbox" || paypalBase.toLowerCase().includes("sandbox.paypal.com")) {
-    throw new Error("Refusing PayPal payout submit while PayPal is configured for sandbox");
-  }
+  verifyNoSandboxPayPal();
 
   const paypalItems = mapped.map((x) => ({
     recipient_type: "EMAIL",
@@ -1003,10 +1089,18 @@ async function submitPayPalPayoutBatch(base44, { batchId, args, dryRun }) {
     }).catch(() => null);
   }
 
+  const liveProof = {
+    ...buildLiveProofBase("submit_paypal_payout_batch"),
+    internalPayoutBatchId: String(batchId),
+    externalTransactionId: String(paypalBatchId),
+    providerTimeCreated: response?.batch_header?.time_created ?? null
+  };
+
   return {
     batchId: String(batchId),
     submittedAt,
-    paypalBatchId
+    paypalBatchId,
+    liveProof
   };
 }
 
@@ -1500,8 +1594,14 @@ async function exportPayoneerBatch(base44, { batchId, outPath }) {
 
   const csv = `${lines.join("\n")}\n`;
   const targetPath = outPath ? String(outPath) : `payoneer_payout_${String(batchId)}.csv`;
-  fs.writeFileSync(targetPath, csv, "utf8");
-  return { batchId: String(batchId), outPath: targetPath, bytes: Buffer.byteLength(csv, "utf8"), itemCount: items.length };
+  if (isUnsafePath(targetPath)) throw new Error("LIVE MODE NOT GUARANTEED (unsafe export path)");
+  const absTargetPath = path.resolve(process.cwd(), targetPath);
+  fs.mkdirSync(path.dirname(absTargetPath), { recursive: true });
+  fs.writeFileSync(absTargetPath, csv, "utf8");
+  const bytes = Buffer.byteLength(csv, "utf8");
+  const digest = sha256FileSync(absTargetPath);
+  const liveProof = { ...buildLiveProofBase("export_payoneer_batch"), internalPayoutBatchId: String(batchId), outPath: absTargetPath, bytes, sha256: digest };
+  return { batchId: String(batchId), outPath: absTargetPath, bytes, itemCount: items.length, sha256: digest, liveProof };
 }
 
 async function exportBankWireBatch(base44, { batchId, outPath, destination }) {
@@ -1589,13 +1689,21 @@ async function exportBankWireBatch(base44, { batchId, outPath, destination }) {
 
   const csv = `${lines.join("\n")}\n`;
   const targetPath = outPath ? String(outPath) : `bank_wire_payout_${String(batchId)}.csv`;
-  fs.writeFileSync(targetPath, csv, "utf8");
+  if (isUnsafePath(targetPath)) throw new Error("LIVE MODE NOT GUARANTEED (unsafe export path)");
+  const absTargetPath = path.resolve(process.cwd(), targetPath);
+  fs.mkdirSync(path.dirname(absTargetPath), { recursive: true });
+  fs.writeFileSync(absTargetPath, csv, "utf8");
+  const bytes = Buffer.byteLength(csv, "utf8");
+  const digest = sha256FileSync(absTargetPath);
+  const liveProof = { ...buildLiveProofBase("export_bank_wire_batch"), internalPayoutBatchId: String(batchId), outPath: absTargetPath, bytes, sha256: digest };
   return {
     batchId: String(batchId),
-    outPath: targetPath,
-    bytes: Buffer.byteLength(csv, "utf8"),
+    outPath: absTargetPath,
+    bytes,
     itemCount: items.length,
-    destinationSummary: sanitizeDestination(dest)
+    destinationSummary: sanitizeDestination(dest),
+    sha256: digest,
+    liveProof
   };
 }
 
@@ -1682,7 +1790,12 @@ async function approvePayoutBatch(base44, { batchId, args, dryRun }) {
     [payoutBatchCfg.fieldMap.status]: "approved",
     ...(payoutBatchCfg.fieldMap.approvedAt ? { [payoutBatchCfg.fieldMap.approvedAt]: approvedAt } : {})
   });
-  return { batchId, approvedAt, id: updated?.id ?? rec.id };
+  const liveProof = {
+    ...buildLiveProofBase("approve_payout_batch"),
+    internalPayoutBatchId: String(batchId),
+    base44RecordId: String(updated?.id ?? rec.id)
+  };
+  return { batchId, approvedAt, id: updated?.id ?? rec.id, liveProof };
 }
 
 async function cancelPayoutBatch(base44, { batchId, dryRun }) {
@@ -1712,6 +1825,7 @@ async function cancelPayoutBatch(base44, { batchId, dryRun }) {
   const cancelledAt = new Date().toISOString();
   const items = await filterAll(itemEntity, { [payoutItemCfg.fieldMap.batchId]: batchId }, { pageSize: 250 });
 
+  let txId = null;
   if (!dryRun) {
     await batchEntity.update(rec.id, {
       [payoutBatchCfg.fieldMap.status]: "cancelled",
@@ -1743,7 +1857,7 @@ async function cancelPayoutBatch(base44, { batchId, dryRun }) {
 
     const amount = Number(payoutBatchCfg.fieldMap.totalAmount ? rec?.[payoutBatchCfg.fieldMap.totalAmount] : 0);
     if (Number.isFinite(amount)) {
-      await txEntity.create({
+      const createdTx = await txEntity.create({
         [txCfg.fieldMap.transactionType]: "transfer",
         [txCfg.fieldMap.amount]: Number(amount.toFixed(2)),
         [txCfg.fieldMap.description]: `Payout batch ${batchId} cancelled, funds returned to available balance`,
@@ -1752,10 +1866,14 @@ async function cancelPayoutBatch(base44, { batchId, dryRun }) {
         [txCfg.fieldMap.status]: "completed",
         ...(txCfg.fieldMap.payoutBatchId ? { [txCfg.fieldMap.payoutBatchId]: batchId } : {})
       });
+      txId = createdTx?.id ?? null;
     }
   }
 
-  return { batchId, cancelledAt, itemCount: items.length, dryRun: !!dryRun };
+  const liveProof = dryRun
+    ? null
+    : { ...buildLiveProofBase("cancel_payout_batch"), internalPayoutBatchId: String(batchId), cancelledAt, transactionLogId: txId };
+  return { batchId, cancelledAt, itemCount: items.length, dryRun: !!dryRun, ...(liveProof ? { liveProof } : {}) };
 }
 
 async function reportStuckPayouts(base44, { batchHours = 24, itemHours = 24 } = {}) {
@@ -2437,7 +2555,15 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  process.stderr.write(`${JSON.stringify({ ok: false, error: err?.message ?? String(err) })}\n`);
-  process.exitCode = 1;
-});
+const selfPath = fileURLToPath(import.meta.url);
+const argvPath = process.argv[1] ? path.resolve(process.argv[1]) : null;
+const isMain = argvPath && path.resolve(selfPath) === argvPath;
+
+if (isMain) {
+  main().catch((err) => {
+    process.stderr.write(`${JSON.stringify({ ok: false, error: err?.message ?? String(err) })}\n`);
+    process.exitCode = 1;
+  });
+}
+
+export { normalizeRecipientType, resolveRecipientAddress, createPayoutBatchesFromEarnings };

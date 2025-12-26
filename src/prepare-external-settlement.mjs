@@ -26,8 +26,11 @@ function getEnvBool(name, defaultValue = false) {
 }
 
 function requireLiveMode(reason) {
-  if (!getEnvBool("SWARM_LIVE", true)) {
+  if (!getEnvBool("SWARM_LIVE", false)) {
     throw new Error(`Refusing live operation without SWARM_LIVE=true (${reason})`);
+  }
+  if (getEnvBool("BASE44_OFFLINE", false) || getEnvBool("BASE44_OFFLINE_MODE", false)) {
+    throw new Error(`LIVE MODE NOT GUARANTEED (offline mode enabled: ${reason})`);
   }
 }
 

@@ -23,8 +23,17 @@ function shouldWriteToBase44() {
 }
 
 function requireLiveMode(reason) {
-  const live = (process.env.SWARM_LIVE ?? "false").toLowerCase() === "true";
+  const live = String(process.env.SWARM_LIVE ?? "false").toLowerCase() === "true";
   if (!live) throw new Error(`Refusing live operation without SWARM_LIVE=true (${reason})`);
+  const offline =
+    String(process.env.BASE44_OFFLINE ?? "false").toLowerCase() === "true" ||
+    String(process.env.BASE44_OFFLINE_MODE ?? "false").toLowerCase() === "true";
+  if (offline) throw new Error(`LIVE MODE NOT GUARANTEED (offline mode enabled: ${reason})`);
+  const paypalMode = String(process.env.PAYPAL_MODE ?? "live").toLowerCase();
+  const paypalBase = String(process.env.PAYPAL_API_BASE_URL ?? "").toLowerCase();
+  if (paypalMode === "sandbox" || paypalBase.includes("sandbox.paypal.com")) {
+    throw new Error(`LIVE MODE NOT GUARANTEED (PayPal sandbox configured: ${reason})`);
+  }
 }
 
 function getEntityConfig() {

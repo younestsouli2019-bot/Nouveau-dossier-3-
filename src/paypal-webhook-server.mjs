@@ -42,6 +42,14 @@ function requireLiveMode(reason) {
   if (!getEnvBool("SWARM_LIVE", false)) {
     throw new Error(`Refusing live operation without SWARM_LIVE=true (${reason})`);
   }
+  if (getEnvBool("BASE44_OFFLINE", false) || getEnvBool("BASE44_OFFLINE_MODE", false)) {
+    throw new Error(`LIVE MODE NOT GUARANTEED (offline mode enabled: ${reason})`);
+  }
+  const paypalMode = String(process.env.PAYPAL_MODE ?? "live").toLowerCase();
+  const paypalBase = String(process.env.PAYPAL_API_BASE_URL ?? "").toLowerCase();
+  if (paypalMode === "sandbox" || paypalBase.includes("sandbox.paypal.com")) {
+    throw new Error(`LIVE MODE NOT GUARANTEED (PayPal sandbox configured: ${reason})`);
+  }
 }
 
 function getPathname(req) {
@@ -584,7 +592,7 @@ if (args.check === true || args["config-check"] === true) {
     if (pathname === "/health") {
       json(res, 200, {
         ok: true,
-        live: getEnvBool("SWARM_LIVE", false),
+        live: getEnvBool("SWARM_LIVE", true),
         dedupe: dedupeStore.stats(),
         config: getConfigCheck(),
         startupConfigError

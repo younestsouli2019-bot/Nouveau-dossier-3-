@@ -171,9 +171,11 @@ Human-controlled:
 
 2.3 Kill Switches (must be real, not UI)
 Hard kill switches:
-- SWARM_LIVE=false: blocks all “money moving” operations in scripts.
+- SWARM_LIVE must be explicitly true: blocks all “money moving” operations in scripts when missing/false.
 - BASE44_ENABLE_PAYOUT_LEDGER_WRITE=false: blocks approvals/submissions/cancel.
 - Disable PayPal keys (unset PAYPAL_CLIENT_ID/SECRET) to prevent execution.
+- BASE44_OFFLINE / BASE44_OFFLINE_MODE=true: blocks live operations.
+- PAYPAL_MODE=sandbox or sandbox.paypal.com: blocks live operations.
 
 Soft kill switches:
 - Set DAILY_SPENDING_LIMIT low to slow down or block approvals.
