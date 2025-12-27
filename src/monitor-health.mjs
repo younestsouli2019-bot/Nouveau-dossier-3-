@@ -32,6 +32,21 @@ function hasEnv(name) {
   return v != null && String(v).trim() !== "";
 }
 
+function isPlaceholderValue(value) {
+  if (value == null) return true;
+  const v = String(value).trim();
+  if (!v) return true;
+  if (/^\s*<\s*YOUR_[A-Z0-9_]+\s*>\s*$/i.test(v)) return true;
+  if (/^\s*YOUR_[A-Z0-9_]+\s*$/i.test(v)) return true;
+  if (/^\s*(REPLACE_ME|CHANGEME|TODO)\s*$/i.test(v)) return true;
+  return false;
+}
+
+function hasRealEnv(name) {
+  const v = process.env[name];
+  return !isPlaceholderValue(v);
+}
+
 function getEnvBool(name, fallback = false) {
   const v = process.env[name];
   if (v == null) return fallback;
@@ -92,7 +107,7 @@ async function checkBase44(base44) {
 }
 
 async function checkPayPal() {
-  if (!hasEnv("PAYPAL_CLIENT_ID") || !hasEnv("PAYPAL_CLIENT_SECRET")) {
+  if (!hasRealEnv("PAYPAL_CLIENT_ID") || !hasRealEnv("PAYPAL_CLIENT_SECRET")) {
     return { ok: false, error: "Missing PayPal credentials (PAYPAL_CLIENT_ID/PAYPAL_CLIENT_SECRET)" };
   }
   try {
@@ -108,8 +123,8 @@ function buildReadinessSummary() {
   const live = getEnvBool("SWARM_LIVE", false);
   const base44Build = canBuildBase44();
   const base44Configured = base44Build.ok;
-  const paypalConfigured = hasEnv("PAYPAL_CLIENT_ID") && hasEnv("PAYPAL_CLIENT_SECRET");
-  const webhookConfigured = hasEnv("PAYPAL_WEBHOOK_ID");
+  const paypalConfigured = hasRealEnv("PAYPAL_CLIENT_ID") && hasRealEnv("PAYPAL_CLIENT_SECRET");
+  const webhookConfigured = hasRealEnv("PAYPAL_WEBHOOK_ID");
   const paypalMode = String(process.env.PAYPAL_MODE ?? "live").toLowerCase();
   const paypalApiBaseUrl = String(process.env.PAYPAL_API_BASE_URL ?? "");
 
@@ -118,11 +133,14 @@ function buildReadinessSummary() {
     BASE44_ENABLE_REVENUE_FROM_PAYPAL: getEnvBool("BASE44_ENABLE_REVENUE_FROM_PAYPAL", false),
     BASE44_ENABLE_PAYPAL_PAYOUT_STATUS_WRITE: getEnvBool("BASE44_ENABLE_PAYPAL_PAYOUT_STATUS_WRITE", false),
     BASE44_ENABLE_PAYOUT_LEDGER_WRITE: getEnvBool("BASE44_ENABLE_PAYOUT_LEDGER_WRITE", false),
-    BASE44_ENABLE_PAYPAL_METRICS: getEnvBool("BASE44_ENABLE_PAYPAL_METRICS", false)
+    BASE44_ENABLE_PAYPAL_METRICS: getEnvBool("BASE44_ENABLE_PAYPAL_METRICS", false),
+    PAYPAL_PPP2_APPROVED: getEnvBool("PAYPAL_PPP2_APPROVED", false) || getEnvBool("PPP2_APPROVED", false),
+    PAYPAL_PPP2_ENABLE_SEND: getEnvBool("PAYPAL_PPP2_ENABLE_SEND", false) || getEnvBool("PPP2_ENABLE_SEND", false)
   };
 
   const warnings = [];
-  if (live && (paypalMode === "sandbox" || paypalApiBaseUrl.toLowerCase().includes("sandbox.paypal.com"))) {
+  const paypalSandbox = paypalMode === "sandbox" || paypalApiBaseUrl.toLowerCase().includes("sandbox.paypal.com");
+  if (live && paypalSandbox) {
     warnings.push("SWARM_LIVE=true but PayPal is configured for sandbox");
   }
 
@@ -132,6 +150,11 @@ function buildReadinessSummary() {
   if (!webhookConfigured) missing.push("PAYPAL_WEBHOOK_ID");
   if (!base44Configured) missing.push("BASE44_APP_ID/BASE44_SERVICE_TOKEN");
   if (!flags.BASE44_ENABLE_REVENUE_FROM_PAYPAL) missing.push("BASE44_ENABLE_REVENUE_FROM_PAYPAL");
+  if (live && paypalSandbox) missing.push("PAYPAL_MODE/PAYPAL_API_BASE_URL (must be live)");
+
+  if (live && (!flags.PAYPAL_PPP2_APPROVED || !flags.PAYPAL_PPP2_ENABLE_SEND)) {
+    warnings.push("PayPal PPP2 flags not fully enabled (PAYPAL_PPP2_APPROVED and PAYPAL_PPP2_ENABLE_SEND)");
+  }
 
   const nextSteps = [];
   if (!live) nextSteps.push('PowerShell: $env:SWARM_LIVE="true"');

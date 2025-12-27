@@ -4,9 +4,20 @@ const PAYPAL_API_BASE =
     ? "https://api-m.sandbox.paypal.com"
     : "https://api-m.paypal.com");
 
+function isPlaceholderValue(value) {
+  if (value == null) return true;
+  const v = String(value).trim();
+  if (!v) return true;
+  if (/^\s*<\s*YOUR_[A-Z0-9_]+\s*>\s*$/i.test(v)) return true;
+  if (/^\s*YOUR_[A-Z0-9_]+\s*$/i.test(v)) return true;
+  if (/^\s*(REPLACE_ME|CHANGEME|TODO)\s*$/i.test(v)) return true;
+  return false;
+}
+
 function getEnvOrThrow(name) {
   const v = process.env[name];
-  if (!v) throw new Error(`Missing required env var: ${name}`);
+  if (v == null || String(v).trim() === "") throw new Error(`Missing required env var: ${name}`);
+  if (isPlaceholderValue(v)) throw new Error(`Missing required env var: ${name}`);
   return v;
 }
 
@@ -24,6 +35,12 @@ function base64BasicAuth(clientId, clientSecret) {
 export async function getPayPalAccessToken() {
   const clientId = getEnvOrThrow("PAYPAL_CLIENT_ID");
   const clientSecret = getEnvOrThrow("PAYPAL_CLIENT_SECRET");
+  const live = String(process.env.SWARM_LIVE ?? "false").toLowerCase() === "true";
+  const paypalMode = String(process.env.PAYPAL_MODE ?? "live").toLowerCase();
+  const paypalBase = String(process.env.PAYPAL_API_BASE_URL ?? "").toLowerCase();
+  if (live && (paypalMode === "sandbox" || paypalBase.includes("sandbox.paypal.com"))) {
+    throw new Error("LIVE MODE NOT GUARANTEED (PayPal sandbox configured)");
+  }
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), getHttpTimeoutMs());

@@ -28,7 +28,8 @@ function parseArgs(argv) {
 
 function getEnvOrThrow(name) {
   const v = process.env[name];
-  if (!v) throw new Error(`Missing required env var: ${name}`);
+  if (v == null || String(v).trim() === "") throw new Error(`Missing required env var: ${name}`);
+  if (isPlaceholderValue(v)) throw new Error(`Missing required env var: ${name}`);
   return v;
 }
 
@@ -50,6 +51,16 @@ function requireLiveMode(reason) {
   if (paypalMode === "sandbox" || paypalBase.includes("sandbox.paypal.com")) {
     throw new Error(`LIVE MODE NOT GUARANTEED (PayPal sandbox configured: ${reason})`);
   }
+}
+
+function isPlaceholderValue(value) {
+  if (value == null) return true;
+  const v = String(value).trim();
+  if (!v) return true;
+  if (/^\s*<\s*YOUR_[A-Z0-9_]+\s*>\s*$/i.test(v)) return true;
+  if (/^\s*YOUR_[A-Z0-9_]+\s*$/i.test(v)) return true;
+  if (/^\s*(REPLACE_ME|CHANGEME|TODO)\s*$/i.test(v)) return true;
+  return false;
 }
 
 function getPathname(req) {
@@ -178,7 +189,7 @@ function getConfigCheck() {
   const missing = [];
   const have = (name) => {
     const v = process.env[name];
-    return v != null && String(v).trim() !== "";
+    return v != null && String(v).trim() !== "" && !isPlaceholderValue(v);
   };
 
   if (!have("PAYPAL_WEBHOOK_ID")) missing.push("PAYPAL_WEBHOOK_ID");
