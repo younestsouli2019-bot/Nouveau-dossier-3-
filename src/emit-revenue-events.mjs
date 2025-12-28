@@ -117,6 +117,16 @@ function verifyNoSandboxPayPal() {
   }
 }
 
+function isPayPalPayoutSendEnabled() {
+  const override = process.env.AUTONOMOUS_ALLOW_PAYPAL_PAYOUTS ?? process.env.BASE44_ALLOW_PAYPAL_PAYOUTS ?? null;
+  if (override != null && String(override).trim() !== "") return String(override).toLowerCase() === "true";
+
+  const approved = String(process.env.PAYPAL_PPP2_APPROVED ?? process.env.PPP2_APPROVED ?? "false").toLowerCase() === "true";
+  const enableSend =
+    String(process.env.PAYPAL_PPP2_ENABLE_SEND ?? process.env.PPP2_ENABLE_SEND ?? "false").toLowerCase() === "true";
+  return approved && enableSend;
+}
+
 function buildLiveProofBase(action) {
   return {
     at: new Date().toISOString(),
@@ -464,6 +474,50 @@ function resolveBankWireDestinationFromMeta(meta) {
   return norm.account ? norm : null;
 }
 
+function shouldOptimizePaymentRouting() {
+  const v = process.env.AUTONOMOUS_OPTIMIZE_PAYMENT_ROUTING ?? process.env.BASE44_OPTIMIZE_PAYMENT_ROUTING ?? "false";
+  return String(v).toLowerCase() === "true";
+}
+
+function getRoutingMadBankThreshold() {
+  const v = Number(process.env.AUTONOMOUS_ROUTING_MAD_BANK_THRESHOLD ?? "5000");
+  if (!Number.isFinite(v) || v <= 0) return 5000;
+  return v;
+}
+
+function getRoutingUsdPayPalThreshold() {
+  const v = Number(process.env.AUTONOMOUS_ROUTING_USD_PAYPAL_THRESHOLD ?? "5000");
+  if (!Number.isFinite(v) || v <= 0) return 5000;
+  return v;
+}
+
+function chooseOptimizedRecipientType({ amount, currency, meta, beneficiary }) {
+  const c = String(currency ?? "").trim().toUpperCase();
+  const n = Number(amount);
+  if (!Number.isFinite(n) || n <= 0) return "beneficiary";
+
+  const bankDest = resolveBankWireDestinationFromMeta(meta);
+  const paypalEmail = isPayPalPayoutSendEnabled()
+    ? normalizeEmailAddress(meta?.paypal_email ?? meta?.paypalEmail ?? beneficiary ?? null)
+    : null;
+
+  if (c === "MAD" && n >= getRoutingMadBankThreshold()) {
+    if (bankDest) return "bank_wire";
+    if (paypalEmail) return "paypal";
+    return "beneficiary";
+  }
+
+  if (c === "USD" && n < getRoutingUsdPayPalThreshold()) {
+    if (paypalEmail) return "paypal";
+    if (bankDest) return "bank_wire";
+    return "beneficiary";
+  }
+
+  if (paypalEmail) return "paypal";
+  if (bankDest) return "bank_wire";
+  return "beneficiary";
+}
+
 function destinationsEqual(a, b) {
   const aa = normalizeDestinationObject(a);
   const bb = normalizeDestinationObject(b);
@@ -753,14 +807,29 @@ async function createPayoutBatchesFromEarnings(
   for (const e of filtered) {
     const b = earningCfg.fieldMap.beneficiary ? e?.[earningCfg.fieldMap.beneficiary] : null;
     const meta = earningCfg.fieldMap.metadata ? e?.[earningCfg.fieldMap.metadata] : null;
-    const derivedType = normalizeRecipientType(
+    const explicitTypeRaw =
       recipientType ??
-        meta?.recipient_type ??
-        meta?.payout_method ??
-        meta?.payout_route ??
-        meta?.payout_provider ??
-        null
-    );
+      meta?.recipient_type ??
+      meta?.recipientType ??
+      meta?.payout_method ??
+      meta?.payoutMethod ??
+      meta?.payout_route ??
+      meta?.payoutRoute ??
+      meta?.payout_provider ??
+      meta?.payoutProvider ??
+      null;
+
+    let derivedType = normalizeRecipientType(explicitTypeRaw);
+    if (!explicitTypeRaw && shouldOptimizePaymentRouting()) {
+      const amount = earningCfg.fieldMap.amount ? e?.[earningCfg.fieldMap.amount] : null;
+      const currency = earningCfg.fieldMap.currency ? e?.[earningCfg.fieldMap.currency] : null;
+      derivedType = chooseOptimizedRecipientType({
+        amount,
+        currency,
+        meta,
+        beneficiary: b
+      });
+    }
     const key = `${String(b ?? "")}::${derivedType}`;
     if (!byRecipient.has(key)) byRecipient.set(key, { beneficiary: String(b ?? ""), recipientType: derivedType, earnings: [] });
     byRecipient.get(key).earnings.push(e);
@@ -1026,6 +1095,9 @@ async function submitPayPalPayoutBatch(base44, { batchId, args, dryRun }) {
   if (!shouldWritePayoutLedger()) throw new Error("Refusing submit without BASE44_ENABLE_PAYOUT_LEDGER_WRITE=true");
   requireLiveMode("submit PayPal payout batch");
   verifyNoSandboxPayPal();
+  if (!isPayPalPayoutSendEnabled()) {
+    throw new Error("PayPal payouts not enabled (set PAYPAL_PPP2_APPROVED=true and PAYPAL_PPP2_ENABLE_SEND=true)");
+  }
 
   const paypalItems = mapped.map((x) => ({
     recipient_type: "EMAIL",
@@ -1295,7 +1367,7 @@ async function syncPayPalBatchToLedger(base44, { batchId, paypalBatchId, dryRun 
 
     updates.push({ senderItemId: String(senderItemId), internalId: String(internal.id), patch });
 
-    if (ledgerStatus === "success" && payoutItemCfg.fieldMap.revenueEventId && revenueCfg.fieldMap.status) {
+    if (ledgerStatus === "success" && payoutItemCfg.fieldMap.revenueEventId && revenueCfg.fieldMap.status && transactionId) {
       const revenueEventId = internal?.[payoutItemCfg.fieldMap.revenueEventId] ?? null;
       if (revenueEventId) {
         revenueUpdates.push({

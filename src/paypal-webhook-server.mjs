@@ -404,7 +404,7 @@ async function applyPayoutItemUpdate(base44, update) {
   }
 
   let revenueUpdated = false;
-  if (update.status === "success" && revenueEventId && revenueCfg.fieldMap.status) {
+  if (update.status === "success" && revenueEventId && revenueCfg.fieldMap.status && update.paypalTxnId) {
     const revPatch = { [revenueCfg.fieldMap.status]: "paid_out" };
     if (revenueCfg.fieldMap.payoutBatchId && batchId) revPatch[revenueCfg.fieldMap.payoutBatchId] = batchId;
     await revenueEntity.update(revenueEventId, revPatch).catch(() => null);
