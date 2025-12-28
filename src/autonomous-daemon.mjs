@@ -38,6 +38,22 @@ function envIsTrue(value, fallback = "true") {
   return String(value ?? fallback).toLowerCase() === "true";
 }
 
+function isPlaceholderValue(value) {
+  if (value == null) return true;
+  const v = String(value).trim();
+  if (!v) return true;
+  if (/^\s*<\s*YOUR_[A-Z0-9_]+\s*>\s*$/i.test(v)) return true;
+  if (/^\s*YOUR_[A-Z0-9_]+\s*$/i.test(v)) return true;
+  if (/^\s*(REPLACE_ME|CHANGEME|TODO)\s*$/i.test(v)) return true;
+  return false;
+}
+
+function requireRealEnv(name) {
+  const v = process.env[name];
+  if (isPlaceholderValue(v)) throw new Error(`LIVE MODE NOT GUARANTEED (missing/placeholder env: ${name})`);
+  return String(v);
+}
+
 function isUnsafePath(p) {
   const abs = path.resolve(process.cwd(), String(p ?? ""));
   const lower = abs.toLowerCase();
@@ -73,15 +89,70 @@ function verifyNoSandboxPayPal() {
   }
 }
 
+function isPayPalPayoutSendEnabled() {
+  const override = process.env.AUTONOMOUS_ALLOW_PAYPAL_PAYOUTS ?? process.env.BASE44_ALLOW_PAYPAL_PAYOUTS ?? null;
+  if (override != null && String(override).trim() !== "") return String(override).toLowerCase() === "true";
+
+  const approved = String(process.env.PAYPAL_PPP2_APPROVED ?? process.env.PPP2_APPROVED ?? "false").toLowerCase() === "true";
+  const enableSend =
+    String(process.env.PAYPAL_PPP2_ENABLE_SEND ?? process.env.PPP2_ENABLE_SEND ?? "false").toLowerCase() === "true";
+  return approved && enableSend;
+}
+
+function hasAllowedPayPalRecipientsConfigured() {
+  const csv =
+    process.env.AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS ??
+    process.env.BASE44_ALLOWED_PAYPAL_RECIPIENTS ??
+    process.env.PAYOUT_ALLOWED_PAYPAL_RECIPIENTS ??
+    null;
+  if (csv != null && String(csv).trim() && !isPlaceholderValue(csv)) return true;
+
+  const json = process.env.AUTONOMOUS_ALLOWED_PAYOUT_RECIPIENTS_JSON ?? process.env.BASE44_ALLOWED_PAYOUT_RECIPIENTS_JSON ?? null;
+  if (json == null || !String(json).trim() || isPlaceholderValue(json)) return false;
+  try {
+    const parsed = JSON.parse(String(json));
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return false;
+    const paypal = parsed.paypal ?? parsed.paypal_email ?? parsed.paypalEmail ?? [];
+    return Array.isArray(paypal) && paypal.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 function validateDaemonLiveModeOrThrow(cfg) {
-  if (!envIsTrue(process.env.SWARM_LIVE, "true")) throw new Error("LIVE MODE NOT GUARANTEED (SWARM_LIVE not true)");
+  if (!envIsTrue(process.env.SWARM_LIVE, "false")) throw new Error("LIVE MODE NOT GUARANTEED (SWARM_LIVE not true)");
   if (cfg?.offline?.enabled === true) throw new Error("LIVE MODE NOT GUARANTEED (offline enabled)");
   if (cfg?.payout?.dryRun === true) throw new Error("LIVE MODE NOT GUARANTEED (dry-run enabled)");
+  requireRealEnv("BASE44_APP_ID");
+  requireRealEnv("BASE44_SERVICE_TOKEN");
+
+  if (
+    cfg?.tasks?.createPayoutBatches === true ||
+    cfg?.tasks?.autoApprovePayoutBatches === true ||
+    cfg?.tasks?.autoSubmitPayPalPayoutBatches === true ||
+    cfg?.tasks?.autoExportPayoneerPayoutBatches === true ||
+    cfg?.tasks?.syncPayPalLedgerBatches === true
+  ) {
+    if (!envIsTrue(process.env.BASE44_ENABLE_PAYOUT_LEDGER_WRITE, "false")) {
+      throw new Error("LIVE MODE NOT GUARANTEED (BASE44_ENABLE_PAYOUT_LEDGER_WRITE not true)");
+    }
+  }
+
   if (cfg?.tasks?.autoExportPayoneerPayoutBatches === true && isUnsafePath(cfg?.payout?.export?.payoneerOutDir ?? "")) {
     throw new Error("LIVE MODE NOT GUARANTEED (unsafe Payoneer out dir)");
   }
   if (cfg?.tasks?.autoSubmitPayPalPayoutBatches === true || cfg?.tasks?.syncPayPalLedgerBatches === true) {
     verifyNoSandboxPayPal();
+    requireRealEnv("PAYPAL_CLIENT_ID");
+    requireRealEnv("PAYPAL_CLIENT_SECRET");
+  }
+  if (cfg?.tasks?.autoSubmitPayPalPayoutBatches === true && !isPayPalPayoutSendEnabled()) {
+    throw new Error("LIVE MODE NOT GUARANTEED (PayPal payouts not enabled; set PAYPAL_PPP2_APPROVED=true and PAYPAL_PPP2_ENABLE_SEND=true)");
+  }
+  if (cfg?.tasks?.autoSubmitPayPalPayoutBatches === true && !hasAllowedPayPalRecipientsConfigured()) {
+    throw new Error(
+      "LIVE MODE NOT GUARANTEED (missing owner allowlist; set AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS or AUTONOMOUS_ALLOWED_PAYOUT_RECIPIENTS_JSON)"
+    );
   }
 }
 
@@ -626,7 +697,7 @@ async function runTick(cfg, state) {
   const out = { ok: true, at: startedAt, mode: cfg.offline.enabled ? "offline" : "auto", results: {}, meta: {} };
 
   if (isMoneyMovingTasks(cfg)) {
-    if (!envIsTrue(process.env.SWARM_LIVE, "true")) {
+    if (!envIsTrue(process.env.SWARM_LIVE, "false")) {
       throw new Error("LIVE MODE NOT GUARANTEED (SWARM_LIVE downgraded)");
     }
   }

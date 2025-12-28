@@ -7,6 +7,14 @@ ngrok.tgz
 ngrok.zip
 cloudflared
 cloudflared.tgz
+
+ERRORS.txt
+output.txt
+script.txt
+MASTERPROMPT.txt
+alternative.txt
+missionDIRECTIMPACT.txt
+Nouveau Document texte.txt
 out/
 archive/
 .autonomous-state.json
@@ -21,3 +29,9 @@ autonomous*.txt
 *.tgz
 *.tar.gz
 *.csv
+chat-export*.json
+majorFUCKUP*.txt
+Steps.Ahead.txt
+confirmationneeded.txt
+constant.improvements.txt
+Nouveau dossier (3)/

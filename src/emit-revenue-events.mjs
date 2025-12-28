@@ -539,6 +539,84 @@ function resolveRecipientAddress(recipientType, meta, fallback) {
   return normalizeEmail(fallback ?? null);
 }
 
+function parseAllowedRecipientList(value) {
+  if (value == null) return [];
+  if (Array.isArray(value)) return value.map((x) => String(x ?? "").trim()).filter(Boolean);
+  const s = String(value).trim();
+  if (!s) return [];
+  try {
+    const parsed = JSON.parse(s);
+    if (Array.isArray(parsed)) return parsed.map((x) => String(x ?? "").trim()).filter(Boolean);
+    return [];
+  } catch {
+    return s
+      .split(",")
+      .map((x) => String(x ?? "").trim())
+      .filter(Boolean);
+  }
+}
+
+function getAllowedRecipientsPolicyFromEnv() {
+  const json = process.env.AUTONOMOUS_ALLOWED_PAYOUT_RECIPIENTS_JSON ?? process.env.BASE44_ALLOWED_PAYOUT_RECIPIENTS_JSON ?? null;
+  if (json != null && String(json).trim()) {
+    const parsed = safeJsonParse(String(json), null);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      const paypal = parseAllowedRecipientList(parsed.paypal ?? parsed.paypal_email ?? parsed.paypalEmail ?? []);
+      const payoneer = parseAllowedRecipientList(parsed.payoneer ?? parsed.payoneer_id ?? parsed.payoneerId ?? []);
+      const policy = {
+        paypal: new Set(paypal.map((x) => normalizeEmailAddress(x)).filter(Boolean)),
+        payoneer: new Set(payoneer.map((x) => normalizeEmailAddress(x)).filter(Boolean))
+      };
+      const configured = policy.paypal.size > 0 || policy.payoneer.size > 0;
+      return { ...policy, configured };
+    }
+  }
+
+  const paypal = parseAllowedRecipientList(
+    process.env.AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS ??
+      process.env.BASE44_ALLOWED_PAYPAL_RECIPIENTS ??
+      process.env.PAYOUT_ALLOWED_PAYPAL_RECIPIENTS ??
+      null
+  );
+  const payoneer = parseAllowedRecipientList(
+    process.env.AUTONOMOUS_ALLOWED_PAYONEER_RECIPIENTS ??
+      process.env.BASE44_ALLOWED_PAYONEER_RECIPIENTS ??
+      process.env.PAYOUT_ALLOWED_PAYONEER_RECIPIENTS ??
+      null
+  );
+
+  const policy = {
+    paypal: new Set(paypal.map((x) => normalizeEmailAddress(x)).filter(Boolean)),
+    payoneer: new Set(payoneer.map((x) => normalizeEmailAddress(x)).filter(Boolean))
+  };
+  const configured = policy.paypal.size > 0 || policy.payoneer.size > 0;
+  return { ...policy, configured };
+}
+
+function isRecipientAllowedByPolicy(recipientType, recipient, policy) {
+  const t = normalizeRecipientType(recipientType ?? null);
+  if (t === "paypal") {
+    const email = normalizeEmailAddress(recipient);
+    if (!email) return false;
+    if (!policy?.paypal || policy.paypal.size === 0) return false;
+    return policy.paypal.has(email);
+  }
+  if (t === "payoneer") {
+    const email = normalizeEmailAddress(recipient);
+    if (!email) return false;
+    if (!policy?.payoneer || policy.payoneer.size === 0) return false;
+    return policy.payoneer.has(email);
+  }
+  return true;
+}
+
+function requireAllowedRecipientsForPayPalSend(policy) {
+  if (policy?.paypal && policy.paypal.size > 0) return;
+  throw new Error(
+    "Refusing PayPal send without owner allowlist (set AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS or AUTONOMOUS_ALLOWED_PAYOUT_RECIPIENTS_JSON)"
+  );
+}
+
 function makeStableBatchId({ settlementId, beneficiary, recipientType, currency, earningIds, day }) {
   const base = JSON.stringify({
     settlementId: settlementId ?? null,
@@ -853,6 +931,7 @@ async function createPayoutBatchesFromEarnings(
 
   const created = [];
   const day = formatDay();
+  const allowedPolicy = getAllowedRecipientsPolicyFromEnv();
 
   for (const { beneficiary: benefKey, recipientType: recipType, earnings: group } of byRecipient.values()) {
     const currencies = new Map();
@@ -879,6 +958,7 @@ async function createPayoutBatchesFromEarnings(
       });
 
       const missingRecipientEarningIds = [];
+      const notAllowedRecipientEarningIds = [];
       for (const e of list) {
         const meta = earningCfg.fieldMap.metadata ? e?.[earningCfg.fieldMap.metadata] : null;
         const recipient = resolveRecipientAddress(recipType, meta, benefKey || null);
@@ -899,6 +979,33 @@ async function createPayoutBatchesFromEarnings(
           skipped: true,
           reason: "missing_recipient",
           missingRecipientEarningIds,
+          dryRun: !!dryRun
+        });
+        continue;
+      }
+
+      if (allowedPolicy.configured === true) {
+        for (const e of list) {
+          const meta = earningCfg.fieldMap.metadata ? e?.[earningCfg.fieldMap.metadata] : null;
+          const recipient = resolveRecipientAddress(recipType, meta, benefKey || null);
+          if (isRecipientAllowedByPolicy(recipType, recipient, allowedPolicy)) continue;
+          const eid = earningCfg.fieldMap.earningId ? e?.[earningCfg.fieldMap.earningId] : null;
+          notAllowedRecipientEarningIds.push(eid ? String(eid) : String(e?.id ?? ""));
+        }
+      }
+
+      if (notAllowedRecipientEarningIds.length > 0) {
+        created.push({
+          batchId,
+          batchInternalId: null,
+          beneficiary: benefKey || null,
+          recipientType: recipType || null,
+          currency: currencyKey || null,
+          earningCount: list.length,
+          itemCount: 0,
+          skipped: true,
+          reason: "recipient_not_allowed",
+          notAllowedRecipientEarningIds,
           dryRun: !!dryRun
         });
         continue;
@@ -1097,6 +1204,13 @@ async function submitPayPalPayoutBatch(base44, { batchId, args, dryRun }) {
   verifyNoSandboxPayPal();
   if (!isPayPalPayoutSendEnabled()) {
     throw new Error("PayPal payouts not enabled (set PAYPAL_PPP2_APPROVED=true and PAYPAL_PPP2_ENABLE_SEND=true)");
+  }
+
+  const allowedPolicy = getAllowedRecipientsPolicyFromEnv();
+  requireAllowedRecipientsForPayPalSend(allowedPolicy);
+  for (const it of mapped) {
+    if (isRecipientAllowedByPolicy("paypal", it.recipient, allowedPolicy)) continue;
+    throw new Error(`Refusing PayPal send to non-owner recipient (${mask(it.recipient, { keepStart: 1, keepEnd: 0 })})`);
   }
 
   const paypalItems = mapped.map((x) => ({
