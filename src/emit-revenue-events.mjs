@@ -556,6 +556,12 @@ function parseAllowedRecipientList(value) {
   }
 }
 
+function normalizeBankAccount(value) {
+  const s = String(value ?? "").trim();
+  if (!s) return null;
+  return s.replace(/\s+/g, "").toUpperCase();
+}
+
 function getAllowedRecipientsPolicyFromEnv() {
   const json = process.env.AUTONOMOUS_ALLOWED_PAYOUT_RECIPIENTS_JSON ?? process.env.BASE44_ALLOWED_PAYOUT_RECIPIENTS_JSON ?? null;
   if (json != null && String(json).trim()) {
@@ -563,11 +569,15 @@ function getAllowedRecipientsPolicyFromEnv() {
     if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
       const paypal = parseAllowedRecipientList(parsed.paypal ?? parsed.paypal_email ?? parsed.paypalEmail ?? []);
       const payoneer = parseAllowedRecipientList(parsed.payoneer ?? parsed.payoneer_id ?? parsed.payoneerId ?? []);
+      const bankWireAccounts = parseAllowedRecipientList(
+        parsed.bank_wire ?? parsed.bankWire ?? parsed.bank_wire_accounts ?? parsed.bankWireAccounts ?? parsed.bank_accounts ?? parsed.bankAccounts ?? []
+      );
       const policy = {
         paypal: new Set(paypal.map((x) => normalizeEmailAddress(x)).filter(Boolean)),
-        payoneer: new Set(payoneer.map((x) => normalizeEmailAddress(x)).filter(Boolean))
+        payoneer: new Set(payoneer.map((x) => normalizeEmailAddress(x)).filter(Boolean)),
+        bankWireAccounts: new Set(bankWireAccounts.map((x) => normalizeBankAccount(x)).filter(Boolean))
       };
-      const configured = policy.paypal.size > 0 || policy.payoneer.size > 0;
+      const configured = policy.paypal.size > 0 || policy.payoneer.size > 0 || policy.bankWireAccounts.size > 0;
       return { ...policy, configured };
     }
   }
@@ -584,13 +594,27 @@ function getAllowedRecipientsPolicyFromEnv() {
       process.env.PAYOUT_ALLOWED_PAYONEER_RECIPIENTS ??
       null
   );
+  const bankWireAccounts = parseAllowedRecipientList(
+    process.env.AUTONOMOUS_ALLOWED_BANK_WIRE_ACCOUNTS ??
+      process.env.BASE44_ALLOWED_BANK_WIRE_ACCOUNTS ??
+      process.env.PAYOUT_ALLOWED_BANK_WIRE_ACCOUNTS ??
+      null
+  );
 
   const policy = {
     paypal: new Set(paypal.map((x) => normalizeEmailAddress(x)).filter(Boolean)),
-    payoneer: new Set(payoneer.map((x) => normalizeEmailAddress(x)).filter(Boolean))
+    payoneer: new Set(payoneer.map((x) => normalizeEmailAddress(x)).filter(Boolean)),
+    bankWireAccounts: new Set(bankWireAccounts.map((x) => normalizeBankAccount(x)).filter(Boolean))
   };
-  const configured = policy.paypal.size > 0 || policy.payoneer.size > 0;
+  const configured = policy.paypal.size > 0 || policy.payoneer.size > 0 || policy.bankWireAccounts.size > 0;
   return { ...policy, configured };
+}
+
+function isBankWireDestinationAllowedByPolicy(destination, policy) {
+  const account = normalizeBankAccount(destination?.account ?? "");
+  if (!account) return false;
+  if (!policy?.bankWireAccounts || policy.bankWireAccounts.size === 0) return false;
+  return policy.bankWireAccounts.has(account);
 }
 
 function isRecipientAllowedByPolicy(recipientType, recipient, policy) {
@@ -961,8 +985,14 @@ async function createPayoutBatchesFromEarnings(
       const notAllowedRecipientEarningIds = [];
       for (const e of list) {
         const meta = earningCfg.fieldMap.metadata ? e?.[earningCfg.fieldMap.metadata] : null;
-        const recipient = resolveRecipientAddress(recipType, meta, benefKey || null);
-        if (String(recipient ?? "").trim()) continue;
+        const recipientKind = normalizeRecipientType(recipType ?? null);
+        if (recipientKind === "bank_wire") {
+          const d = resolveBankWireDestinationFromMeta(meta);
+          if (d?.account) continue;
+        } else {
+          const recipient = resolveRecipientAddress(recipType, meta, benefKey || null);
+          if (String(recipient ?? "").trim()) continue;
+        }
         const eid = earningCfg.fieldMap.earningId ? e?.[earningCfg.fieldMap.earningId] : null;
         missingRecipientEarningIds.push(eid ? String(eid) : String(e?.id ?? ""));
       }
@@ -987,8 +1017,15 @@ async function createPayoutBatchesFromEarnings(
       if (allowedPolicy.configured === true) {
         for (const e of list) {
           const meta = earningCfg.fieldMap.metadata ? e?.[earningCfg.fieldMap.metadata] : null;
-          const recipient = resolveRecipientAddress(recipType, meta, benefKey || null);
-          if (isRecipientAllowedByPolicy(recipType, recipient, allowedPolicy)) continue;
+          const recipientKind = normalizeRecipientType(recipType ?? null);
+          if (recipientKind === "bank_wire") {
+            if (!allowedPolicy.bankWireAccounts || allowedPolicy.bankWireAccounts.size === 0) continue;
+            const d = resolveBankWireDestinationFromMeta(meta);
+            if (d && isBankWireDestinationAllowedByPolicy(d, allowedPolicy)) continue;
+          } else {
+            const recipient = resolveRecipientAddress(recipType, meta, benefKey || null);
+            if (isRecipientAllowedByPolicy(recipType, recipient, allowedPolicy)) continue;
+          }
           const eid = earningCfg.fieldMap.earningId ? e?.[earningCfg.fieldMap.earningId] : null;
           notAllowedRecipientEarningIds.push(eid ? String(eid) : String(e?.id ?? ""));
         }
@@ -1601,14 +1638,13 @@ function computeTruthStatusForBatch({ externalProviderId, notes, itemStatuses })
   return "SUBMITTED / UNCONFIRMED";
 }
 
-async function exportPayoutTruth(base44, { batchId, limit }) {
+async function exportPayoutTruth(base44, { batchId, limit, onlyReal = false }) {
   const payoutBatchCfg = getPayoutBatchConfigFromEnv();
   const payoutItemCfg = getPayoutItemConfigFromEnv();
   const batchEntity = base44.asServiceRole.entities[payoutBatchCfg.entityName];
   const itemEntity = base44.asServiceRole.entities[payoutItemCfg.entityName];
 
-  const fields = [
-    "id",
+  const fields = [ 
     payoutBatchCfg.fieldMap.batchId,
     payoutBatchCfg.fieldMap.status,
     payoutBatchCfg.fieldMap.submittedAt,
@@ -1630,6 +1666,7 @@ async function exportPayoutTruth(base44, { batchId, limit }) {
     const internalBatchId = payoutBatchCfg.fieldMap.batchId ? b?.[payoutBatchCfg.fieldMap.batchId] : null;
     const notes = payoutBatchCfg.fieldMap.notes ? b?.[payoutBatchCfg.fieldMap.notes] : null;
     const externalProviderId = notes?.paypal_payout_batch_id ?? notes?.paypalPayoutBatchId ?? "NOT_SUBMITTED";
+    if (onlyReal && (!externalProviderId || String(externalProviderId) === "NOT_SUBMITTED")) continue;
 
     const items = internalBatchId
       ? await filterAll(itemEntity, { [payoutItemCfg.fieldMap.batchId]: String(internalBatchId) }, { pageSize: 500 })
@@ -1656,6 +1693,12 @@ async function exportPayoutTruth(base44, { batchId, limit }) {
     rows.push({
       internalPayoutBatchId: internalBatchId,
       externalProviderId,
+      paypal_payout_batch_id: externalProviderId,
+      providerKind: normalizeRecipientType(notes?.recipient_type ?? notes?.recipientType ?? null, "paypal") === "paypal" ? "paypal_payouts" : null,
+      providerStatus: notes?.paypal_batch_status ?? null,
+      providerTimeCreated: notes?.paypal_time_created ?? null,
+      providerTimeCompleted: notes?.paypal_time_completed ?? null,
+      providerSyncedAt: notes?.paypal_synced_at ?? null,
       lastProviderSyncAt,
       truthSource,
       truthStatus,
@@ -1663,7 +1706,7 @@ async function exportPayoutTruth(base44, { batchId, limit }) {
     });
   }
 
-  return { ok: true, count: rows.length, rows };
+  return { ok: true, count: rows.length, rows, onlyReal: !!onlyReal };
 }
 
 async function repairSubmittedWithoutProviderId(base44, { limit, dryRun }) {
@@ -2298,12 +2341,20 @@ async function main() {
       process.env.npm_config_batch_id ??
       process.env.NPM_CONFIG_BATCH_ID ??
       null;
-    const out = await exportPayoutTruth(base44, { batchId: batchId != null ? String(batchId) : null, limit });
+    const truthOnlyUiEnabled = (process.env.BASE44_ENABLE_TRUTH_ONLY_UI ?? "false").toLowerCase() === "true";
+    const onlyReal =
+      args["only-real"] === true ||
+      args.onlyReal === true ||
+      args["truth-only-ui"] === true ||
+      args.truthOnlyUi === true ||
+      truthOnlyUiEnabled;
+    const out = await exportPayoutTruth(base44, { batchId: batchId != null ? String(batchId) : null, limit, onlyReal });
     process.stdout.write(
       `${JSON.stringify({
         ...out,
         liveExecutionEnabled: (process.env.SWARM_LIVE ?? "false").toLowerCase() === "true",
-        truthOnlyUiEnabled: (process.env.BASE44_ENABLE_TRUTH_ONLY_UI ?? "false").toLowerCase() === "true"
+        truthOnlyUiEnabled,
+        truthOnlyUiRequested: !!onlyReal
       })}\n`
     );
     return;

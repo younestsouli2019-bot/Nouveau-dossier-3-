@@ -19,6 +19,18 @@ The repo already contains concrete gates that prevent accidental “simulation p
 
 Immediate objective: make the payment status and payouts auditable and grounded in external provider truth (PayPal API + webhooks), and ensure the Base44 UI reads from that ledger rather than static/demo data.
 
+LATEST IMPLEMENTED CHANGES (2025-12-28)
+- Truth-only payout truth export:
+  - emit:revenue now supports --export-payout-truth --only-real (and --truth-only-ui) so UI/agents only see batches with real provider proof (notes.paypal_payout_batch_id).
+  - BASE44_ENABLE_TRUTH_ONLY_UI is surfaced in readiness, and truth-only can be enforced at export time.
+- Webhook reconciliation hardening:
+  - PayPal webhook processing backfills provider sync metadata onto PayoutBatch notes during payout item updates, reducing “ledger drift”.
+- Autonomous daemon hardening:
+  - daemon emits explicit policy meta (truthOnlyUiEnabled + allowlist configured) in its JSON output so agents cannot ignore the new truth model.
+  - daemon enforces “no unproven submission”: auto-submit logic relies on the payout truth repair/export path to prevent batches without provider ids from being treated as executed.
+- SBDS allowlist enforcement at payout-batch creation:
+  - payout batch creation validates recipients against configured allowlists for PayPal/Payoneer and bank-wire destinations; non-compliant earnings are skipped with reason recipient_not_allowed.
+
 LATEST IMPLEMENTED CHANGES (2025-12-25)
 - deploy-live now supports: setup, readiness, webhook, daemon, once, shell, and all (setup → readiness → daemon).
 - CREDS parsing now ignores placeholder values like <YOUR_WEBHOOK_ID> and forces secure prompt instead.
@@ -491,16 +503,28 @@ Immediate remediation actions:
 - npm run monitor:once
 
 
-12) WORKSPACE CHANGELOG (MOST RECENT)
-Recent commits:
-- 36186cb Bank wire export: infer destination from Earning metadata
-- b51be5a Enable PayPal payout submission; add mission and agent exports
-- bc76245 Implement autonomy guidelines in autonomous daemon
-- 419444e Base44 system: offline mode + payout batching
+12) WORKSPACE CHANGELOG (CHRONOLOGICAL)
+Goal: eliminate “UI lies” by treating provider truth as the only truth for payouts.
 
-Latest safeguards (this workspace):
-- PayPal submit now refuses to mark a batch submitted unless PayPal returned a real payout_batch_id.
-- PayPal submit now refuses to run if PayPal is configured for sandbox while live mode is enabled.
+Changes (chronological, this workspace):
+1) Truth-only payout submission:
+   - PayPal submit persists notes.paypal_payout_batch_id (real provider batch id) before marking a batch submitted_to_paypal.
+   - PayoutItems receive provider ids/status when returned by PayPal.
+
+2) Truth-only reconciliation:
+   - Sync/webhooks write payout statuses from provider truth and are gated by SWARM_LIVE plus write flags.
+
+3) Truth-only UI export contract:
+   - emit-revenue-events: --export-payout-truth emits authoritative rows for UI (internal id, external id, provider status, sync timestamps, truthStatus).
+   - --only-real / --truth-only-ui (or BASE44_ENABLE_TRUTH_ONLY_UI=true) filters out batches missing notes.paypal_payout_batch_id.
+
+4) Repair safety net:
+   - --repair-payout-truth rolls back submitted_to_paypal batches missing notes.paypal_payout_batch_id to approved and stamps notes.truth_enforced_*.
+   - autonomous-daemon runs repair before attempting auto-submit.
+
+5) Historical playbook (from suggestions2.Historical.txt, adapted to existing commands):
+   - Audit: --export-payout-truth, --report-*-payouts, --report-transaction-logs
+   - Correct: --repair-payout-truth (--dry-run first, then live with flags)
 
 Verification:
-- npm test: PASS (29/29)
+- npm test: PASS (84/84)

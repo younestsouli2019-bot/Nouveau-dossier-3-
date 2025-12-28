@@ -695,6 +695,12 @@ function effectiveOk(result) {
 async function runTick(cfg, state) {
   const startedAt = nowIso();
   const out = { ok: true, at: startedAt, mode: cfg.offline.enabled ? "offline" : "auto", results: {}, meta: {} };
+  out.meta.policy = {
+    truthOnlyUiEnabled: getEnvBool("BASE44_ENABLE_TRUTH_ONLY_UI", false),
+    allowlists: {
+      paypalConfigured: hasAllowedPayPalRecipientsConfigured()
+    }
+  };
 
   if (isMoneyMovingTasks(cfg)) {
     if (!envIsTrue(process.env.SWARM_LIVE, "false")) {
@@ -826,18 +832,21 @@ async function runTick(cfg, state) {
     } else if (cfg.payout?.dryRun) {
       out.results.autoSubmitPayPal = { ok: true, skipped: true, reason: "payout_dry_run_enabled" };
     } else {
+      const repairLimit = Math.max(1, Math.floor(Number(cfg.payout?.repairTruthLimit ?? 250)));
+      out.results.repairPayoutTruth = await runEmitWithOfflineFallback(["--repair-payout-truth", "--limit", String(repairLimit)], cfg);
+
       const approvedRes = await runEmitWithOfflineFallback(["--report-approved-batches"], cfg);
       out.results.approvedBatches = approvedRes;
       const batches = effectiveOk(approvedRes) ? (approvedRes.result?.batches ?? []) : [];
       const attempts = [];
       for (const b of Array.isArray(batches) ? batches : []) {
         const batchId = getBatchId(b);
-        const submittedAt = b?.submitted_at ?? b?.submittedAt ?? b?.submitted_date ?? null;
         const notesRaw = b?.notes ?? b?.Notes ?? null;
         const notes = parseJsonMaybe(notesRaw) ?? notesRaw;
         const recipientType = String(notes?.recipient_type ?? notes?.recipientType ?? "").toLowerCase();
+        const providerId = notes?.paypal_payout_batch_id ?? notes?.paypalPayoutBatchId ?? null;
         if (!batchId) continue;
-        if (submittedAt) continue;
+        if (providerId) continue;
         if (recipientType && recipientType !== "paypal" && recipientType !== "paypal_email") continue;
         const res = await runEmitWithOfflineFallback(["--submit-payout-batch", "--batch-id", String(batchId)], cfg);
         attempts.push({ batchId, res });
