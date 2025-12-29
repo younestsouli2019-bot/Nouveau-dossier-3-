@@ -273,8 +273,8 @@ $bankSwift = if ($swiftMatch) { $swiftMatch[1].Trim() } else { $null }
 
 $ribLine = $null
 foreach ($l in $lines) {
-  if ($l -match "^\s*\d{3}\s+\d{3}\s+\d{10,}\s+\d{2}\s*$") {
-    $ribLine = ($l -replace "\s+", " ").Trim()
+  if ($l -match "\b(?<bank>\d{3})\s+(?<city>\d{3})\s+(?<serial>\d{10,})\s+(?<key>\d{2})\b") {
+    $ribLine = "$($Matches.bank) $($Matches.city) $($Matches.serial) $($Matches.key)"
     break
   }
 }
@@ -286,7 +286,7 @@ foreach ($l in $lines) {
 
 $beneficiaryName = $null
 foreach ($l in $lines) {
-  if ($l -match "^\s*M\s+TSOULI\s+YOUNES\s*$") { $beneficiaryName = "M TSOULI YOUNES"; break }
+  if ($l -match "\bTSOULI\b" -and $l -match "\bYOUNES\b") { $beneficiaryName = "M TSOULI YOUNES"; break }
 }
 
 if ($paypalClientId) { $env:PAYPAL_CLIENT_ID = $paypalClientId }
@@ -367,6 +367,11 @@ Write-Host ("PAYPAL_CLIENT_SECRET " + (Mask $env:PAYPAL_CLIENT_SECRET))
 Write-Host ("PAYPAL_WEBHOOK_ID " + (Mask $env:PAYPAL_WEBHOOK_ID))
 Write-Host ("BASE44_APP_ID " + (Mask $env:BASE44_APP_ID))
 Write-Host ("BASE44_SERVICE_TOKEN " + (Mask $env:BASE44_SERVICE_TOKEN))
+Write-Host ("BANK_NAME " + (Mask $env:BANK_NAME))
+Write-Host ("BANK_SWIFT " + (Mask $env:BANK_SWIFT))
+Write-Host ("BANK_ACCOUNT " + (Mask $env:BANK_ACCOUNT))
+Write-Host ("BANK_BENEFICIARY_NAME " + (Mask $env:BANK_BENEFICIARY_NAME))
+Write-Host ("BASE44_PAYOUT_DESTINATION_JSON " + (Mask $env:BASE44_PAYOUT_DESTINATION_JSON))
 if ($payoneerEmail) { Write-Host ("Payoneer email: " + $payoneerEmail) }
 if ($paypalEmail) { Write-Host ("PayPal email: " + $paypalEmail) }
 
