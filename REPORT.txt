@@ -20,6 +20,9 @@ The repo already contains concrete gates that prevent accidental “simulation p
 Immediate objective: make the payment status and payouts auditable and grounded in external provider truth (PayPal API + webhooks), and ensure the Base44 UI reads from that ledger rather than static/demo data.
 
 LATEST IMPLEMENTED CHANGES (2025-12-28)
+- Deploy-live safety + bank destination env:
+  - deploy-live.ps1 now forces BASE44_OFFLINE/BASE44_OFFLINE_MODE to false for live runs.
+  - deploy-live.ps1 reliably extracts and exports Attijariwafa bank destination env (BANK_* + BASE44_PAYOUT_DESTINATION_JSON).
 - Truth-only payout truth export:
   - emit:revenue now supports --export-payout-truth --only-real (and --truth-only-ui) so UI/agents only see batches with real provider proof (notes.paypal_payout_batch_id).
   - BASE44_ENABLE_TRUTH_ONLY_UI is surfaced in readiness, and truth-only can be enforced at export time.
