@@ -808,11 +808,22 @@ function parseMaybeDateMs(value) {
   return Number.isNaN(ms) ? null : ms;
 }
 
+function isSchemaNotFoundError(err) {
+  const msg = err?.message ?? String(err ?? "");
+  return msg.includes("Entity schema") && msg.toLowerCase().includes("not found");
+}
+
 async function deadmanFetchLastWebhook(base44) {
   const entityName = process.env.BASE44_PAYPAL_EVENT_ENTITY ?? "PayPalWebhookEvent";
   const entity = base44.asServiceRole.entities[entityName];
   const fields = ["id", "created_date", "created_at", "event_id", "event_type"];
-  const rows = await entity.list("-created_date", 1, 0, fields);
+  let rows = [];
+  try {
+    rows = await entity.list("-created_date", 1, 0, fields);
+  } catch (e) {
+    if (isSchemaNotFoundError(e)) return { ok: true, unavailable: true, entityName };
+    return { ok: false, error: e?.message ?? String(e) };
+  }
   const rec = Array.isArray(rows) && rows[0] ? rows[0] : null;
   const at = rec?.created_at ?? rec?.created_date ?? null;
   const atMs = parseMaybeDateMs(at);
@@ -827,7 +838,13 @@ async function deadmanFetchRecentMetrics(base44, limit = 25) {
   const mapFromEnv = parseJsonMaybe(process.env.BASE44_PAYPAL_METRIC_FIELD_MAP);
   const fieldMap = mapFromEnv ?? { at: "at", kind: "kind", ok: "ok", summary: "summary" };
   const fields = ["id", "created_date", fieldMap.at, fieldMap.kind, fieldMap.ok, fieldMap.summary].filter(Boolean);
-  const rows = await entity.list("-created_date", Math.max(1, Math.floor(Number(limit ?? 25))), 0, fields);
+  let rows = [];
+  try {
+    rows = await entity.list("-created_date", Math.max(1, Math.floor(Number(limit ?? 25))), 0, fields);
+  } catch (e) {
+    if (isSchemaNotFoundError(e)) return { fieldMap, rows: [], unavailable: true, entityName };
+    return { fieldMap, rows: [], error: e?.message ?? String(e) };
+  }
   return { fieldMap, rows: Array.isArray(rows) ? rows : [] };
 }
 
@@ -835,7 +852,8 @@ function computeDeadmanViolations({ lastWebhook, metrics, cfg, nowMs }) {
   const violations = [];
   const thresholds = cfg.deadman?.thresholds ?? {};
 
-  if (lastWebhook?.ok === true) {
+  if (lastWebhook?.unavailable === true) {
+  } else if (lastWebhook?.ok === true) {
     const hoursSilent = (nowMs - lastWebhook.atMs) / (1000 * 60 * 60);
     if (Number.isFinite(hoursSilent) && hoursSilent > Number(thresholds.webhookSilenceHours ?? 4)) {
       violations.push({
@@ -883,6 +901,9 @@ function computeDeadmanViolations({ lastWebhook, metrics, cfg, nowMs }) {
 }
 
 async function recordFreezeIncident(base44, violations) {
+  if (envIsTrue(process.env.AUTONOMOUS_DISABLE_INCIDENT_LOG_WRITE, "false")) {
+    return { ok: true, skipped: true, reason: "incident_write_disabled" };
+  }
   const txCfg = getTransactionLogConfigFromEnv();
   const txEntity = base44.asServiceRole.entities[txCfg.entityName];
   const now = nowIso();
@@ -951,6 +972,9 @@ async function maybeActivateFreezeFromMissionHealth(cfg, state, missionHealthRes
 
   const summary = summarizeMissionHealthForFreeze(missionHealthRes);
   if (summary.ok) return { ok: true, violations: [] };
+  if (!envIsTrue(process.env.AUTONOMOUS_ENFORCE_MISSION_HEALTH_FREEZE, "false") || !isMoneyMovingTasks(cfg)) {
+    return { ok: true, skipped: true, reason: "not_enforced", violations: summary.violations };
+  }
 
   const now = nowIso();
   const previous = state.freeze?.active === true;
@@ -1010,6 +1034,10 @@ async function runDeadmanOnce(cfg, state) {
 
   const violations = computeDeadmanViolations({ lastWebhook, metrics, cfg, nowMs });
   if (violations.length === 0) return { ok: true, at: nowIso(), violations: [] };
+
+  if (!isMoneyMovingTasks(cfg)) {
+    return { ok: true, advisory: true, at: nowIso(), violations };
+  }
 
   state.freeze = { active: true, since: nowIso(), violations };
   const incident = await recordFreezeIncident(base44, violations);

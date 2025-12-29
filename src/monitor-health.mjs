@@ -390,15 +390,23 @@ async function calculateMissionHealth(base44, cfg, mission) {
   }
 
   const webhookEntity = base44.asServiceRole.entities[cfg.entities.webhook];
-  const webhook = await webhookEntity.filter(
-    { [cfg.fields.webhook.missionId]: String(missionId) },
-    "-created_date",
-    1,
-    0,
-    [cfg.fields.webhook.eventId, cfg.fields.webhook.eventType, cfg.fields.webhook.at, "created_date", "created_at", "at"]
-  );
-  const lastWebhook = Array.isArray(webhook) && webhook.length ? webhook[0] : null;
-  if (lastWebhook) {
+  let lastWebhook = null;
+  let webhookErr = null;
+  try {
+    const webhook = await webhookEntity.filter(
+      { [cfg.fields.webhook.missionId]: String(missionId) },
+      "-created_date",
+      1,
+      0,
+      [cfg.fields.webhook.eventId, cfg.fields.webhook.eventType, cfg.fields.webhook.at, "created_date", "created_at", "at"]
+    );
+    lastWebhook = Array.isArray(webhook) && webhook.length ? webhook[0] : null;
+  } catch (e) {
+    webhookErr = e?.message ?? String(e);
+  }
+  if (webhookErr) {
+    proofs.push({ type: "webhook_heartbeat", status: "unavailable", error: webhookErr });
+  } else if (lastWebhook) {
     const at = pickFirst(lastWebhook, [cfg.fields.webhook.at, "created_date", "created_at", "at", "updated_date"]);
     const h = hoursSince(at);
     const maxH = Number(requirements?.min_heartbeat_hours ?? 24) || 24;
@@ -425,38 +433,50 @@ async function calculateMissionHealth(base44, cfg, mission) {
 
   const requiredEvents = Array.isArray(requirements?.required_events) ? requirements.required_events : [];
   if (requiredEvents.length > 0) {
-    const sample = await webhookEntity.filter(
-      { [cfg.fields.webhook.missionId]: String(missionId) },
-      "-created_date",
-      250,
-      0,
-      [cfg.fields.webhook.eventType, "event_type", "type", cfg.fields.webhook.at, "created_date", "created_at", "at"]
-    );
-    const types = new Set(
-      (Array.isArray(sample) ? sample : [])
-        .map((r) => pickFirst(r, [cfg.fields.webhook.eventType, "event_type", "type"]))
-        .filter((x) => x != null)
-        .map((x) => String(x))
-    );
-    const missing = requiredEvents.filter((t) => !types.has(String(t)));
-    proofs.push({
-      type: "required_events",
-      status: missing.length === 0 ? "present" : "missing",
-      required: requiredEvents,
-      missing
-    });
+    if (webhookErr) {
+      proofs.push({ type: "required_events", status: "unavailable", required: requiredEvents, missing: requiredEvents });
+    } else {
+      const sample = await webhookEntity.filter(
+        { [cfg.fields.webhook.missionId]: String(missionId) },
+        "-created_date",
+        250,
+        0,
+        [cfg.fields.webhook.eventType, "event_type", "type", cfg.fields.webhook.at, "created_date", "created_at", "at"]
+      );
+      const types = new Set(
+        (Array.isArray(sample) ? sample : [])
+          .map((r) => pickFirst(r, [cfg.fields.webhook.eventType, "event_type", "type"]))
+          .filter((x) => x != null)
+          .map((x) => String(x))
+      );
+      const missing = requiredEvents.filter((t) => !types.has(String(t)));
+      proofs.push({
+        type: "required_events",
+        status: missing.length === 0 ? "present" : "missing",
+        required: requiredEvents,
+        missing
+      });
+    }
   }
 
   const revenueEntity = base44.asServiceRole.entities[cfg.entities.revenue];
-  const revenue = await revenueEntity.filter(
-    { [cfg.fields.revenue.missionId]: String(missionId) },
-    "-created_date",
-    1,
-    0,
-    [cfg.fields.revenue.eventId, cfg.fields.revenue.amount, cfg.fields.revenue.at, "created_date", "occurred_at", "at"]
-  );
-  const lastRevenue = Array.isArray(revenue) && revenue.length ? revenue[0] : null;
-  if (lastRevenue) {
+  let lastRevenue = null;
+  let revenueErr = null;
+  try {
+    const revenue = await revenueEntity.filter(
+      { [cfg.fields.revenue.missionId]: String(missionId) },
+      "-created_date",
+      1,
+      0,
+      [cfg.fields.revenue.eventId, cfg.fields.revenue.amount, cfg.fields.revenue.at, "created_date", "occurred_at", "at"]
+    );
+    lastRevenue = Array.isArray(revenue) && revenue.length ? revenue[0] : null;
+  } catch (e) {
+    revenueErr = e?.message ?? String(e);
+  }
+  if (revenueErr) {
+    proofs.push({ type: "ledger_activity", status: "unavailable", error: revenueErr });
+  } else if (lastRevenue) {
     proofs.push({
       type: "ledger_activity",
       status: "active",
@@ -469,15 +489,23 @@ async function calculateMissionHealth(base44, cfg, mission) {
   }
 
   const metricEntity = base44.asServiceRole.entities[cfg.entities.metric];
-  const metric = await metricEntity.filter(
-    { [cfg.fields.metric.kind]: "sync_payout_batch", [cfg.fields.metric.ok]: true },
-    "-created_date",
-    1,
-    0,
-    [cfg.fields.metric.at, "at", "created_date"]
-  );
-  const lastMetric = Array.isArray(metric) && metric.length ? metric[0] : null;
-  if (lastMetric) {
+  let lastMetric = null;
+  let metricErr = null;
+  try {
+    const metric = await metricEntity.filter(
+      { [cfg.fields.metric.kind]: "sync_payout_batch", [cfg.fields.metric.ok]: true },
+      "-created_date",
+      1,
+      0,
+      [cfg.fields.metric.at, "at", "created_date"]
+    );
+    lastMetric = Array.isArray(metric) && metric.length ? metric[0] : null;
+  } catch (e) {
+    metricErr = e?.message ?? String(e);
+  }
+  if (metricErr) {
+    proofs.push({ type: "paypal_sync", status: "unavailable", error: metricErr });
+  } else if (lastMetric) {
     const at = pickFirst(lastMetric, [cfg.fields.metric.at, "at", "created_date", "created_at"]) ?? null;
     const h = hoursSince(at);
     const maxH = Number(process.env.BASE44_MISSION_HEALTH_MAX_SYNC_STALENESS_HOURS ?? "24") || 24;
@@ -536,7 +564,18 @@ async function runMissionHealthOnce(base44, cfg, { missionId, limit }) {
     missions = await missionEntity.filter({ [cfg.fields.mission.id]: String(missionId) }, "-updated_date", 1, 0, fields);
   } else {
     const lim = Number(limit ?? process.env.BASE44_MISSION_HEALTH_LIMIT ?? "50") || 50;
-    missions = await missionEntity.list("-updated_date", lim, 0, fields);
+    const target = Math.max(1, Math.floor(lim));
+    const pageSize = Math.max(1, Math.min(100, target));
+    let offset = 0;
+    while (missions.length < target) {
+      const page = await missionEntity.list("-updated_date", pageSize, offset, fields);
+      if (!Array.isArray(page) || page.length === 0) break;
+      missions.push(...page);
+      if (page.length < pageSize) break;
+      offset += pageSize;
+      if (offset > 100000) break;
+    }
+    missions = missions.slice(0, target);
   }
   const results = [];
   for (const m of missions) {
