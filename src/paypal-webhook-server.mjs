@@ -1,4 +1,5 @@
 import http from "node:http";
+import crypto from "node:crypto";
 import { buildBase44ServiceClient } from "./base44-client.mjs";
 import { extractPayPalWebhookHeaders, verifyPayPalWebhookSignature } from "./paypal-api.mjs";
 import { mapPayPalWebhookToRevenueEvent } from "./paypal-event-mapper.mjs";
@@ -419,12 +420,67 @@ function isFinalItemStatus(status) {
   return status === "success" || status === "failed" || status === "refunded" || status === "unclaimed" || status === "cancelled";
 }
 
+function normalizeLedgerStatus(value) {
+  const v = String(value ?? "").trim().toLowerCase();
+  return v || null;
+}
+
+const ALLOWED_ITEM_STATUS_TRANSITIONS = {
+  pending: ["processing", "success", "failed", "unclaimed", "refunded", "cancelled"],
+  processing: ["success", "failed", "unclaimed", "refunded", "cancelled"],
+  unclaimed: ["refunded", "cancelled"],
+  success: [],
+  failed: [],
+  refunded: [],
+  cancelled: []
+};
+
+function isValidItemStatusTransition(from, to) {
+  const f = normalizeLedgerStatus(from);
+  const t = normalizeLedgerStatus(to);
+  if (!t) return false;
+  if (!f) return true;
+  if (f === t) return true;
+  const allowed = ALLOWED_ITEM_STATUS_TRANSITIONS[f];
+  return Array.isArray(allowed) ? allowed.includes(t) : false;
+}
+
+const ALLOWED_BATCH_STATUS_TRANSITIONS = {
+  processing: ["completed", "failed"],
+  completed: [],
+  failed: []
+};
+
+function isValidBatchStatusTransition(from, to) {
+  const f = normalizeLedgerStatus(from);
+  const t = normalizeLedgerStatus(to);
+  if (!t) return false;
+  if (!f) return true;
+  if (f === t) return true;
+  const allowed = ALLOWED_BATCH_STATUS_TRANSITIONS[f];
+  return Array.isArray(allowed) ? allowed.includes(t) : false;
+}
+
 async function applyPayoutBatchUpdate(base44, update) {
   const payoutBatchCfg = getPayoutBatchConfigFromEnv();
   const batchEntity = base44.asServiceRole.entities[payoutBatchCfg.entityName];
 
   const batch = await findPayoutBatchByPayPalBatchId(base44, update.paypalBatchId);
   if (!batch?.id) return { ok: false, updated: false, reason: "payout_batch_not_found" };
+
+  if (update.ledgerStatus && payoutBatchCfg.fieldMap.status) {
+    const currentStatus = batch?.[payoutBatchCfg.fieldMap.status] ?? null;
+    if (!isValidBatchStatusTransition(currentStatus, update.ledgerStatus)) {
+      return {
+        ok: true,
+        updated: false,
+        reason: "invalid_batch_state_transition",
+        from: currentStatus,
+        to: update.ledgerStatus,
+        paypalBatchId: update.paypalBatchId
+      };
+    }
+  }
 
   const existingNotes = payoutBatchCfg.fieldMap.notes ? (batch?.[payoutBatchCfg.fieldMap.notes] ?? {}) : null;
   const mergedNotes =
@@ -473,6 +529,37 @@ async function applyPayoutItemUpdate(base44, update) {
 
   const item = await findOneBy(itemEntity, { [payoutItemCfg.fieldMap.paypalItemId]: update.paypalItemId });
   if (!item?.id) return { ok: false, updated: false, reason: "payout_item_not_found" };
+
+  if (update.status && payoutItemCfg.fieldMap.status) {
+    const current = item?.[payoutItemCfg.fieldMap.status] ?? null;
+    if (!isValidItemStatusTransition(current, update.status)) {
+      try {
+        await txEntity.create({
+          [txCfg.fieldMap.transactionType]: "STATE_TRANSITION_VIOLATION",
+          [txCfg.fieldMap.amount]: 0,
+          [txCfg.fieldMap.description]: `Invalid payout item state transition ${String(current)} -> ${String(update.status)} for PayPal item ${String(
+            update.paypalItemId
+          )}`,
+          [txCfg.fieldMap.transactionDate]: new Date().toISOString(),
+          [txCfg.fieldMap.category]: "incident",
+          [txCfg.fieldMap.paymentMethod]: "paypal",
+          [txCfg.fieldMap.referenceId]: update.webhookEventId ?? null,
+          [txCfg.fieldMap.status]: "rejected",
+          ...(txCfg.fieldMap.payoutItemId && payoutItemCfg.fieldMap.itemId
+            ? { [txCfg.fieldMap.payoutItemId]: item?.[payoutItemCfg.fieldMap.itemId] ?? null }
+            : {})
+        });
+      } catch {}
+      return {
+        ok: true,
+        updated: false,
+        reason: "invalid_item_state_transition",
+        from: current,
+        to: update.status,
+        paypalItemId: update.paypalItemId
+      };
+    }
+  }
 
   const patch = {
     ...(payoutItemCfg.fieldMap.processedAt ? { [payoutItemCfg.fieldMap.processedAt]: update.processedAt } : {}),
@@ -525,23 +612,37 @@ async function applyPayoutItemUpdate(base44, update) {
   }
 
   let txCreatedId = null;
+  let txDeduped = false;
   if (update.status === "success" && txCfg.fieldMap.amount && txCfg.fieldMap.transactionDate) {
-    const amount = Number(payoutItemCfg.fieldMap.amount ? item?.[payoutItemCfg.fieldMap.amount] : 0);
-    const created = await txEntity.create({
-      [txCfg.fieldMap.transactionType]: "withdrawal",
-      [txCfg.fieldMap.amount]: Number.isFinite(amount) ? Number(amount.toFixed(2)) : null,
-      [txCfg.fieldMap.description]: `Payout to ${String(item?.[payoutItemCfg.fieldMap.recipient] ?? "")} for ${String(revenueEventId ?? "")}`,
-      [txCfg.fieldMap.transactionDate]: update.processedAt,
-      [txCfg.fieldMap.category]: "withdrawal",
-      [txCfg.fieldMap.paymentMethod]: "paypal",
-      [txCfg.fieldMap.referenceId]: update.paypalTxnId,
-      [txCfg.fieldMap.status]: "completed",
-      ...(txCfg.fieldMap.payoutBatchId && batchId ? { [txCfg.fieldMap.payoutBatchId]: batchId } : {}),
-      ...(txCfg.fieldMap.payoutItemId && payoutItemCfg.fieldMap.itemId
-        ? { [txCfg.fieldMap.payoutItemId]: item?.[payoutItemCfg.fieldMap.itemId] ?? null }
-        : {})
-    });
-    txCreatedId = created?.id ?? null;
+    if (txCfg.fieldMap.referenceId && update.paypalTxnId) {
+      const existing = await findOneBy(txEntity, {
+        [txCfg.fieldMap.referenceId]: String(update.paypalTxnId),
+        [txCfg.fieldMap.transactionType]: "withdrawal"
+      }).catch(() => null);
+      if (existing?.id) {
+        txCreatedId = existing.id;
+        txDeduped = true;
+      }
+    }
+
+    if (!txDeduped) {
+      const amount = Number(payoutItemCfg.fieldMap.amount ? item?.[payoutItemCfg.fieldMap.amount] : 0);
+      const created = await txEntity.create({
+        [txCfg.fieldMap.transactionType]: "withdrawal",
+        [txCfg.fieldMap.amount]: Number.isFinite(amount) ? Number(amount.toFixed(2)) : null,
+        [txCfg.fieldMap.description]: `Payout to ${String(item?.[payoutItemCfg.fieldMap.recipient] ?? "")} for ${String(revenueEventId ?? "")}`,
+        [txCfg.fieldMap.transactionDate]: update.processedAt,
+        [txCfg.fieldMap.category]: "withdrawal",
+        [txCfg.fieldMap.paymentMethod]: "paypal",
+        [txCfg.fieldMap.referenceId]: update.paypalTxnId,
+        [txCfg.fieldMap.status]: "completed",
+        ...(txCfg.fieldMap.payoutBatchId && batchId ? { [txCfg.fieldMap.payoutBatchId]: batchId } : {}),
+        ...(txCfg.fieldMap.payoutItemId && payoutItemCfg.fieldMap.itemId
+          ? { [txCfg.fieldMap.payoutItemId]: item?.[payoutItemCfg.fieldMap.itemId] ?? null }
+          : {})
+      });
+      txCreatedId = created?.id ?? null;
+    }
   }
 
   let batchCompleted = false;
@@ -594,6 +695,7 @@ async function applyPayoutItemUpdate(base44, update) {
     payoutItemStatus: update.status,
     revenueUpdated,
     txCreatedId,
+    txDeduped,
     batchCompleted,
     batchFailed,
     batchStatusWriteSkippedReason
@@ -817,7 +919,10 @@ if (args.check === true || args["config-check"] === true) {
       return;
     }
 
-    const dedupeKey = evt?.id ?? headers?.transmissionId ?? null;
+    const dedupeKey =
+      evt?.id ??
+      headers?.transmissionId ??
+      crypto.createHash("sha256").update(String(rawBody)).digest("hex");
     if (dedupeStore.isRecentlyDone(dedupeKey)) {
       json(res, 200, {
         ok: true,

@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
+import crypto from "node:crypto";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { buildBase44ServiceClient } from "./base44-client.mjs";
@@ -271,6 +272,24 @@ function parseJsonMaybe(value) {
   }
 }
 
+function getTransactionLogConfigFromEnv() {
+  const entityName = process.env.BASE44_LEDGER_TRANSACTION_LOG_ENTITY ?? "TransactionLog";
+  const mapFromEnv = parseJsonMaybe(process.env.BASE44_LEDGER_TRANSACTION_LOG_FIELD_MAP);
+  const fieldMap = mapFromEnv ?? {
+    transactionType: "transaction_type",
+    amount: "amount",
+    description: "description",
+    transactionDate: "transaction_date",
+    category: "category",
+    paymentMethod: "payment_method",
+    referenceId: "reference_id",
+    status: "status",
+    payoutBatchId: "payout_batch_id",
+    payoutItemId: "payout_item_id"
+  };
+  return { entityName, fieldMap };
+}
+
 async function loadAutonomousConfig({ configPath }) {
   const resolved = configPath ? path.resolve(process.cwd(), String(configPath)) : path.resolve(process.cwd(), "autonomous.txt");
   const raw = await fs.readFile(resolved, "utf8").catch(() => "");
@@ -292,6 +311,14 @@ function defaultConfig() {
     health: {
       requirePayPal: false
     },
+    deadman: {
+      intervalMs: 300000,
+      thresholds: {
+        webhookSilenceHours: 4,
+        metricFailureCount: 3,
+        metricWindowMinutes: 30
+      }
+    },
     payout: {
       settlementId: null,
       beneficiary: null,
@@ -308,9 +335,11 @@ function defaultConfig() {
     },
     tasks: {
       health: true,
+      missionHealth: false,
       availableBalance: true,
       reportPendingApproval: true,
       reportStuckPayouts: true,
+      deadman: true,
       createPayoutBatches: false,
       autoApprovePayoutBatches: false,
       autoSubmitPayPalPayoutBatches: false,
@@ -320,6 +349,10 @@ function defaultConfig() {
     alerts: {
       enabled: false,
       cooldownMs: 900000
+    },
+    missionHealth: {
+      missionId: null,
+      limit: 50
     },
     state: {
       path: ".autonomous-state.json"
@@ -428,6 +461,34 @@ function resolveRuntimeConfig(args, fileCfg) {
   const alertsEnabled = getEnvBool("BASE44_ENABLE_ALERTS", false) || cfg.alerts?.enabled === true;
   const alertCooldownMs = normalizeIntervalMs(process.env.ALERT_COOLDOWN_MS ?? cfg.alerts?.cooldownMs, 900000);
 
+  const missionHealthEnabled =
+    args["mission-health"] === true || getEnvBool("AUTONOMOUS_MISSION_HEALTH", false) || cfg.tasks?.missionHealth === true;
+  const missionHealthMissionId = args["mission-id"] ?? args.missionId ?? process.env.AUTONOMOUS_MISSION_ID ?? cfg.missionHealth?.missionId ?? null;
+  const missionHealthLimit = normalizeNumber(
+    args["mission-limit"] ?? args.missionLimit ?? process.env.AUTONOMOUS_MISSION_LIMIT ?? cfg.missionHealth?.limit ?? 50,
+    50
+  );
+
+  const deadmanEnabled = args.deadman === true || getEnvBool("AUTONOMOUS_DEADMAN", cfg.tasks?.deadman !== false);
+  const deadmanIntervalMs = normalizeIntervalMs(
+    args["deadman-interval-ms"] ?? process.env.AUTONOMOUS_DEADMAN_INTERVAL_MS ?? cfg.deadman?.intervalMs,
+    300000
+  );
+  const deadmanThresholds = (() => {
+    const fromEnv = parseJsonMaybe(process.env.AUTONOMOUS_DEADMAN_THRESHOLDS_JSON);
+    if (fromEnv && typeof fromEnv === "object" && !Array.isArray(fromEnv)) return fromEnv;
+    return cfg.deadman?.thresholds ?? {};
+  })();
+  const webhookSilenceHours = normalizeNumber(deadmanThresholds.webhookSilenceHours ?? process.env.AUTONOMOUS_DEADMAN_WEBHOOK_SILENCE_HOURS, 4);
+  const metricFailureCount = Math.max(
+    1,
+    Math.floor(normalizeNumber(deadmanThresholds.metricFailureCount ?? process.env.AUTONOMOUS_DEADMAN_METRIC_FAILURE_COUNT, 3))
+  );
+  const metricWindowMinutes = Math.max(
+    1,
+    Math.floor(normalizeNumber(deadmanThresholds.metricWindowMinutes ?? process.env.AUTONOMOUS_DEADMAN_METRIC_WINDOW_MINUTES, 30))
+  );
+
   const statePath = args["state-path"] ?? args.statePath ?? process.env.AUTONOMOUS_STATE_PATH ?? cfg.state?.path ?? ".autonomous-state.json";
   const backoffMaxMs = normalizeIntervalMs(process.env.AUTONOMOUS_BACKOFF_MAX_MS ?? cfg.backoff?.maxMs, 300000);
 
@@ -466,11 +527,17 @@ function resolveRuntimeConfig(args, fileCfg) {
         totp: totp == null ? null : String(totp)
       }
     },
+    deadman: {
+      intervalMs: deadmanIntervalMs,
+      thresholds: { webhookSilenceHours, metricFailureCount, metricWindowMinutes }
+    },
     tasks: {
       health: cfg.tasks?.health !== false,
+      missionHealth: missionHealthEnabled === true,
       availableBalance: cfg.tasks?.availableBalance !== false,
       reportPendingApproval: cfg.tasks?.reportPendingApproval !== false,
       reportStuckPayouts: cfg.tasks?.reportStuckPayouts !== false,
+      deadman: deadmanEnabled === true,
       createPayoutBatches: createPayoutBatchesEnabled === true,
       autoApprovePayoutBatches: autoApprovePayoutBatchesEnabled === true,
       autoSubmitPayPalPayoutBatches: autoSubmitPayPalPayoutBatchesEnabled === true,
@@ -478,6 +545,10 @@ function resolveRuntimeConfig(args, fileCfg) {
       autoExportPayoneerPayoutBatches: autoExportPayoneerPayoutBatchesEnabled === true
     },
     alerts: { enabled: alertsEnabled, cooldownMs: alertCooldownMs },
+    missionHealth: {
+      missionId: missionHealthMissionId ? String(missionHealthMissionId) : null,
+      limit: Number(missionHealthLimit ?? 50)
+    },
     state: { path: String(statePath) },
     backoff: { maxMs: backoffMaxMs }
   };
@@ -554,6 +625,36 @@ async function runEmitWithOfflineFallback(commandArgs, cfg) {
 
   if (!cfg.offline.enabled && cfg.offline.auto && inferOfflineRetry(primary.error)) {
     const fallback = await runEmit(commandArgs, { offline: true, offlineStorePath: cfg.offline.storePath });
+    return { mode: fallback.ok ? "offline" : "online", ...fallback, fallbackAttempted: true, primaryError: primary.error };
+  }
+
+  return { mode: cfg.offline.enabled ? "offline" : "online", ...primary };
+}
+
+async function runMonitorHealth(commandArgs, { offline, offlineStorePath }) {
+  const env = {};
+  const args = [];
+  if (offline) {
+    env.BASE44_OFFLINE = "true";
+    env.BASE44_OFFLINE_STORE_PATH = String(offlineStorePath);
+    args.push("--offline", "--offline-store", String(offlineStorePath));
+  }
+  env.BASE44_ENABLE_MISSION_HEALTH_WRITE = "true";
+  args.push(...commandArgs);
+  const res = await runNodeScript("./src/monitor-health.mjs", args, { env });
+  if (res.code === 0 && res.lastJson) return { ok: true, result: res.lastJson };
+
+  const errJson = res.lastJson && res.lastJson.ok === false ? res.lastJson : null;
+  const msg = errJson?.error ?? res.stderr ?? res.stdout ?? "";
+  return { ok: false, error: String(msg).trim() || "monitor-health command failed", raw: { code: res.code, lastJson: res.lastJson } };
+}
+
+async function runMonitorHealthWithOfflineFallback(commandArgs, cfg) {
+  const primary = await runMonitorHealth(commandArgs, { offline: cfg.offline.enabled, offlineStorePath: cfg.offline.storePath });
+  if (primary.ok) return { mode: cfg.offline.enabled ? "offline" : "online", ...primary };
+
+  if (!cfg.offline.enabled && cfg.offline.auto && inferOfflineRetry(primary.error)) {
+    const fallback = await runMonitorHealth(commandArgs, { offline: true, offlineStorePath: cfg.offline.storePath });
     return { mode: fallback.ok ? "offline" : "online", ...fallback, fallbackAttempted: true, primaryError: primary.error };
   }
 
@@ -692,6 +793,365 @@ function effectiveOk(result) {
   return true;
 }
 
+function isFreezeActive(state) {
+  return state?.freeze?.active === true;
+}
+
+function freezeSkip(state, reason, extra = null) {
+  const base = { ok: true, skipped: true, reason, freeze: state?.freeze ?? { active: true } };
+  if (!extra || typeof extra !== "object") return base;
+  return { ...base, ...extra };
+}
+
+function parseMaybeDateMs(value) {
+  const ms = Date.parse(String(value ?? ""));
+  return Number.isNaN(ms) ? null : ms;
+}
+
+async function deadmanFetchLastWebhook(base44) {
+  const entityName = process.env.BASE44_PAYPAL_EVENT_ENTITY ?? "PayPalWebhookEvent";
+  const entity = base44.asServiceRole.entities[entityName];
+  const fields = ["id", "created_date", "created_at", "event_id", "event_type"];
+  const rows = await entity.list("-created_date", 1, 0, fields);
+  const rec = Array.isArray(rows) && rows[0] ? rows[0] : null;
+  const at = rec?.created_at ?? rec?.created_date ?? null;
+  const atMs = parseMaybeDateMs(at);
+  return rec && atMs != null
+    ? { ok: true, atMs, atRaw: at, eventId: rec?.event_id ?? null, eventType: rec?.event_type ?? null }
+    : { ok: false };
+}
+
+async function deadmanFetchRecentMetrics(base44, limit = 25) {
+  const entityName = process.env.BASE44_PAYPAL_METRIC_ENTITY ?? "PayPalMetric";
+  const entity = base44.asServiceRole.entities[entityName];
+  const mapFromEnv = parseJsonMaybe(process.env.BASE44_PAYPAL_METRIC_FIELD_MAP);
+  const fieldMap = mapFromEnv ?? { at: "at", kind: "kind", ok: "ok", summary: "summary" };
+  const fields = ["id", "created_date", fieldMap.at, fieldMap.kind, fieldMap.ok, fieldMap.summary].filter(Boolean);
+  const rows = await entity.list("-created_date", Math.max(1, Math.floor(Number(limit ?? 25))), 0, fields);
+  return { fieldMap, rows: Array.isArray(rows) ? rows : [] };
+}
+
+function computeDeadmanViolations({ lastWebhook, metrics, cfg, nowMs }) {
+  const violations = [];
+  const thresholds = cfg.deadman?.thresholds ?? {};
+
+  if (lastWebhook?.ok === true) {
+    const hoursSilent = (nowMs - lastWebhook.atMs) / (1000 * 60 * 60);
+    if (Number.isFinite(hoursSilent) && hoursSilent > Number(thresholds.webhookSilenceHours ?? 4)) {
+      violations.push({
+        type: "webhook_silence",
+        severity: "critical",
+        message: `No PayPal webhooks for ${hoursSilent.toFixed(2)} hours`,
+        lastWebhookAt: lastWebhook.atRaw,
+        lastWebhookEventId: lastWebhook.eventId ?? null,
+        lastWebhookEventType: lastWebhook.eventType ?? null
+      });
+    }
+  } else {
+    violations.push({ type: "webhook_missing", severity: "high", message: "No PayPal webhooks observed" });
+  }
+
+  const windowMinutes = Number(thresholds.metricWindowMinutes ?? 30);
+  const windowMs = Math.max(1, windowMinutes) * 60 * 1000;
+  const failureCountThreshold = Math.max(1, Math.floor(Number(thresholds.metricFailureCount ?? 3)));
+  const { fieldMap, rows } = metrics ?? { fieldMap: { at: "at", kind: "kind", ok: "ok" }, rows: [] };
+  const withinWindow = rows.filter((r) => {
+    const at = r?.[fieldMap.at] ?? r?.created_date ?? null;
+    const atMs = parseMaybeDateMs(at);
+    return atMs != null && nowMs - atMs <= windowMs;
+  });
+
+  let consecutiveFailures = 0;
+  for (const r of withinWindow) {
+    const ok = r?.[fieldMap.ok];
+    const isOk = ok === true || String(ok).toLowerCase() === "true";
+    if (isOk) break;
+    consecutiveFailures += 1;
+  }
+
+  if (consecutiveFailures >= failureCountThreshold) {
+    const kinds = withinWindow.slice(0, consecutiveFailures).map((r) => r?.[fieldMap.kind] ?? null).filter(Boolean);
+    violations.push({
+      type: "paypal_metric_failures",
+      severity: "critical",
+      message: `${consecutiveFailures} consecutive PayPal metrics failures within ${windowMinutes} minutes`,
+      kinds
+    });
+  }
+
+  return violations;
+}
+
+async function recordFreezeIncident(base44, violations) {
+  const txCfg = getTransactionLogConfigFromEnv();
+  const txEntity = base44.asServiceRole.entities[txCfg.entityName];
+  const now = nowIso();
+  const desc = `Freeze: ${violations.map((v) => v.type).join(", ")}`;
+  try {
+    const created = await txEntity.create({
+      [txCfg.fieldMap.transactionType]: "SYSTEM_INCIDENT",
+      [txCfg.fieldMap.amount]: 0,
+      [txCfg.fieldMap.description]: desc,
+      [txCfg.fieldMap.transactionDate]: now,
+      [txCfg.fieldMap.category]: "incident",
+      [txCfg.fieldMap.paymentMethod]: "system",
+      [txCfg.fieldMap.referenceId]: `deadman:${Date.now()}`,
+      [txCfg.fieldMap.status]: "incident",
+      violations
+    });
+    return { ok: true, id: created?.id ?? null };
+  } catch (e) {
+    return { ok: false, error: e?.message ?? String(e) };
+  }
+}
+
+function summarizeMissionHealthForFreeze(res) {
+  const outerOk = effectiveOk(res);
+  if (!outerOk) {
+    return {
+      ok: false,
+      violations: [
+        { type: "mission_health_failed", severity: "critical", message: res?.error ?? res?.result?.error ?? "Mission health check failed" }
+      ]
+    };
+  }
+
+  const results = res?.result?.results;
+  const list = Array.isArray(results) ? results : [];
+  const violations = [];
+  for (const r of list) {
+    if (!r || typeof r !== "object") continue;
+    if (r.ok !== true) {
+      violations.push({
+        type: "mission_health_error",
+        severity: "critical",
+        message: r.error ?? "Mission health error",
+        missionId: r.missionId ?? null
+      });
+      continue;
+    }
+    if (r.deployable !== true) {
+      violations.push({
+        type: "mission_not_deployable",
+        severity: "critical",
+        message: "Mission is not deployable under evidence-gated health",
+        missionId: r.missionId ?? null,
+        classKey: r.classKey ?? null,
+        healthScore: r.healthScore ?? null
+      });
+    }
+  }
+
+  return { ok: violations.length === 0, violations };
+}
+
+async function maybeActivateFreezeFromMissionHealth(cfg, state, missionHealthRes) {
+  if (!envIsTrue(process.env.SWARM_LIVE, "false")) return { ok: true, skipped: true, reason: "not_live" };
+  if (cfg.offline.enabled) return { ok: true, skipped: true, reason: "offline_mode" };
+
+  const summary = summarizeMissionHealthForFreeze(missionHealthRes);
+  if (summary.ok) return { ok: true, violations: [] };
+
+  const now = nowIso();
+  const previous = state.freeze?.active === true;
+  const nextViolations = summary.violations;
+  state.freeze = {
+    active: true,
+    since: previous && state.freeze?.since ? state.freeze.since : now,
+    violations: nextViolations,
+    source: "mission_health",
+    updatedAt: now
+  };
+
+  let incident = null;
+  try {
+    const base44 = buildBase44ServiceClient({ mode: "auto" });
+    incident = await recordFreezeIncident(base44, nextViolations);
+    if (cfg.alerts.enabled) {
+      try {
+        await maybeSendAlert(base44, {
+          subject: "Swarm Freeze Activated (Mission Health)",
+          body: JSON.stringify({ at: now, violations: nextViolations, incident }, null, 2)
+        });
+      } catch {}
+    }
+  } catch {}
+
+  return { ok: false, freeze: true, violations: nextViolations, incident };
+}
+
+async function runDeadmanOnce(cfg, state) {
+  const nowMs = Date.now();
+  const lastAt = Number(state.lastDeadmanAt ?? 0) || 0;
+  const intervalMs = Number(cfg.deadman?.intervalMs ?? 300000) || 300000;
+  if (nowMs - lastAt < intervalMs) {
+    return { ok: true, skipped: true, reason: "interval", nextInMs: Math.max(0, intervalMs - (nowMs - lastAt)) };
+  }
+  state.lastDeadmanAt = nowMs;
+
+  if (!envIsTrue(process.env.SWARM_LIVE, "false")) return { ok: true, skipped: true, reason: "not_live" };
+  if (cfg.offline.enabled) return { ok: true, skipped: true, reason: "offline_mode" };
+
+  let base44 = null;
+  try {
+    base44 = buildBase44ServiceClient({ mode: "auto" });
+  } catch (e) {
+    return { ok: true, skipped: true, reason: "base44_unavailable", error: e?.message ?? String(e) };
+  }
+
+  const [lastWebhook, metrics] = await Promise.all([
+    deadmanFetchLastWebhook(base44).catch((e) => ({ ok: false, error: e?.message ?? String(e) })),
+    deadmanFetchRecentMetrics(base44, 25).catch((e) => ({
+      fieldMap: { at: "at", kind: "kind", ok: "ok" },
+      rows: [],
+      error: e?.message ?? String(e)
+    }))
+  ]);
+
+  const violations = computeDeadmanViolations({ lastWebhook, metrics, cfg, nowMs });
+  if (violations.length === 0) return { ok: true, at: nowIso(), violations: [] };
+
+  state.freeze = { active: true, since: nowIso(), violations };
+  const incident = await recordFreezeIncident(base44, violations);
+  if (cfg.alerts.enabled) {
+    try {
+      await maybeSendAlert(base44, { subject: "Swarm Deadman Freeze Activated", body: JSON.stringify({ at: nowIso(), violations, incident }, null, 2) });
+    } catch {}
+  }
+  return { ok: false, at: nowIso(), violations, freeze: true, incident };
+}
+
+async function recordDeploymentOnce(cfg) {
+  const mode = cfg.offline.enabled ? "offline" : "auto";
+  const base44 = buildBase44ServiceClient({ mode });
+  const txCfg = getTransactionLogConfigFromEnv();
+  const txEntity = base44.asServiceRole.entities[txCfg.entityName];
+
+  const fileList = [
+    "package.json",
+    "src/emit-revenue-events.mjs",
+    "src/paypal-webhook-server.mjs",
+    "src/autonomous-daemon.mjs",
+    "src/monitor-health.mjs",
+    "src/sbds-enforcer.mjs"
+  ];
+
+  const fileHashes = [];
+  for (const rel of fileList) {
+    const abs = path.resolve(process.cwd(), rel);
+    const content = await fs.readFile(abs);
+    const hash = crypto.createHash("sha256").update(content).digest("hex");
+    fileHashes.push({ file: rel, sha256: hash });
+  }
+  fileHashes.sort((a, b) => a.file.localeCompare(b.file));
+
+  const artifactHash = crypto.createHash("sha256").update(JSON.stringify(fileHashes)).digest("hex");
+  const now = nowIso();
+  const ref = `deploy:${artifactHash.slice(0, 12)}:${Date.now()}`;
+
+  const created = await txEntity.create({
+    [txCfg.fieldMap.transactionType]: "SYSTEM_DEPLOYMENT",
+    [txCfg.fieldMap.amount]: 0,
+    [txCfg.fieldMap.description]: `Deployment record ${artifactHash}`,
+    [txCfg.fieldMap.transactionDate]: now,
+    [txCfg.fieldMap.category]: "deployment",
+    [txCfg.fieldMap.paymentMethod]: "system",
+    [txCfg.fieldMap.referenceId]: ref,
+    [txCfg.fieldMap.status]: "completed",
+    metadata: {
+      at: now,
+      artifact_hash: artifactHash,
+      file_hashes: fileHashes,
+      truth_only_ui_enabled: getEnvBool("BASE44_ENABLE_TRUTH_ONLY_UI", false),
+      sbds_policy_active: true,
+      swarm_live: envIsTrue(process.env.SWARM_LIVE, "false")
+    }
+  });
+
+  return { ok: true, artifactHash, referenceId: ref, id: created?.id ?? null, mode };
+}
+
+async function runAllGoodOnce(cfg, state) {
+  const at = nowIso();
+  const readinessEnv = cfg.offline.enabled
+    ? { BASE44_OFFLINE: "true", BASE44_OFFLINE_STORE_PATH: String(cfg.offline.storePath) }
+    : {};
+  const readinessRes = await runNodeScript("./src/monitor-health.mjs", ["--readiness", "--ping"], { env: readinessEnv });
+  const readiness = readinessRes.lastJson ?? { ok: false, error: "readiness_failed" };
+
+  const missionArgs = ["--mission-health", "--once"];
+  if (cfg.missionHealth?.missionId) missionArgs.push("--mission-id", String(cfg.missionHealth.missionId));
+  if (cfg.missionHealth?.limit != null) missionArgs.push("--mission-limit", String(cfg.missionHealth.limit));
+  const missionHealth = await runMonitorHealthWithOfflineFallback(missionArgs, cfg);
+
+  const simulation = await runEmitWithOfflineFallback(["--check-simulation", "--scan-limit", "200"], cfg);
+  const payoutTruth = await runEmitWithOfflineFallback(["--export-payout-truth", "--only-real", "--limit", "5"], cfg);
+
+  const deadman = cfg.tasks.deadman ? await runDeadmanOnce(cfg, state) : { ok: true, skipped: true, reason: "disabled" };
+
+  const missionFreeze = await maybeActivateFreezeFromMissionHealth(cfg, state, missionHealth).catch((e) => ({
+    ok: false,
+    error: e?.message ?? String(e)
+  }));
+
+  const mhSummary = summarizeMissionHealthForFreeze(missionHealth);
+  const simulationOk = effectiveOk(simulation) && simulation?.result?.ok === true;
+  const payoutTruthOk = effectiveOk(payoutTruth);
+  const deadmanOk = deadman?.ok !== false;
+  const readinessOk = readiness?.ok === true;
+  const paypalOk = readiness?.ping?.paypalOk === true;
+  const base44Ok = readiness?.ping?.base44Ok === true;
+  const freezeActive = isFreezeActive(state) === true;
+  const missionFreezeOk = missionFreeze?.ok !== false;
+
+  const failures = [];
+  if (!readinessOk) failures.push("readiness");
+  if (!paypalOk) failures.push("paypal_ping");
+  if (!base44Ok) failures.push("base44_ping");
+  if (!mhSummary.ok) failures.push("mission_health");
+  if (!simulationOk) failures.push("simulation_artifacts");
+  if (!payoutTruthOk) failures.push("payout_truth");
+  if (freezeActive) failures.push("freeze_active");
+  if (!deadmanOk) failures.push("deadman");
+  if (!missionFreezeOk) failures.push("freeze_activation");
+
+  const ok =
+    readinessOk &&
+    paypalOk &&
+    base44Ok &&
+    mhSummary.ok === true &&
+    simulationOk &&
+    payoutTruthOk &&
+    freezeActive !== true &&
+    deadmanOk &&
+    missionFreezeOk;
+
+  return {
+    ok,
+    at,
+    summary: {
+      ok,
+      failures,
+      readinessOk,
+      paypalOk,
+      base44Ok,
+      missionHealthOk: mhSummary.ok === true,
+      simulationOk,
+      payoutTruthOk,
+      freezeActive,
+      deadmanOk,
+      missionFreezeOk
+    },
+    readiness,
+    missionHealth,
+    missionHealthSummary: mhSummary,
+    simulation,
+    payoutTruth,
+    deadman,
+    freeze: state.freeze ?? { active: false }
+  };
+}
+
 async function runTick(cfg, state) {
   const startedAt = nowIso();
   const out = { ok: true, at: startedAt, mode: cfg.offline.enabled ? "offline" : "auto", results: {}, meta: {} };
@@ -701,6 +1161,7 @@ async function runTick(cfg, state) {
       paypalConfigured: hasAllowedPayPalRecipientsConfigured()
     }
   };
+  out.meta.freeze = state.freeze ?? { active: false };
 
   if (isMoneyMovingTasks(cfg)) {
     if (!envIsTrue(process.env.SWARM_LIVE, "false")) {
@@ -708,10 +1169,27 @@ async function runTick(cfg, state) {
     }
   }
 
+  if (cfg.tasks.deadman) {
+    out.results.deadman = await runDeadmanOnce(cfg, state);
+    out.meta.freeze = state.freeze ?? out.meta.freeze;
+  }
+
   if (cfg.tasks.health) {
     const health = await checkHealthOnce(cfg);
     out.results.health = health;
     await maybeAlertOnFailure(cfg, health, state);
+  }
+
+  if (cfg.tasks.missionHealth) {
+    const args = ["--mission-health", "--once"];
+    if (cfg.missionHealth?.missionId) args.push("--mission-id", String(cfg.missionHealth.missionId));
+    if (cfg.missionHealth?.limit != null) args.push("--mission-limit", String(cfg.missionHealth.limit));
+    out.results.missionHealth = await runMonitorHealthWithOfflineFallback(args, cfg);
+    out.results.missionFreeze = await maybeActivateFreezeFromMissionHealth(cfg, state, out.results.missionHealth).catch((e) => ({
+      ok: false,
+      error: e?.message ?? String(e)
+    }));
+    out.meta.freeze = state.freeze ?? out.meta.freeze;
   }
 
   if (cfg.tasks.availableBalance) {
@@ -727,6 +1205,9 @@ async function runTick(cfg, state) {
   }
 
   if (cfg.tasks.createPayoutBatches) {
+    if (isFreezeActive(state)) {
+      out.results.createPayoutBatches = freezeSkip(state, "freeze_active");
+    } else {
     const windowOk = isWithinWindowUtc(cfg.payout?.windowUtc ?? { startHourUtc: 0, endHourUtc: 0 });
     if (!windowOk) {
       out.results.createPayoutBatches = { ok: true, skipped: true, reason: "outside_payout_window_utc", windowUtc: cfg.payout?.windowUtc ?? null };
@@ -759,9 +1240,13 @@ async function runTick(cfg, state) {
         out.results.createPayoutBatches = await runEmitWithOfflineFallback(args, cfg);
       }
     }
+    }
   }
 
   if (cfg.tasks.autoApprovePayoutBatches && cfg.payout?.autoApprove?.enabled === true) {
+    if (isFreezeActive(state)) {
+      out.results.autoApproval = freezeSkip(state, "freeze_active");
+    } else {
     let pending = null;
     const pendingRes = out.results.pendingApproval;
     if (effectiveOk(pendingRes)) pending = pendingRes.result;
@@ -821,9 +1306,13 @@ async function runTick(cfg, state) {
     };
     out.results.autoApproval = summary;
     await maybeAlertOnAutoApproval(cfg, summary, state);
+    }
   }
 
   if (cfg.tasks.autoSubmitPayPalPayoutBatches) {
+    if (isFreezeActive(state)) {
+      out.results.autoSubmitPayPal = freezeSkip(state, "freeze_active");
+    } else {
     const windowOk = isWithinWindowUtc(cfg.payout?.windowUtc ?? { startHourUtc: 0, endHourUtc: 0 });
     if (!windowOk) {
       out.results.autoSubmitPayPal = { ok: true, skipped: true, reason: "outside_payout_window_utc", windowUtc: cfg.payout?.windowUtc ?? null };
@@ -860,9 +1349,13 @@ async function runTick(cfg, state) {
         attempts
       };
     }
+    }
   }
 
   if (cfg.tasks.autoExportPayoneerPayoutBatches) {
+    if (isFreezeActive(state)) {
+      out.results.autoExportPayoneer = freezeSkip(state, "freeze_active");
+    } else {
     const windowOk = isWithinWindowUtc(cfg.payout?.windowUtc ?? { startHourUtc: 0, endHourUtc: 0 });
     if (!windowOk) {
       out.results.autoExportPayoneer = { ok: true, skipped: true, reason: "outside_payout_window_utc", windowUtc: cfg.payout?.windowUtc ?? null };
@@ -909,9 +1402,13 @@ async function runTick(cfg, state) {
         attempts
       };
     }
+    }
   }
 
   if (cfg.tasks.syncPayPalLedgerBatches) {
+    if (isFreezeActive(state)) {
+      out.results.syncPayPalLedger = freezeSkip(state, "freeze_active");
+    } else {
     if (cfg.tasks.health && out.results.health && out.results.health.paypalOk === false) {
       out.results.syncPayPalLedger = { ok: true, skipped: true, reason: "paypal_unhealthy", health: out.results.health };
     } else {
@@ -946,6 +1443,7 @@ async function runTick(cfg, state) {
       attempts.push({ batchId: String(internalBatchId), res });
     }
     out.results.syncPayPalLedger = { ok: true, attemptedCount: attempts.length, attempts };
+    }
     }
   }
 
@@ -982,9 +1480,48 @@ async function main() {
   const state = {
     lastAlertAt: Number(persisted?.lastAlertAt ?? 0) || 0,
     lastApprovalAlertAt: Number(persisted?.lastApprovalAlertAt ?? 0) || 0,
+    lastDeadmanAt: Number(persisted?.lastDeadmanAt ?? 0) || 0,
     consecutiveFailures: Number(persisted?.consecutiveFailures ?? 0) || 0,
+    freeze: persisted?.freeze && typeof persisted.freeze === "object" ? persisted.freeze : { active: false },
     exportedPayoneerBatches: persisted?.exportedPayoneerBatches && typeof persisted.exportedPayoneerBatches === "object" ? persisted.exportedPayoneerBatches : {}
   };
+
+  const allGood = args["all-good"] === true || args.allGood === true;
+  if (args["record-deployment"] === true || args.recordDeployment === true) {
+    const out = await recordDeploymentOnce(cfg);
+    process.stdout.write(`${JSON.stringify(out)}\n`);
+    return;
+  }
+  if (allGood) {
+    const safeCfg = {
+      ...cfg,
+      tasks: {
+        ...cfg.tasks,
+        createPayoutBatches: false,
+        autoApprovePayoutBatches: false,
+        autoSubmitPayPalPayoutBatches: false,
+        autoExportPayoneerPayoutBatches: false,
+        syncPayPalLedgerBatches: false,
+        health: true,
+        missionHealth: true,
+        deadman: true
+      }
+    };
+    const out = await runAllGoodOnce(safeCfg, state);
+    process.stdout.write(`${JSON.stringify(out)}\n`);
+    process.exitCode = out.ok ? 0 : 2;
+    await atomicWriteJson(statePath, {
+      lastAlertAt: state.lastAlertAt,
+      lastApprovalAlertAt: state.lastApprovalAlertAt,
+      lastDeadmanAt: state.lastDeadmanAt,
+      consecutiveFailures: state.consecutiveFailures,
+      freeze: state.freeze,
+      exportedPayoneerBatches: state.exportedPayoneerBatches,
+      updatedAt: nowIso()
+    }).catch(() => {});
+    return;
+  }
+
   process.stdout.write(`${JSON.stringify({ ok: true, daemon: true, once, configPath: loaded.configPath, cfg })}\n`);
 
   let stop = false;
@@ -1012,7 +1549,9 @@ async function main() {
     await atomicWriteJson(statePath, {
       lastAlertAt: state.lastAlertAt,
       lastApprovalAlertAt: state.lastApprovalAlertAt,
+      lastDeadmanAt: state.lastDeadmanAt,
       consecutiveFailures: state.consecutiveFailures,
+      freeze: state.freeze,
       exportedPayoneerBatches: state.exportedPayoneerBatches,
       updatedAt: nowIso()
     }).catch(() => {});

@@ -18,6 +18,8 @@
     "live:readiness:ping": "node ./src/monitor-health.mjs --readiness --ping",
     "autonomous:daemon": "node ./src/autonomous-daemon.mjs",
     "autonomous:once": "node ./src/autonomous-daemon.mjs --once",
+    "check:all-good": "node ./src/autonomous-daemon.mjs --all-good",
+    "check:simulation": "node ./src/emit-revenue-events.mjs --check-simulation",
     "test": "node --test"
   },
   "dependencies": {

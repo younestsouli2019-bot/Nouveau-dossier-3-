@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import path from "node:path";
 import os from "node:os";
 import readline from "node:readline";
+import { gzipSync } from "node:zlib";
 import { fileURLToPath } from "node:url";
 import { createBase44RevenueEventIdempotent, getRevenueConfigFromEnv } from "./base44-revenue.mjs";
 import { createBase44EarningIdempotent, getEarningConfigFromEnv } from "./base44-earning.mjs";
@@ -75,6 +76,210 @@ function safeJsonParse(maybeJson, fallback) {
   } catch {
     return fallback;
   }
+}
+
+function findSimulationArtifactsInObject(value, patterns, pathPrefix = "") {
+  const hits = [];
+  const seen = new Set();
+
+  function scan(v, p) {
+    if (v == null) return;
+    if (typeof v === "string") {
+      for (const rx of patterns) {
+        if (rx.test(v)) {
+          hits.push({ path: p || "$", value: v, pattern: String(rx) });
+          break;
+        }
+      }
+      return;
+    }
+    if (typeof v !== "object") return;
+    if (seen.has(v)) return;
+    seen.add(v);
+
+    if (Array.isArray(v)) {
+      for (let i = 0; i < v.length; i++) scan(v[i], `${p}[${i}]`);
+      return;
+    }
+
+    for (const [k, vv] of Object.entries(v)) {
+      const next = p ? `${p}.${k}` : k;
+      scan(vv, next);
+    }
+  }
+
+  scan(value, pathPrefix);
+  return hits;
+}
+
+async function scanSimulationArtifacts(base44, { limit = 200 } = {}) {
+  const patterns = [
+    /\bsimulated\b/i,
+    /\bmock\b/i,
+    /\bfake\b/i,
+    /\bdemo\b/i,
+    /\bplaceholder\b/i,
+    /test\s*payment/i
+  ];
+
+  const results = { ok: true, hits: [], scanned: { missions: 0, earnings: 0 } };
+
+  if (base44) {
+    const missionEntityName = process.env.BASE44_MISSION_ENTITY ?? "Mission";
+    try {
+      const missionEntity = base44.asServiceRole.entities[missionEntityName];
+      const missions = await missionEntity.list("-updated_date", Math.max(1, Math.floor(Number(limit ?? 200))), 0);
+      results.scanned.missions = Array.isArray(missions) ? missions.length : 0;
+      for (const m of Array.isArray(missions) ? missions : []) {
+        const hit = findSimulationArtifactsInObject(m, patterns, "mission");
+        for (const h of hit) results.hits.push({ entity: missionEntityName, id: m?.id ?? null, ...h });
+      }
+    } catch {
+      results.scanned.missions = 0;
+    }
+
+    const earningCfg = getEarningConfigFromEnv();
+    try {
+      const earningEntity = base44.asServiceRole.entities[earningCfg.entityName];
+      const earnings = await earningEntity.list("-created_date", Math.max(1, Math.floor(Number(limit ?? 200))), 0);
+      results.scanned.earnings = Array.isArray(earnings) ? earnings.length : 0;
+      for (const e of Array.isArray(earnings) ? earnings : []) {
+        const hit = findSimulationArtifactsInObject(e, patterns, "earning");
+        for (const h of hit) results.hits.push({ entity: earningCfg.entityName, id: e?.id ?? null, ...h });
+      }
+    } catch {
+      results.scanned.earnings = 0;
+    }
+  }
+
+  results.ok = results.hits.length === 0;
+  return results;
+}
+
+function runGit(repoRoot, args) {
+  const cwd = path.resolve(process.cwd(), String(repoRoot ?? "."));
+  const res = spawnSync("git", ["-C", cwd, ...args], { encoding: "utf8" });
+  if (res.error) throw res.error;
+  if (res.status !== 0) {
+    const err = String(res.stderr ?? "").trim();
+    throw new Error(err || `git failed: ${args.join(" ")}`);
+  }
+  return String(res.stdout ?? "").trimEnd();
+}
+
+function shouldWriteChangeSets() {
+  return String(process.env.BASE44_ENABLE_CHANGESET_WRITE ?? "false").toLowerCase() === "true";
+}
+
+function getChangeSetConfigFromEnv() {
+  const entityName = process.env.BASE44_CHANGESET_ENTITY ?? "SwarmChangeSet";
+  const chunkEntityName = process.env.BASE44_CHANGESET_CHUNK_ENTITY ?? "SwarmChangeSetChunk";
+
+  const fieldMap =
+    safeJsonParse(process.env.BASE44_CHANGESET_FIELD_MAP, null) ?? {
+      changeSetId: "changeset_id",
+      repoRoot: "repo_root",
+      headSha: "head_sha",
+      branch: "branch",
+      subject: "subject",
+      message: "message",
+      encoding: "encoding",
+      byteLength: "byte_length",
+      sha256: "sha256",
+      chunkCount: "chunk_count",
+      createdAt: "created_at"
+    };
+
+  const chunkFieldMap =
+    safeJsonParse(process.env.BASE44_CHANGESET_CHUNK_FIELD_MAP, null) ?? {
+      changeSetId: "changeset_id",
+      seq: "seq",
+      data: "data"
+    };
+
+  return { entityName, chunkEntityName, fieldMap, chunkFieldMap };
+}
+
+function chunkString(value, chunkSize) {
+  const s = String(value ?? "");
+  const size = Math.max(1000, Math.floor(Number(chunkSize ?? 45000)));
+  const out = [];
+  for (let i = 0; i < s.length; i += size) out.push(s.slice(i, i + size));
+  return out;
+}
+
+async function publishGitChangeSetsToBase44(base44, { repoRoots, dryRun }) {
+  if (!base44) throw new Error("Missing Base44 client; set BASE44_APP_ID/BASE44_SERVICE_TOKEN");
+  if (base44?.offline?.filePath) throw new Error("Refusing changeset publish in offline mode (set BASE44_OFFLINE=false)");
+  if (!shouldWriteChangeSets()) throw new Error("Refusing changeset publish without BASE44_ENABLE_CHANGESET_WRITE=true");
+
+  const cfg = getChangeSetConfigFromEnv();
+  const entity = base44.asServiceRole.entities[cfg.entityName];
+  const chunkEntity = base44.asServiceRole.entities[cfg.chunkEntityName];
+
+  const roots = Array.isArray(repoRoots) && repoRoots.length > 0 ? repoRoots : [process.cwd()];
+  const results = [];
+
+  for (const rr of roots) {
+    const top = runGit(rr, ["rev-parse", "--show-toplevel"]).trim();
+    const headSha = runGit(top, ["rev-parse", "HEAD"]).trim();
+    const branch = runGit(top, ["branch", "--show-current"]).trim() || null;
+    const subject = runGit(top, ["log", "-1", "--pretty=%s"]).trim() || null;
+    const message = runGit(top, ["log", "-1", "--pretty=%B"]).trim() || null;
+    const patchText = runGit(top, ["show", "--no-color", "--binary", "HEAD"]);
+
+    const patchBuf = Buffer.from(patchText, "utf8");
+    const gz = gzipSync(patchBuf);
+    const b64 = gz.toString("base64");
+    const sha256 = crypto.createHash("sha256").update(gz).digest("hex");
+    const chunks = chunkString(b64, 45000);
+    const changeSetId = `changeset:${headSha}:${Date.now()}`;
+    const createdAt = new Date().toISOString();
+
+    const record = {
+      [cfg.fieldMap.changeSetId]: changeSetId,
+      [cfg.fieldMap.repoRoot]: top,
+      [cfg.fieldMap.headSha]: headSha,
+      ...(cfg.fieldMap.branch ? { [cfg.fieldMap.branch]: branch } : {}),
+      ...(cfg.fieldMap.subject ? { [cfg.fieldMap.subject]: subject } : {}),
+      ...(cfg.fieldMap.message ? { [cfg.fieldMap.message]: message } : {}),
+      [cfg.fieldMap.encoding]: "git_show_gzip_base64",
+      [cfg.fieldMap.byteLength]: patchBuf.length,
+      [cfg.fieldMap.sha256]: sha256,
+      [cfg.fieldMap.chunkCount]: chunks.length,
+      ...(cfg.fieldMap.createdAt ? { [cfg.fieldMap.createdAt]: createdAt } : {})
+    };
+
+    if (dryRun) {
+      results.push({ ok: true, dryRun: true, changeSetId, headSha, repoRoot: top, chunkCount: chunks.length, sha256 });
+      continue;
+    }
+
+    const created = await entity.create(record);
+    const chunkResults = [];
+    for (let i = 0; i < chunks.length; i++) {
+      const chunkRec = await chunkEntity.create({
+        [cfg.chunkFieldMap.changeSetId]: changeSetId,
+        [cfg.chunkFieldMap.seq]: i,
+        [cfg.chunkFieldMap.data]: chunks[i]
+      });
+      chunkResults.push({ id: chunkRec?.id ?? null, seq: i });
+    }
+
+    results.push({
+      ok: true,
+      dryRun: false,
+      changeSetId,
+      headSha,
+      repoRoot: top,
+      recordId: created?.id ?? null,
+      chunkCount: chunks.length,
+      sha256,
+      chunks: chunkResults
+    });
+  }
+
+  return { ok: true, results };
 }
 
 function getEnvOrThrow(name) {
@@ -2331,6 +2536,34 @@ async function main() {
   if (shouldUseOfflineMode(args)) process.env.BASE44_OFFLINE = "true";
 
   const base44 = buildBase44Client({ allowMissing: dryRun, mode: shouldUseOfflineMode(args) ? "offline" : "auto" });
+
+  if (
+    args["check-simulation"] === true ||
+    args.checkSimulation === true ||
+    getEnvBool("npm_config_check_simulation", false) ||
+    getEnvBool("NPM_CONFIG_CHECK_SIMULATION", false)
+  ) {
+    if (!base44) throw new Error("Missing Base44 client; set BASE44_APP_ID/BASE44_SERVICE_TOKEN or use --offline");
+    const scanLimit = Number(args["scan-limit"] ?? args.scanLimit ?? args.limit ?? "200");
+    const out = await scanSimulationArtifacts(base44, { limit: scanLimit });
+    process.stdout.write(`${JSON.stringify(out)}\n`);
+    process.exitCode = out.ok ? 0 : 2;
+    return;
+  }
+
+  if (args["publish-git-changeset"] === true || args.publishGitChangeset === true) {
+    if (!base44) throw new Error("Missing Base44 client; set BASE44_APP_ID/BASE44_SERVICE_TOKEN");
+    const rawRoots = args["repo-root"] ?? args.repoRoot ?? null;
+    const repoRoots = rawRoots
+      ? String(rawRoots)
+          .split(/[|;,]/g)
+          .map((x) => x.trim())
+          .filter(Boolean)
+      : [process.cwd()];
+    const out = await publishGitChangeSetsToBase44(base44, { repoRoots, dryRun: !!dryRun });
+    process.stdout.write(`${JSON.stringify(out)}\n`);
+    return;
+  }
 
   if (args["export-payout-truth"] === true || args.exportPayoutTruth === true) {
     if (!base44) throw new Error("Missing Base44 client; set BASE44_APP_ID/BASE44_SERVICE_TOKEN or use --offline");

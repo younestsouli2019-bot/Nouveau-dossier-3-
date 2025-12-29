@@ -493,6 +493,8 @@ Immediate remediation actions:
 11.2 Minimum audit commands
 - npm run live:readiness
 - npm run live:readiness:ping
+- npm run check:all-good
+- npm run check:simulation
 - npm run emit:revenue -- --export-payout-truth
 - npm run emit:revenue -- --repair-payout-truth --dry-run
 - npm run emit:revenue -- --report-pending-approval
@@ -525,6 +527,22 @@ Changes (chronological, this workspace):
 5) Historical playbook (from suggestions2.Historical.txt, adapted to existing commands):
    - Audit: --export-payout-truth, --report-*-payouts, --report-transaction-logs
    - Correct: --repair-payout-truth (--dry-run first, then live with flags)
+
+6) Evidence-gated mission status:
+   - monitor-health: --mission-health enforces deployable=false without proof-of-life.
+   - autonomous-daemon can freeze itself if mission health is not deployable.
+
+7) Dead-man switch auto-freeze:
+   - autonomous-daemon deadman checks: recent webhook activity + recent PayPal sync metrics.
+   - On critical violations, it activates freeze and records a SYSTEM_INCIDENT in TransactionLog.
+
+8) Simulation artifact ban (audit):
+   - emit-revenue-events: --check-simulation scans Missions and Earnings for simulated/mock/fake/demo markers.
+   - npm run check:simulation exits non-zero if any artifacts are found.
+
+9) "All Good" proof command:
+   - npm run check:all-good returns a single JSON verdict, including readiness, mission health, simulation scan, payout truth export, and freeze state.
+   - Exits non-zero if any proof-of-life requirement fails.
 
 Verification:
 - npm test: PASS (84/84)

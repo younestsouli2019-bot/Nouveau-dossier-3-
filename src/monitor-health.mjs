@@ -181,11 +181,377 @@ function buildReadinessSummary() {
   };
 }
 
+function parseJsonEnv(name) {
+  const raw = process.env[name];
+  if (raw == null) return null;
+  const trimmed = String(raw).trim();
+  if (!trimmed) return null;
+  try {
+    const parsed = JSON.parse(trimmed);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function coerceObject(value) {
+  if (!value) return {};
+  if (typeof value === "object") return Array.isArray(value) ? {} : value;
+  if (typeof value === "string") {
+    const parsed = (() => {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return null;
+      }
+    })();
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  }
+  return {};
+}
+
+function getMissionHealthRequirements() {
+  const override = parseJsonEnv("BASE44_MISSION_HEALTH_REQUIREMENTS_JSON");
+  if (override) return override;
+  return {
+    financial_mission: {
+      min_heartbeat_hours: 24,
+      required_events: ["PAYMENT.CAPTURE.COMPLETED", "PAYMENT.PAYOUTS-ITEM.SUCCEEDED"],
+      min_ledger_writes: 1
+    },
+    operational_mission: {
+      min_heartbeat_hours: 72,
+      required_events: [],
+      min_ledger_writes: 0
+    }
+  };
+}
+
+function getMissionHealthConfig() {
+  return {
+    enableWrite: getEnvBool("BASE44_ENABLE_MISSION_HEALTH_WRITE", false),
+    deployableThreshold: Number(process.env.BASE44_MISSION_HEALTH_DEPLOYABLE_THRESHOLD ?? "0.8") || 0.8,
+    entities: {
+      mission: process.env.BASE44_MISSION_ENTITY ?? "Mission",
+      webhook: process.env.BASE44_MISSION_HEALTH_WEBHOOK_ENTITY ?? "PayPalWebhookEvent",
+      revenue: process.env.BASE44_MISSION_HEALTH_REVENUE_ENTITY ?? "RevenueEvent",
+      metric: process.env.BASE44_MISSION_HEALTH_METRIC_ENTITY ?? "PayPalMetric"
+    },
+    fields: {
+      mission: {
+        id: process.env.BASE44_MISSION_FIELD_ID ?? "id",
+        type: process.env.BASE44_MISSION_FIELD_TYPE ?? "type",
+        status: process.env.BASE44_MISSION_FIELD_STATUS ?? "status",
+        deployed: process.env.BASE44_MISSION_FIELD_DEPLOYED ?? "deployed",
+        metadata: process.env.BASE44_MISSION_FIELD_METADATA ?? "metadata",
+        healthScore: process.env.BASE44_MISSION_FIELD_HEALTH_SCORE ?? "health_score",
+        healthProofs: process.env.BASE44_MISSION_FIELD_HEALTH_PROOFS ?? "health_proofs",
+        lastHealthCheck: process.env.BASE44_MISSION_FIELD_LAST_HEALTH_CHECK ?? "last_health_check"
+      },
+      webhook: {
+        missionId: process.env.BASE44_WEBHOOK_FIELD_MISSION_ID ?? "mission_id",
+        eventId: process.env.BASE44_WEBHOOK_FIELD_EVENT_ID ?? "event_id",
+        eventType: process.env.BASE44_WEBHOOK_FIELD_EVENT_TYPE ?? "event_type",
+        at: process.env.BASE44_WEBHOOK_FIELD_AT ?? "created_date"
+      },
+      revenue: {
+        missionId: process.env.BASE44_REVENUE_FIELD_MISSION_ID ?? "mission_id",
+        eventId: process.env.BASE44_REVENUE_FIELD_EVENT_ID ?? "event_id",
+        amount: process.env.BASE44_REVENUE_FIELD_AMOUNT ?? "amount",
+        at: process.env.BASE44_REVENUE_FIELD_AT ?? "occurred_at"
+      },
+      metric: {
+        kind: process.env.BASE44_METRIC_FIELD_KIND ?? "kind",
+        ok: process.env.BASE44_METRIC_FIELD_OK ?? "ok",
+        at: process.env.BASE44_METRIC_FIELD_AT ?? "at"
+      }
+    },
+    requirements: getMissionHealthRequirements()
+  };
+}
+
+function pickFirst(record, keys) {
+  for (const k of keys) {
+    if (!k) continue;
+    const v = record?.[k];
+    if (v != null) return v;
+  }
+  return null;
+}
+
+function hoursSince(iso) {
+  const at = iso ? new Date(iso) : null;
+  if (!at || Number.isNaN(at.getTime())) return null;
+  return (Date.now() - at.getTime()) / (1000 * 60 * 60);
+}
+
+function classifyMission(mission, cfg) {
+  const type = pickFirst(mission, [cfg.fields.mission.type, "type"]);
+  const t = String(type ?? "").toLowerCase();
+  if (t.includes("financial") || t.includes("revenue") || t.includes("payout")) return "financial_mission";
+  return "operational_mission";
+}
+
+function computeHealthScore(classKey, proofs) {
+  const weights =
+    classKey === "financial_mission"
+      ? { webhook_heartbeat: 0.4, required_events: 0.2, ledger_activity: 0.3, paypal_sync: 0.1 }
+      : { webhook_heartbeat: 0.2, required_events: 0.0, ledger_activity: 0.6, paypal_sync: 0.2 };
+
+  const enabled = Object.entries(weights).filter(([, w]) => w > 0);
+  const total = enabled.reduce((acc, [, w]) => acc + w, 0) || 1;
+
+  const normalized = {};
+  for (const [k, w] of enabled) normalized[k] = w / total;
+
+  const healthy = new Set(["healthy", "active", "ok", "present"]);
+  const byType = new Map(proofs.map((p) => [p.type, p]));
+
+  let score = 0;
+  for (const [type, w] of Object.entries(normalized)) {
+    const p = byType.get(type);
+    if (!p) continue;
+    if (healthy.has(String(p.status))) score += w;
+  }
+  return Math.max(0, Math.min(1, score));
+}
+
+function computeDeployable({ classKey, requirements, proofs, score, threshold }) {
+  if (score < threshold) return false;
+  const byType = new Map(proofs.map((p) => [p.type, p]));
+
+  if (classKey === "financial_mission") {
+    const hb = byType.get("webhook_heartbeat");
+    if (!hb || hb.status === "missing" || hb.status === "stale") return false;
+    const ledger = byType.get("ledger_activity");
+    if (Number(requirements?.min_ledger_writes ?? 0) > 0 && (!ledger || ledger.status !== "active")) return false;
+  }
+  return true;
+}
+
+function summarizeMissionHealthResults(results) {
+  const list = Array.isArray(results) ? results : [];
+  const summary = {
+    ok: true,
+    total: list.length,
+    okCount: 0,
+    errorCount: 0,
+    deployableCount: 0,
+    notDeployableCount: 0,
+    minHealthScore: null,
+    byClassKey: {},
+    proofStatusCounts: {}
+  };
+
+  for (const r of list) {
+    if (!r || typeof r !== "object") continue;
+    if (r.ok !== true) {
+      summary.ok = false;
+      summary.errorCount += 1;
+      continue;
+    }
+    summary.okCount += 1;
+    if (r.deployable === true) summary.deployableCount += 1;
+    else summary.notDeployableCount += 1;
+    if (r.deployable !== true) summary.ok = false;
+
+    const score = Number(r.healthScore);
+    if (Number.isFinite(score)) {
+      summary.minHealthScore = summary.minHealthScore == null ? score : Math.min(summary.minHealthScore, score);
+    }
+
+    const classKey = String(r.classKey ?? "unknown");
+    if (!summary.byClassKey[classKey]) {
+      summary.byClassKey[classKey] = { total: 0, deployable: 0, notDeployable: 0 };
+    }
+    summary.byClassKey[classKey].total += 1;
+    if (r.deployable === true) summary.byClassKey[classKey].deployable += 1;
+    else summary.byClassKey[classKey].notDeployable += 1;
+
+    const proofs = Array.isArray(r.proofs) ? r.proofs : [];
+    for (const p of proofs) {
+      if (!p || typeof p !== "object") continue;
+      const key = `${String(p.type ?? "unknown")}:${String(p.status ?? "unknown")}`;
+      summary.proofStatusCounts[key] = (summary.proofStatusCounts[key] ?? 0) + 1;
+    }
+  }
+
+  return summary;
+}
+
+async function calculateMissionHealth(base44, cfg, mission) {
+  const classKey = classifyMission(mission, cfg);
+  const requirements = cfg.requirements?.[classKey] ?? {};
+  const proofs = [];
+
+  const missionId = pickFirst(mission, [cfg.fields.mission.id, "id"]);
+  if (!missionId) {
+    return { ok: false, error: "Mission missing id", missionId: null, healthScore: 0, proofs: [], deployable: false };
+  }
+
+  const webhookEntity = base44.asServiceRole.entities[cfg.entities.webhook];
+  const webhook = await webhookEntity.filter(
+    { [cfg.fields.webhook.missionId]: String(missionId) },
+    "-created_date",
+    1,
+    0,
+    [cfg.fields.webhook.eventId, cfg.fields.webhook.eventType, cfg.fields.webhook.at, "created_date", "created_at", "at"]
+  );
+  const lastWebhook = Array.isArray(webhook) && webhook.length ? webhook[0] : null;
+  if (lastWebhook) {
+    const at = pickFirst(lastWebhook, [cfg.fields.webhook.at, "created_date", "created_at", "at", "updated_date"]);
+    const h = hoursSince(at);
+    const maxH = Number(requirements?.min_heartbeat_hours ?? 24) || 24;
+    if (h != null && h < maxH) {
+      proofs.push({
+        type: "webhook_heartbeat",
+        status: "healthy",
+        last_event: pickFirst(lastWebhook, [cfg.fields.webhook.eventId, "event_id", "id"]) ?? null,
+        last_event_type: pickFirst(lastWebhook, [cfg.fields.webhook.eventType, "event_type", "type"]) ?? null,
+        hours_ago: Math.floor(h)
+      });
+    } else {
+      proofs.push({
+        type: "webhook_heartbeat",
+        status: "stale",
+        last_event: pickFirst(lastWebhook, [cfg.fields.webhook.eventId, "event_id", "id"]) ?? null,
+        last_event_type: pickFirst(lastWebhook, [cfg.fields.webhook.eventType, "event_type", "type"]) ?? null,
+        hours_ago: h == null ? null : Math.floor(h)
+      });
+    }
+  } else {
+    proofs.push({ type: "webhook_heartbeat", status: "missing" });
+  }
+
+  const requiredEvents = Array.isArray(requirements?.required_events) ? requirements.required_events : [];
+  if (requiredEvents.length > 0) {
+    const sample = await webhookEntity.filter(
+      { [cfg.fields.webhook.missionId]: String(missionId) },
+      "-created_date",
+      250,
+      0,
+      [cfg.fields.webhook.eventType, "event_type", "type", cfg.fields.webhook.at, "created_date", "created_at", "at"]
+    );
+    const types = new Set(
+      (Array.isArray(sample) ? sample : [])
+        .map((r) => pickFirst(r, [cfg.fields.webhook.eventType, "event_type", "type"]))
+        .filter((x) => x != null)
+        .map((x) => String(x))
+    );
+    const missing = requiredEvents.filter((t) => !types.has(String(t)));
+    proofs.push({
+      type: "required_events",
+      status: missing.length === 0 ? "present" : "missing",
+      required: requiredEvents,
+      missing
+    });
+  }
+
+  const revenueEntity = base44.asServiceRole.entities[cfg.entities.revenue];
+  const revenue = await revenueEntity.filter(
+    { [cfg.fields.revenue.missionId]: String(missionId) },
+    "-created_date",
+    1,
+    0,
+    [cfg.fields.revenue.eventId, cfg.fields.revenue.amount, cfg.fields.revenue.at, "created_date", "occurred_at", "at"]
+  );
+  const lastRevenue = Array.isArray(revenue) && revenue.length ? revenue[0] : null;
+  if (lastRevenue) {
+    proofs.push({
+      type: "ledger_activity",
+      status: "active",
+      last_event_id: pickFirst(lastRevenue, [cfg.fields.revenue.eventId, "event_id", "id"]) ?? null,
+      amount: pickFirst(lastRevenue, [cfg.fields.revenue.amount, "amount"]) ?? null,
+      at: pickFirst(lastRevenue, [cfg.fields.revenue.at, "occurred_at", "created_date", "at"]) ?? null
+    });
+  } else {
+    proofs.push({ type: "ledger_activity", status: "missing" });
+  }
+
+  const metricEntity = base44.asServiceRole.entities[cfg.entities.metric];
+  const metric = await metricEntity.filter(
+    { [cfg.fields.metric.kind]: "sync_payout_batch", [cfg.fields.metric.ok]: true },
+    "-created_date",
+    1,
+    0,
+    [cfg.fields.metric.at, "at", "created_date"]
+  );
+  const lastMetric = Array.isArray(metric) && metric.length ? metric[0] : null;
+  if (lastMetric) {
+    const at = pickFirst(lastMetric, [cfg.fields.metric.at, "at", "created_date", "created_at"]) ?? null;
+    const h = hoursSince(at);
+    const maxH = Number(process.env.BASE44_MISSION_HEALTH_MAX_SYNC_STALENESS_HOURS ?? "24") || 24;
+    proofs.push({
+      type: "paypal_sync",
+      status: h != null && h < maxH ? "ok" : "stale",
+      hours_ago: h == null ? null : Math.floor(h),
+      at
+    });
+  } else {
+    proofs.push({ type: "paypal_sync", status: "missing" });
+  }
+
+  const healthScore = computeHealthScore(classKey, proofs);
+  const deployable = computeDeployable({
+    classKey,
+    requirements,
+    proofs,
+    score: healthScore,
+    threshold: cfg.deployableThreshold
+  });
+
+  const now = new Date().toISOString();
+  const metadata = coerceObject(pickFirst(mission, [cfg.fields.mission.metadata, "metadata"]));
+  const nextMetadata = {
+    ...metadata,
+    evidence_gated: true,
+    health_calculated_at: now,
+    health: { healthScore, deployable, proofs, classKey }
+  };
+
+  if (cfg.enableWrite) {
+    const missionEntity = base44.asServiceRole.entities[cfg.entities.mission];
+    const fullPatch = {
+      [cfg.fields.mission.healthScore]: healthScore,
+      [cfg.fields.mission.healthProofs]: proofs,
+      [cfg.fields.mission.lastHealthCheck]: now,
+      [cfg.fields.mission.deployed]: deployable,
+      [cfg.fields.mission.metadata]: nextMetadata
+    };
+    try {
+      await missionEntity.update(String(missionId), fullPatch);
+    } catch {
+      await missionEntity.update(String(missionId), { [cfg.fields.mission.metadata]: nextMetadata });
+    }
+  }
+
+  return { ok: true, missionId: String(missionId), classKey, healthScore, proofs, deployable };
+}
+
+async function runMissionHealthOnce(base44, cfg, { missionId, limit }) {
+  const missionEntity = base44.asServiceRole.entities[cfg.entities.mission];
+  const fields = [cfg.fields.mission.id, cfg.fields.mission.type, cfg.fields.mission.status, cfg.fields.mission.metadata, cfg.fields.mission.deployed];
+  let missions = [];
+  if (missionId) {
+    missions = await missionEntity.filter({ [cfg.fields.mission.id]: String(missionId) }, "-updated_date", 1, 0, fields);
+  } else {
+    const lim = Number(limit ?? process.env.BASE44_MISSION_HEALTH_LIMIT ?? "50") || 50;
+    missions = await missionEntity.list("-updated_date", lim, 0, fields);
+  }
+  const results = [];
+  for (const m of missions) {
+    results.push(await calculateMissionHealth(base44, cfg, m));
+  }
+  return results;
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   const once = args.once === true;
   const readiness = args.readiness === true || args["live-readiness"] === true;
   const ping = args.ping === true;
+  const missionHealth = args["mission-health"] === true || args["mission-health-check"] === true;
+  const missionHealthSummary = args.summary === true || args["mission-health-summary"] === true;
 
   const intervalMs = getIntervalMs();
   const enableWrite = (process.env.BASE44_ENABLE_HEALTH_WRITE ?? "false").toLowerCase() === "true";
@@ -217,6 +583,31 @@ async function main() {
       })}\n`,
       () => process.exit(0)
     );
+    return;
+  }
+
+  if (missionHealth) {
+    const base44 = buildBase44ServiceClient();
+    const cfg = getMissionHealthConfig();
+    const missionId = args["mission-id"] ? String(args["mission-id"]) : null;
+    const limit = args["mission-limit"] ? String(args["mission-limit"]) : null;
+    process.stdout.write(
+      `${JSON.stringify({
+        ok: true,
+        missionHealth: { once, enableWrite: cfg.enableWrite, deployableThreshold: cfg.deployableThreshold, missionId, limit: limit ?? null }
+      })}\n`
+    );
+    while (true) {
+      const at = nowIso();
+      const results = await runMissionHealthOnce(base44, cfg, { missionId, limit });
+      if (missionHealthSummary) {
+        const summary = summarizeMissionHealthResults(results);
+        process.stdout.write(`${JSON.stringify({ ok: true, at, summary })}\n`);
+      }
+      process.stdout.write(`${JSON.stringify({ ok: true, at, results })}\n`);
+      if (once) break;
+      await sleep(intervalMs);
+    }
     return;
   }
 
