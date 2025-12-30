@@ -929,7 +929,7 @@ if (args.check === true || args["config-check"] === true) {
     if (pathname === "/health") {
       json(res, 200, {
         ok: true,
-        live: getEnvBool("SWARM_LIVE", true),
+        live: getEnvBool("SWARM_LIVE", false),
         dedupe: dedupeStore.stats(),
         config: getConfigCheck(),
         startupConfigError
