@@ -942,7 +942,15 @@ if (args.check === true || args["config-check"] === true) {
         json(res, 405, { ok: false, error: "Method not allowed" });
         return;
       }
-      const ran = await runAllGoodSummaryOnce({ timeoutMs: 15000 });
+      const timeoutMsRaw =
+        process.env.WEBHOOK_ALL_GOOD_TIMEOUT_MS ??
+        process.env.ALL_GOOD_TIMEOUT_MS ??
+        process.env.AUTONOMOUS_ALL_GOOD_TIMEOUT_MS ??
+        "45000";
+      const timeoutMsNum = Number(timeoutMsRaw);
+      const timeoutMs =
+        Number.isFinite(timeoutMsNum) && timeoutMsNum >= 1000 && timeoutMsNum <= 120000 ? timeoutMsNum : 45000;
+      const ran = await runAllGoodSummaryOnce({ timeoutMs });
       if (!ran.ok) {
         json(res, 503, { ok: false, error: ran.error ?? "all_good_failed", exitCode: ran.exitCode ?? null });
         return;
