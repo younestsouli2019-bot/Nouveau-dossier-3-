@@ -1851,6 +1851,8 @@ async function exportPayoutTruth(base44, { batchId, limit, onlyReal = false }) {
 
   const fields = [ 
     payoutBatchCfg.fieldMap.batchId,
+    payoutBatchCfg.fieldMap.totalAmount,
+    payoutBatchCfg.fieldMap.currency,
     payoutBatchCfg.fieldMap.status,
     payoutBatchCfg.fieldMap.submittedAt,
     payoutBatchCfg.fieldMap.completedAt,
@@ -1872,6 +1874,8 @@ async function exportPayoutTruth(base44, { batchId, limit, onlyReal = false }) {
     const notes = payoutBatchCfg.fieldMap.notes ? b?.[payoutBatchCfg.fieldMap.notes] : null;
     const externalProviderId = notes?.paypal_payout_batch_id ?? notes?.paypalPayoutBatchId ?? "NOT_SUBMITTED";
     if (onlyReal && (!externalProviderId || String(externalProviderId) === "NOT_SUBMITTED")) continue;
+    const totalAmount = payoutBatchCfg.fieldMap.totalAmount ? b?.[payoutBatchCfg.fieldMap.totalAmount] : null;
+    const currency = payoutBatchCfg.fieldMap.currency ? b?.[payoutBatchCfg.fieldMap.currency] : null;
 
     const items = internalBatchId
       ? await filterAll(itemEntity, { [payoutItemCfg.fieldMap.batchId]: String(internalBatchId) }, { pageSize: 500 })
@@ -1899,6 +1903,8 @@ async function exportPayoutTruth(base44, { batchId, limit, onlyReal = false }) {
       internalPayoutBatchId: internalBatchId,
       externalProviderId,
       paypal_payout_batch_id: externalProviderId,
+      totalAmount,
+      currency,
       providerKind: normalizeRecipientType(notes?.recipient_type ?? notes?.recipientType ?? null, "paypal") === "paypal" ? "paypal_payouts" : null,
       providerStatus: notes?.paypal_batch_status ?? null,
       providerTimeCreated: notes?.paypal_time_created ?? null,

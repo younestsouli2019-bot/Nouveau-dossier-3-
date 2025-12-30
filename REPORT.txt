@@ -26,6 +26,8 @@ LATEST IMPLEMENTED CHANGES (2025-12-28)
 - Truth-only payout truth export:
   - emit:revenue now supports --export-payout-truth --only-real (and --truth-only-ui) so UI/agents only see batches with real provider proof (notes.paypal_payout_batch_id).
   - BASE44_ENABLE_TRUTH_ONLY_UI is surfaced in readiness, and truth-only can be enforced at export time.
+- Reality check dashboard:
+  - npm run status:reality-check outputs a single JSON snapshot with provider-id coverage, real vs unexecuted totals, webhook freshness, last successful payout timestamp, balance-vs-pending, and the next auto-approval check time.
 - Webhook reconciliation hardening:
   - PayPal webhook processing backfills provider sync metadata onto PayoutBatch notes during payout item updates, reducing “ledger drift”.
 - Autonomous daemon hardening:
@@ -100,6 +102,9 @@ Core components and loops:
 
 Operational entry points (package.json):
 - npm run emit:revenue
+- npm run status:reality-check
+- npm run approve:batch (requires -- --batch-id <ID> [--totp <CODE>])
+- npm run rollback:batch (requires -- --batch-id <ID>)
 - npm run paypal:webhook
 - npm run paypal:sync:payout
 - npm test

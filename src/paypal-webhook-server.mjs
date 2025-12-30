@@ -1,7 +1,8 @@
 import http from "node:http";
 import crypto from "node:crypto";
+import { spawn } from "node:child_process";
 import { buildBase44ServiceClient } from "./base44-client.mjs";
-import { extractPayPalWebhookHeaders, verifyPayPalWebhookSignature } from "./paypal-api.mjs";
+import { extractPayPalWebhookHeaders, verifyPayPalWebhookSignature, getPayPalAccessToken, paypalRequest } from "./paypal-api.mjs";
 import { mapPayPalWebhookToRevenueEvent } from "./paypal-event-mapper.mjs";
 import {
   createBase44RevenueEventIdempotent,
@@ -103,6 +104,96 @@ function json(res, status, data) {
     "Content-Length": Buffer.byteLength(body)
   });
   res.end(body);
+}
+
+function normalizeCurrency(value, fallback) {
+  if (!value) return fallback;
+  const v = String(value).trim().toUpperCase();
+  if (v.length !== 3) return fallback;
+  return v;
+}
+
+function pickApprovalUrl(order) {
+  const links = order?.links ?? [];
+  const approval = links.find((l) => l?.rel === "approve");
+  return approval?.href ?? null;
+}
+
+function shouldCreatePayPalOrders() {
+  return (process.env.PAYPAL_ENABLE_ORDER_CREATE ?? "false").toLowerCase() === "true";
+}
+
+async function createPayPalCheckoutOrder({ amount, currency, description, customId, returnUrl, cancelUrl }) {
+  const token = await getPayPalAccessToken();
+  const body = {
+    intent: "CAPTURE",
+    purchase_units: [
+      {
+        amount: {
+          currency_code: currency,
+          value: Number(amount).toFixed(2)
+        },
+        ...(description ? { description } : {}),
+        ...(customId ? { custom_id: customId } : {})
+      }
+    ],
+    application_context: {
+      return_url: returnUrl,
+      cancel_url: cancelUrl
+    }
+  };
+  return paypalRequest("/v2/checkout/orders", { method: "POST", token, body });
+}
+
+function lastJsonLine(text) {
+  const raw = String(text ?? "");
+  const lines = raw.split(/\r?\n/g).map((l) => l.trim()).filter(Boolean);
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const l = lines[i];
+    if (l.startsWith("{") && l.endsWith("}")) return l;
+  }
+  return null;
+}
+
+function runAllGoodSummaryOnce({ timeoutMs }) {
+  return new Promise((resolve) => {
+    const cmd = process.execPath;
+    const args = ["./src/autonomous-daemon.mjs", "--all-good-summary"];
+    const child = spawn(cmd, args, { stdio: ["ignore", "pipe", "pipe"], env: process.env });
+
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (d) => {
+      stdout += d.toString("utf8");
+    });
+    child.stderr.on("data", (d) => {
+      stderr += d.toString("utf8");
+    });
+
+    const timer = setTimeout(() => {
+      try {
+        child.kill("SIGKILL");
+      } catch {}
+      resolve({ ok: false, error: "all_good_timeout", stdout, stderr });
+    }, Math.max(500, Number(timeoutMs ?? 15000)));
+
+    child.on("close", (code) => {
+      clearTimeout(timer);
+      const line = lastJsonLine(stdout) ?? lastJsonLine(stderr);
+      const parsed = line ? safeJsonParse(line, null) : null;
+      if (parsed && typeof parsed === "object") {
+        resolve({ ok: true, exitCode: code, result: parsed });
+        return;
+      }
+      resolve({
+        ok: false,
+        exitCode: code,
+        error: "all_good_no_json",
+        stdout: stdout.slice(-2000),
+        stderr: stderr.slice(-2000)
+      });
+    });
+  });
 }
 
 function shouldWriteToBase44() {
@@ -842,6 +933,109 @@ if (args.check === true || args["config-check"] === true) {
         dedupe: dedupeStore.stats(),
         config: getConfigCheck(),
         startupConfigError
+      });
+      return;
+    }
+
+    if (pathname === "/all-good") {
+      if (req.method !== "GET") {
+        json(res, 405, { ok: false, error: "Method not allowed" });
+        return;
+      }
+      const ran = await runAllGoodSummaryOnce({ timeoutMs: 15000 });
+      if (!ran.ok) {
+        json(res, 503, { ok: false, error: ran.error ?? "all_good_failed", exitCode: ran.exitCode ?? null });
+        return;
+      }
+      json(res, 200, { ok: true, exitCode: ran.exitCode ?? null, result: ran.result });
+      return;
+    }
+
+    if (pathname === "/acp/health") {
+      json(res, 200, { ok: true });
+      return;
+    }
+
+    if (pathname === "/acp/v1/discovery") {
+      if (req.method !== "GET") {
+        json(res, 405, { ok: false, error: "Method not allowed" });
+        return;
+      }
+      const products = safeJsonParse(process.env.ACP_PRODUCTS_JSON, []) ?? [];
+      json(res, 200, {
+        ok: true,
+        protocol: "ACP-1.0",
+        merchant: {
+          id: "swarm_owner",
+          name: process.env.ACP_MERCHANT_NAME ?? "Autonomous Swarm Commerce",
+          payment_methods: ["paypal_order"]
+        },
+        products: Array.isArray(products) ? products : [],
+        endpoints: {
+          initiate_transaction: "/acp/v1/transactions",
+          transaction_status: "/acp/v1/transactions/:id",
+          health: "/acp/health"
+        },
+        compliance: { sbds: "1.0", direct_settlement: true, no_intermediaries: true }
+      });
+      return;
+    }
+
+    if (pathname === "/acp/v1/transactions") {
+      if (req.method !== "POST") {
+        json(res, 405, { ok: false, error: "Method not allowed" });
+        return;
+      }
+      if (!shouldCreatePayPalOrders()) {
+        json(res, 403, { ok: false, error: "Order creation disabled (set PAYPAL_ENABLE_ORDER_CREATE=true)" });
+        return;
+      }
+      try {
+        requireLiveMode("create PayPal order");
+      } catch (e) {
+        json(res, 403, { ok: false, error: e?.message ?? String(e) });
+        return;
+      }
+
+      const rawBody = await readRawBody(req, { limitBytes: 200_000 });
+      const body = safeJsonParse(rawBody, null);
+      if (!body || typeof body !== "object") {
+        json(res, 400, { ok: false, error: "Invalid JSON" });
+        return;
+      }
+
+      const products = safeJsonParse(process.env.ACP_PRODUCTS_JSON, []) ?? [];
+      const list = Array.isArray(products) ? products : [];
+      const productId = body.product_id ?? body.productId ?? null;
+      const picked = productId ? list.find((p) => p && typeof p === "object" && String(p.id ?? "") === String(productId)) : null;
+
+      const amountRaw = picked?.price ?? picked?.amount ?? body.amount ?? body.total ?? null;
+      const amount = Number(amountRaw);
+      if (!amount || Number.isNaN(amount) || amount <= 0) {
+        json(res, 400, { ok: false, error: "Invalid amount" });
+        return;
+      }
+
+      const currency = normalizeCurrency(picked?.currency ?? body.currency, String(process.env.PAYPAL_CURRENCY ?? "USD"));
+      const description = String(picked?.name ?? body.description ?? "").trim() || null;
+      const customId = String(body.reference ?? body.custom_id ?? body.customId ?? `acp_${Date.now()}`).slice(0, 120);
+      const returnUrl = String(body.return_url ?? body.returnUrl ?? process.env.PAYPAL_RETURN_URL ?? "").trim();
+      const cancelUrl = String(body.cancel_url ?? body.cancelUrl ?? process.env.PAYPAL_CANCEL_URL ?? "").trim();
+      if (!returnUrl || !cancelUrl) {
+        json(res, 400, { ok: false, error: "Missing return_url/cancel_url" });
+        return;
+      }
+
+      const order = await createPayPalCheckoutOrder({ amount, currency, description, customId, returnUrl, cancelUrl });
+      const approvalUrl = pickApprovalUrl(order);
+      json(res, 200, {
+        ok: true,
+        status: "pending",
+        protocol: "ACP-1.0",
+        transaction_id: order?.id ?? null,
+        amount: { value: amount.toFixed(2), currency },
+        payment_instructions: { method: "paypal_order", approval_url: approvalUrl, custom_id: customId },
+        order: { id: order?.id ?? null, status: order?.status ?? null }
       });
       return;
     }

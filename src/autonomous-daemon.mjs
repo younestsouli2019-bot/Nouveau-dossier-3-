@@ -316,7 +316,9 @@ function defaultConfig() {
       thresholds: {
         webhookSilenceHours: 4,
         metricFailureCount: 3,
-        metricWindowMinutes: 30
+        metricWindowMinutes: 30,
+        payoutFailureRatePercent: null,
+        payoutFailureMinSamples: 10
       }
     },
     payout: {
@@ -897,7 +899,145 @@ function computeDeadmanViolations({ lastWebhook, metrics, cfg, nowMs }) {
     });
   }
 
+  const payoutFailureRatePercent = thresholds.payoutFailureRatePercent != null ? Number(thresholds.payoutFailureRatePercent) : null;
+  const payoutFailureMinSamples = Math.max(1, Math.floor(Number(thresholds.payoutFailureMinSamples ?? 10)));
+  if (Number.isFinite(payoutFailureRatePercent) && payoutFailureRatePercent > 0) {
+    const payoutWindow = withinWindow.filter((r) => {
+      const kind = String(r?.[fieldMap.kind] ?? "").toLowerCase();
+      return kind.startsWith("payout_") || kind.startsWith("payout");
+    });
+    if (payoutWindow.length >= payoutFailureMinSamples) {
+      const failures = payoutWindow.filter((r) => {
+        const ok = r?.[fieldMap.ok];
+        return !(ok === true || String(ok).toLowerCase() === "true");
+      }).length;
+      const rate = failures / Math.max(1, payoutWindow.length);
+      if (rate >= payoutFailureRatePercent / 100) {
+        violations.push({
+          type: "paypal_payout_failure_rate",
+          severity: "critical",
+          message: `PayPal payout failure rate ${(rate * 100).toFixed(1)}% within ${windowMinutes} minutes`,
+          failureRatePercent: Number((rate * 100).toFixed(3)),
+          sampleCount: payoutWindow.length,
+          failureCount: failures
+        });
+      }
+    }
+  }
+
   return violations;
+}
+
+function sumAmount(records, fieldName) {
+  let sum = 0;
+  for (const r of Array.isArray(records) ? records : []) {
+    const n = Number(r?.[fieldName] ?? r?.totalAmount ?? r?.total_amount ?? r?.amount ?? 0);
+    if (Number.isFinite(n)) sum += n;
+  }
+  return Number(sum.toFixed(2));
+}
+
+function maxIsoFrom(values) {
+  let bestMs = null;
+  for (const v of Array.isArray(values) ? values : []) {
+    const ms = Date.parse(String(v ?? ""));
+    if (Number.isNaN(ms)) continue;
+    if (bestMs == null || ms > bestMs) bestMs = ms;
+  }
+  return bestMs == null ? null : new Date(bestMs).toISOString();
+}
+
+async function runRealityCheckOnce(cfg) {
+  const at = nowIso();
+
+  const payoutTruth = await runEmitWithOfflineFallback(["--export-payout-truth", "--limit", "2000"], cfg);
+  const truthRows = effectiveOk(payoutTruth) ? (payoutTruth.result?.rows ?? []) : [];
+  const withProvider = truthRows.filter((r) => {
+    const id = r?.externalProviderId ?? r?.paypal_payout_batch_id ?? null;
+    return id != null && String(id) !== "NOT_SUBMITTED";
+  });
+  const withoutProvider = truthRows.filter((r) => {
+    const id = r?.externalProviderId ?? r?.paypal_payout_batch_id ?? null;
+    return id == null || String(id) === "NOT_SUBMITTED";
+  });
+
+  const approvedBatchesRes = await runEmitWithOfflineFallback(["--report-approved-batches"], cfg);
+  const approvedBatches = effectiveOk(approvedBatchesRes) ? (approvedBatchesRes.result?.batches ?? []) : [];
+  const approvedPayPalMissingProviderId = approvedBatches.filter((b) => {
+    const notes = b?.notes ?? b?.Notes ?? null;
+    const recipientType = String(notes?.recipient_type ?? notes?.recipientType ?? "").toLowerCase();
+    const providerId = notes?.paypal_payout_batch_id ?? notes?.paypalPayoutBatchId ?? null;
+    if (recipientType && recipientType !== "paypal" && recipientType !== "paypal_email") return false;
+    return !providerId;
+  });
+
+  const stuckRes = await runEmitWithOfflineFallback(["--report-stuck-payouts"], cfg);
+  const stuckBatchCount = effectiveOk(stuckRes) ? Number(stuckRes.result?.stuckBatchCount ?? stuckRes.result?.stuckBatchCount ?? 0) : null;
+  const stuckItemCount = effectiveOk(stuckRes) ? Number(stuckRes.result?.stuckItemCount ?? stuckRes.result?.stuckItemCount ?? 0) : null;
+
+  const balanceRes = await runEmitWithOfflineFallback(["--available-balance"], cfg);
+  const availableBalance = effectiveOk(balanceRes) ? Number(balanceRes.result?.availableBalance ?? balanceRes.result?.available_balance ?? null) : null;
+  const pendingApprovedTotal = sumAmount(approvedBatches, "total_amount");
+
+  const webhook = await withTempEnv(
+    cfg.offline.enabled ? { BASE44_OFFLINE: "true", BASE44_OFFLINE_STORE_PATH: String(cfg.offline.storePath) } : {},
+    async () => {
+      try {
+        const base44 = buildBase44ServiceClient({ mode: cfg.offline.enabled ? "offline" : "auto" });
+        const lastWebhook = await deadmanFetchLastWebhook(base44);
+        if (lastWebhook?.ok !== true) return { ok: false, error: lastWebhook?.error ?? "no_webhook" };
+        const hoursSince = (Date.now() - lastWebhook.atMs) / (1000 * 60 * 60);
+        return {
+          ok: true,
+          lastWebhookAt: lastWebhook.atRaw,
+          lastWebhookEventId: lastWebhook.eventId ?? null,
+          lastWebhookEventType: lastWebhook.eventType ?? null,
+          hoursSince: Number(hoursSince.toFixed(3))
+        };
+      } catch (e) {
+        return { ok: false, error: e?.message ?? String(e) };
+      }
+    }
+  );
+
+  const lastSuccessfulPayoutAt = maxIsoFrom(
+    truthRows
+      .filter((r) => String(r?.truthStatus ?? "").toUpperCase() === "COMPLETED")
+      .flatMap((r) => [r?.providerTimeCompleted ?? null, r?.lastProviderSyncAt ?? null])
+  );
+
+  const autoApprovalEnabled = cfg.tasks?.autoApprovePayoutBatches === true && cfg.payout?.autoApprove?.enabled === true;
+  const nextAutoApprovalCheckAt = autoApprovalEnabled ? new Date(Date.now() + Number(cfg.intervalMs ?? 60000)).toISOString() : null;
+
+  return {
+    ok: true,
+    at,
+    payouts: {
+      totalBatches: truthRows.length,
+      batchesWithProviderId: withProvider.length,
+      batchesWithoutProviderId: withoutProvider.length,
+      totalWithProviderIdAmount: sumAmount(withProvider, "totalAmount"),
+      totalWithoutProviderIdAmount: sumAmount(withoutProvider, "totalAmount"),
+      approvedBatches: approvedBatches.length,
+      approvedPayPalMissingProviderId: approvedPayPalMissingProviderId.length,
+      lastSuccessfulPayoutAt
+    },
+    webhook,
+    balance: {
+      availableBalance,
+      pendingApprovedTotal,
+      belowPendingTotal: Number.isFinite(availableBalance) ? availableBalance < pendingApprovedTotal : null
+    },
+    stuck: {
+      stuckBatchCount,
+      stuckItemCount
+    },
+    schedule: {
+      intervalMs: Number(cfg.intervalMs ?? 60000),
+      autoApprovalEnabled,
+      nextAutoApprovalCheckAt
+    }
+  };
 }
 
 async function recordFreezeIncident(base44, violations) {
@@ -1515,12 +1655,21 @@ async function main() {
   };
 
   const allGood = args["all-good"] === true || args.allGood === true;
+  const allGoodSummary = args["all-good-summary"] === true || args.allGoodSummary === true;
+  const realityCheck =
+    args["reality-check"] === true || args.realityCheck === true || args["status-reality-check"] === true || args.statusRealityCheck === true;
   if (args["record-deployment"] === true || args.recordDeployment === true) {
     const out = await recordDeploymentOnce(cfg);
     process.stdout.write(`${JSON.stringify(out)}\n`);
     return;
   }
-  if (allGood) {
+  if (realityCheck) {
+    const out = await runRealityCheckOnce(cfg);
+    process.stdout.write(`${JSON.stringify(out)}\n`);
+    process.exitCode = out.ok ? 0 : 2;
+    return;
+  }
+  if (allGood || allGoodSummary) {
     const safeCfg = {
       ...cfg,
       tasks: {
@@ -1536,7 +1685,11 @@ async function main() {
       }
     };
     const out = await runAllGoodOnce(safeCfg, state);
-    process.stdout.write(`${JSON.stringify(out)}\n`);
+    if (allGoodSummary) {
+      process.stdout.write(`${JSON.stringify({ ok: out.ok, at: out.at, summary: out.summary })}\n`);
+    } else {
+      process.stdout.write(`${JSON.stringify(out)}\n`);
+    }
     process.exitCode = out.ok ? 0 : 2;
     await atomicWriteJson(statePath, {
       lastAlertAt: state.lastAlertAt,

@@ -4,6 +4,9 @@
   "type": "module",
   "scripts": {
     "emit:revenue": "node ./src/emit-revenue-events.mjs",
+    "status:reality-check": "node ./src/autonomous-daemon.mjs --reality-check",
+    "approve:batch": "node ./src/emit-revenue-events.mjs --approve-payout-batch",
+    "rollback:batch": "node ./src/emit-revenue-events.mjs --cancel-payout-batch",
     "prepare:sweep": "node ./src/prepare-revenue-sweep.mjs",
     "ap2:verify": "node ./src/ap2-verify.mjs",
     "ap2:orchestrate": "node ./src/orchestrate-settlement.mjs",
