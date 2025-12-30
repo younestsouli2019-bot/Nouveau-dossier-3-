@@ -28,6 +28,9 @@ LATEST IMPLEMENTED CHANGES (2025-12-28)
   - BASE44_ENABLE_TRUTH_ONLY_UI is surfaced in readiness, and truth-only can be enforced at export time.
 - Reality check dashboard:
   - npm run status:reality-check outputs a single JSON snapshot with provider-id coverage, real vs unexecuted totals, webhook freshness, last successful payout timestamp, balance-vs-pending, and the next auto-approval check time.
+- Webhook control endpoints:
+  - /health returns config gating + startupConfigError; live is false unless SWARM_LIVE=true.
+  - /all-good runs the daemon summary for a single-shot reality verdict; timeout is configurable via WEBHOOK_ALL_GOOD_TIMEOUT_MS.
 - Webhook reconciliation hardening:
   - PayPal webhook processing backfills provider sync metadata onto PayoutBatch notes during payout item updates, reducing “ledger drift”.
 - Autonomous daemon hardening:
