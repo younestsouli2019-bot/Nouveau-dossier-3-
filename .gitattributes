@@ -1,0 +1,4 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+doomsday-vault/doomsday-2026-01-14.zip filter=lfs diff=lfs merge=lfs -text
+repo-backup-2026-01-12.zip filter=lfs diff=lfs merge=lfs -text
