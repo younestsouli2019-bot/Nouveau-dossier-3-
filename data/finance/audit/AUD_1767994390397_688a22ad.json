@@ -1,0 +1,20 @@
+{
+  "id": "AUD_1767994390397_688a22ad",
+  "timestamp": "2026-01-09T21:33:10.397Z",
+  "action": "INITIATE_CRYPTO_TRANSFER",
+  "entity_id": "cfe88a3e-3210-4342-b694-06896d2f2f82",
+  "actor": "OwnerDirectCryptoRelease",
+  "changes": {
+    "before": null,
+    "after": {
+      "error": "Binance Error -1022: Signature for this request is not valid."
+    }
+  },
+  "context": {
+    "action": "INITIATE_CRYPTO_TRANSFER",
+    "actor": "OwnerDirectCryptoRelease",
+    "payoutBatchId": "BATCH_LIVE_1767528254631_CRYPTO",
+    "status": "failed"
+  },
+  "updated_at": "2026-01-09T21:33:10.397Z"
+}

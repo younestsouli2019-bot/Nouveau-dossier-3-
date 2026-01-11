@@ -1,0 +1,414 @@
+{
+  "daily_usage": {
+    "2026-01-04": {
+      "PAYONEER": 1200
+    }
+  },
+  "transactions": [
+    {
+      "id": "tx_1767558432408_xjasr1mw1",
+      "timestamp": "2026-01-04T20:27:12.408Z",
+      "channel": "PAYONEER",
+      "amount": 150,
+      "status": "IN_TRANSIT",
+      "details": {
+        "destination": "younestsouli2019@gmail.com"
+      }
+    },
+    {
+      "id": "tx_1767558927397_dosnptbva",
+      "timestamp": "2026-01-04T20:35:27.397Z",
+      "channel": "PAYONEER",
+      "amount": 150,
+      "status": "IN_TRANSIT",
+      "details": {
+        "destination": "younestsouli2019@gmail.com"
+      }
+    },
+    {
+      "id": "tx_1767560783428_ltso5105x",
+      "timestamp": "2026-01-04T21:06:23.428Z",
+      "channel": "PAYONEER",
+      "amount": 150,
+      "status": "IN_TRANSIT",
+      "details": {
+        "destination": "younestsouli2019@gmail.com"
+      }
+    },
+    {
+      "id": "tx_1767560818784_9eiy8vyrq",
+      "timestamp": "2026-01-04T21:06:58.784Z",
+      "channel": "PAYONEER",
+      "amount": 150,
+      "status": "IN_TRANSIT",
+      "details": {
+        "destination": "younestsouli2019@gmail.com"
+      }
+    },
+    {
+      "id": "tx_1767560854085_audcy87b5",
+      "timestamp": "2026-01-04T21:07:34.085Z",
+      "channel": "PAYONEER",
+      "amount": 150,
+      "status": "IN_TRANSIT",
+      "details": {
+        "destination": "younestsouli2019@gmail.com"
+      }
+    },
+    {
+      "id": "tx_1767560889384_8hrxcz4q7",
+      "timestamp": "2026-01-04T21:08:09.384Z",
+      "channel": "PAYONEER",
+      "amount": 150,
+      "status": "IN_TRANSIT",
+      "details": {
+        "destination": "younestsouli2019@gmail.com"
+      }
+    },
+    {
+      "id": "tx_1767560924692_lrw801ha1",
+      "timestamp": "2026-01-04T21:08:44.692Z",
+      "channel": "PAYONEER",
+      "amount": 150,
+      "status": "IN_TRANSIT",
+      "details": {
+        "destination": "younestsouli2019@gmail.com"
+      }
+    },
+    {
+      "id": "tx_1767560960038_pgbhrns6l",
+      "timestamp": "2026-01-04T21:09:20.038Z",
+      "channel": "PAYONEER",
+      "amount": 150,
+      "status": "IN_TRANSIT",
+      "details": {
+        "destination": "younestsouli2019@gmail.com"
+      }
+    },
+    {
+      "id": "tx_1767605426733_huhadw6hr",
+      "timestamp": "2026-01-05T09:30:26.733Z",
+      "channel": "PAYONEER",
+      "amount": 150,
+      "status": "WAITING_UPLOAD",
+      "details": {
+        "status": "WAITING_UPLOAD",
+        "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\payoneer\\payoneer_payout_PAY_1767605426730_6bc192.csv",
+        "batchId": "PAY_1767605426730_6bc192",
+        "instruction": "Upload CSV to Payoneer",
+        "destination": "younestsouli2019@gmail.com"
+      }
+    },
+    {
+      "id": "tx_1767630975455_rmgtway8k",
+      "timestamp": "2026-01-05T16:36:15.455Z",
+      "channel": "BANK_WIRE",
+      "amount": 1200,
+      "status": "INVOICES_GENERATED",
+      "details": {
+        "status": "INVOICES_GENERATED",
+        "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\bank_wires\\bank_payment_instructions_BANK_INVOICE_1767630975451_9798b6.csv",
+        "batchId": "BANK_INVOICE_1767630975451_9798b6",
+        "instruction": "Send IBAN to Clients",
+        "destination": "007810000448500030594182"
+      }
+    },
+    {
+      "id": "tx_1767632269615_mxgzvno5s",
+      "timestamp": "2026-01-05T16:57:49.615Z",
+      "channel": "BANK_WIRE",
+      "amount": 1000,
+      "status": "INVOICES_GENERATED",
+      "details": {
+        "status": "INVOICES_GENERATED",
+        "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\bank_wires\\bank_payment_instructions_BANK_INVOICE_1767632269611_89f307.csv",
+        "batchId": "BANK_INVOICE_1767632269611_89f307",
+        "instruction": "Send IBAN to Clients",
+        "destination": "007810000448500030594182"
+      }
+    },
+    {
+      "id": "tx_1767632477521_m9p2due6b",
+      "timestamp": "2026-01-05T17:01:17.521Z",
+      "channel": "BANK_WIRE",
+      "amount": 1000,
+      "status": "INVOICES_GENERATED",
+      "details": {
+        "status": "INVOICES_GENERATED",
+        "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\bank_wires\\bank_payment_instructions_BANK_INVOICE_1767632477519_0222f4.csv",
+        "batchId": "BANK_INVOICE_1767632477519_0222f4",
+        "instruction": "Send IBAN to Clients",
+        "destination": "007810000448500030594182"
+      }
+    },
+    {
+      "id": "tx_1767696297094_si0le73k2",
+      "timestamp": "2026-01-06T10:44:57.094Z",
+      "channel": "BINANCE_API",
+      "amount": 850,
+      "status": "prepared",
+      "details": {
+        "status": "prepared",
+        "network": "BEP20",
+        "prepared_at": "2026-01-06T10:44:57.092Z",
+        "transactions": [
+          {
+            "amount": 850,
+            "currency": "USDT",
+            "destination": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+            "reference": "Autonomous Settlement"
+          }
+        ],
+        "destination": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7"
+      }
+    },
+    {
+      "id": "BATCH_LIVE_1767528254631",
+      "timestamp": "2026-01-04T12:04:14.631Z",
+      "channel": "BINANCE_API",
+      "amount": 850,
+      "status": "prepared",
+      "details": {
+        "status": "prepared",
+        "network": "BEP20",
+        "prepared_at": "2026-01-04T12:04:14.631Z",
+        "transactions": [
+          {
+            "amount": 850,
+            "currency": "USDT",
+            "destination": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+            "reference": "Autonomous Settlement - Trust Wallet"
+          }
+        ],
+        "destination": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7"
+      }
+    },
+    {
+      "id": "tx_1767714849418_gotsqe9id",
+      "timestamp": "2026-01-06T15:54:09.418Z",
+      "channel": "BYBIT_API",
+      "amount": 50,
+      "status": "INSTRUCTIONS_READY",
+      "details": {
+        "status": "INSTRUCTIONS_READY",
+        "provider": "bybit",
+        "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bybit_instruction_1767714849416.json",
+        "network": "ERC20",
+        "prepared_at": "2026-01-06T15:54:09.416Z",
+        "destination": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7"
+      }
+    },
+    {
+      "id": "tx_1767715448205_0adhaeecz",
+      "timestamp": "2026-01-06T16:04:08.205Z",
+      "channel": "BYBIT_API",
+      "amount": 50,
+      "status": "INSTRUCTIONS_READY",
+      "details": {
+        "status": "INSTRUCTIONS_READY",
+        "provider": "bybit",
+        "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bybit_instruction_1767715448203.json",
+        "network": "ERC20",
+        "prepared_at": "2026-01-06T16:04:08.203Z",
+        "creds_present": false,
+        "destination": "0xf6b9e2fcf43d41c778cba2bf46325cd201cc1a10"
+      }
+    },
+    {
+      "id": "tx_1767723007590_zp5p049hw",
+      "timestamp": "2026-01-06T18:10:07.590Z",
+      "channel": "BITGET_API",
+      "amount": 50,
+      "status": "INSTRUCTIONS_READY",
+      "details": {
+        "status": "INSTRUCTIONS_READY",
+        "provider": "bitget",
+        "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bitget_instruction_1767723007585.json",
+        "network": "BEP20",
+        "prepared_at": "2026-01-06T18:10:05.160Z",
+        "creds_present": true,
+        "destination": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7"
+      }
+    },
+    {
+      "id": "tx_1767730130595_2v0fdns2o",
+      "timestamp": "2026-01-06T20:08:50.595Z",
+      "channel": "BITGET_API",
+      "amount": 25,
+      "status": "INSTRUCTIONS_READY",
+      "details": {
+        "status": "INSTRUCTIONS_READY",
+        "provider": "bitget",
+        "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bitget_instruction_1767730130590.json",
+        "network": "BEP20",
+        "prepared_at": "2026-01-06T20:08:48.052Z",
+        "creds_present": true,
+        "destination": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+        "constitution_hash": "62632be56c4828c9b995ec2ec3afa71087e8ebc21ec298e9edd587b81a73f24c",
+        "kind": "in_house"
+      }
+    },
+    {
+      "id": "tx_1767779040947_mg5ikgvtp",
+      "timestamp": "2026-01-07T09:44:00.947Z",
+      "channel": "BITGET_API",
+      "amount": 25,
+      "status": "INSTRUCTIONS_READY",
+      "details": {
+        "status": "INSTRUCTIONS_READY",
+        "provider": "bitget",
+        "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bitget_instruction_1767779040941.json",
+        "network": "BEP20",
+        "prepared_at": "2026-01-07T09:43:58.563Z",
+        "creds_present": true,
+        "destination": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+        "constitution_hash": "62632be56c4828c9b995ec2ec3afa71087e8ebc21ec298e9edd587b81a73f24c",
+        "kind": "in_house"
+      }
+    },
+    {
+      "id": "tx_1767779040961_aoree5frt",
+      "timestamp": "2026-01-07T09:44:00.961Z",
+      "channel": "BITGET_API",
+      "amount": 25,
+      "status": "INSTRUCTIONS_READY",
+      "details": {
+        "status": "INSTRUCTIONS_READY",
+        "provider": "bitget",
+        "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bitget_instruction_1767779040959.json",
+        "network": "BEP20",
+        "prepared_at": "2026-01-07T09:43:58.704Z",
+        "creds_present": true,
+        "destination": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+        "constitution_hash": "62632be56c4828c9b995ec2ec3afa71087e8ebc21ec298e9edd587b81a73f24c",
+        "kind": "in_house"
+      }
+    },
+    {
+      "id": "tx_1767781852651_b08cjlk18",
+      "timestamp": "2026-01-07T10:30:52.651Z",
+      "channel": "BITGET_API",
+      "amount": 25,
+      "status": "INSTRUCTIONS_READY",
+      "details": {
+        "status": "INSTRUCTIONS_READY",
+        "provider": "bitget",
+        "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bitget_instruction_1767781852645.json",
+        "network": "BEP20",
+        "prepared_at": "2026-01-07T10:30:50.389Z",
+        "creds_present": true,
+        "destination": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+        "constitution_hash": "62632be56c4828c9b995ec2ec3afa71087e8ebc21ec298e9edd587b81a73f24c",
+        "kind": "in_house"
+      }
+    },
+    {
+      "id": "tx_1767781852659_tsolodgcu",
+      "timestamp": "2026-01-07T10:30:52.659Z",
+      "channel": "BITGET_API",
+      "amount": 25,
+      "status": "INSTRUCTIONS_READY",
+      "details": {
+        "status": "INSTRUCTIONS_READY",
+        "provider": "bitget",
+        "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bitget_instruction_1767781852657.json",
+        "network": "BEP20",
+        "prepared_at": "2026-01-07T10:30:50.326Z",
+        "creds_present": true,
+        "destination": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+        "constitution_hash": "62632be56c4828c9b995ec2ec3afa71087e8ebc21ec298e9edd587b81a73f24c",
+        "kind": "in_house"
+      }
+    }
+  ],
+  "queued": [
+    {
+      "id": "queue_1767556757308_1tqac2dri",
+      "timestamp": "2026-01-04T19:59:17.308Z",
+      "channel": "BINANCE_API",
+      "amount": 850,
+      "reason": "MISSING_API_KEY",
+      "status": "QUEUED"
+    },
+    {
+      "id": "queue_1767556796620_6frp2ezs0",
+      "timestamp": "2026-01-04T19:59:56.620Z",
+      "channel": "BINANCE_API",
+      "amount": 850,
+      "reason": "MISSING_API_KEY",
+      "status": "QUEUED"
+    },
+    {
+      "id": "queue_1767629221402_okldu4du1",
+      "timestamp": "2026-01-05T16:07:01.402Z",
+      "channel": "PAYPAL",
+      "amount": 100,
+      "reason": "BUNKER_MODE",
+      "status": "QUEUED"
+    },
+    {
+      "id": "queue_1767629221405_67smri4sx",
+      "timestamp": "2026-01-05T16:07:01.405Z",
+      "channel": "BANK_WIRE",
+      "amount": 200,
+      "reason": "BUNKER_MODE",
+      "status": "QUEUED"
+    },
+    {
+      "id": "queue_1767629221409_tt7utf31t",
+      "timestamp": "2026-01-05T16:07:01.409Z",
+      "channel": "PAYONEER",
+      "amount": 300,
+      "reason": "MISSING_CREDENTIALS",
+      "status": "QUEUED"
+    },
+    {
+      "id": "queue_1767711211171_fco07c7nb",
+      "timestamp": "2026-01-06T14:53:31.171Z",
+      "channel": "BINANCE_API",
+      "amount": 850,
+      "reason": "EXECUTION_ERROR",
+      "status": "QUEUED"
+    },
+    {
+      "id": "queue_1767711635308_j8z53jguc",
+      "timestamp": "2026-01-06T15:00:35.308Z",
+      "channel": "BINANCE_API",
+      "amount": 850,
+      "reason": "EXECUTION_ERROR",
+      "status": "QUEUED"
+    },
+    {
+      "id": "queue_1767711911466_gthaiwaq5",
+      "timestamp": "2026-01-06T15:05:11.466Z",
+      "channel": "BINANCE_API",
+      "amount": 850,
+      "reason": "EXECUTION_ERROR",
+      "status": "QUEUED"
+    },
+    {
+      "id": "queue_1767713824117_1qktc4fd9",
+      "timestamp": "2026-01-06T15:37:04.117Z",
+      "channel": "BANK_WIRE",
+      "amount": 100,
+      "reason": "BUNKER_MODE",
+      "status": "QUEUED"
+    },
+    {
+      "id": "queue_1767713824119_xis2egcr5",
+      "timestamp": "2026-01-06T15:37:04.119Z",
+      "channel": "BANK_WIRE",
+      "amount": 200,
+      "reason": "BUNKER_MODE",
+      "status": "QUEUED"
+    },
+    {
+      "id": "queue_1767713824123_5jeff9hty",
+      "timestamp": "2026-01-06T15:37:04.123Z",
+      "channel": "PAYONEER",
+      "amount": 300,
+      "reason": "MISSING_CREDENTIALS",
+      "status": "QUEUED"
+    }
+  ]
+}

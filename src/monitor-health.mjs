@@ -599,7 +599,14 @@ async function main() {
   if (readiness) {
     const summary = buildReadinessSummary();
     if (!ping) {
-      process.stdout.write(`${JSON.stringify({ ok: true, readiness: summary })}\n`, () => process.exit(0));
+      const strict = args["readiness-strict"] === true;
+      const output = { ok: true, readiness: summary };
+      const text = `${JSON.stringify(output)}\n`;
+      if (strict && summary.ok === false) {
+        process.stderr.write(text, () => process.exit(1));
+      } else {
+        process.stdout.write(text, () => process.exit(0));
+      }
       return;
     }
 
@@ -644,7 +651,13 @@ async function main() {
         process.stdout.write(`${JSON.stringify({ ok: true, at, summary })}\n`);
       }
       process.stdout.write(`${JSON.stringify({ ok: true, at, results })}\n`);
-      if (once) break;
+      if (once) {
+        // If no missions processed under once mode, exit cleanly with a short note
+        if (!Array.isArray(results) || results.length === 0) {
+          process.stdout.write(`${JSON.stringify({ ok: true, at, note: "no missions matched criteria" })}\n`, () => process.exit(0));
+        }
+        break;
+      }
       await sleep(intervalMs);
     }
     return;

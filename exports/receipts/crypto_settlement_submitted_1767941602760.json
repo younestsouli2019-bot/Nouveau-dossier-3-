@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-01-09T06:53:22.760Z",
+  "batch_id": "--provider",
+  "amount": 850,
+  "currency": "USDT",
+  "network": "BSC",
+  "destination": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+  "withdraw_id": null,
+  "status": "SUBMITTED_PENDING_CHAIN_TX",
+  "method": "BINANCE_API_SUBMIT"
+}

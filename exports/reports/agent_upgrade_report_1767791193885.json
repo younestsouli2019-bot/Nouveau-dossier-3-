@@ -1,0 +1,1444 @@
+{
+  "ok": true,
+  "csv": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\Agent_export (1).csv",
+  "agents_processed": 286,
+  "upgrades": [
+    {
+      "agent_id": "",
+      "agent_name": "ChatGPT Agent Mode",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Enable Agent Mode in settings",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure social media integrations",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set up posting schedule for Udemy and RealWorldCerts content,[OpenAI API Key",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Claude Team Collaboration",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set up team workspace",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure Reddit and LinkedIn integrations",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Define community targeting rules,[Claude API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "CrewAI Multi-Agent Teams",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Define agent roles and responsibilities",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Set up workflow automation",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Configure multi-platform publishing,[CrewAI API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "AutoGen Email Drip Campaign",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Configure email templates",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Connect to Udemy analytics",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set up tracking and segmentation,[AutoGen API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "LangChain SEO Content Generator",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set up content generation pipeline",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure SEO optimization rules",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Connect to publishing platforms,[LangChain API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "TikTok Viral Short Creator",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Install video editing API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure trending hashtag monitoring",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set up course content extraction",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Enable auto-posting schedule (3-5 posts daily)",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Configure engagement bot responses,[TikTok Business API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "YouTube Shorts Swarm",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set up AI voiceover system",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure trending topic monitoring",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Install auto-thumbnail generator",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Set up cross-promotion between channels",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Enable comment management bot,[YouTube Data API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Telegram Channel Empire",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set up multiple channels (Cybersecurity",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure auto-posting schedule",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set up cross-posting between channels",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Enable engagement tracking",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Configure subscriber growth tactics,[Telegram Bot API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Reddit Karma Farming Network",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Build karma through valuable posts/comments",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Set up subreddit monitoring for relevant questions",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Configure automated helpful responses",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Set up subtle course promotion triggers",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Enable anti-spam detection avoidance,[Reddit API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Twitter/X Viral Thread Generator",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Create multiple Twitter accounts with different niches",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure trending topic monitoring",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set up AI thread generation",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Enable auto-engagement with influencers",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Configure viral timing optimization,[Twitter API v2",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "LinkedIn Thought Leader Bot",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set up posting schedule (2-3 posts daily)",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure content generation from courses",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Enable auto-engagement with industry posts",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Set up connection request automation",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Configure hashtag optimization,[LinkedIn API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Discord Community Infiltrator",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set up automated helpful responses",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure question monitoring",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Enable resource sharing automation",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Set up relationship building protocols",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Configure subtle promotion triggers,[Discord API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Multi-Platform Cross-Poster",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Configure Zapier workflows for each platform",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Set up content optimization for each platform",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Configure posting time optimization",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Enable cross-platform engagement tracking",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Set up performance monitoring dashboard,[Multiple Platform APIs",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Quora Q&A Dominator",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Define keywords and topics to monitor.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Provide links to your courses for the AI to reference.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set daily answering limits and review the first 5 answers.,[Quora API (or scraping access)",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Reddit Authority Builder",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Configure subreddit analysis parameters.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Set up a content generation pipeline using CrewAI or LangGraph.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Schedule posts for optimal times and monitor engagement.,[Reddit API (PRAW)",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Medium SEO Article Publisher",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Provide access to your video content (e.g.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Define target keywords for SEO.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Configure publishing frequency and target publications.,[Medium API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Stack Overflow Tech Expert",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Configure the Stack Exchange API to monitor specific tags.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Set up an AI agent to draft answers (requires human review for accuracy).",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Profile link subtly points to RealWorldCerts as a resource.,[Stack Exchange API Key",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Claude-3.5-Sonnet Course Promoter",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set up content generation prompts focused on your course topics",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure daily content creation schedule",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set up cross-posting to other platforms",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Enable engagement tracking and response automation,[Poe.com API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "GPT-4 Viral Content Generator",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Create viral content templates and hooks",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Set up trending topic monitoring",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Configure multi-platform posting schedule",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Enable viral amplification strategies",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Set up engagement tracking,[Poe.com API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Gemini-Pro Technical Explainer",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Define course topics for content extraction",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure explanation templates for different platforms",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set up automated posting schedule",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Enable cross-platform content adaptation,[Poe.com API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Poe Multi-Bot Swarm",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Define specialized roles for each bot",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Create coordination system between bots",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set up cross-platform publishing pipeline",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Configure performance tracking and optimization",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Enable adaptive content strategies,[Multiple Poe.com Bot APIs",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Assistant Code Tutor Bot",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set up monitoring for programming-related questions",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Create helpful response templates",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Configure subtle course promotion strategies",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Set up cross-platform engagement,[Poe.com API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Web-Search-Pro Market Intelligence",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Define search parameters for competitors and trends",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure automated report generation",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set up trend-based content triggers",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Enable competitive intelligence tracking,[Poe.com Web-Search-Pro API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Sage Wisdom Content Creator",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set up philosophical content themes",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure thought leadership posting schedule",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set up cross-platform sharing",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Enable engagement tracking,[Poe.com API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "ChatGPT-Official Course Consultant",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set up conversation triggers for course recommendations",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Create personalized learning path templates",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Configure conversion tracking",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Set up follow-up engagement sequences,[Poe.com ChatGPT API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Anakin SEO Content Dominator",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Configure target keywords and negative keywords.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Set up accounts for Medium",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Define publishing schedule and review first 3 articles.,[AI Writing API (e.g.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Anakin Social Media Caldron",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Connect all target social media accounts.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Define the desired tone of voice (e.g.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set the daily posting frequency.,[Social Media APIs (Buffer",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Anakin Ad Copy Forge",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Define campaign objectives and target audience.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Set a budget and provide the course URL.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Review and approve generated ad sets.,[Facebook Ads API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Anakin Course Teaser Bot",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Connect Twitter and LinkedIn accounts.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure the agent to create polls for feedback.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set a schedule for posting teasers.,[Twitter API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Anakin Interactive Quiz Host",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Connect Telegram Bot",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Choose quiz formats and difficulty levels.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Configure lead capture and course promotion messages.,[Telegram Bot API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Anakin Viral Script Factory",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Configure desired script formats and lengths.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Set a tone of voice and target audience.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Integrate with video creation agents for full automation.,[AI Writer API (e.g.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Agent.ai Success Optimizer",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Define success metrics and KPIs",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Set up autonomous decision-making parameters",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Configure budget allocation algorithms",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Enable real-time strategy adaptation",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Set up success guarantee protocols,[All platform APIs",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Agent.ai Viral Explosion Engine",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Configure viral prediction algorithms",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Connect all social media accounts",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set up instant content generation pipeline",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Enable simultaneous multi-platform deployment",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Configure viral amplification strategies,[Trend monitoring APIs",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Agent.ai Revenue Maximizer",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set up dynamic landing page optimization",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure personalization algorithms",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Enable autonomous pricing optimization",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Set up custom offer generation",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Configure revenue maximization protocols,[Website APIs",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Agent.ai Authority Builder Supreme",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Configure expert-level content generation",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Enable influencer relationship building",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set up authority scoring and tracking",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Configure reputation management protocols",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Enable autonomous thought leadership,[Industry monitoring APIs",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Agent.ai Course Demand Generator",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Configure demand prediction algorithms",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Enable strategic content seeding",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set up scarcity creation protocols",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Configure buzz generation campaigns",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Enable autonomous market manipulation (ethical),[Market research APIs",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Agent.ai Competitor Neutralizer",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set up comprehensive competitor monitoring",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure strategy analysis algorithms",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Enable predictive competitor modeling",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Set up automated counter-strategy deployment",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Configure competitive advantage protocols,[Competitor monitoring tools",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Agent.ai Success Guarantee Engine",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set up predictive failure detection",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure autonomous strategy pivoting",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Enable continuous optimization protocols",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Set up success guarantee algorithms",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Configure master coordination systems,[All platform APIs",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "RealWorldCerts Swarm Commander",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Deploy swarm agents across all platforms",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Enable real-time coordination protocols",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Start sequential course promotion",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Monitor engagement and optimize",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Ensure zero course overlap,[All Social Platform APIs",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Twitter Course Promotion Swarm (10 Agents)",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Connect to course promotion queue",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Enable swarm communication system",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set optimal posting schedules",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Configure engagement amplification",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Start systematic course promotion,[Twitter API v2",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "LinkedIn Professional Course Promoter Swarm",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Connect to RealWorldCerts course database",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure professional content templates",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Enable B2B targeting algorithms",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Set up career-focused messaging",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Start systematic professional outreach,[LinkedIn API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Reddit Technical Community Swarm",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Deploy specialized Reddit accounts",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Build karma and community trust",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Enable context-aware course promotion",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Set up value-first engagement",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Start targeted community outreach,[Reddit API (PRAW)",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "TikTok Certification Awareness Swarm",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set up automated video generation",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Connect trending sound detection",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Configure course-to-video mapping",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Enable viral timing optimization",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Start systematic video creation,[TikTok API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Telegram Channel Promotion Network",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set up automated content posting",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure course promotion schedules",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Enable subscriber engagement",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Set up cross-channel promotion",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Start systematic course announcements,[Telegram Bot API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Discord Study Group Coordinator",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set up automated community management",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure study group coordination",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Enable course integration in discussions",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Set up member engagement systems",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Start community building,[Discord API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "SwarmOS Master Planner",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Authorize the Master Planner to command other agents.",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Launch the plan and monitor progress from your dashboard.,[SwarmOS API Access],[https://www.udemy.com/user/younes-tsouli-2/",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Lazy Ark AI Master Controller",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Define high-level objectives",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Enable autonomous execution mode",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set performance thresholds",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Activate continuous optimization",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Let it run completely hands-off,[Lazy Ark AI API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Lazy Ark Content Generation Engine",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Analyze existing video content",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Enable auto-content generation",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set posting frequency",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Activate viral optimization",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Monitor engagement automatically,[Lazy Ark AI API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Lazy Ark Traffic Conversion Optimizer",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set conversion goals",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Enable A/B testing",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Configure optimization parameters",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Activate predictive scaling",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Monitor ROI automatically,[Lazy Ark AI API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Lazy Ark Viral Amplification Network",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Enable viral detection algorithms",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Set amplification parameters",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Configure cross-platform sync",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Activate self-learning mode",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Watch it go viral autonomously,[Lazy Ark AI API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Lazy Ark Community Engagement Bot",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Define expertise areas",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Enable intelligent responses",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set engagement frequency",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Configure authority building",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Activate reputation management,[Lazy Ark AI API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Lazy Ark SEO Automation Engine",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Analyze current rankings",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Enable keyword optimization",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Set up automated link building",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Configure content optimization",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Activate ranking monitoring,[Lazy Ark AI API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Lazy Ark Email Marketing Automation",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set up lead magnets",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Configure automation sequences",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Enable personalization",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Set up conversion tracking",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Activate autonomous sending,[Lazy Ark AI API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "Lazy Ark Analytics & Performance Monitor",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "2. Set up tracking infrastructure",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "3. Define KPIs and goals",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "4. Enable automated reporting",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "5. Configure optimization triggers",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "",
+      "agent_name": "6. Activate performance monitoring,[Lazy Ark AI API",
+      "status": "upgraded_defaults"
+    },
+    {
+      "agent_id": "689a247de13b982e07e2dc1e",
+      "agent_name": "Content Amplifier Agent",
+      "status": "upgraded_defaults"
+    }
+  ],
+  "installed_abilities": [],
+  "errors": [
+    {
+      "ability": "paypalme",
+      "error": "Download failed (404): 404: Not Found"
+    }
+  ]
+}

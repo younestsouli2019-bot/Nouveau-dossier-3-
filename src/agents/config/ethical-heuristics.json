@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "description": "Dynamic ethical heuristics for the Strategic Scout agent. This file should be updated regularly to reflect the latest ethical considerations and learnings from industry failures.",
+  "negativeKeywords": [
+    "exploit",
+    "hoard",
+    "predatory",
+    "addictive",
+    "surveillance",
+    "disenfranchise",
+    "manipulate"
+  ],
+  "positivePrinciples": [
+    "empowerment",
+    "inclusion",
+    "transparency",
+    "fairness",
+    "sustainability",
+    "value circulation"
+  ],
+  "uniquenessStrengthThreshold": 50
+}

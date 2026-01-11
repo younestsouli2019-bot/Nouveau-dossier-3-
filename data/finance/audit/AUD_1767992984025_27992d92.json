@@ -1,0 +1,16 @@
+{
+  "id": "AUD_1767992984025_27992d92",
+  "timestamp": "2026-01-09T21:09:44.025Z",
+  "action": "ROUTE_ATTEMPT_FAILED",
+  "entity_id": "BATCH_LIVE_1767528254631_CRYPTO",
+  "actor": "OwnerDirectCryptoRelease",
+  "changes": {
+    "before": null,
+    "after": {
+      "route": "crypto",
+      "error": "Binance Error -1022: Signature for this request is not valid."
+    }
+  },
+  "context": {},
+  "updated_at": "2026-01-09T21:09:44.025Z"
+}

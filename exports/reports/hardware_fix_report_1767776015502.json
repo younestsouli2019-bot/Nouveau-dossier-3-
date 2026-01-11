@@ -1,0 +1,31 @@
+{
+  "ts": "2026-01-07T08:53:35.502Z",
+  "protocol_version": "1.0",
+  "mode": "assisted",
+  "diagnostics": {
+    "ts": "2026-01-07T08:53:35.574Z",
+    "disk": {
+      "ok": true,
+      "probes": [
+        {
+          "drive": "C:\\",
+          "write_probe_ms": 2
+        }
+      ]
+    },
+    "network": {
+      "ok": false,
+      "error": "network_unreachable"
+    },
+    "files": {
+      "ok": true,
+      "issues": []
+    },
+    "mem_free": "3.4 GB",
+    "mem_total": "11.8 GB"
+  },
+  "recommendations": [
+    "Network unreachable: execute DNS flush and adapter reset (admin required)",
+    "Plan safe reboot after manual steps to apply fixes"
+  ]
+}

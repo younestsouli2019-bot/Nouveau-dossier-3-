@@ -1,0 +1,164 @@
+[
+  {
+    "name": "Earning",
+    "fields": [
+      {
+        "name": "earning_id",
+        "type": "text",
+        "unique": true,
+        "required": true
+      },
+      {
+        "name": "amount",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "currency",
+        "type": "text",
+        "required": true
+      },
+      {
+        "name": "occurred_at",
+        "type": "text",
+        "required": true
+      },
+      {
+        "name": "source",
+        "type": "text",
+        "required": true
+      },
+      {
+        "name": "beneficiary",
+        "type": "text",
+        "required": true
+      },
+      {
+        "name": "status",
+        "type": "text",
+        "required": true
+      },
+      {
+        "name": "settlement_id",
+        "type": "text"
+      },
+      {
+        "name": "metadata",
+        "type": "json"
+      }
+    ]
+  },
+  {
+    "name": "PayoutBatch",
+    "fields": [
+      {
+        "name": "batch_id",
+        "type": "text",
+        "unique": true,
+        "required": true
+      },
+      {
+        "name": "status",
+        "type": "text",
+        "required": true
+      },
+      {
+        "name": "total_amount",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "currency",
+        "type": "text",
+        "required": true
+      },
+      {
+        "name": "approved_at",
+        "type": "text"
+      },
+      {
+        "name": "submitted_at",
+        "type": "text"
+      },
+      {
+        "name": "cancelled_at",
+        "type": "text"
+      },
+      {
+        "name": "paypal_payout_batch_id",
+        "type": "text"
+      },
+      {
+        "name": "notes",
+        "type": "json"
+      },
+      {
+        "name": "settlement_id",
+        "type": "text"
+      },
+      {
+        "name": "earning_ids",
+        "type": "json"
+      },
+      {
+        "name": "revenue_event_ids",
+        "type": "json"
+      }
+    ]
+  },
+  {
+    "name": "PayoutItem",
+    "fields": [
+      {
+        "name": "item_id",
+        "type": "text",
+        "unique": true,
+        "required": true
+      },
+      {
+        "name": "batch_id",
+        "type": "text",
+        "required": true
+      },
+      {
+        "name": "status",
+        "type": "text",
+        "required": true
+      },
+      {
+        "name": "amount",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "currency",
+        "type": "text",
+        "required": true
+      },
+      {
+        "name": "processed_at",
+        "type": "text"
+      },
+      {
+        "name": "revenue_event_id",
+        "type": "text"
+      },
+      {
+        "name": "transaction_id",
+        "type": "text"
+      },
+      {
+        "name": "recipient",
+        "type": "text"
+      },
+      {
+        "name": "recipient_type",
+        "type": "text"
+      },
+      {
+        "name": "earning_id",
+        "type": "text"
+      }
+    ]
+  }
+]

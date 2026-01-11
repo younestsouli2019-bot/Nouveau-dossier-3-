@@ -1,0 +1,160 @@
+{
+  "ok": true,
+  "routes": [
+    {
+      "method": "bank_wire",
+      "iban": "007810000448500030594182",
+      "priority": 1,
+      "labels": [
+        "Direct",
+        "Owner Verified"
+      ]
+    },
+    {
+      "method": "payoneer",
+      "email": "younestsouli2019@gmail.com",
+      "priority": 2,
+      "labels": [
+        "Direct",
+        "Owner Verified"
+      ]
+    },
+    {
+      "method": "payoneer_bank_uk",
+      "identifier": "Barclays:231486:15924956",
+      "priority": 2,
+      "labels": [
+        "Direct Bank"
+      ]
+    },
+    {
+      "method": "payoneer_bank_jp",
+      "identifier": "MUFG:0005:869:4671926",
+      "priority": 2,
+      "labels": [
+        "Direct Bank"
+      ]
+    },
+    {
+      "method": "payoneer_bank_eu",
+      "iban": "LU774080000041265646",
+      "priority": 2,
+      "labels": [
+        "Direct Bank"
+      ]
+    },
+    {
+      "method": "crypto_wallet",
+      "network": "ERC20/BEP20",
+      "coin": "USDT",
+      "address": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+      "priority": 3,
+      "labels": [
+        "Trust Wallet"
+      ]
+    },
+    {
+      "method": "crypto_bybit_erc20",
+      "network": "ERC20",
+      "coin": "USDT",
+      "address": "0xf6b9e2fcf43d41c778cba2bf46325cd201cc1a10",
+      "priority": 3,
+      "labels": [
+        "Bybit"
+      ]
+    },
+    {
+      "method": "crypto_bybit_ton",
+      "network": "TON",
+      "coin": "TON",
+      "address": "UQDIrlJp7NmV-5mief8eNB0b0sYGO0L62Vu7oGX49UXtqlDQ",
+      "priority": 3,
+      "labels": [
+        "Bybit"
+      ]
+    },
+    {
+      "method": "crypto_bitget",
+      "network": "BEP20",
+      "coin": "USDT",
+      "address": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+      "priority": 3,
+      "labels": [
+        "Bitget"
+      ]
+    },
+    {
+      "method": "stripe_bank",
+      "iban": "007810000448500030594182",
+      "priority": 4,
+      "labels": [
+        "Stripe via Bank"
+      ]
+    },
+    {
+      "method": "paypal",
+      "email": "younestsouli2019@gmail.com",
+      "link": null,
+      "destination": "007810000448500030594182",
+      "priority": 5,
+      "labels": [
+        "Direct",
+        "Geo Restricted"
+      ]
+    }
+  ],
+  "cfg": {
+    "enabled": true,
+    "supported_gateways": [
+      "crypto",
+      "bank_transfer",
+      "payoneer",
+      "stripe"
+    ],
+    "settlement_priority": [
+      "crypto",
+      "bank_transfer",
+      "payoneer",
+      "stripe",
+      "paypal"
+    ],
+    "auto_configuration": true,
+    "proof_generation": true,
+    "settlement_automation": true,
+    "owner_only_settlement": true,
+    "require_external_verification": true,
+    "settlement_destinations": {
+      "bank": "007810000448500030594182",
+      "payoneer": "younestsouli2019@gmail.com",
+      "payoneer_uk_bank": "Barclays:231486:15924956",
+      "payoneer_jp_bank": "MUFG:0005:869:4671926",
+      "payoneer_eu_iban": "LU774080000041265646",
+      "crypto": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+      "crypto_bybit_erc20": "0xf6b9e2fcf43d41c778cba2bf46325cd201cc1a10",
+      "crypto_bybit_ton": "UQDIrlJp7NmV-5mief8eNB0b0sYGO0L62Vu7oGX49UXtqlDQ",
+      "crypto_bitget": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+      "payoneer_secondary": "younesdgc@gmail.com",
+      "stripe": "007810000448500030594182",
+      "paypal": "007810000448500030594182"
+    },
+    "credentials": {
+      "binance": {
+        "api_key": "303Y3Do3L5EdG8gQeBbKir3WOSV4zSkc2fD78D7L85H7BZUH5rySb9Xo7vLayZHZ",
+        "api_secret": "***SECURE***",
+        "has_secret": true
+      },
+      "paypal": {
+        "client_id": "AblIB7rHWR7h899Za9v5yYgli8Y2453ySCCMrjb76d48yOPaBToqOLuif-57O9EWHlPMfZuEKjdY0MmU",
+        "has_secret": true
+      },
+      "payoneer": {
+        "program_id": "85538995",
+        "has_token": false
+      },
+      "stripe": {
+        "has_secret": false
+      }
+    }
+  },
+  "generated_at": "2026-01-07T13:00:40.969Z"
+}

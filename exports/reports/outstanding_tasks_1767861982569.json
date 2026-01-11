@@ -1,0 +1,146 @@
+{
+  "ts": "2026-01-08T08:46:22.569Z",
+  "kind": "outstanding_tasks",
+  "actions": [
+    {
+      "file": "bitget_instruction_1767784353889.json",
+      "action": "executed",
+      "provider": "bitget",
+      "amount": 10,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bitget_instruction_1767784353943.json",
+      "action": "executed",
+      "provider": "bitget",
+      "amount": 10,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bitget_instruction_1767784356276.json",
+      "action": "executed",
+      "provider": "bitget",
+      "amount": 50,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bitget_instruction_1767784356334.json",
+      "action": "executed",
+      "provider": "bitget",
+      "amount": 50,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bitget_instruction_1767784358197.json",
+      "action": "executed",
+      "provider": "bitget",
+      "amount": 50,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bitget_instruction_1767784358215.json",
+      "action": "executed",
+      "provider": "bitget",
+      "amount": 50,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bitget_instruction_1767784360409.json",
+      "action": "executed",
+      "provider": "bitget",
+      "amount": 50,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bitget_instruction_1767784360457.json",
+      "action": "executed",
+      "provider": "bitget",
+      "amount": 50,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bitget_instruction_1767784362222.json",
+      "action": "executed",
+      "provider": "bitget",
+      "amount": 25,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bitget_instruction_1767784362557.json",
+      "action": "executed",
+      "provider": "bitget",
+      "amount": 25,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bitget_instruction_1767784364213.json",
+      "action": "executed",
+      "provider": "bitget",
+      "amount": 25,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bitget_instruction_1767784364661.json",
+      "action": "executed",
+      "provider": "bitget",
+      "amount": 25,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bitget_instruction_1767784366101.json",
+      "action": "executed",
+      "provider": "bitget",
+      "amount": 25,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bitget_instruction_1767784366615.json",
+      "action": "executed",
+      "provider": "bitget",
+      "amount": 25,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bitget_instruction_1767784367963.json",
+      "action": "executed",
+      "provider": "bitget",
+      "amount": 25,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bitget_instruction_1767784369351.json",
+      "action": "executed",
+      "provider": "bitget",
+      "amount": 25,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bitget_instruction_1767784369988.json",
+      "action": "executed",
+      "provider": "bitget",
+      "amount": 25,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bitget_instruction_1767784371244.json",
+      "action": "executed",
+      "provider": "bitget",
+      "amount": 25,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bybit_instruction_1767784369990.json",
+      "action": "executed",
+      "provider": "bybit",
+      "amount": 50,
+      "status": "INSTRUCTIONS_READY"
+    },
+    {
+      "file": "bybit_instruction_1767784369992.json",
+      "action": "executed",
+      "provider": "bybit",
+      "amount": 50,
+      "status": "INSTRUCTIONS_READY"
+    }
+  ]
+}

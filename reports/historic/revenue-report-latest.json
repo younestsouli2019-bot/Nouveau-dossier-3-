@@ -1,0 +1,134 @@
+[
+  {
+    "id": "p4",
+    "name": "FNTCASE iPhone 17 Case",
+    "category": "Electronics",
+    "metrics": {
+      "trend": 1.3411768635532146,
+      "seasonality": 1,
+      "sentiment": 0.5666593127980687
+    },
+    "demandScore": 0.7599903598417338,
+    "timestamp": "2026-01-02T12:15:01.273Z",
+    "estimatedMargin": 0.4137969459087648,
+    "competitionIndex": 0.18858787870987648,
+    "selectionScore": 0.6092764398383355,
+    "verdict": "Niche (High Margin/Low Demand)"
+  },
+  {
+    "id": "dig_002",
+    "name": "AI Prompt Library (High Value)",
+    "category": "Digital",
+    "type": "digital_download",
+    "metrics": {
+      "trend": 1.4234190759945724,
+      "seasonality": 1,
+      "sentiment": 0.5125183927950261
+    },
+    "demandScore": 0.7295284571025193,
+    "timestamp": "2026-01-02T12:15:01.273Z",
+    "estimatedMargin": 0.4739549434753499,
+    "competitionIndex": 0.4184636234889527,
+    "selectionScore": 0.5921515035347175,
+    "verdict": "Niche (High Margin/Low Demand)"
+  },
+  {
+    "id": "dig_art_01",
+    "name": "Abstract AI Art Pack (50pcs)",
+    "category": "Digital Art",
+    "type": "digital_download",
+    "metrics": {
+      "trend": 1.1485759524843804,
+      "seasonality": 1,
+      "sentiment": 0.6706858981546959
+    },
+    "demandScore": 0.770333694290872,
+    "timestamp": "2026-01-02T12:15:01.273Z",
+    "estimatedMargin": 0.49682134981554316,
+    "competitionIndex": 0.8664329404258948,
+    "selectionScore": 0.5705365886184223,
+    "verdict": "Niche (High Margin/Low Demand)"
+  },
+  {
+    "id": "p2",
+    "name": "Monogram Ceramic Coffee Mug",
+    "category": "Home",
+    "metrics": {
+      "trend": 0.9193450149394718,
+      "seasonality": 1,
+      "sentiment": 0.8227067304211807
+    },
+    "demandScore": 0.7563513313698644,
+    "timestamp": "2026-01-02T12:15:01.273Z",
+    "estimatedMargin": 0.45489345820098354,
+    "competitionIndex": 0.712401666386334,
+    "selectionScore": 0.5677684033696074,
+    "verdict": "Niche (High Margin/Low Demand)"
+  },
+  {
+    "id": "dig_ebook_01",
+    "name": "30-Day Mindfulness Challenge E-Book",
+    "category": "Digital Books",
+    "type": "digital_download",
+    "metrics": {
+      "trend": 1.2107481145834158,
+      "seasonality": 1,
+      "sentiment": 0.5859062025927261
+    },
+    "demandScore": 0.7093848301118719,
+    "timestamp": "2026-01-02T12:15:01.273Z",
+    "estimatedMargin": 0.3289717426341522,
+    "competitionIndex": 0.17585880997204684,
+    "selectionScore": 0.5648595738377897,
+    "verdict": "Niche (High Margin/Low Demand)"
+  },
+  {
+    "id": "p3",
+    "name": "Customizable Phone Case",
+    "category": "Electronics",
+    "metrics": {
+      "trend": 1.1795904650422984,
+      "seasonality": 1,
+      "sentiment": 0.6713480037446478
+    },
+    "demandScore": 0.7919157039423678,
+    "timestamp": "2026-01-02T12:15:01.273Z",
+    "estimatedMargin": 0.23618333729562874,
+    "competitionIndex": 0.31070135869573656,
+    "selectionScore": 0.5565511468960621,
+    "verdict": "Avoid (Low Margin/Low Demand)"
+  },
+  {
+    "id": "p1",
+    "name": "Customizable Canvas Tote Bag",
+    "category": "Accessories",
+    "metrics": {
+      "trend": 1.3599440623326937,
+      "seasonality": 1,
+      "sentiment": 0.5230027182121201
+    },
+    "demandScore": 0.7112544412164317,
+    "timestamp": "2026-01-02T12:15:01.273Z",
+    "estimatedMargin": 0.2889412627780906,
+    "competitionIndex": 0.2441820346809933,
+    "selectionScore": 0.5467659518519006,
+    "verdict": "Avoid (Low Margin/Low Demand)"
+  },
+  {
+    "id": "dig_001",
+    "name": "Business Starter Kit (Templates)",
+    "category": "Digital",
+    "type": "digital_download",
+    "metrics": {
+      "trend": 1.4780529075015396,
+      "seasonality": 1,
+      "sentiment": 0.5667866449601692
+    },
+    "demandScore": 0.8377406485164209,
+    "timestamp": "2026-01-02T12:15:01.273Z",
+    "estimatedMargin": 0.28532066852416194,
+    "competitionIndex": 0.806145872379497,
+    "selectionScore": 0.5400778727258674,
+    "verdict": "Avoid (Low Margin/Low Demand)"
+  }
+]

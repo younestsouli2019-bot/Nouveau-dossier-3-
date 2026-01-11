@@ -1,0 +1,2 @@
+{"type":"failover","at":1767776436833,"delay_ms":0,"runtime_min":60}
+{"type":"restore","at":1767776441846,"runtime_min":60}

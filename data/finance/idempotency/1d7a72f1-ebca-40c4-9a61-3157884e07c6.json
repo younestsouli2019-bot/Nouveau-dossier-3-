@@ -1,0 +1,25 @@
+{
+  "id": "1d7a72f1-ebca-40c4-9a61-3157884e07c6",
+  "status": "completed",
+  "result": {
+    "status": "processing",
+    "gateway_response": {
+      "status": "prepared",
+      "network": "BANK_WIRE",
+      "prepared_at": "2026-01-09T21:09:44.027Z",
+      "transactions": [
+        {
+          "amount": 850,
+          "currency": "USDT",
+          "destination": "007810000448500030594182",
+          "reference": "BATCH_LIVE_1767528254631 - Direct Crypto Release to Owner Trust Wallet"
+        }
+      ]
+    },
+    "payout_batch_id": "BATCH_LIVE_1767528254631_CRYPTO",
+    "processed_at": "2026-01-09T21:09:44.028Z",
+    "route_attempted": "bank_transfer"
+  },
+  "completed_at": "2026-01-09T21:09:44.028Z",
+  "updated_at": "2026-01-09T21:09:44.028Z"
+}

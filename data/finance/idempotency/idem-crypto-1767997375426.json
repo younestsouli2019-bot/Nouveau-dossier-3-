@@ -1,0 +1,26 @@
+{
+  "id": "idem-crypto-1767997375426",
+  "status": "completed",
+  "result": {
+    "status": "processing",
+    "gateway_response": {
+      "status": "prepared",
+      "provider": "binance",
+      "network": "BEP20",
+      "prepared_at": "2026-01-09T22:22:55.430Z",
+      "transactions": [
+        {
+          "amount": 850,
+          "currency": "USDT",
+          "destination": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+          "reference": "BATCH_LIVE_1767528254631 - Direct Crypto Release to Owner Trust Wallet"
+        }
+      ]
+    },
+    "payout_batch_id": "BATCH_LIVE_1767528254631_CRYPTO_DIRECT",
+    "processed_at": "2026-01-09T22:22:55.433Z",
+    "route_attempted": "crypto"
+  },
+  "completed_at": "2026-01-09T22:22:55.433Z",
+  "updated_at": "2026-01-09T22:22:55.433Z"
+}

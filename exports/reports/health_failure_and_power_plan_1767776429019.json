@@ -1,0 +1,116 @@
+{
+  "ts": "2026-01-07T09:00:29.019Z",
+  "health_failures": [],
+  "diagnostics": {
+    "ts": "2026-01-07T09:00:29.081Z",
+    "disk": {
+      "ok": true,
+      "probes": [
+        {
+          "drive": "C:\\",
+          "write_probe_ms": 1
+        }
+      ]
+    },
+    "network": {
+      "ok": false,
+      "error": "network_unreachable"
+    },
+    "files": {
+      "ok": true,
+      "issues": []
+    },
+    "mem_free": "3.3 GB",
+    "mem_total": "11.8 GB"
+  },
+  "power_status": {
+    "primary": "ok",
+    "backupAvailable": true,
+    "failoverActive": false,
+    "lastOutageAt": null,
+    "lastFailoverAt": null,
+    "lastRestoreAt": null
+  },
+  "mitigation_strategies": [
+    {
+      "issue": "network_unreachable",
+      "steps": [
+        "ipconfig /flushdns",
+        "ipconfig /release",
+        "ipconfig /renew",
+        "netsh winsock reset",
+        "netsh int ip reset"
+      ],
+      "timeline": "immediate",
+      "resources": [
+        "admin privileges"
+      ]
+    },
+    {
+      "issue": "power_outage_resilience",
+      "steps": [
+        "procure UPS sized to load",
+        "install Automatic Transfer Switch",
+        "configure generator as secondary",
+        "enable monitoring and alerts",
+        "run failover drill"
+      ],
+      "timeline": "1-2 weeks",
+      "resources": [
+        "UPS (1500-3000 VA)",
+        "ATS",
+        "Generator (3-5 kW)",
+        "electrician",
+        "monitoring software"
+      ]
+    }
+  ],
+  "implementation_timeline": [
+    {
+      "phase": "immediate",
+      "tasks": [
+        "network reset",
+        "diagnostics rerun"
+      ]
+    },
+    {
+      "phase": "same_day",
+      "tasks": [
+        "disk cleanup",
+        "system repair (sfc, dism)"
+      ]
+    },
+    {
+      "phase": "1_week",
+      "tasks": [
+        "UPS installation",
+        "ATS configuration",
+        "generator hookup"
+      ]
+    },
+    {
+      "phase": "2_weeks",
+      "tasks": [
+        "monitoring integration",
+        "failover testing",
+        "audit documentation"
+      ]
+    }
+  ],
+  "resource_requirements": [
+    "admin privileges",
+    "maintenance window",
+    "UPS 1500-3000 VA",
+    "ATS",
+    "Generator 3-5 kW",
+    "electrician",
+    "monitoring"
+  ],
+  "power_failover_test": {
+    "outage_detected_at": 1767776436833,
+    "failover_at": 1767776436833,
+    "delay_ms": 0,
+    "restored_at": 0,
+    "within_30s": true
+  }
+}

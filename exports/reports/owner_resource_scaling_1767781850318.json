@@ -1,0 +1,45 @@
+{
+  "ts": "2026-01-07T10:30:50.318Z",
+  "scaling": {
+    "priority": [
+      "owner_accounts_settlement",
+      "crypto_via_bitget",
+      "bank_or_payoneer",
+      "pc_procurement"
+    ],
+    "actions": [
+      {
+        "action": "settlement_route_execute",
+        "amount_usdt": 25,
+        "results_count": 1
+      }
+    ]
+  },
+  "settlement_results": [
+    {
+      "status": "INSTRUCTIONS_READY",
+      "channel": "BITGET_API",
+      "amount": 25,
+      "details": {
+        "status": "INSTRUCTIONS_READY",
+        "provider": "bitget",
+        "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bitget_instruction_1767781852657.json",
+        "network": "BEP20",
+        "prepared_at": "2026-01-07T10:30:50.326Z",
+        "creds_present": true
+      }
+    }
+  ],
+  "pc_procurement": {
+    "considered": true,
+    "budget_usd": 1200,
+    "funding_source": "swarm_generated_revenue_or_external_clients",
+    "payment_routes": [
+      "crypto",
+      "bank_wire",
+      "payoneer"
+    ],
+    "fulfillment": "procure via swarm-held funds or clients paying vendor; owner accounts receive only",
+    "status": "pending_funds"
+  }
+}

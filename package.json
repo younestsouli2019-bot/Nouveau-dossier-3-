@@ -26,7 +26,19 @@
     "test": "node --test"
   },
   "dependencies": {
+<<<<<<< Updated upstream
     "@base44/sdk": "^0.8.5"
+=======
+    "@base44/sdk": "^0.8.13",
+    "@binance/connector": "^3.6.1",
+    "base64-js": "^1.5.1",
+    "body-parser": "^2.2.1",
+    "ccxt": "^4.5.32",
+    "dotenv": "^16.6.1",
+    "ethers": "^6.0.0",
+    "express": "^5.2.1",
+    "tweetnacl": "^1.0.3"
+>>>>>>> Stashed changes
   }
 }
 

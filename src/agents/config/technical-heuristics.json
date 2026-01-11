@@ -1,0 +1,20 @@
+{
+  "version": "1.0.0",
+  "description": "Dynamic technical heuristics for the Strategic Scout agent. This file should be updated regularly to reflect the latest technology trends, successes, and failures.",
+  "promisingKeywords": [
+    "wasm",
+    "serverless",
+    "edge-native",
+    "rust",
+    "zero-knowledge",
+    "federated learning"
+  ],
+  "riskyKeywords": [
+    "monolithic",
+    "legacy-api",
+    "manual-deployment",
+    "unencrypted",
+    "data-silo"
+  ],
+  "techMaturityThreshold": 3
+}

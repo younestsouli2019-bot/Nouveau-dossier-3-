@@ -175,10 +175,26 @@ function createOnlineClient() {
   const { appId, serviceToken } = getOnlineAuth();
   const serverUrl = process.env.BASE44_SERVER_URL;
 
+<<<<<<< Updated upstream
   return createClient({
     ...(serverUrl ? { serverUrl } : {}),
     appId,
     serviceToken
+=======
+  // Avoid logging sensitive tokens. Log only non-sensitive metadata.
+  console.log(`[Base44Client] Connecting to server: ${serverUrl}`);
+  console.log(`[Base44Client] App identifier resolved`);
+
+  const client = createClient({
+    serverUrl,
+    appId,
+    serviceToken,
+    // Keep Bearer and X-Service-Token for broad compatibility; avoid redundant keys and apiKey duplication
+    headers: {
+      "Authorization": `Bearer ${serviceToken}`,
+      "X-Service-Token": serviceToken
+    }
+>>>>>>> Stashed changes
   });
 }
 
@@ -235,7 +251,11 @@ function normalizeAppIdInput(value) {
     const fromPath = coerceNonEmptyString(parts[appsIdx + 1]);
     if (fromPath) return fromPath;
   }
+<<<<<<< Updated upstream
   if (host.endsWith(".base44.app")) return host.slice(0, -".base44.app".length);
+=======
+  // Return subdomain host if present (e.g., slug.base44.app), else host
+>>>>>>> Stashed changes
   return host;
 }
 
@@ -284,10 +304,34 @@ function parseApiKeyValue(raw) {
   return { appId: null, serviceToken: v };
 }
 
+function appIdEquivalent(a, b) {
+  const na = normalizeAppIdInput(a);
+  const nb = normalizeAppIdInput(b);
+  if (!na || !nb) return false;
+  // Accept equality between slug and slug.base44.app
+  const toSlug = (v) => String(v).replace(/\.base44\.app$/i, "");
+  return toSlug(na).toLowerCase() === toSlug(nb).toLowerCase();
+}
+
 function getOnlineAuth() {
   const envAppId = normalizeAppIdInput(process.env.BASE44_APP_ID);
   const envServiceToken = coerceNonEmptyString(process.env.BASE44_SERVICE_TOKEN);
+<<<<<<< Updated upstream
   if (envAppId && envServiceToken) return { appId: envAppId, serviceToken: envServiceToken };
+=======
+  
+  // Strict Identity Check with robust equivalence
+  if (envAppId && envServiceToken) {
+    const decoded = decodeJwtPayload(envServiceToken);
+    if (decoded) {
+      const tokenAppId = normalizeAppIdInput(decoded.appId ?? decoded.app_id ?? decoded.applicationId);
+      if (tokenAppId && !appIdEquivalent(tokenAppId, envAppId)) {
+        throw new Error(`Security Mismatch: BASE44_APP_ID (${envAppId}) does not match token's app_id (${tokenAppId})`);
+      }
+    }
+    return { appId: envAppId, serviceToken: envServiceToken };
+  }
+>>>>>>> Stashed changes
 
   const apiKeyRaw = process.env.BASE44_API_KEY ?? process.env.BASE44_API_TOKEN ?? process.env.BASE44_KEY ?? null;
   const parsed = parseApiKeyValue(apiKeyRaw);
@@ -298,6 +342,20 @@ function getOnlineAuth() {
   if (!appId) throw new Error("Missing required env var: BASE44_APP_ID");
   if (!serviceToken) throw new Error("Missing required env var: BASE44_SERVICE_TOKEN");
 
+<<<<<<< Updated upstream
+=======
+  // Validate inferred match as well
+  if (serviceToken) {
+     const decoded = decodeJwtPayload(serviceToken);
+     if (decoded) {
+       const tokenAppId = normalizeAppIdInput(decoded.appId ?? decoded.app_id ?? decoded.applicationId);
+       if (tokenAppId && !appIdEquivalent(tokenAppId, appId)) {
+         throw new Error(`Security Mismatch: Inferred App ID (${appId}) does not match token's app_id (${tokenAppId})`);
+       }
+     }
+  }
+
+>>>>>>> Stashed changes
   return { appId, serviceToken };
 }
 

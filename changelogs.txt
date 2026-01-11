@@ -1,0 +1,59 @@
+2026-01-11T00:00:00Z [security][finance] CryptoGateway hardening
+- Added missing imports (fs, path, https, crypto) in src/financial/gateways/CryptoGateway.mjs to prevent runtime ReferenceError during instruction file writes and Bitget signing.
+- Replaced undefined Binance withdrawal history (getServerTime/apiRequest) with ccxt-based fetchWithdrawals implementation.
+- Improved tx hash detection: prefer applyId match, fallback to address+amount with tolerance.
+- Added credential guard for live Binance path when CRYPTO_WITHDRAW_ENABLE=true but creds are missing.
+
+2026-01-11T00:00:00Z [ops][env] load-env robustness and guard visibility
+- load-env now supports SWARM_ENV_PATH as a fallback if .env is not present at cwd.
+- Emits concise stderr warnings when env parsing fails.
+- Emits a one-line warning if secret guard initialization fails instead of failing silently.
+
+2026-01-11T00:00:00Z [security][headers] middleware defense-in-depth
+- Added Cross-Origin-Opener-Policy: same-origin and Cross-Origin-Resource-Policy: same-site headers in src/security-middleware.mjs.
+- Existing CSP/HSTS/XFO headers preserved.
+
+2026-01-11T00:00:00Z [security][client] Base44 client hardening
+- Removed token substring logging; now logs only server URL and a generic app identifier note.
+- Implemented appId equivalence between slug and slug.base44.app; prevents false mismatches while keeping strict identity checks.
+- Simplified auth headers to Authorization: Bearer and X-Service-Token; removed redundant keys/apiKey fields.
+
+2026-01-11T00:00:00Z [ops][readiness] Health monitor strict mode and mission health once-empty exit
+- Added --readiness-strict option to monitor-health; when readiness.ok=false it exits with code 1 for CI/ops gating.
+- In mission-health mode with --once, if no missions match criteria, prints a short note and exits instead of looping idly.
+
+2026-01-11T00:00:00Z [reliability][alerts] Non-fatal alert fallback
+- maybeSendAlert now returns {sent:false, reason} when SendEmail integration is unavailable or recipient missing instead of throwing. This prevents health monitor from crashing when alerts are enabled but offline.
+
+2026-01-11T00:00:00Z [orchestration][routing] Automatic multi-route failover with cooldown
+- Added src/util/RouteManager.mjs providing weighted selection, per-route health, exponential backoff, and persistence to data/locks/route-health.json.
+- Integrated failover into ExternalGatewayManager.initiateAutoSettlement(): attempts routes in policy order and automatically re-routes on failure.
+- New env knobs: ROUTE_LIST, ROUTE_WEIGHTS_JSON, ROUTE_DISABLE_JSON, ROUTE_BACKOFF_BASE_MS, ROUTE_BACKOFF_MAX_MS.
+- Builder notes embedded in RouteManager and ExternalGatewayManager for extension and tuning.
+
+2026-01-11T00:00:00Z [integrations][binance] Connector migration and robust time sync
+- Updated src/crypto/binance-client.mjs to use official @binance/connector Spot client with automatic timestamp offset.
+- Implemented ensureTimeOffset(): fetches /api/v3/time, computes mid-RTT offset, applies setTimestampOffset and setRecvWindow(60000).
+- Removed ad-hoc manual timestamp injection; connector now signs with Date.now()+offset to eliminate -1021/-1022 issues.
+- Added debug logs for offset and standardized withdraw wrapper methods.
+
+2026-01-11T00:00:00Z [finance][bank-wire] LIVE-only gateway, simulation removed
+- Removed all simulation logic from BankWireGateway. Gateway fails fast unless BANK_WIRE_PROVIDER=LIVE and required env present.
+- Required env: SWARM_LIVE=true, BANK_WIRE_ENABLE=true, OWNER_* bank details, OWNER_BENEFICIARY_ALLOWLIST_JSON.
+- Implement real bank API submit/status before enabling this route.
+
+2026-01-11T00:00:00Z [finance][payoneer] LIVE-only gateway, simulation removed
+- Removed all simulation logic from PayoneerGateway. Gateway fails fast unless PAYONEER_PROVIDER=LIVE and API creds present.
+- Required env: SWARM_LIVE=true, PAYONEER_ENABLE=true, PAYONEER_API_BASE, PAYONEER_CLIENT_ID, PAYONEER_CLIENT_SECRET.
+- Implement real Payoneer API submit/status before enabling this route.
+
+2026-01-11T00:00:00Z [ops][env] Fix load-env startup syntax error
+- Removed stray characters causing 'Unexpected token' in src/load-env.mjs so envs load and servers start reliably.
+
+2026-01-11T00:00:00Z [ops][audit] Simulation and fake txhash demarcation tool
+- Added scripts/mark-simulated-artifacts.mjs to scan exports/ and data/ JSONs, marking:
+  - verification_markers with reasons
+  - simulation_detected=true for simulated/prepared artifacts
+  - fake_txhash_detected=true for invalid TX formats (non-64 hex)
+  - real=false when simulation detected
+- Produces exports/reports/simulation_audit_report_<ts>.json summarizing updates.
