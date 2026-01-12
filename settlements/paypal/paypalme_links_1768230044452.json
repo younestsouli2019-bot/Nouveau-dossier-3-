@@ -1,0 +1,10 @@
+{
+  "note": "Settlement per invoice INV-2026-001",
+  "ncp_url": "https://www.paypal.com/ncp/payment/726Z3FMU2DRUG",
+  "links": [
+    {
+      "amount": 850,
+      "url": "https://paypal.me/realworldcerts/850?note=Settlement%20per%20invoice%20INV-2026-001"
+    }
+  ]
+}

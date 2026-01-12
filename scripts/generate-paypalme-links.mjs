@@ -3,7 +3,8 @@ import path from 'path'
 import 'dotenv/config'
 
 function buildPaypalMe(amount, note) {
-  const ncp = process.env.PAYPAL_NCP_PAYMENT_LINK
+  const forceMe = String(process.env.PAYPAL_FORCE_ME || '').toLowerCase() === 'true'
+  const ncp = forceMe ? null : process.env.PAYPAL_NCP_PAYMENT_LINK
   if (ncp) return String(ncp)
   const handle = (process.env.PAYPAL_ME_HANDLE || '').replace(/^@/, '') || 'realworldcerts'
   const base = `https://paypal.me/${encodeURIComponent(handle)}/${encodeURIComponent(String(amount))}`

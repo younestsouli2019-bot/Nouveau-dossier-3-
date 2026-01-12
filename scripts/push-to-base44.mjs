@@ -2,9 +2,23 @@
 // LIVE DEPLOYMENT: Push all schemas, configurations, and test data to Base44
 // This script COMMITS everything to your Base44 app instance
 
-import '../src/load-env.mjs';
-import { OWNER_ACCOUNTS as REGISTRY_ACCOUNTS } from '../src/policy/RecipientRegistry.mjs';
-import { recordSuccess } from '../src/ops/AutoCommitChangelog.mjs';
+import 'dotenv/config';
+const REGISTRY_ACCOUNTS = {
+  bank: { rib: process.env.MOROCCAN_BANK_RIB || process.env.ACCOUNT_NUMBER_BARCLAYS || '' },
+  payoneer: { email: process.env.OWNER_PAYONEER_EMAIL || '' },
+  payoneer_secondary: { email: process.env.OWNER_PAYONEER_EMAIL || '' },
+  payoneer_uk_bank: { identifier: process.env.ACCOUNT_NUMBER_BARCLAYS || '' },
+  payoneer_jp_bank: { identifier: process.env.ACCOUNT_NUMBER_MUFG || '' },
+  payoneer_eu_iban: { identifier: process.env.IBAN_BC || process.env.BANK_IBAN || '' },
+  paypal: { rib: process.env.OWNER_PAYPAL_EMAIL || '' },
+  stripe: { rib: process.env.OWNER_PAYPAL_EMAIL || '' },
+  crypto: { address: process.env.TRUST_WALLET_ADDRESS || '' },
+  crypto_erc20: { address: process.env.TRUST_WALLET_USDT_ERC20 || '' },
+  crypto_bep20: { address: process.env.TRUST_WALLET_USDT_BEP20 || '' },
+  crypto_bybit_erc20: { address: process.env.BYBIT_USDT_ERC20 || '' },
+  crypto_bybit_ton: { address: process.env.BYBIT_USDT_TON || '' }
+};
+function recordSuccess(msg) { console.log(`✅ ${msg}`) }
 
 // ============================================================================
 // BASE44 API CONFIGURATION

@@ -93,7 +93,8 @@ export function defaultConfig() {
       autoSubmitPayPalPayoutBatches: false,
       syncPayPalLedgerBatches: false,
       autoExportPayoneerPayoutBatches: false,
-      autoSettleOwnerPayoneer: false
+      autoSettleOwnerPayoneer: false,
+      ensureMarketingFunnel: true
     },
     alerts: { enabled: false, cooldownMs: 900000 },
     missionHealth: { missionId: null, limit: 50 },
@@ -246,6 +247,10 @@ export function resolveRuntimeConfig(args, fileCfg) {
     args["auto-settle-owner"] === true ||
     getEnvBool("AUTONOMOUS_AUTO_SETTLE_OWNER_PAYONEER", false) ||
     cfg.tasks?.autoSettleOwnerPayoneer === true;
+  const ensureMarketingFunnelEnabled =
+    args["ensure-marketing-funnel"] === true ||
+    getEnvBool("AUTONOMOUS_ENSURE_MARKETING_FUNNEL", true) ||
+    cfg.tasks?.ensureMarketingFunnel === true;
 
   return {
     intervalMs,
@@ -284,7 +289,8 @@ export function resolveRuntimeConfig(args, fileCfg) {
       autoSubmitPayPalPayoutBatches: autoSubmitPayPalPayoutBatchesEnabled === true,
       syncPayPalLedgerBatches: syncPayPalLedgerEnabled === true,
       autoExportPayoneerPayoutBatches: autoExportPayoneerPayoutBatchesEnabled === true,
-      autoSettleOwnerPayoneer: autoSettleOwnerPayoneerEnabled === true
+      autoSettleOwnerPayoneer: autoSettleOwnerPayoneerEnabled === true,
+      ensureMarketingFunnel: ensureMarketingFunnelEnabled === true
     },
     alerts: { enabled: alertsEnabled, cooldownMs: alertCooldownMs },
     missionHealth: {
