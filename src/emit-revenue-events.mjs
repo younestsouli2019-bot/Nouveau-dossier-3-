@@ -2022,14 +2022,64 @@ async function exportPayoneerBatch(base44, { batchId, outPath }) {
 
   const items = await getPayoutItemsForBatch(base44, batchId);
   const lines = [];
-  lines.push(["recipient", "amount", "currency", "batch_id", "item_id"].map(csvEscape).join(","));
+  lines.push([
+    "recipient",
+    "recipient_email",
+    "recipient_name",
+    "amount",
+    "currency",
+    "batch_id",
+    "item_id",
+    "note",
+    "payer_name",
+    "payer_email",
+    "payer_company",
+    "purpose",
+    "reference"
+  ].map(csvEscape).join(","));
   const payoutItemCfg = getPayoutItemConfigFromEnv();
+  const earningCfg = getEarningConfigFromEnv();
+  const earningEntity = base44.asServiceRole.entities[earningCfg.entityName];
   for (const it of items) {
     const recipient = payoutItemCfg.fieldMap.recipient ? it?.[payoutItemCfg.fieldMap.recipient] : null;
     const amount = payoutItemCfg.fieldMap.amount ? it?.[payoutItemCfg.fieldMap.amount] : null;
     const currency = payoutItemCfg.fieldMap.currency ? it?.[payoutItemCfg.fieldMap.currency] : null;
     const itemId = payoutItemCfg.fieldMap.itemId ? it?.[payoutItemCfg.fieldMap.itemId] : null;
-    lines.push([recipient, amount, currency, batchId, itemId].map(csvEscape).join(","));
+    const recipientEmail = recipient && String(recipient).includes("@") ? String(recipient) : "";
+    const recipientName = notes?.beneficiary ?? "";
+    const note = notes?.note ?? String(batchId);
+    const earningId = payoutItemCfg.fieldMap.earningId ? it?.[payoutItemCfg.fieldMap.earningId] : null;
+    let payerName = notes?.payer_name ?? process.env.SETTLEMENT_REQUESTOR_NAME ?? "";
+    let payerEmail = notes?.payer_email ?? process.env.SETTLEMENT_REQUESTOR_EMAIL ?? "";
+    let payerCompany = notes?.payer_company ?? process.env.SETTLEMENT_REQUESTOR_COMPANY ?? "";
+    let purpose = notes?.purpose ?? process.env.SETTLEMENT_PURPOSE ?? "";
+    let reference = notes?.reference ?? process.env.SETTLEMENT_REFERENCE ?? String(batchId);
+    if (earningId && earningCfg.fieldMap.earningId) {
+      const e = await findOneBy(earningEntity, { [earningCfg.fieldMap.earningId]: String(earningId) });
+      const meta = earningCfg.fieldMap.metadata ? e?.[earningCfg.fieldMap.metadata] : null;
+      if (meta && typeof meta === "object") {
+        payerName = payerName || meta.payer_name || meta.source_name || meta.client_name || "";
+        payerEmail = payerEmail || meta.payer_email || meta.client_email || "";
+        payerCompany = payerCompany || meta.payer_company || meta.source_company || "";
+        purpose = purpose || meta.purpose || meta.service || "";
+        reference = reference || meta.reference || meta.invoice || reference;
+      }
+    }
+    lines.push([
+      recipient,
+      recipientEmail,
+      recipientName,
+      amount,
+      currency,
+      batchId,
+      itemId,
+      note,
+      payerName,
+      payerEmail,
+      payerCompany,
+      purpose,
+      reference
+    ].map(csvEscape).join(","));
   }
 
   const csv = `${lines.join("\n")}\n`;

@@ -1,0 +1,17 @@
+{
+  "batch_id": "PAYO_1768220313487",
+  "item_id": "PAYO_1768220313487-ITEM-1",
+  "timestamp": "2026-01-12T12:18:33Z",
+  "recipient": "younestsouli2019@gmail.com",
+  "recipient_name": "Younes Tsouli",
+  "amount": 1,
+  "currency": "USD",
+  "csv_path": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\payoneer\\payoneer_payout_PAYO_1768220313487.csv",
+  "note": "Investor settlement test",
+  "status": "SUBMITTED_MANUAL",
+  "external_provider": "PAYONEER",
+  "verification": {
+    "externally_verified": false,
+    "proof_url": null
+  }
+}

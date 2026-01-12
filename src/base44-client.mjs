@@ -173,15 +173,9 @@ function createOfflineClient({ filePath }) {
 
 function createOnlineClient() {
   const { appId, serviceToken } = getOnlineAuth();
-  const serverUrl = process.env.BASE44_SERVER_URL;
+  const serverUrl = process.env.BASE44_SERVER_URL || process.env.BASE44_API_URL;
 
-<<<<<<< Updated upstream
-  return createClient({
-    ...(serverUrl ? { serverUrl } : {}),
-    appId,
-    serviceToken
-=======
-  // Avoid logging sensitive tokens. Log only non-sensitive metadata.
+// Avoid logging sensitive tokens. Log only non-sensitive metadata.
   console.log(`[Base44Client] Connecting to server: ${serverUrl}`);
   console.log(`[Base44Client] App identifier resolved`);
 
@@ -194,8 +188,8 @@ function createOnlineClient() {
       "Authorization": `Bearer ${serviceToken}`,
       "X-Service-Token": serviceToken
     }
->>>>>>> Stashed changes
   });
+  return client;
 }
 
 function decodeJwtPayload(token) {
@@ -251,11 +245,7 @@ function normalizeAppIdInput(value) {
     const fromPath = coerceNonEmptyString(parts[appsIdx + 1]);
     if (fromPath) return fromPath;
   }
-<<<<<<< Updated upstream
-  if (host.endsWith(".base44.app")) return host.slice(0, -".base44.app".length);
-=======
-  // Return subdomain host if present (e.g., slug.base44.app), else host
->>>>>>> Stashed changes
+// Return subdomain host if present (e.g., slug.base44.app), else host
   return host;
 }
 
@@ -316,11 +306,7 @@ function appIdEquivalent(a, b) {
 function getOnlineAuth() {
   const envAppId = normalizeAppIdInput(process.env.BASE44_APP_ID);
   const envServiceToken = coerceNonEmptyString(process.env.BASE44_SERVICE_TOKEN);
-<<<<<<< Updated upstream
-  if (envAppId && envServiceToken) return { appId: envAppId, serviceToken: envServiceToken };
-=======
-  
-  // Strict Identity Check with robust equivalence
+// Strict Identity Check with robust equivalence
   if (envAppId && envServiceToken) {
     const decoded = decodeJwtPayload(envServiceToken);
     if (decoded) {
@@ -331,7 +317,6 @@ function getOnlineAuth() {
     }
     return { appId: envAppId, serviceToken: envServiceToken };
   }
->>>>>>> Stashed changes
 
   const apiKeyRaw = process.env.BASE44_API_KEY ?? process.env.BASE44_API_TOKEN ?? process.env.BASE44_KEY ?? null;
   const parsed = parseApiKeyValue(apiKeyRaw);
@@ -342,9 +327,7 @@ function getOnlineAuth() {
   if (!appId) throw new Error("Missing required env var: BASE44_APP_ID");
   if (!serviceToken) throw new Error("Missing required env var: BASE44_SERVICE_TOKEN");
 
-<<<<<<< Updated upstream
-=======
-  // Validate inferred match as well
+// Validate inferred match as well
   if (serviceToken) {
      const decoded = decodeJwtPayload(serviceToken);
      if (decoded) {
@@ -354,8 +337,6 @@ function getOnlineAuth() {
        }
      }
   }
-
->>>>>>> Stashed changes
   return { appId, serviceToken };
 }
 

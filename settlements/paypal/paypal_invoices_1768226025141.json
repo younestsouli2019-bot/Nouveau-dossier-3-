@@ -1,0 +1,24 @@
+{
+  "status": "INVOICES_READY",
+  "results": [
+    {
+      "status": "INVOICE_LINK_GENERATED",
+      "link": "https://www.paypal.com/invoice/create?amount=25&currency=USD&payer=younestsouli2019@gmail.com",
+      "amount": 25,
+      "payer": "younestsouli2019@gmail.com"
+    },
+    {
+      "status": "INVOICE_LINK_GENERATED",
+      "link": "https://www.paypal.com/invoice/create?amount=40&currency=USD&payer=younestsouli2019@gmail.com",
+      "amount": 40,
+      "payer": "younestsouli2019@gmail.com"
+    },
+    {
+      "status": "INVOICE_LINK_GENERATED",
+      "link": "https://www.paypal.com/invoice/create?amount=85&currency=USD&payer=younestsouli2019@gmail.com",
+      "amount": 85,
+      "payer": "younestsouli2019@gmail.com"
+    }
+  ],
+  "mode": "BILLING"
+}

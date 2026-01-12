@@ -40,7 +40,27 @@ export class PayPalGateway {
     }
 
     async executePayout(transactions) {
-        return await this.createInvoices(transactions);
+        const token = await getPayPalAccessToken();
+        const items = transactions.map((tx, i) => ({
+            recipient_type: "EMAIL",
+            amount: { value: String(tx.amount), currency: tx.currency || 'USD' },
+            receiver: tx.destination || tx.email,
+            note: tx.reference || 'Owner payout',
+            sender_item_id: `item_${Date.now()}_${i}`
+        }));
+        const body = {
+            sender_batch_header: {
+                sender_batch_id: `owner_payout_${Date.now()}`,
+                email_subject: 'Owner payout',
+                email_message: 'Payout processed'
+            },
+            items
+        };
+        const res = await paypalRequest('/v1/payments/payouts', { method: 'POST', token, body });
+        return {
+            status: 'IN_TRANSIT',
+            result: res
+        };
     }
 
     async createInvoices(transactions) {

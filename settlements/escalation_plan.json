@@ -1,0 +1,101 @@
+{
+  "plan": [
+    {
+      "route": "payoneer",
+      "amount_usd": 1
+    },
+    {
+      "route": "bank",
+      "amount_usd": 1
+    },
+    {
+      "route": "crypto",
+      "amount_usd": 1
+    },
+    {
+      "route": "paypal",
+      "amount_usd": 1
+    },
+    {
+      "route": "payoneer",
+      "amount_usd": 2
+    },
+    {
+      "route": "bank",
+      "amount_usd": 2
+    },
+    {
+      "route": "crypto",
+      "amount_usd": 2
+    },
+    {
+      "route": "paypal",
+      "amount_usd": 2
+    },
+    {
+      "route": "payoneer",
+      "amount_usd": 4
+    },
+    {
+      "route": "bank",
+      "amount_usd": 4
+    },
+    {
+      "route": "crypto",
+      "amount_usd": 4
+    },
+    {
+      "route": "paypal",
+      "amount_usd": 4
+    },
+    {
+      "route": "payoneer",
+      "amount_usd": 8
+    },
+    {
+      "route": "bank",
+      "amount_usd": 8
+    },
+    {
+      "route": "crypto",
+      "amount_usd": 8
+    },
+    {
+      "route": "paypal",
+      "amount_usd": 8
+    },
+    {
+      "route": "payoneer",
+      "amount_usd": 16
+    },
+    {
+      "route": "bank",
+      "amount_usd": 16
+    },
+    {
+      "route": "crypto",
+      "amount_usd": 16
+    },
+    {
+      "route": "paypal",
+      "amount_usd": 16
+    },
+    {
+      "route": "payoneer",
+      "amount_usd": 32
+    },
+    {
+      "route": "bank",
+      "amount_usd": 32
+    },
+    {
+      "route": "crypto",
+      "amount_usd": 32
+    },
+    {
+      "route": "paypal",
+      "amount_usd": 32
+    }
+  ],
+  "generated_at": "2026-01-12T13:01:14.020Z"
+}

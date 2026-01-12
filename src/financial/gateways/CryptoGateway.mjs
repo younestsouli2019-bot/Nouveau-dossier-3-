@@ -3,15 +3,28 @@ import fs from 'node:fs';
 import path from 'node:path';
 import https from 'node:https';
 import crypto from 'node:crypto';
+import { binanceClient } from '../../crypto/binance-client.mjs';
+
+async function getBitgetServerTime() {
+  return new Promise((resolve, reject) => {
+    https.get('https://api.bitget.com/api/spot/v1/public/time', (res) => {
+      let data = '';
+      res.on('data', c => data += c);
+      res.on('end', () => {
+        try {
+          const j = JSON.parse(data);
+          resolve(Number(j.data || 0));
+        } catch (e) {
+          reject(e);
+        }
+      });
+    }).on('error', reject);
+  });
+}
 
 async function withdrawUSDTBEP20(address, amount) {
-  const binance = new ccxt.binance({
-    apiKey: process.env.BINANCE_API_KEY,
-    secret: process.env.BINANCE_API_SECRET,
-  });
-
   try {
-    const withdrawal = await binance.withdraw('USDT', amount, address, undefined, { network: 'BSC' });
+    const withdrawal = await binanceClient.withdrawUSDTBEP20({ address, amount });
     return withdrawal;
   } catch (e) {
     throw new Error(`Binance withdrawal failed: ${e.message}`);
@@ -45,13 +58,9 @@ async function withdrawUSDTBybit(address, amount, network = 'ERC20') {
 }
 
 async function listWithdrawals(startTime) {
-  const binance = new ccxt.binance({
-    apiKey: process.env.BINANCE_API_KEY,
-    secret: process.env.BINANCE_API_SECRET,
-  });
   const since = startTime != null ? Number(startTime) : undefined;
   try {
-    const rows = await binance.fetchWithdrawals('USDT', since);
+    const rows = await binanceClient.fetchWithdrawals('USDT', since);
     return Array.isArray(rows) ? rows : [];
   } catch (e) {
     // If history fetch fails (e.g., creds/time), return empty array to avoid crashing polling loops
@@ -179,9 +188,9 @@ export class CryptoGateway {
       fs.mkdirSync(path.dirname(filePath), { recursive: true });
       fs.writeFileSync(
         filePath,
-        JSON.stringify({ provider: 'bybit', action: 'withdraw', coin: 'USDT', network: 'ERC20', address: dest, amount, status: 'WAITING_MANUAL_EXECUTION', creds_present: !!(bybitCreds.apiKey && bybitCreds.secret), origin: 'in_house' }, null, 2)
+        JSON.stringify({ provider: 'bybit', action: 'withdraw', coin: 'USDT', network: (transactions[0]?.network || 'ERC20'), address: dest, amount, status: 'WAITING_MANUAL_EXECUTION', creds_present: !!(bybitCreds.apiKey && bybitCreds.secret), origin: 'in_house' }, null, 2)
       );
-      return { status: 'INSTRUCTIONS_READY', provider: 'bybit', filePath, network: 'ERC20', prepared_at, creds_present: !!(bybitCreds.apiKey && bybitCreds.secret) };
+      return { status: 'INSTRUCTIONS_READY', provider: 'bybit', filePath, network: (transactions[0]?.network || 'ERC20'), prepared_at, creds_present: !!(bybitCreds.apiKey && bybitCreds.secret) };
     }
 
     if (provider === 'bitget') {
@@ -224,6 +233,29 @@ export class CryptoGateway {
       return { status: 'QUEUED', provider: 'trust', reason: 'NO_PRIVATE_KEYS_ALLOWED', network, prepared_at };
     }
 
+    if (provider === 'mexc') {
+      const creds = { apiKey: process.env.MEXC_API_KEY, secret: process.env.MEXC_API_SECRET };
+      const hasCreds = !!(creds.apiKey && creds.secret);
+      const nx = (transactions[0]?.network || 'ERC20').toUpperCase();
+      const label = nx === 'BSC' ? 'BEP20' : nx;
+      if (enabled && hasCreds) {
+        try {
+          const mexc = new ccxt.mexc({ apiKey: creds.apiKey, secret: creds.secret, options: { adjustForTimeDifference: true } });
+          const params = { network: nx };
+          const r = await mexc.withdraw('USDT', amount, dest, undefined, params);
+          return { status: 'submitted', provider: 'mexc', network: label, prepared_at, applyId: r?.id || null, txHash: r?.txid || null };
+        } catch (e) {}
+      }
+      const outDir = 'settlements/crypto';
+      const filename = `mexc_instruction_${Date.now()}.json`;
+      const filePath = path.join(process.cwd(), outDir, filename);
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      fs.writeFileSync(
+        filePath,
+        JSON.stringify({ provider: 'mexc', action: 'withdraw', coin: 'USDT', network: nx, address: dest, amount, status: 'WAITING_MANUAL_EXECUTION', creds_present: hasCreds, origin: 'in_house' }, null, 2)
+      );
+      return { status: 'INSTRUCTIONS_READY', provider: 'mexc', filePath, network: nx, prepared_at, creds_present: hasCreds };
+    }
     return { status: 'UNKNOWN_PROVIDER', provider, network, prepared_at };
   }
   async getWithdrawalStatus({ provider = 'binance', address, amount, startTime } = {}) {

@@ -1,0 +1,68 @@
+{
+  "entities": {
+    "Earning": {
+      "records": [
+        {
+          "id": "offline_Earning_REV_1768225534247",
+          "created_date": "2026-01-12T13:46:34.250Z",
+          "updated_date": "2026-01-12T13:46:34.250Z",
+          "earning_id": "REV_1768225534247",
+          "amount": 25,
+          "currency": "USD",
+          "occurred_at": "2026-01-12T13:46:34.249Z",
+          "source": "swarm_revenue",
+          "beneficiary": "younestsouli2019@gmail.com",
+          "status": "settled_externally_pending",
+          "settlement_id": null,
+          "metadata": {
+            "payer_name": "Younes Tsouli",
+            "payer_email": "younestsouli2019@gmail.com",
+            "payer_company": "Private",
+            "purpose": "Services rendered – Q1 2026 consulting",
+            "reference": "INV-2026-001"
+          }
+        },
+        {
+          "id": "offline_Earning_REV_1768225564250",
+          "created_date": "2026-01-12T13:46:34.250Z",
+          "updated_date": "2026-01-12T13:46:34.250Z",
+          "earning_id": "REV_1768225564250",
+          "amount": 40,
+          "currency": "USD",
+          "occurred_at": "2026-01-12T13:46:34.250Z",
+          "source": "swarm_revenue",
+          "beneficiary": "younestsouli2019@gmail.com",
+          "status": "settled_externally_pending",
+          "settlement_id": null,
+          "metadata": {
+            "payer_name": "Younes Tsouli",
+            "payer_email": "younestsouli2019@gmail.com",
+            "payer_company": "Private",
+            "purpose": "Services rendered – Q1 2026 consulting",
+            "reference": "INV-2026-001"
+          }
+        },
+        {
+          "id": "offline_Earning_REV_1768225594250",
+          "created_date": "2026-01-12T13:46:34.250Z",
+          "updated_date": "2026-01-12T13:46:34.250Z",
+          "earning_id": "REV_1768225594250",
+          "amount": 85,
+          "currency": "USD",
+          "occurred_at": "2026-01-12T13:46:34.250Z",
+          "source": "swarm_revenue",
+          "beneficiary": "younestsouli2019@gmail.com",
+          "status": "settled_externally_pending",
+          "settlement_id": null,
+          "metadata": {
+            "payer_name": "Younes Tsouli",
+            "payer_email": "younestsouli2019@gmail.com",
+            "payer_company": "Private",
+            "purpose": "Services rendered – Q1 2026 consulting",
+            "reference": "INV-2026-001"
+          }
+        }
+      ]
+    }
+  }
+}

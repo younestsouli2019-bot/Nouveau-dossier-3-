@@ -1,0 +1,18 @@
+{
+  "note": "Settlement per invoice INV-2026-001",
+  "ncp_url": "https://www.paypal.com/ncp/payment/726Z3FMU2DRUG",
+  "links": [
+    {
+      "amount": 25,
+      "url": "https://www.paypal.com/ncp/payment/726Z3FMU2DRUG"
+    },
+    {
+      "amount": 40,
+      "url": "https://www.paypal.com/ncp/payment/726Z3FMU2DRUG"
+    },
+    {
+      "amount": 85,
+      "url": "https://www.paypal.com/ncp/payment/726Z3FMU2DRUG"
+    }
+  ]
+}

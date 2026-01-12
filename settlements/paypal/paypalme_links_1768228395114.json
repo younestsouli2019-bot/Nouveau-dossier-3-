@@ -1,0 +1,17 @@
+{
+  "note": "Settlement per invoice INV-2026-001",
+  "links": [
+    {
+      "amount": 25,
+      "url": "https://paypal.me/realworldcerts/25?note=Settlement%20per%20invoice%20INV-2026-001"
+    },
+    {
+      "amount": 40,
+      "url": "https://paypal.me/realworldcerts/40?note=Settlement%20per%20invoice%20INV-2026-001"
+    },
+    {
+      "amount": 85,
+      "url": "https://paypal.me/realworldcerts/85?note=Settlement%20per%20invoice%20INV-2026-001"
+    }
+  ]
+}

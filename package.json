@@ -8,6 +8,7 @@
     "approve:batch": "node ./src/emit-revenue-events.mjs --approve-payout-batch",
     "rollback:batch": "node ./src/emit-revenue-events.mjs --cancel-payout-batch",
     "prepare:sweep": "node ./src/prepare-revenue-sweep.mjs",
+    "auto:settle:owner": "node ./scripts/auto-settle-owner.mjs",
     "ap2:verify": "node ./src/ap2-verify.mjs",
     "ap2:orchestrate": "node ./src/orchestrate-settlement.mjs",
     "prepare:external:settlement": "node ./src/prepare-external-settlement.mjs",
@@ -26,9 +27,6 @@
     "test": "node --test"
   },
   "dependencies": {
-<<<<<<< Updated upstream
-    "@base44/sdk": "^0.8.5"
-=======
     "@base44/sdk": "^0.8.13",
     "@binance/connector": "^3.6.1",
     "base64-js": "^1.5.1",
@@ -38,7 +36,6 @@
     "ethers": "^6.0.0",
     "express": "^5.2.1",
     "tweetnacl": "^1.0.3"
->>>>>>> Stashed changes
   }
 }
 
