@@ -2,19 +2,37 @@ import fs from 'fs'
 import path from 'path'
 import 'dotenv/config'
 
-function csvEscape(v) {
-  const s = String(v ?? '')
-  if (s.includes(',') || s.includes('"') || s.includes('\n')) return `"${s.replace(/"/g, '""')}"`
-  return s
+function buildXls({ headers, rows, sheetName = 'Payoneer' }) {
+  const esc = (v) => String(v ?? '')
+  const headerRow = headers.map((h) => `<Cell><Data ss:Type="String">${esc(h)}</Data></Cell>`).join('')
+  const dataRows = rows
+    .map((r) => {
+      return `<Row>${r
+        .map((v) => `<Cell><Data ss:Type="String">${esc(v)}</Data></Cell>`)
+        .join('')}</Row>`
+    })
+    .join('')
+  return `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:o="urn:schemas-microsoft-com:office:office"
+  xmlns:x="urn:schemas-microsoft-com:office:excel"
+  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+  <Worksheet ss:Name="${esc(sheetName)}">
+    <Table>
+      <Row>${headerRow}</Row>
+      ${dataRows}
+    </Table>
+  </Worksheet>
+</Workbook>\n`
 }
 
 function nowBatchId() {
   return `PAYO_${Date.now()}`
 }
 
-function buildLines({ recipient, email, name, amount, currency, batchId, itemId, note, payerName, payerEmail, payerCompany, purpose, reference }) {
-  const lines = []
-  lines.push([
+function buildRows({ recipient, email, name, amount, currency, batchId, itemId, note, payerName, payerEmail, payerCompany, purpose, reference, prqLink }) {
+  const headers = [
     'recipient',
     'recipient_email',
     'recipient_name',
@@ -27,9 +45,10 @@ function buildLines({ recipient, email, name, amount, currency, batchId, itemId,
     'payer_email',
     'payer_company',
     'purpose',
-    'reference'
-  ].map(csvEscape).join(','))
-  lines.push([
+    'reference',
+    'prq_link'
+  ]
+  const row = [
     recipient,
     email,
     name,
@@ -42,9 +61,10 @@ function buildLines({ recipient, email, name, amount, currency, batchId, itemId,
     payerEmail,
     payerCompany,
     purpose,
-    reference
-  ].map(csvEscape).join(','))
-  return `${lines.join('\n')}\n`
+    reference,
+    prqLink
+  ]
+  return { headers, rows: [row] }
 }
 
 function main() {
@@ -60,17 +80,20 @@ function main() {
   const batchId = args.batch_id || process.env.PAYONEER_BATCH_ID || nowBatchId()
   const itemId = args.item_id || `${batchId}-ITEM-1`
   const note = args.note || process.env.SETTLEMENT_NOTE || batchId
-  const payerName = args.payer_name || process.env.SETTLEMENT_REQUESTOR_NAME || process.env.OWNER_NAME || ''
-  const payerEmail = args.payer_email || process.env.SETTLEMENT_REQUESTOR_EMAIL || process.env.OWNER_PAYPAL_EMAIL || ''
-  const payerCompany = args.payer_company || process.env.SETTLEMENT_REQUESTOR_COMPANY || process.env.BENEFICIARY_NAME_BC || ''
+  const payerName = args.payer_name || process.env.SETTLEMENT_REQUESTOR_NAME || ''
+  const payerEmail = args.payer_email || process.env.SETTLEMENT_REQUESTOR_EMAIL || ''
+  const payerCompany = args.payer_company || process.env.SETTLEMENT_REQUESTOR_COMPANY || ''
   const purpose = args.purpose || process.env.SETTLEMENT_PURPOSE || 'Service/Settlement'
   const reference = args.reference || process.env.SETTLEMENT_REFERENCE || batchId
   const email = recipient && String(recipient).includes('@') ? recipient : ''
-  const csv = buildLines({ recipient, email, name, amount, currency, batchId, itemId, note, payerName, payerEmail, payerCompany, purpose, reference })
+  const token = args.prq_token || process.env.PAYONEER_PRQ_TOKEN || ''
+  const prqLink = token ? `https://link.payoneer.com/Token?t=${String(token)}&src=prqLink` : ''
+  const { headers, rows } = buildRows({ recipient, email, name, amount, currency, batchId, itemId, note, payerName, payerEmail, payerCompany, purpose, reference, prqLink })
+  const xls = buildXls({ headers, rows, sheetName: 'Payoneer' })
   const outDir = path.resolve('settlements/payoneer')
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true })
-  const targetPath = path.join(outDir, `payoneer_payout_${batchId}.csv`)
-  fs.writeFileSync(targetPath, csv, 'utf8')
+  const targetPath = path.join(outDir, `payoneer_payout_${batchId}.xls`)
+  fs.writeFileSync(targetPath, xls, 'utf8')
   console.log(targetPath)
 }
 

@@ -25,6 +25,7 @@ import { runDoomsdayExport } from "./real/ledger/doomsday-export.mjs";
 import { enforceOwnerDirective } from "./owner-directive.mjs";
 import { AutonomousAgentUpgrader } from "./agents/autonomous-upgrader.mjs";
 import { StrategicScout } from "./agents/strategic-scout.mjs";
+import { startSupervisor as startSwarmSupervisor } from "./swarm/supervisor.mjs";
 import { 
   getEnvBool, 
   deepMerge, 
@@ -62,7 +63,7 @@ function envIsTrue(value, fallback = "true") {
 }
 
 function isPlaceholderValue(value) {
-  if (value == null) return true;
+  if (value === null || value === undefined) return true;
   const v = String(value).trim();
   if (!v) return true;
   if (/^\s*<\s*YOUR_[A-Z0-9_]+\s*>\s*$/i.test(v)) return true;
@@ -114,7 +115,7 @@ function verifyNoSandboxPayPal() {
 
 function isPayPalPayoutSendEnabled() {
   const override = process.env.AUTONOMOUS_ALLOW_PAYPAL_PAYOUTS ?? process.env.BASE44_ALLOW_PAYPAL_PAYOUTS ?? null;
-  if (override != null && String(override).trim() !== "") return String(override).toLowerCase() === "true";
+  if ((override !== null && override !== undefined) && String(override).trim() !== "") return String(override).toLowerCase() === "true";
 
   const approved = String(process.env.PAYPAL_PPP2_APPROVED ?? process.env.PPP2_APPROVED ?? "false").toLowerCase() === "true";
   const enableSend =
@@ -128,10 +129,10 @@ function hasAllowedPayPalRecipientsConfigured() {
     process.env.BASE44_ALLOWED_PAYPAL_RECIPIENTS ??
     process.env.PAYOUT_ALLOWED_PAYPAL_RECIPIENTS ??
     null;
-  if (csv != null && String(csv).trim() && !isPlaceholderValue(csv)) return true;
+  if ((csv !== null && csv !== undefined) && String(csv).trim() && !isPlaceholderValue(csv)) return true;
 
   const json = process.env.AUTONOMOUS_ALLOWED_PAYOUT_RECIPIENTS_JSON ?? process.env.BASE44_ALLOWED_PAYOUT_RECIPIENTS_JSON ?? null;
-  if (json == null || !String(json).trim() || isPlaceholderValue(json)) return false;
+  if ((json === null || json === undefined) || !String(json).trim() || isPlaceholderValue(json)) return false;
   try {
     const parsed = JSON.parse(String(json));
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return false;
@@ -284,7 +285,7 @@ async function withTempEnv(pairs, fn) {
   const prev = {};
   for (const [k, v] of Object.entries(pairs ?? {})) {
     prev[k] = process.env[k];
-    if (v == null) {
+    if (v === null || v === undefined) {
       delete process.env[k];
     } else {
       process.env[k] = String(v);
@@ -294,14 +295,14 @@ async function withTempEnv(pairs, fn) {
     return await fn();
   } finally {
     for (const [k, v] of Object.entries(prev)) {
-      if (v == null) delete process.env[k];
+      if (v === null || v === undefined) delete process.env[k];
       else process.env[k] = v;
     }
   }
 }
 
 function parseJsonMaybe(value) {
-  if (value == null) return null;
+  if (value === null || value === undefined) return null;
   if (typeof value === "object") return value;
   const s = String(value).trim();
   if (!s) return null;
@@ -336,6 +337,19 @@ async function startNetworkGuardIfLive() {
   return { started: true };
 }
 
+async function startSwarmSupervisorIfEnabled(cfg, state) {
+  const enabled = envIsTrue(process.env.SWARM_SUPERVISOR_ENABLED, "true");
+  if (!enabled) return { started: false, skipped: true, reason: "disabled" };
+  if (state.supervisorStarted === true) return { started: true, already: true };
+  const envInterval = Number(process.env.SWARM_SUPERVISOR_INTERVAL_MS ?? 60000);
+  const envMinAgents = Number(process.env.SWARM_MIN_ACTIVE_AGENTS ?? 5);
+  const intervalMs = Number.isFinite(cfg?.supervisor?.intervalMs) ? cfg.supervisor.intervalMs : normalizeIntervalMs(envInterval);
+  const minActive = Number.isFinite(cfg?.supervisor?.minAgents) ? cfg.supervisor.minAgents : (Number.isFinite(envMinAgents) ? envMinAgents : 5);
+  await startSwarmSupervisor({ intervalMs, minActive }).catch(() => {});
+  state.supervisorStarted = true;
+  return { started: true, intervalMs, minActive };
+}
+
 function getPolicyConfigFromEnv() {
   const authz = parseJsonMaybe(process.env.AUTHORIZATION_POLICY) ?? {};
   const oblig = parseJsonMaybe(process.env.OBLIGATION_POLICY) ?? {};
@@ -350,7 +364,7 @@ function getConsensusSignalsFromEnv() {
 function constraintSatisfied(graph, assertion) {
   const list = Array.isArray(graph?.constraints) ? graph.constraints : [];
   for (const c of list) {
-    if (c?.field && c?.operator && c?.value != null) {
+    if (c?.field && c?.operator && (c?.value !== null && c?.value !== undefined)) {
       const v = assertion?.[c.field];
       if (c.operator === "equals" && v !== c.value) return false;
       if (c.operator === "not_equals" && v === c.value) return false;
@@ -804,7 +818,7 @@ async function deadmanFetchLastWebhook(base44) {
   const rec = Array.isArray(rows) && rows[0] ? rows[0] : null;
   const at = rec?.created_at ?? rec?.created_date ?? null;
   const atMs = parseMaybeDateMs(at);
-  return rec && atMs != null
+  return rec && (atMs !== null && atMs !== undefined)
     ? { ok: true, atMs, atRaw: at, eventId: rec?.event_id ?? null, eventType: rec?.event_type ?? null }
     : { ok: false };
 }
@@ -853,7 +867,7 @@ function computeDeadmanViolations({ lastWebhook, metrics, cfg, nowMs }) {
   const withinWindow = rows.filter((r) => {
     const at = r?.[fieldMap.at] ?? r?.created_date ?? null;
     const atMs = parseMaybeDateMs(at);
-    return atMs != null && nowMs - atMs <= windowMs;
+    return (atMs !== null && atMs !== undefined) && nowMs - atMs <= windowMs;
   });
 
   let consecutiveFailures = 0;
@@ -874,7 +888,9 @@ function computeDeadmanViolations({ lastWebhook, metrics, cfg, nowMs }) {
     });
   }
 
-  const payoutFailureRatePercent = thresholds.payoutFailureRatePercent != null ? Number(thresholds.payoutFailureRatePercent) : null;
+  const payoutFailureRatePercent = (thresholds.payoutFailureRatePercent !== null && thresholds.payoutFailureRatePercent !== undefined)
+    ? Number(thresholds.payoutFailureRatePercent)
+    : null;
   const payoutFailureMinSamples = Math.max(1, Math.floor(Number(thresholds.payoutFailureMinSamples ?? 10)));
   if (Number.isFinite(payoutFailureRatePercent) && payoutFailureRatePercent > 0) {
     const payoutWindow = withinWindow.filter((r) => {
@@ -917,9 +933,9 @@ function maxIsoFrom(values) {
   for (const v of Array.isArray(values) ? values : []) {
     const ms = Date.parse(String(v ?? ""));
     if (Number.isNaN(ms)) continue;
-    if (bestMs == null || ms > bestMs) bestMs = ms;
+    if (bestMs === null || bestMs === undefined || ms > bestMs) bestMs = ms;
   }
-  return bestMs == null ? null : new Date(bestMs).toISOString();
+  return (bestMs === null || bestMs === undefined) ? null : new Date(bestMs).toISOString();
 }
 
 async function runRealityCheckOnce(cfg) {
@@ -929,11 +945,11 @@ async function runRealityCheckOnce(cfg) {
   const truthRows = effectiveOk(payoutTruth) ? (payoutTruth.result?.rows ?? []) : [];
   const withProvider = truthRows.filter((r) => {
     const id = r?.externalProviderId ?? r?.paypal_payout_batch_id ?? null;
-    return id != null && String(id) !== "NOT_SUBMITTED";
+    return (id !== null && id !== undefined) && String(id) !== "NOT_SUBMITTED";
   });
   const withoutProvider = truthRows.filter((r) => {
     const id = r?.externalProviderId ?? r?.paypal_payout_batch_id ?? null;
-    return id == null || String(id) === "NOT_SUBMITTED";
+    return (id === null || id === undefined) || String(id) === "NOT_SUBMITTED";
   });
 
   const approvedBatchesRes = await runEmitWithOfflineFallback(["--report-approved-batches"], cfg);
@@ -1224,7 +1240,7 @@ async function runAllGoodOnce(cfg, state) {
 
   const missionArgs = ["--mission-health", "--once"];
   if (cfg.missionHealth?.missionId) missionArgs.push("--mission-id", String(cfg.missionHealth.missionId));
-  if (cfg.missionHealth?.limit != null) missionArgs.push("--mission-limit", String(cfg.missionHealth.limit));
+  if (cfg.missionHealth?.limit !== null && cfg.missionHealth?.limit !== undefined) missionArgs.push("--mission-limit", String(cfg.missionHealth.limit));
   const missionHealth = await runMonitorHealthWithOfflineFallback(missionArgs, cfg);
 
   const simulation = await runEmitWithOfflineFallback(["--check-simulation", "--scan-limit", "200"], cfg);
@@ -1326,7 +1342,7 @@ async function runTick(cfg, state) {
   if (cfg.tasks.missionHealth) {
     const args = ["--mission-health", "--once"];
     if (cfg.missionHealth?.missionId) args.push("--mission-id", String(cfg.missionHealth.missionId));
-    if (cfg.missionHealth?.limit != null) args.push("--mission-limit", String(cfg.missionHealth.limit));
+    if (cfg.missionHealth?.limit !== null && cfg.missionHealth?.limit !== undefined) args.push("--mission-limit", String(cfg.missionHealth.limit));
     out.results.missionHealth = await runMonitorHealthWithOfflineFallback(args, cfg);
     out.results.missionFreeze = await maybeActivateFreezeFromMissionHealth(cfg, state, out.results.missionHealth).catch((e) => ({
       ok: false,
@@ -1406,25 +1422,27 @@ async function runTick(cfg, state) {
     const approvals = [];
     const needsReview = [];
 
-    for (const b of batches) {
-      const batchId = getBatchId(b);
-      const createdAtMs = getBatchCreatedAtMs(b);
-      const amount = getBatchAmount(b);
-      if (!batchId) continue;
-      if (createdAtMs == null) {
-        needsReview.push({ batchId, reason: "missing_created_date", amount });
-        continue;
-      }
-      if (nowMs - createdAtMs < thresholdMs) continue;
-      if (amount == null) {
-        needsReview.push({ batchId, reason: "missing_amount" });
-        continue;
-      }
+  for (const b of batches) {
+    const batchId = getBatchId(b);
+    const createdAtMs = getBatchCreatedAtMs(b);
+    const amount = getBatchAmount(b);
+    if (!batchId) continue;
+    if (createdAtMs === null || createdAtMs === undefined) {
+      needsReview.push({ batchId, reason: "missing_created_date", amount });
+      continue;
+    }
+    if (nowMs - createdAtMs < thresholdMs) continue;
+    if (amount === null || amount === undefined) {
+      needsReview.push({ batchId, reason: "missing_amount" });
+      continue;
+    }
       if (Number.isFinite(twoFaThreshold) && twoFaThreshold > 0 && amount > twoFaThreshold) {
         needsReview.push({ batchId, reason: "above_2fa_threshold", amount, threshold: twoFaThreshold });
         continue;
       }
-      if (cfg.payout.autoApprove.maxBatchAmount != null && amount != null && amount > cfg.payout.autoApprove.maxBatchAmount) {
+      if ((cfg.payout.autoApprove.maxBatchAmount !== null && cfg.payout.autoApprove.maxBatchAmount !== undefined) &&
+          (amount !== null && amount !== undefined) &&
+          amount > cfg.payout.autoApprove.maxBatchAmount) {
         needsReview.push({ batchId, reason: "amount_above_max", amount, max: cfg.payout.autoApprove.maxBatchAmount });
         continue;
       }
@@ -1521,7 +1539,7 @@ async function runTick(cfg, state) {
         if (!batchId) continue;
         if (recipientType !== "payoneer" && recipientType !== "payoneer_id") continue;
 
-        const outPath = path.join(absOutDir, `payoneer_payout_${String(batchId)}.csv`);
+        const outPath = path.join(absOutDir, `payoneer_payout_${String(batchId)}.xls`);
         const already = exported[String(batchId)]?.outPath ? String(exported[String(batchId)].outPath) : null;
         if (already && (await fileExists(already))) continue;
         if (!already && (await fileExists(outPath))) {
@@ -1620,7 +1638,7 @@ async function main() {
   const once = args.once === true;
 
   const loaded = await loadAutonomousConfig({ configPath: args.config ?? args["config"] ?? null });
-  let cfg = resolveRuntimeConfig(args, loaded.config);
+  const cfg = resolveRuntimeConfig(args, loaded.config);
 
   if (isMoneyMovingTasks(cfg)) {
     enforceSwarmLiveHardInvariant({ component: "autonomous-daemon", action: "startup" });
@@ -1642,6 +1660,10 @@ async function main() {
     freeze: persisted?.freeze && typeof persisted.freeze === "object" ? persisted.freeze : { active: false },
     exportedPayoneerBatches: persisted?.exportedPayoneerBatches && typeof persisted.exportedPayoneerBatches === "object" ? persisted.exportedPayoneerBatches : {}
   };
+
+  if (!once) {
+    await startSwarmSupervisorIfEnabled(cfg, state);
+  }
 
   const allGood = args["all-good"] === true || args.allGood === true;
   const allGoodSummary = args["all-good-summary"] === true || args.allGoodSummary === true;

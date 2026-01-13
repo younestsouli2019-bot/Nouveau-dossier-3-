@@ -758,6 +758,12 @@ async function applyPayoutItemUpdate(base44, update) {
           });
           batchCompleted = allSuccess;
           batchFailed = !allSuccess;
+          if (batchCompleted && revenueEventId && revenueCfg.fieldMap.status) {
+            try {
+              await revenueEntity.update(revenueEventId, { [revenueCfg.fieldMap.status]: "confirmed" });
+              revenueUpdated = true;
+            } catch {}
+          }
         }
       }
     }

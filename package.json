@@ -24,7 +24,13 @@
     "autonomous:once": "node ./src/autonomous-daemon.mjs --once",
     "check:all-good": "node ./src/autonomous-daemon.mjs --all-good",
     "check:simulation": "node ./src/emit-revenue-events.mjs --check-simulation",
-    "test": "node --test"
+    "agent:coordinator": "node ./src/agent-coordinator.mjs",
+    "test": "node --test",
+    "lint": "eslint . --ext .js,.mjs",
+    "lint:fix": "eslint . --ext .js,.mjs --fix",
+    "crypto:prepare:cryptobox": "node ./scripts/prepare-cryptobox-instruction.mjs",
+    "swarm:replenish": "node ./scripts/replenish-agents.mjs",
+    "swarm:supervise": "node ./src/swarm/supervisor.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.13",
@@ -36,6 +42,10 @@
     "ethers": "^6.0.0",
     "express": "^5.2.1",
     "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.2",
+    "eslint-formatter-compact": "^9.0.1",
+    "globals": "^17.0.0"
   }
 }
-

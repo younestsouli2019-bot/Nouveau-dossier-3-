@@ -1,0 +1,13 @@
+{
+  "to": "customersupport@payoneer.com",
+  "subject": "Inquiry Regarding Held Funds - Ref: BATCH_PAYONEER_X_1767529200",
+  "from_name": "Younes Tsouli",
+  "from_email": "younestsouli2019@gmail.com",
+  "account_id": "85538995",
+  "amount_usd": 1200,
+  "batch_ref": "BATCH_PAYONEER_X_1767529200",
+  "purpose": "Services rendered – Q1 2026 consulting",
+  "reference": "INV-2026-001",
+  "note": "Settlement per invoice INV-2026-001",
+  "attachment_path": "c:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\PAYONEER_REMITTANCE_BATCH_PAYONEER_X_1767529200.txt"
+}

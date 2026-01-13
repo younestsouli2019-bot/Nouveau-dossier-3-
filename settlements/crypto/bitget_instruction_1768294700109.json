@@ -1,0 +1,11 @@
+{
+  "provider": "bitget",
+  "action": "withdraw",
+  "coin": "TON",
+  "network": "TON",
+  "address": "UQDIrlJp7NmV-5mief8eNB0b0sYGO0L62Vu7oGX49UXtqlDQ",
+  "amount": 0.15,
+  "status": "WAITING_MANUAL_EXECUTION",
+  "creds_present": true,
+  "origin": "in_house"
+}

@@ -98,6 +98,7 @@ class Base44Pusher {
     try {
       const response = await fetch(url, options);
       const text = await response.text();
+      const contentType = response.headers?.get('content-type') || '';
       
       let data;
       try {
@@ -112,10 +113,11 @@ class Base44Pusher {
             this.log(`Method ${method} not allowed (405). Retrying with POST...`, 'warning');
             return this.request(endpoint, 'POST', body);
         }
-
-        throw new Error(
-          `Base44 API error: ${response.status} - ${JSON.stringify(data)}`
-        );
+        const isHtml = contentType.includes('text/html') || (typeof text === 'string' && text.toLowerCase().includes('<html'));
+        if (isHtml) {
+          throw new Error(`Base44 API html_error: ${response.status} - html_response_detected`);
+        }
+        throw new Error(`Base44 API error: ${response.status} - ${JSON.stringify(data)}`);
       }
 
       return data;
@@ -130,7 +132,7 @@ class Base44Pusher {
     try {
       return await this.request(`/entities/${name}`);
     } catch (error) {
-      if (error.message.includes('404')) {
+      if (error.message.includes('404') || error.message.includes('html_error')) {
         return null;
       }
       throw error;

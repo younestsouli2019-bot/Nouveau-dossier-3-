@@ -1274,6 +1274,12 @@ async function createPayoutBatchesFromEarnings(
                     [payoutBatchCfg.fieldMap.notes]: {
                       beneficiary: benefKey || null,
                       recipient_type: recipType || null,
+                      recipient_email: resolveRecipientAddress(recipType, (list[0]?.[earningCfg.fieldMap.metadata] ?? null), benefKey || null) || null,
+                      payer_email:
+                        (list[0]?.[earningCfg.fieldMap.metadata]?.payer_email ??
+                          list[0]?.[earningCfg.fieldMap.metadata]?.client_email ??
+                          list[0]?.[earningCfg.fieldMap.metadata]?.source_email ??
+                          null),
                       created_by: "emit-revenue-events",
                       earning_count: list.length
                     }
@@ -2008,6 +2014,27 @@ function csvEscape(value) {
   return s;
 }
 
+function buildXls({ headers, rows, sheetName = "Payoneer" }) {
+  const esc = (v) => String(v ?? "");
+  const headerRow = headers.map((h) => `<Cell><Data ss:Type="String">${esc(h)}</Data></Cell>`).join("");
+  const dataRows = rows
+    .map((r) => `<Row>${r.map((v) => `<Cell><Data ss:Type="String">${esc(v)}</Data></Cell>`).join("")}</Row>`)
+    .join("");
+  return `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:o="urn:schemas-microsoft-com:office:office"
+  xmlns:x="urn:schemas-microsoft-com:office:excel"
+  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+  <Worksheet ss:Name="${esc(sheetName)}">
+    <Table>
+      <Row>${headerRow}</Row>
+      ${dataRows}
+    </Table>
+  </Worksheet>
+</Workbook>\n`;
+}
+
 async function exportPayoneerBatch(base44, { batchId, outPath }) {
   const payoutBatchCfg = getPayoutBatchConfigFromEnv();
   const batchEntity = base44.asServiceRole.entities[payoutBatchCfg.entityName];
@@ -2021,8 +2048,7 @@ async function exportPayoneerBatch(base44, { batchId, outPath }) {
   }
 
   const items = await getPayoutItemsForBatch(base44, batchId);
-  const lines = [];
-  lines.push([
+  const headers = [
     "recipient",
     "recipient_email",
     "recipient_name",
@@ -2035,11 +2061,15 @@ async function exportPayoneerBatch(base44, { batchId, outPath }) {
     "payer_email",
     "payer_company",
     "purpose",
-    "reference"
-  ].map(csvEscape).join(","));
+    "reference",
+    "prq_link"
+  ];
+  const rows = [];
   const payoutItemCfg = getPayoutItemConfigFromEnv();
   const earningCfg = getEarningConfigFromEnv();
   const earningEntity = base44.asServiceRole.entities[earningCfg.entityName];
+  const token = process.env.PAYONEER_PRQ_TOKEN || notes?.prq_token || process.env.PAYONEER_TOKEN || "";
+  const prqLink = token ? `https://link.payoneer.com/Token?t=${String(token)}&src=prqLink` : "";
   for (const it of items) {
     const recipient = payoutItemCfg.fieldMap.recipient ? it?.[payoutItemCfg.fieldMap.recipient] : null;
     const amount = payoutItemCfg.fieldMap.amount ? it?.[payoutItemCfg.fieldMap.amount] : null;
@@ -2065,7 +2095,7 @@ async function exportPayoneerBatch(base44, { batchId, outPath }) {
         reference = reference || meta.reference || meta.invoice || reference;
       }
     }
-    lines.push([
+    rows.push([
       recipient,
       recipientEmail,
       recipientName,
@@ -2078,17 +2108,18 @@ async function exportPayoneerBatch(base44, { batchId, outPath }) {
       payerEmail,
       payerCompany,
       purpose,
-      reference
-    ].map(csvEscape).join(","));
+      reference,
+      prqLink
+    ]);
   }
 
-  const csv = `${lines.join("\n")}\n`;
-  const targetPath = outPath ? String(outPath) : `payoneer_payout_${String(batchId)}.csv`;
+  const xls = buildXls({ headers, rows, sheetName: "Payoneer" });
+  const targetPath = outPath ? String(outPath) : `payoneer_payout_${String(batchId)}.xls`;
   if (isUnsafePath(targetPath)) throw new Error("LIVE MODE NOT GUARANTEED (unsafe export path)");
   const absTargetPath = path.resolve(process.cwd(), targetPath);
   fs.mkdirSync(path.dirname(absTargetPath), { recursive: true });
-  fs.writeFileSync(absTargetPath, csv, "utf8");
-  const bytes = Buffer.byteLength(csv, "utf8");
+  fs.writeFileSync(absTargetPath, xls, "utf8");
+  const bytes = Buffer.byteLength(xls, "utf8");
   const digest = sha256FileSync(absTargetPath);
   const liveProof = { ...buildLiveProofBase("export_payoneer_batch"), internalPayoutBatchId: String(batchId), outPath: absTargetPath, bytes, sha256: digest };
   return { batchId: String(batchId), outPath: absTargetPath, bytes, itemCount: items.length, sha256: digest, liveProof };
@@ -2143,47 +2174,60 @@ async function exportBankWireBatch(base44, { batchId, outPath, destination }) {
   }
   if (!account) throw new Error("Missing destination account for bank wire export");
 
-  const header = [
+  const headers = [
     "batch_id",
     "item_id",
     "amount",
     "currency",
     "recipient",
+    "recipient_email",
     "reference",
+    "payer_name",
+    "payer_email",
+    "payer_company",
+    "purpose",
     "bank_beneficiary_name",
     "bank_name",
     "bank_swift",
     "bank_account"
   ];
-  const lines = [header.map(csvEscape).join(",")];
+  const rows = [];
   for (const it of items) {
     const itemId = payoutItemCfg.fieldMap.itemId ? it?.[payoutItemCfg.fieldMap.itemId] : null;
     const recipient = payoutItemCfg.fieldMap.recipient ? it?.[payoutItemCfg.fieldMap.recipient] : null;
     const amount = payoutItemCfg.fieldMap.amount ? it?.[payoutItemCfg.fieldMap.amount] : null;
     const currency = payoutItemCfg.fieldMap.currency ? it?.[payoutItemCfg.fieldMap.currency] : null;
-    lines.push(
-      [
-        batchId,
-        itemId,
-        amount,
-        currency,
-        recipient,
-        batchId,
-        beneficiaryName,
-        bank,
-        swift,
-        account
-      ].map(csvEscape).join(",")
-    );
+    const recipientEmail = recipient && String(recipient).includes("@") ? String(recipient) : "";
+    const payerName = notes?.payer_name ?? process.env.SETTLEMENT_REQUESTOR_NAME ?? "";
+    const payerEmail = notes?.payer_email ?? process.env.SETTLEMENT_REQUESTOR_EMAIL ?? "";
+    const payerCompany = notes?.payer_company ?? process.env.SETTLEMENT_REQUESTOR_COMPANY ?? "";
+    const purpose = notes?.purpose ?? process.env.SETTLEMENT_PURPOSE ?? "";
+    rows.push([
+      batchId,
+      itemId,
+      amount,
+      currency,
+      recipient,
+      recipientEmail,
+      batchId,
+      payerName,
+      payerEmail,
+      payerCompany,
+      purpose,
+      beneficiaryName,
+      bank,
+      swift,
+      account
+    ]);
   }
 
-  const csv = `${lines.join("\n")}\n`;
-  const targetPath = outPath ? String(outPath) : `bank_wire_payout_${String(batchId)}.csv`;
+  const xls = buildXls({ headers, rows, sheetName: "BankWire" });
+  const targetPath = outPath ? String(outPath) : `bank_wire_payout_${String(batchId)}.xls`;
   if (isUnsafePath(targetPath)) throw new Error("LIVE MODE NOT GUARANTEED (unsafe export path)");
   const absTargetPath = path.resolve(process.cwd(), targetPath);
   fs.mkdirSync(path.dirname(absTargetPath), { recursive: true });
-  fs.writeFileSync(absTargetPath, csv, "utf8");
-  const bytes = Buffer.byteLength(csv, "utf8");
+  fs.writeFileSync(absTargetPath, xls, "utf8");
+  const bytes = Buffer.byteLength(xls, "utf8");
   const digest = sha256FileSync(absTargetPath);
   const liveProof = { ...buildLiveProofBase("export_bank_wire_batch"), internalPayoutBatchId: String(batchId), outPath: absTargetPath, bytes, sha256: digest };
   return {

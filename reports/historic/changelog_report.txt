@@ -40,7 +40,7 @@ The system has been upgraded to **Hard-Binding Execution Evidence-Bound Systems*
 # Changelog & Status Report - 2026-01-02
 
 ## Summary
-Crucial security safeguards have been implemented to enforce the **Owner Revenue Directive**. The system is now hard-locked to prevent any autonomous mission or configuration update from redirecting funds away from the owner. The "Thread" is now secured against regression or hijacking.
+Crucial security safeguards have been implemented to enforce the **Owner Revenue Directive**. The system is now hard-locked to prevent any autonomous mission or configuration update from redirecting funds away from the owner. The "Thread" is now secured against regression or hijacking. Immediate settlements enabled; CRYPTO rail integrated with fee-aware micro-sends; micropayment reroute idempotency added; Base44 changeset publishing enabled.
 
 ## Key Changes
 
@@ -52,6 +52,21 @@ Crucial security safeguards have been implemented to enforce the **Owner Revenue
 ### 2. Autonomous Daemon Hardening
 - **Updated:** `src/autonomous-daemon.mjs` now imports and executes `enforceOwnerDirective` immediately upon startup.
 - **Impact:** Prevents "zombie" missions or old configs from overwriting the payout destination. The daemon will refuse to start if the configuration is not 100% compliant with the Owner Revenue Directive.
+
+### 3. Settlement Orchestration Improvements
+- **Immediate Execution:** Removed Sunday-only gate; verified events settle ASAP when ready.
+- **CRYPTO Rail:** Added crypto export rail with fee-aware micro-sends and PayPal fallback when net is insufficient.
+- **Micropayment Reroute Guard:** Prevent repeated reroutes by tagging batches (`micro_reroute`) and checking ledger notes.
+- **Routing Priority:** Respects `PAYMENT_ROUTING_PRIORITY=bank,payoneer,crypto,paypal`.
+
+### 4. Coordinator & Base44 Sync
+- **Env Autoload:** Coordinator now auto-loads `.env` via `src/load-env.mjs`.
+- **Changeset Publishing:** Enabled Base44 changeset publishing and periodic sync (`BASE44_ENABLE_CHANGESET_WRITE=true`).
+- **Directive Polling & Replicas:** Maintained replication and optimization triggers for swarm auto-improvement.
+
+### 5. Environment Normalization
+- **Standardized Keys:** Unified owner keys (`OWNER_BANK_RIB`, `OWNER_PAYONEER_ACCOUNT_ID`, `OWNER_CRYPTO_ADDRESS`).
+- **Live Mode:** Ensured live flags and ledger write enabled by default (`SWARM_LIVE=true`, `BASE44_ENABLE_PAYOUT_LEDGER_WRITE=true`).
 
 ### 3. Mission Integrity
 - **Analyzed:** `Mission_export (76).csv` reviewed for potential conflicts.

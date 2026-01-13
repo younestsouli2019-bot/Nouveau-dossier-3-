@@ -49,8 +49,29 @@ function normalizeEarningRow(cfg, row) {
   }
 }
 
-function buildPayoneerCsv({ items, batchId, payer }) {
-  const header = [
+function buildXls({ headers, rows, sheetName = 'Payoneer' }) {
+  const esc = (v) => String(v ?? '')
+  const headerRow = headers.map((h) => `<Cell><Data ss:Type="String">${esc(h)}</Data></Cell>`).join('')
+  const dataRows = rows
+    .map((r) => `<Row>${r.map((v) => `<Cell><Data ss:Type="String">${esc(v)}</Data></Cell>`).join('')}</Row>`)
+    .join('')
+  return `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:o="urn:schemas-microsoft-com:office:office"
+  xmlns:x="urn:schemas-microsoft-com:office:excel"
+  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+  <Worksheet ss:Name="${esc(sheetName)}">
+    <Table>
+      <Row>${headerRow}</Row>
+      ${dataRows}
+    </Table>
+  </Worksheet>
+</Workbook>\n`
+}
+
+function buildPayoneerXls({ items, batchId, payer }) {
+  const headers = [
     'recipient',
     'recipient_email',
     'recipient_name',
@@ -63,9 +84,12 @@ function buildPayoneerCsv({ items, batchId, payer }) {
     'payer_email',
     'payer_company',
     'purpose',
-    'reference'
+    'reference',
+    'prq_link'
   ]
-  const lines = [header.map(csvEscape).join(',')]
+  const token = process.env.PAYONEER_PRQ_TOKEN || ''
+  const prqLink = token ? `https://link.payoneer.com/Token?t=${String(token)}&src=prqLink` : ''
+  const rows = []
   for (const it of items) {
     const recipient = process.env.OWNER_PAYONEER_EMAIL || process.env.PAYONEER_EMAIL || ''
     const recipientEmail = recipient && String(recipient).includes('@') ? recipient : ''
@@ -77,25 +101,24 @@ function buildPayoneerCsv({ items, batchId, payer }) {
     const payerCompany = payer.company || process.env.SETTLEMENT_REQUESTOR_COMPANY || ''
     const purpose = payer.purpose || process.env.SETTLEMENT_PURPOSE || 'Service/Settlement'
     const reference = payer.reference || process.env.SETTLEMENT_REFERENCE || batchId
-    lines.push(
-      [
-        recipient,
-        recipientEmail,
-        recipientName,
-        it.amount,
-        it.currency,
-        batchId,
-        itemId,
-        note,
-        payerName,
-        payerEmail,
-        payerCompany,
-        purpose,
-        reference
-      ].map(csvEscape).join(',')
-    )
+    rows.push([
+      recipient,
+      recipientEmail,
+      recipientName,
+      it.amount,
+      it.currency,
+      batchId,
+      itemId,
+      note,
+      payerName,
+      payerEmail,
+      payerCompany,
+      purpose,
+      reference,
+      prqLink
+    ])
   }
-  return `${lines.join('\n')}\n`
+  return buildXls({ headers, rows, sheetName: 'Payoneer' })
 }
 
 function inferPayerFromItems(items) {
@@ -147,11 +170,11 @@ async function main() {
   }
   const batchId = `PAYO_${Date.now()}`
   const payer = inferPayerFromItems(selected)
-  const csv = buildPayoneerCsv({ items: selected, batchId, payer })
+  const xls = buildPayoneerXls({ items: selected, batchId, payer })
   const outDir = path.resolve('settlements/payoneer')
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true })
-  const targetPath = path.join(outDir, `payoneer_payout_${batchId}.csv`)
-  fs.writeFileSync(targetPath, csv, 'utf8')
+  const targetPath = path.join(outDir, `payoneer_payout_${batchId}.xls`)
+  fs.writeFileSync(targetPath, xls, 'utf8')
   const receiptDir = path.join(outDir, 'receipts')
   if (!fs.existsSync(receiptDir)) fs.mkdirSync(receiptDir, { recursive: true })
   const receipt = {
@@ -159,7 +182,7 @@ async function main() {
     count: selected.length,
     amount_total_usd: Number(total.toFixed(2)),
     currency,
-    csv_path: targetPath,
+    xls_path: targetPath,
     payer,
     beneficiary,
     status: 'SUBMITTED_MANUAL',

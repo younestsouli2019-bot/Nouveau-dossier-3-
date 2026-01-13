@@ -1,0 +1,1 @@
+node scripts/payout-paypal-once.mjs --amount 50 --email younestsouli2019@gmail.com --note "Force Payout"

@@ -1,0 +1,17 @@
+{
+  "batch_id": "PAYO_1768242474745",
+  "count": 3,
+  "amount_total_usd": 150,
+  "currency": "USD",
+  "xls_path": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\payoneer\\payoneer_payout_PAYO_1768242474745.xls",
+  "payer": {
+    "name": "Younes Tsouli",
+    "email": "younestsouli2019@gmail.com",
+    "company": "Private",
+    "purpose": "Services rendered – Q1 2026 consulting",
+    "reference": "INV-2026-001"
+  },
+  "beneficiary": "younestsouli2019@gmail.com",
+  "status": "SUBMITTED_MANUAL",
+  "created_at": "2026-01-12T18:27:54.747Z"
+}

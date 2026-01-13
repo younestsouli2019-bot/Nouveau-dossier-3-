@@ -18,15 +18,21 @@ export class BinanceClient {
     this.baseURL = baseURL;
     this.client = new Spot(apiKey, apiSecret, { baseURL });
     this._offsetReady = false;
+    this._timeOffset = 0;
+    this._lastSync = 0;
   }
 
-  async ensureTimeOffset() {
-    if (this._offsetReady) return;
+  async ensureTimeOffset(force = false) {
+    const now = Date.now();
+    if (!force && this._offsetReady && now - this._lastSync < 180000) return;
     const { data } = await this.client.time();
-    // Calculate offset: how much to add to local time to get server time
-    this._timeOffset = data.serverTime - Date.now();
-    console.log(`[BinanceClient] Time offset: ${this._timeOffset}ms`);
+    this._timeOffset = Number(data?.serverTime || now) - now;
+    this._lastSync = now;
     this._offsetReady = true;
+  }
+
+  ms() {
+    return Date.now() + (this._timeOffset || 0);
   }
 
   async withdrawUSDTBEP20({ address, amount, name = 'AutonomousSettlement' }) {
@@ -40,15 +46,20 @@ export class BinanceClient {
   }
 
   async withdraw({ coin, address, amount, network, name }) {
+    await this.ensureTimeOffset();
+    const params = {
+      coin: String(coin || 'USDT'),
+      address: String(address),
+      amount: String(amount),
+      network: String(network || 'BSC'),
+      name: name ? String(name) : undefined,
+      recvWindow: 60000,
+      timestamp: this.ms()
+    };
     try {
-      await this.ensureTimeOffset();
-      // Set correct timestamp for this request
-      const ts = Date.now() + this._timeOffset - 2000; // subtract 2s buffer
-      const opts = { network, name, recvWindow: 60000, timestamp: ts }; // pass timestamp explicitly
-      const res = await this.client.withdraw(coin, address, String(amount), opts);
-      return res.data;
+      const r = await this._robustPost('/sapi/v1/capital/withdraw/apply', params);
+      return r;
     } catch (e) {
-      console.error('[BinanceClient] withdraw error:', e.response?.data || e.message);
       throw e;
     }
   }
@@ -60,8 +71,7 @@ export class BinanceClient {
   }
 
   async withdrawUsingServerTime({ coin, address, amount, network, name }) {
-    const { data: t } = await this.client.time();
-    const timestamp = Number(t?.serverTime || Date.now());
+    await this.ensureTimeOffset(true);
     const params = {
       coin: String(coin || 'USDT'),
       address: String(address),
@@ -69,10 +79,39 @@ export class BinanceClient {
       network: String(network || 'BSC'),
       name: name ? String(name) : undefined,
       recvWindow: 60000,
-      timestamp
+      timestamp: this.ms()
     };
-    const { qs, sig } = this._signQuery(params);
-    const path = `/sapi/v1/capital/withdraw/apply`;
+    return this._robustPost('/sapi/v1/capital/withdraw/apply', params);
+  }
+
+  async fetchWithdrawalsUsingServerTime(coin = 'USDT', startTime = null) {
+    await this.ensureTimeOffset(true);
+    const params = { coin: String(coin || 'USDT'), timestamp: this.ms(), recvWindow: 60000 };
+    if (startTime != null) params.startTime = Number(startTime);
+    return this._robustGet('/sapi/v1/capital/withdraw/history', params);
+  }
+
+  async fetchWithdrawals(coin = 'USDT', since = null) {
+    try {
+      await this.ensureTimeOffset();
+      const params = { coin: String(coin || 'USDT'), timestamp: this.ms(), recvWindow: 60000 };
+      if (since) params.startTime = Number(since);
+      const out = await this._robustGet('/sapi/v1/capital/withdraw/history', params);
+      return Array.isArray(out) ? out : [];
+    } catch {
+      return [];
+    }
+  }
+
+  _signQuery(params) {
+    const qs = new URLSearchParams(params).toString();
+    const sig = crypto.createHmac('sha256', String(this.apiSecret || '')).update(qs).digest('hex');
+    return { qs, sig };
+  }
+
+  async _robustPost(path, params) {
+    const p1 = { ...params, timestamp: this.ms(), recvWindow: Number(params.recvWindow || 60000) };
+    const { qs, sig } = this._signQuery(p1);
     const body = `${qs}&signature=${sig}`;
     const options = {
       hostname: this.baseURL.replace('https://', ''),
@@ -81,6 +120,51 @@ export class BinanceClient {
       method: 'POST',
       headers: { 'X-MBX-APIKEY': String(this.apiKey || ''), 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body) }
     };
+    const res1 = await this._request(options, body);
+    const msg = String(res1?.msg || res1?.message || '');
+    if (msg.includes('-1021')) {
+      await this.ensureTimeOffset(true);
+      const p2 = { ...params, timestamp: this.ms(), recvWindow: Number(params.recvWindow || 60000) };
+      const s2 = this._signQuery(p2);
+      const b2 = `${s2.qs}&signature=${s2.sig}`;
+      return this._request({ ...options, headers: { ...options.headers, 'Content-Length': Buffer.byteLength(b2) } }, b2);
+    }
+    if (msg.includes('-1022')) {
+      const p3 = { ...params, timestamp: this.ms(), recvWindow: Number(params.recvWindow || 60000) };
+      const s3 = this._signQuery(p3);
+      const b3 = `${s3.qs}&signature=${s3.sig}`;
+      return this._request({ ...options, headers: { ...options.headers, 'Content-Length': Buffer.byteLength(b3) } }, b3);
+    }
+    return res1;
+  }
+
+  async _robustGet(path, params) {
+    const p1 = { ...params, timestamp: this.ms(), recvWindow: Number(params.recvWindow || 60000) };
+    const { qs, sig } = this._signQuery(p1);
+    const options = {
+      hostname: this.baseURL.replace('https://', ''),
+      port: 443,
+      path: `${path}?${qs}&signature=${sig}`,
+      method: 'GET',
+      headers: { 'X-MBX-APIKEY': String(this.apiKey || '') }
+    };
+    const res1 = await this._request(options);
+    const msg = String(res1?.msg || res1?.message || '');
+    if (msg.includes('-1021')) {
+      await this.ensureTimeOffset(true);
+      const p2 = { ...params, timestamp: this.ms(), recvWindow: Number(params.recvWindow || 60000) };
+      const s2 = this._signQuery(p2);
+      return this._request({ ...options, path: `${path}?${s2.qs}&signature=${s2.sig}` });
+    }
+    if (msg.includes('-1022')) {
+      const p3 = { ...params, timestamp: this.ms(), recvWindow: Number(params.recvWindow || 60000) };
+      const s3 = this._signQuery(p3);
+      return this._request({ ...options, path: `${path}?${s3.qs}&signature=${s3.sig}` });
+    }
+    return res1;
+  }
+
+  _request(options, body = null) {
     return new Promise((resolve, reject) => {
       const req = https.request(options, (res) => {
         let data = '';
@@ -88,9 +172,6 @@ export class BinanceClient {
         res.on('end', () => {
           try {
             const j = JSON.parse(String(data || '{}'));
-            if (j && j.code && j.code !== '000000' && j.code !== 200) {
-              return reject(new Error(JSON.stringify(j)));
-            }
             resolve(j);
           } catch (e) {
             reject(e);
@@ -98,55 +179,9 @@ export class BinanceClient {
         });
       });
       req.on('error', reject);
-      req.write(body);
+      if (body) req.write(body);
       req.end();
     });
-  }
-
-  async fetchWithdrawalsUsingServerTime(coin = 'USDT', startTime = null) {
-    const { data: t } = await this.client.time();
-    const timestamp = Number(t?.serverTime || Date.now());
-    const params = { coin: String(coin || 'USDT'), timestamp, recvWindow: 60000 };
-    if (startTime != null) params.startTime = Number(startTime);
-    const { qs, sig } = this._signQuery(params);
-    const path = `/sapi/v1/capital/withdraw/history?${qs}&signature=${sig}`;
-    const options = {
-      hostname: this.baseURL.replace('https://', ''),
-      port: 443,
-      path,
-      method: 'GET',
-      headers: { 'X-MBX-APIKEY': String(this.apiKey || '') }
-    };
-    return new Promise((resolve, reject) => {
-      const req = https.request(options, (res) => {
-        let data = '';
-        res.on('data', (c) => (data += c));
-        res.on('end', () => {
-          try {
-            const j = JSON.parse(String(data || '[]'));
-            resolve(Array.isArray(j) ? j : []);
-          } catch (e) {
-            reject(e);
-          }
-        });
-      });
-      req.on('error', reject);
-      req.end();
-    });
-  }
-
-  async fetchWithdrawals(coin = 'USDT', since = null) {
-    try {
-      await this.ensureTimeOffset();
-      this.client.timestamp = Date.now() + this._timeOffset - 2000;
-      const params = { coin };
-      if (since) params.startTime = since;
-      const res = await this.client.capital().withdrawHistory(params);
-      return res.data || [];
-    } catch (e) {
-      console.error('[BinanceClient] fetchWithdrawals error:', e.response?.data || e.message);
-      return [];
-    }
   }
 }
 

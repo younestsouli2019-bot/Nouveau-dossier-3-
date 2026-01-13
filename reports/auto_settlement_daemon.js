@@ -1,14 +1,7 @@
-// scripts/auto-settlement-daemon.mjs
-// AUTONOMOUS SETTLEMENT: Immediate owner payouts with ZERO unnecessary delays
-
-import {
-  OWNER_ACCOUNTS,
-  enforceOwnerDirective,
-  selectOptimalOwnerAccount,
-  generateOwnerPayoutConfig,
-  validateOwnerDirectiveSetup,
-  preExecutionOwnerCheck
-} from '../src/owner-directive.mjs';
+import { buildBase44ServiceClient } from '../src/base44-client.mjs';
+import { getRevenueConfigFromEnv } from '../src/base44-revenue.mjs';
+import { createPayPalPayoutBatch } from '../src/paypal-api.mjs';
+import { validateOwnerDirectiveSetup, preExecutionOwnerCheck, enforceOwnerDirective } from '../src/owner-directive.mjs';
 
 // ============================================================================
 // CONFIGURATION
@@ -16,10 +9,14 @@ import {
 
 const CONFIG = {
   // Settlement frequency
-  CHECK_INTERVAL_MS: 60 * 1000, // Check every 1 minute
+  CHECK_INTERVAL_MS: Number(process.env.SETTLEMENT_CHECK_INTERVAL_MS ?? 60 * 1000) || 60 * 1000,
   
   // Auto-approval thresholds (no manual approval needed)
-  AUTO_APPROVE_THRESHOLD: 5000, // USD - auto-approve up to this amount
+  AUTO_APPROVE_THRESHOLD: Number(process.env.AUTO_APPROVE_THRESHOLD_USD ?? 5000) || 5000,
+  AUTO_APPROVE_ROLES: String(process.env.AUTO_APPROVE_ROLES ?? "finance,compliance")
+    .split(/[|,; ]/g)
+    .map((x) => x.trim().toLowerCase())
+    .filter(Boolean),
   
   // Batch configuration
   MIN_BATCH_SIZE: 1, // Settle even single events
@@ -140,6 +137,8 @@ async function performSettlementCycle() {
   console.log(`\n🔄 [${new Date().toISOString()}] Starting settlement cycle...`);
 
   try {
+    await executeApprovedBatchesSunday();
+    await retryAndRerouteFailedPayouts();
     // Step 1: Fetch verified revenue events ready for settlement
     const readyEvents = await fetchReadyForSettlement();
     
@@ -239,8 +238,7 @@ function groupEventsByRail(events) {
   const batches = {};
 
   for (const event of events) {
-    const account = selectOptimalOwnerAccount(event.amount, event.currency);
-    const rail = account.type;
+    const rail = selectOptimalOwnerAccount(event.amount, event.currency).type;
 
     if (!batches[rail]) {
       batches[rail] = [];
@@ -255,11 +253,11 @@ function groupEventsByRail(events) {
 /**
  * Processes a batch of events for a specific rail
  */
-async function processRailBatch(rail, events) {
+async function processRailBatch(rail, events, options = {}) {
   console.log(`⚡ Processing ${rail} batch: ${events.length} events`);
 
   // Step 1: Create payout batch
-  const batch = await createPayoutBatch(rail, events);
+  const batch = await createPayoutBatch(rail, events, options);
   console.log(`📦 Created batch: ${batch.batch_id}`);
 
   // Step 2: Auto-approve (if under threshold)
@@ -269,8 +267,14 @@ async function processRailBatch(rail, events) {
     console.log(`✅ Auto-approving batch (${totalAmount} ${events[0]?.currency || 'USD'})`);
     await approveBatch(batch.batch_id);
   } else {
-    console.log(`⏳ Batch requires manual approval (${totalAmount} ${events[0]?.currency || 'USD'})`);
-    return; // Wait for manual approval
+    const role = String(process.env.AUTONOMOUS_ROLE ?? process.env.RUNTIME_ROLE ?? "").toLowerCase()
+    if (role && CONFIG.AUTO_APPROVE_ROLES.includes(role)) {
+      console.log(`✅ Role-based auto-approve (${role}) for amount ${totalAmount}`)
+      await approveBatch(batch.batch_id);
+    } else {
+      console.log(`⏳ Batch requires manual approval (${totalAmount} ${events[0]?.currency || 'USD'})`);
+      return; // Wait for manual approval
+    }
   }
 
   // Step 3: Validate owner directive (CRITICAL)
@@ -282,11 +286,12 @@ async function processRailBatch(rail, events) {
     throw error;
   }
 
-  // Step 4: Execute settlement
-  await executeSettlement(rail, batch);
-  
-  // Step 5: Mark events as settled
-  await markEventsSettled(events.map(e => e.id), batch.batch_id);
+  if (CONFIG.ENABLE_IMMEDIATE_SETTLEMENT || isSundayNow()) {
+    await executeSettlement(rail, batch);
+    await markEventsSettled(events.map(e => e.id), batch.batch_id);
+  } else {
+    console.log('⏳ Execution scheduled for Sunday');
+  }
 
   state.markSettlement(totalAmount);
   console.log(`✅ Settled ${events.length} events via ${rail}`);
@@ -299,10 +304,16 @@ async function processRailBatch(rail, events) {
 /**
  * Creates a payout batch in the ledger
  */
-async function createPayoutBatch(rail, events) {
-  const account = OWNER_ACCOUNTS[rail.toLowerCase().replace('_wire', '')];
+async function createPayoutBatch(rail, events, options = {}) {
   const totalAmount = events.reduce((sum, e) => sum + e.amount, 0);
   const currency = events[0]?.currency || 'USD';
+  const ownerAccounts = getOwnerAccounts();
+  const recipient =
+    rail === 'PAYPAL'
+      ? ownerAccounts.paypal
+      : rail === 'BANK_WIRE'
+        ? ownerAccounts.bank.rib
+        : ownerAccounts.payoneer.accountId;
 
   const batch = {
     batch_id: `BATCH_${rail}_${Date.now()}`,
@@ -311,9 +322,17 @@ async function createPayoutBatch(rail, events) {
     currency,
     status: 'pending_approval',
     revenue_event_ids: events.map(e => e.id),
-    items: events.map(e => generateOwnerPayoutConfig(e.amount, e.currency)),
+    items: events.map(e => ({
+      amount: e.amount,
+      currency: e.currency,
+      recipient,
+      recipient_type: 'owner',
+      sender_item_id: `ITEM_${Date.now()}_${Math.floor(Math.random() * 1e9)}`,
+      revenue_event_id: e.id
+    })),
     created_at: new Date().toISOString(),
-    owner_directive_enforced: true
+    owner_directive_enforced: true,
+    micro_reroute: options?.microReroute === true
   };
 
   // Validate all destinations
@@ -328,8 +347,35 @@ async function createPayoutBatch(rail, events) {
     currency
   });
 
-  // TODO: Write to Base44 ledger
-  // await base44.PayoutBatch.create(batch);
+  if (shouldWritePayoutLedger()) {
+    const base44 = buildBase44ServiceClient();
+    const payoutBatchEntity = base44.asServiceRole.entities['PayoutBatch'];
+    const payoutItemEntity = base44.asServiceRole.entities['PayoutItem'];
+    const created = await payoutBatchEntity.create({
+      batch_id: batch.batch_id,
+      status: 'pending_approval',
+      total_amount: totalAmount,
+      currency,
+      notes: { recipient, recipient_type: 'owner', micro_reroute: options?.microReroute === true },
+      payout_method: rail,
+      revenue_event_ids: batch.revenue_event_ids,
+      owner_directive_enforced: true,
+      created_at: batch.created_at
+    });
+    for (const it of batch.items) {
+      await payoutItemEntity.create({
+        item_id: it.sender_item_id,
+        batch_id: batch.batch_id,
+        status: 'pending',
+        amount: it.amount,
+        currency: it.currency,
+        recipient: it.recipient,
+        recipient_type: it.recipient_type,
+        revenue_event_id: it.revenue_event_id,
+        created_at: new Date().toISOString()
+      }).catch(() => null);
+    }
+  }
 
   return batch;
 }
@@ -340,12 +386,19 @@ async function createPayoutBatch(rail, events) {
 async function approveBatch(batchId) {
   console.log(`✅ Approving batch: ${batchId}`);
   
-  // TODO: Update Base44 ledger
-  // await base44.PayoutBatch.update(batchId, {
-  //   status: 'approved',
-  //   approved_at: new Date().toISOString(),
-  //   approved_by: 'AUTO_SETTLEMENT_DAEMON'
-  // });
+  if (shouldWritePayoutLedger()) {
+    const base44 = buildBase44ServiceClient();
+    const entity = base44.asServiceRole.entities['PayoutBatch'];
+    const recs = await entity.filter({ batch_id: String(batchId) }, "-created_date", 1, 0);
+    const id = Array.isArray(recs) && recs[0]?.id ? recs[0].id : null;
+    if (id) {
+      await entity.update(id, {
+        status: 'approved',
+        approved_at: new Date().toISOString(),
+        notes: { auto_approved: true }
+      }).catch(() => null);
+    }
+  }
   
   return true;
 }
@@ -366,6 +419,9 @@ async function executeSettlement(rail, batch) {
     case 'PAYONEER':
       return await executePayoneerSettlement(batch);
     
+    case 'CRYPTO':
+      return await executeCryptoSettlement(batch);
+    
     default:
       throw new Error(`Unsupported rail: ${rail}`);
   }
@@ -377,39 +433,54 @@ async function executeSettlement(rail, batch) {
 async function executePayPalSettlement(batch) {
   console.log('💳 Executing PayPal payout...');
 
-  // TODO: Call PayPal Payouts API
-  // const paypalClient = getPayPalClient();
-  // const response = await paypalClient.createPayout({
-  //   sender_batch_header: {
-  //     sender_batch_id: batch.batch_id,
-  //     email_subject: 'Revenue Settlement',
-  //     recipient_type: 'EMAIL'
-  //   },
-  //   items: batch.items.map(item => ({
-  //     recipient_type: 'EMAIL',
-  //     amount: { value: item.amount, currency: item.currency },
-  //     receiver: item.recipient,
-  //     note: item.note,
-  //     sender_item_id: item.sender_item_id
-  //   }))
-  // });
-
-  const mockResponse = {
-    batch_id: batch.batch_id,
-    payout_batch_id: `PAYPAL_${Date.now()}`,
-    batch_status: 'PENDING'
-  };
-
-  console.log('✅ PayPal payout submitted:', mockResponse.payout_batch_id);
-
-  // TODO: Update ledger with provider batch ID
-  // await base44.PayoutBatch.update(batch.batch_id, {
-  //   status: 'submitted_to_paypal',
-  //   submitted_at: new Date().toISOString(),
-  //   notes: { paypal_payout_batch_id: mockResponse.payout_batch_id }
-  // });
-
-  return mockResponse;
+  if (!shouldWritePayoutLedger()) return { ok: true };
+  if (!isPayPalPayoutSendEnabled()) return { ok: false, reason: 'paypal_send_disabled' };
+  requireLiveMode('submit_paypal_payout_batch');
+  const items = batch.items.map(item => ({
+    recipient_type: 'EMAIL',
+    receiver: item.recipient,
+    amount: { value: Number(item.amount).toFixed(2), currency: item.currency },
+    note: `Payout ${batch.batch_id}`,
+    sender_item_id: item.sender_item_id
+  }));
+  const response = await createPayPalPayoutBatch({
+    senderBatchId: batch.batch_id,
+    items,
+    emailSubject: 'You have a payout',
+    emailMessage: `Payout batch ${batch.batch_id}`
+  });
+  const paypalBatchId = response?.batch_header?.payout_batch_id ?? null;
+  console.log('✅ PayPal payout submitted:', paypalBatchId);
+  const base44 = buildBase44ServiceClient();
+  const batchEntity = base44.asServiceRole.entities['PayoutBatch'];
+  const itemEntity = base44.asServiceRole.entities['PayoutItem'];
+  const recs = await batchEntity.filter({ batch_id: String(batch.batch_id) }, "-created_date", 1, 0);
+  const id = Array.isArray(recs) && recs[0]?.id ? recs[0].id : null;
+  if (id) {
+    const submittedAt = new Date().toISOString();
+    const notes = { paypal_payout_batch_id: paypalBatchId, paypal_batch_status: response?.batch_header?.batch_status ?? null };
+    await batchEntity.update(id, { status: 'submitted_to_paypal', submitted_at: submittedAt, notes }).catch(() => null);
+  }
+  const bySenderId = new Map();
+  const itemsInLedger = await itemEntity.filter({ batch_id: String(batch.batch_id) }, "-created_date", 500, 0).catch(() => []);
+  for (const it of Array.isArray(itemsInLedger) ? itemsInLedger : []) {
+    const sid = it?.item_id ?? null;
+    if (sid) bySenderId.set(String(sid), it?.id ?? null);
+  }
+  const respItems = Array.isArray(response?.items) ? response.items : [];
+  for (const ri of respItems) {
+    const payoutItemId = ri?.payout_item_id ?? ri?.payout_item?.payout_item_id ?? null;
+    const senderItemId = ri?.payout_item?.sender_item_id ?? ri?.sender_item_id ?? null;
+    const transactionStatus = ri?.transaction_status ?? ri?.payout_item?.transaction_status ?? null;
+    const internalId = senderItemId ? bySenderId.get(String(senderItemId)) : null;
+    if (!internalId) continue;
+    await itemEntity.update(internalId, {
+      status: 'processing',
+      paypal_status: transactionStatus ? String(transactionStatus) : null,
+      paypal_item_id: payoutItemId ? String(payoutItemId) : null
+    }).catch(() => null);
+  }
+  return { ok: true, paypalBatchId };
 }
 
 /**
@@ -463,7 +534,7 @@ async function executePayoneerSettlement(batch) {
 function generateBankWireCSV(batch) {
   const headers = 'Beneficiary RIB,Amount,Currency,Reference,Date';
   const rows = batch.items.map(item => 
-    `${OWNER_ACCOUNTS.bank.rib},${item.amount},${item.currency},${item.sender_item_id},${new Date().toISOString()}`
+    `${getOwnerAccounts().bank.rib},${item.amount},${item.currency},${item.sender_item_id},${new Date().toISOString()}`
   );
   return [headers, ...rows].join('\n');
 }
@@ -471,9 +542,50 @@ function generateBankWireCSV(batch) {
 function generatePayoneerCSV(batch) {
   const headers = 'Account ID,Amount,Currency,Description,Reference';
   const rows = batch.items.map(item =>
-    `${OWNER_ACCOUNTS.payoneer.accountId},${item.amount},${item.currency},${item.note},${item.sender_item_id}`
+    `${getOwnerAccounts().payoneer.accountId},${item.amount},${item.currency},${item.note},${item.sender_item_id}`
   );
   return [headers, ...rows].join('\n');
+}
+
+async function executeCryptoSettlement(batch) {
+  const allowMicro = String(process.env.ALLOW_MICROPAYMENTS_TO_OWNER ?? 'true').toLowerCase() === 'true';
+  const minMicro = Number(process.env.MIN_MICRO_AMOUNT_USD ?? '0.01');
+  const minNet = Number(process.env.CRYPTO_MIN_NET_USD ?? '1');
+  const token = String(process.env.CRYPTO_TOKEN ?? 'USDT');
+  const chain = String(process.env.CRYPTO_CHAIN ?? 'ERC20');
+  const receiver = String(process.env.OWNER_CRYPTO_ADDRESS ?? process.env.OWNER_TRUST_WALLET ?? '').trim();
+  if (!receiver) return { ok: false, reason: 'missing_owner_crypto_address' };
+  const payload = [];
+  for (const it of batch.items) {
+    const amt = Number(it?.amount ?? 0);
+    const microAmt = allowMicro ? Math.max(minMicro, amt) : amt;
+    if (microAmt < minNet) continue;
+    payload.push({
+      receiver,
+      token,
+      chain,
+      amount: Number(microAmt).toFixed(2),
+      reference: it?.sender_item_id ?? null
+    });
+  }
+  if (payload.length === 0 && allowMicro) {
+    const events = batch.items
+      .map(x => ({ id: x?.revenue_event_id ?? null, amount: Math.max(minMicro, Number(x?.amount ?? 0)), currency: x?.currency ?? 'USD' }))
+      .filter(e => e.id);
+    if (events.length > 0) {
+      await processRailBatch('PAYPAL', events, { microReroute: true }).catch(() => {});
+    }
+  }
+  if (!shouldWritePayoutLedger()) return { ok: true, crypto_export_ready: payload.length };
+  const base44 = buildBase44ServiceClient();
+  const batchEntity = base44.asServiceRole.entities['PayoutBatch'];
+  const recs = await batchEntity.filter({ batch_id: String(batch.batch_id) }, "-created_date", 1, 0).catch(() => []);
+  const id = Array.isArray(recs) && recs[0]?.id ? recs[0].id : null;
+  if (id) {
+    const notes = { ...(recs[0]?.notes ?? {}), crypto_export_ready: true, crypto_payload: payload, token, chain, receiver };
+    await batchEntity.update(id, { status: 'export_ready_crypto', notes }).catch(() => null);
+  }
+  return { ok: true, crypto_export_ready: payload.length };
 }
 
 // ============================================================================
@@ -486,15 +598,19 @@ function generatePayoneerCSV(batch) {
 async function markEventsSettled(eventIds, batchId) {
   console.log(`📝 Marking ${eventIds.length} events as settled`);
 
-  // TODO: Bulk update Base44
-  // await base44.RevenueEvent.updateMany(
-  //   { id: { $in: eventIds } },
-  //   {
-  //     settled: true,
-  //     settled_at: new Date().toISOString(),
-  //     payout_batch_id: batchId
-  //   }
-  // );
+  if (!shouldWritePayoutLedger()) return;
+  const base44 = buildBase44ServiceClient();
+  const cfg = getRevenueConfigFromEnv();
+  const entity = base44.asServiceRole.entities[cfg.entityName];
+  for (const id of eventIds) {
+    const recs = await entity.filter({ [cfg.fieldMap.externalId]: String(id) }, "-created_date", 1, 0).catch(() => []);
+    const internalId = Array.isArray(recs) && recs[0]?.id ? recs[0].id : null;
+    if (!internalId) continue;
+    const patch = {};
+    if (cfg.fieldMap.status) patch[cfg.fieldMap.status] = 'paid_out';
+    if (cfg.fieldMap.payoutBatchId) patch[cfg.fieldMap.payoutBatchId] = String(batchId);
+    await entity.update(internalId, patch).catch(() => null);
+  }
 }
 
 // ============================================================================
@@ -508,10 +624,10 @@ export function getDaemonHealth() {
   return {
     ...state.getStatus(),
     config: CONFIG,
-    owner_accounts: Object.keys(OWNER_ACCOUNTS).map(key => ({
+    owner_accounts: Object.keys(getOwnerAccounts()).map(key => ({
       type: key,
-      enabled: OWNER_ACCOUNTS[key].enabled,
-      priority: OWNER_ACCOUNTS[key].priority
+      enabled: true,
+      priority: 1
     }))
   };
 }
@@ -532,6 +648,140 @@ export function emergencyStop() {
 export async function triggerManualSettlement() {
   console.log('⚡ Manual settlement triggered');
   await performSettlementCycle();
+}
+
+function getOwnerAccounts() {
+  return {
+    paypal: String(process.env.OWNER_PAYPAL_EMAIL ?? 'younestsouli2019@gmail.com'),
+    bank: { rib: String(process.env.OWNER_BANK_RIB ?? '007810000448500030594182') },
+    payoneer: { accountId: String(process.env.OWNER_PAYONEER_ACCOUNT_ID ?? 'PRINCIPAL_ACCOUNT') }
+  };
+}
+
+function shouldWritePayoutLedger() {
+  return String(process.env.BASE44_ENABLE_PAYOUT_LEDGER_WRITE ?? 'false').toLowerCase() === 'true';
+}
+
+function isPayPalPayoutSendEnabled() {
+  const a = String(process.env.PAYPAL_PPP2_APPROVED ?? 'false').toLowerCase() === 'true';
+  const b = String(process.env.PAYPAL_PPP2_ENABLE_SEND ?? 'false').toLowerCase() === 'true';
+  return a && b;
+}
+
+function isSundayNow() {
+  const d = new Date();
+  return d.getUTCDay() === 0;
+}
+
+function requireLiveMode(reason) {
+  const live = String(process.env.SWARM_LIVE ?? 'false').toLowerCase() === 'true';
+  if (!live) throw new Error(`Refusing live operation without SWARM_LIVE=true (${reason})`);
+  const offline =
+    String(process.env.BASE44_OFFLINE ?? 'false').toLowerCase() === 'true' ||
+    String(process.env.BASE44_OFFLINE_MODE ?? 'false').toLowerCase() === 'true';
+  if (offline) throw new Error(`LIVE MODE NOT GUARANTEED (offline mode enabled: ${reason})`);
+  const paypalMode = String(process.env.PAYPAL_MODE ?? 'live').toLowerCase();
+  const paypalBase = String(process.env.PAYPAL_API_BASE_URL ?? '').toLowerCase();
+  if (paypalMode === 'sandbox' || paypalBase.includes('sandbox.paypal.com')) {
+    throw new Error(`LIVE MODE NOT GUARANTEED (PayPal sandbox configured: ${reason})`);
+  }
+}
+
+function getRoutingPriority() {
+  const raw = String(process.env.PAYMENT_ROUTING_PRIORITY ?? "").trim();
+  if (!raw) return ['PAYPAL', 'BANK_WIRE', 'PAYONEER'];
+  const map = {
+    bank: 'BANK_WIRE',
+    payoneer: 'PAYONEER',
+    paypal: 'PAYPAL',
+    crypto: 'CRYPTO'
+  };
+  return raw.split(/[|,; ]/g).map(x => map[String(x).toLowerCase()] || '').filter(Boolean);
+}
+
+function selectOptimalOwnerAccount(amount, currency) {
+  const prio = getRoutingPriority();
+  for (const p of prio) return { type: p };
+  return { type: 'PAYPAL' };
+}
+
+async function executeApprovedBatchesSunday() {
+  if (!isSundayNow() || !shouldWritePayoutLedger()) return;
+  const base44 = buildBase44ServiceClient();
+  const batchEntity = base44.asServiceRole.entities['PayoutBatch'];
+  const batches = await batchEntity.filter({ status: 'approved' }, "-created_date", 250, 0).catch(() => []);
+  for (const b of Array.isArray(batches) ? batches : []) {
+    const rail = b?.payout_method ?? 'PAYPAL';
+    const rec = {
+      batch_id: b?.batch_id ?? null,
+      items: await loadBatchItems(base44, b?.batch_id)
+    };
+    if (!rec.batch_id) continue;
+    await executeSettlement(rail, rec).catch(() => {});
+  }
+}
+
+async function loadBatchItems(base44, batchId) {
+  const itemEntity = base44.asServiceRole.entities['PayoutItem'];
+  const list = await itemEntity.filter({ batch_id: String(batchId) }, "-created_date", 500, 0).catch(() => []);
+  return Array.isArray(list)
+    ? list.map(it => ({
+        amount: it?.amount ?? 0,
+        currency: it?.currency ?? 'USD',
+        recipient: it?.recipient ?? null,
+        recipient_type: it?.recipient_type ?? 'owner',
+        sender_item_id: it?.item_id ?? null,
+        revenue_event_id: it?.revenue_event_id ?? null
+      }))
+    : [];
+}
+
+async function retryAndRerouteFailedPayouts() {
+  if (!shouldWritePayoutLedger()) return;
+  const base44 = buildBase44ServiceClient();
+  const batchEntity = base44.asServiceRole.entities['PayoutBatch'];
+  const itemEntity = base44.asServiceRole.entities['PayoutItem'];
+  const failed = await itemEntity.filter({ status: 'failed' }, "-created_date", 500, 0).catch(() => []);
+  if (!Array.isArray(failed) || failed.length === 0) return;
+  const grouped = new Map();
+  for (const it of failed) {
+    const batchId = it?.batch_id ?? null;
+    if (!batchId) continue;
+    const arr = grouped.get(batchId) ?? [];
+    arr.push(it);
+    grouped.set(batchId, arr);
+  }
+  for (const [batchId, items] of grouped.entries()) {
+    const allowMicro = String(process.env.ALLOW_MICROPAYMENTS_TO_OWNER ?? 'true').toLowerCase() === 'true';
+    const minMicro = Number(process.env.MIN_MICRO_AMOUNT_USD ?? '0.01');
+    const next = allowMicro ? 'PAYPAL' : 'PAYONEER';
+    let original = null;
+    try {
+      const list = await batchEntity.filter({ batch_id: String(batchId) }, "-created_date", 1, 0);
+      original = Array.isArray(list) ? list[0] ?? null : null;
+    } catch {}
+    const alreadyMicro = Boolean(original?.notes?.micro_reroute === true);
+    const originalRail = String(original?.payout_method ?? '').toUpperCase();
+    if (alreadyMicro && next === 'PAYPAL') {
+      continue;
+    }
+    if (originalRail === next && next === 'PAYPAL' && alreadyMicro) {
+      continue;
+    }
+    const events = items
+      .map(x => {
+        const amt = Number(x?.amount ?? 0);
+        const microAmt = allowMicro ? Math.max(minMicro, amt) : amt;
+        return { id: x?.revenue_event_id ?? null, amount: microAmt, currency: x?.currency ?? 'USD' };
+      })
+      .filter(e => e.id);
+    if (events.length === 0) continue;
+    await processRailBatch(next, events, { microReroute: allowMicro && next === 'PAYPAL' }).catch(() => {});
+    if (original?.id) {
+      const notes = { ...(original?.notes ?? {}), micro_reroute: allowMicro && next === 'PAYPAL', rerouted_to: next, rerouted_at: new Date().toISOString() };
+      await batchEntity.update(original.id, { notes }).catch(() => {});
+    }
+  }
 }
 
 // ============================================================================

@@ -127,14 +127,34 @@ export class CryptoGateway {
     }
 
     if (provider === 'binance') {
-      if (!enabled) {
+      const preferApi = String(process.env.BINANCE_PREFER_API || process.env.CRYPTO_PREFER_API || 'true').toLowerCase() === 'true';
+      if (!enabled || !preferApi) {
         return { status: 'prepared', provider, network, prepared_at, transactions };
       }
       const hasBinanceCreds = !!(process.env.BINANCE_API_KEY && process.env.BINANCE_API_SECRET);
       if (!hasBinanceCreds) {
         return { status: 'MISSING_CREDENTIALS', provider, network, prepared_at };
       }
-      const r = await withdrawUSDTBEP20(dest, amount);
+      let r = null;
+      try {
+        r = await withdrawUSDTBEP20(dest, amount);
+      } catch (e) {
+        const msg = String(e?.message || '').toLowerCase();
+        const allowFallback = String(process.env.CRYPTOBOX_ENABLE || 'true').toLowerCase() === 'true';
+        if (allowFallback && (msg.includes('-1021') || msg.includes('-1022') || msg.includes('signature') || msg.includes('timestamp'))) {
+          const url = process.env.BINANCE_CRYPTOBOX_URL || 'https://www.binance.com/en/my/wallet/account/payment/cryptobox';
+          const outDir = 'settlements/crypto';
+          const filename = `binance_cryptobox_instruction_${Date.now()}.json`;
+          const filePath = path.join(process.cwd(), outDir, filename);
+          fs.mkdirSync(path.dirname(filePath), { recursive: true });
+          fs.writeFileSync(
+            filePath,
+            JSON.stringify({ provider: 'binance_cryptobox', action: 'collect', coin: 'USDT', network: 'OFFCHAIN', url, amount, destination: dest, status: 'WAITING_MANUAL_EXECUTION', origin: 'in_house' }, null, 2)
+          );
+          return { status: 'INSTRUCTIONS_READY', provider: 'binance_cryptobox', filePath, network: 'OFFCHAIN', prepared_at };
+        }
+        throw e;
+      }
       const applyId = r.id || r.applyId || null;
       let txId = null;
       const startTime = Date.now() - 60 * 60 * 1000;
@@ -256,6 +276,20 @@ export class CryptoGateway {
       );
       return { status: 'INSTRUCTIONS_READY', provider: 'mexc', filePath, network: nx, prepared_at, creds_present: hasCreds };
     }
+    
+    if (provider === 'binance_cryptobox') {
+      const url = process.env.BINANCE_CRYPTOBOX_URL || 'https://www.binance.com/en/my/wallet/account/payment/cryptobox';
+      const outDir = 'settlements/crypto';
+      const filename = `binance_cryptobox_instruction_${Date.now()}.json`;
+      const filePath = path.join(process.cwd(), outDir, filename);
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      fs.writeFileSync(
+        filePath,
+        JSON.stringify({ provider: 'binance_cryptobox', action: 'collect', coin: 'USDT', network: 'OFFCHAIN', url, amount, destination: dest, status: 'WAITING_MANUAL_EXECUTION', origin: 'in_house' }, null, 2)
+      );
+      return { status: 'INSTRUCTIONS_READY', provider: 'binance_cryptobox', filePath, network: 'OFFCHAIN', prepared_at };
+    }
+
     return { status: 'UNKNOWN_PROVIDER', provider, network, prepared_at };
   }
   async getWithdrawalStatus({ provider = 'binance', address, amount, startTime } = {}) {

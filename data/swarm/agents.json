@@ -1,0 +1,39 @@
+{
+  "agents": [
+    {
+      "id": "agent_1768249764485_khxx7m",
+      "role": "Content Amplifier Agent",
+      "status": "active",
+      "created_at": "2026-01-12T20:29:24.485Z",
+      "last_heartbeat_at": null
+    },
+    {
+      "id": "agent_1768249764486_xh4s2i",
+      "role": "Content Amplifier Agent",
+      "status": "active",
+      "created_at": "2026-01-12T20:29:24.486Z",
+      "last_heartbeat_at": null
+    },
+    {
+      "id": "agent_1768249764486_efkaax",
+      "role": "Community Builder",
+      "status": "active",
+      "created_at": "2026-01-12T20:29:24.486Z",
+      "last_heartbeat_at": null
+    },
+    {
+      "id": "agent_1768249764486_080232",
+      "role": "Course Promotion Coordinator",
+      "status": "active",
+      "created_at": "2026-01-12T20:29:24.486Z",
+      "last_heartbeat_at": null
+    },
+    {
+      "id": "agent_1768249764486_n2gxje",
+      "role": "Community Builder",
+      "status": "active",
+      "created_at": "2026-01-12T20:29:24.486Z",
+      "last_heartbeat_at": null
+    }
+  ]
+}

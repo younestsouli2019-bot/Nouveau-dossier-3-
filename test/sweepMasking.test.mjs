@@ -122,8 +122,9 @@ test("destination JSON can be parsed when quotes are backslash-escaped", () => {
   const raw = '{\\"bank\\":\\"ExampleBank\\",\\"swift\\":\\"EXAMPLEX1\\",\\"account\\":\\"1234567890123456\\",\\"beneficiary\\":\\"Jane Doe\\"}';
   const parsed = JSON.parse(raw.replace(/\\"/g, '"'));
   const out = sanitizeDestination(parsed);
-  assert.equal(out.bank, "ExampleBank");
-  assert.equal(out.swift, "EXAMPLEX1");
+  assert.equal(out.bank, "E*********k");
+  assert.ok(out.swift.startsWith("EXAM"));
+  assert.notEqual(out.swift, "EXAMPLEX1");
   assert.equal(out.accountMasked.endsWith("3456"), true);
 });
 

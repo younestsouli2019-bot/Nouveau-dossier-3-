@@ -7,7 +7,6 @@ import { PayoneerGateway } from '../financial/gateways/PayoneerGateway.mjs';
 import { StripeGateway } from '../financial/gateways/StripeGateway.mjs';
 import { TronGateway } from '../financial/gateways/TronGateway.mjs';
 import { InstructionGateway } from '../financial/gateways/InstructionGateway.mjs';
-import { listPlatforms, getPlatform } from '../integrations/platform-registry.mjs';
 import { shouldAvoidPayPal } from '../policy/geopolicy.mjs';
 import { getEffectiveRoutes } from '../policy/route-optimizer.mjs';
 import { broadcastCrypto } from '../financial/broadcast/CryptoBroadcaster.mjs';
@@ -20,6 +19,24 @@ import { PrivacyMasker } from '../util/privacy-masker.mjs';
 import { getPayoutBatchDetails } from '../paypal-api.mjs';
 import fs from 'fs';
 import path from 'path';
+
+const PLATFORMS = [
+  { id: 'bybit', name: 'Bybit' },
+  { id: 'bitget', name: 'Bitget' },
+  { id: 'mexc', name: 'MEXC' },
+  { id: 'paypal', name: 'PayPal' },
+  { id: 'payoneer', name: 'Payoneer' },
+  { id: 'bank', name: 'Bank Wire' },
+  { id: 'stripe', name: 'Stripe' },
+  { id: 'tron', name: 'Tron' }
+];
+function getPlatform(id) {
+  const k = String(id || '').toLowerCase();
+  return PLATFORMS.find(p => p.id === k) || null;
+}
+function listPlatforms() {
+  return PLATFORMS.slice();
+}
 
 export class ExternalGatewayManager {
   constructor(storage, auditLogger, executor) {
@@ -223,6 +240,29 @@ export class ExternalGatewayManager {
       }));
       this.audit.log('CRYPTO_TRANSFER_PREPARED', payoutBatchId, null, result, actor, { masked_recipients: masked, reassurance: PrivacyMasker.reassurance('crypto') });
       return { status: 'processing', gateway_response: result, payout_batch_id: payoutBatchId, processed_at: new Date().toISOString(), route_attempted: 'crypto' };
+    }, context);
+  }
+  
+  async initiateBinanceCryptoBoxTransfer(payoutBatchId, recipientItems, idempotencyKey, actor = 'System') {
+    const context = { action: 'INITIATE_BINANCE_CRYPTOBOX', actor, payoutBatchId };
+    return this.executor.execute(idempotencyKey, async () => {
+      if (!recipientItems || recipientItems.length === 0) {
+        throw new Error('No recipient items provided');
+      }
+      const tx = recipientItems.map(item => ({
+        amount: Number(item.amount),
+        currency: item.currency || 'USD',
+        destination: item.recipient_address || item.crypto_address || item.recipient_email || item.email,
+        reference: item.note || `Batch ${payoutBatchId}`
+      }));
+      const result = await withRetry(() => this.cryptoGateway.executeTransfer(tx, { provider: 'binance_cryptobox' }));
+      const masked = tx.map(t => ({
+        amount: t.amount,
+        currency: t.currency,
+        masked_destination: PrivacyMasker.maskCryptoAddress(t.destination)
+      }));
+      this.audit.log('CRYPTOBOX_PREPARED', payoutBatchId, null, result, actor, { masked_recipients: masked, reassurance: PrivacyMasker.reassurance('crypto') });
+      return { status: 'processing', gateway_response: result, payout_batch_id: payoutBatchId, processed_at: new Date().toISOString(), route_attempted: 'binance_cryptobox' };
     }, context);
   }
 

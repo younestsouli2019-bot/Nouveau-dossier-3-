@@ -1,0 +1,272 @@
+[
+  {
+    "timestamp": "2026-01-12T22:24:44.117Z",
+    "type": "info",
+    "message": "Processing: RevenueEvent"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:44.119Z",
+    "type": "push",
+    "message": "GET /entities/RevenueEvent"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:45.061Z",
+    "type": "error",
+    "message": "Request failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:45.062Z",
+    "type": "push",
+    "message": "Schema does not exist, creating..."
+  },
+  {
+    "timestamp": "2026-01-12T22:24:45.062Z",
+    "type": "push",
+    "message": "POST /entities"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:45.926Z",
+    "type": "error",
+    "message": "Request failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:45.926Z",
+    "type": "error",
+    "message": "Failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:45.927Z",
+    "type": "info",
+    "message": "Processing: Earning"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:45.927Z",
+    "type": "push",
+    "message": "GET /entities/Earning"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:46.552Z",
+    "type": "error",
+    "message": "Request failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:46.552Z",
+    "type": "push",
+    "message": "Schema does not exist, creating..."
+  },
+  {
+    "timestamp": "2026-01-12T22:24:46.553Z",
+    "type": "push",
+    "message": "POST /entities"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:51.230Z",
+    "type": "error",
+    "message": "Request failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:51.231Z",
+    "type": "error",
+    "message": "Failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:51.231Z",
+    "type": "info",
+    "message": "Processing: PayoutBatch"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:51.231Z",
+    "type": "push",
+    "message": "GET /entities/PayoutBatch"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:51.589Z",
+    "type": "error",
+    "message": "Request failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:51.590Z",
+    "type": "push",
+    "message": "Schema does not exist, creating..."
+  },
+  {
+    "timestamp": "2026-01-12T22:24:51.590Z",
+    "type": "push",
+    "message": "POST /entities"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:52.100Z",
+    "type": "error",
+    "message": "Request failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:52.100Z",
+    "type": "error",
+    "message": "Failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:52.100Z",
+    "type": "info",
+    "message": "Processing: PayoutItem"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:52.100Z",
+    "type": "push",
+    "message": "GET /entities/PayoutItem"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:52.443Z",
+    "type": "error",
+    "message": "Request failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:52.443Z",
+    "type": "push",
+    "message": "Schema does not exist, creating..."
+  },
+  {
+    "timestamp": "2026-01-12T22:24:52.443Z",
+    "type": "push",
+    "message": "POST /entities"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:53.325Z",
+    "type": "error",
+    "message": "Request failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:53.325Z",
+    "type": "error",
+    "message": "Failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:53.325Z",
+    "type": "info",
+    "message": "Processing: TransactionLog"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:53.325Z",
+    "type": "push",
+    "message": "GET /entities/TransactionLog"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:53.936Z",
+    "type": "error",
+    "message": "Request failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:53.937Z",
+    "type": "push",
+    "message": "Schema does not exist, creating..."
+  },
+  {
+    "timestamp": "2026-01-12T22:24:53.937Z",
+    "type": "push",
+    "message": "POST /entities"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:54.139Z",
+    "type": "error",
+    "message": "Request failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:54.139Z",
+    "type": "error",
+    "message": "Failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:54.140Z",
+    "type": "info",
+    "message": "Processing: AgentFeedback"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:54.140Z",
+    "type": "push",
+    "message": "GET /entities/AgentFeedback"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:54.422Z",
+    "type": "error",
+    "message": "Request failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:54.422Z",
+    "type": "push",
+    "message": "Schema does not exist, creating..."
+  },
+  {
+    "timestamp": "2026-01-12T22:24:54.423Z",
+    "type": "push",
+    "message": "POST /entities"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:54.948Z",
+    "type": "error",
+    "message": "Request failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:54.948Z",
+    "type": "error",
+    "message": "Failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:54.950Z",
+    "type": "info",
+    "message": "Validating: Earnings have owner beneficiaries..."
+  },
+  {
+    "timestamp": "2026-01-12T22:24:54.950Z",
+    "type": "push",
+    "message": "GET /entities/Earning/records?"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:56.416Z",
+    "type": "error",
+    "message": "Request failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:56.416Z",
+    "type": "error",
+    "message": "Validation error: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:56.416Z",
+    "type": "info",
+    "message": "Validating: PayoutBatches have owner recipients..."
+  },
+  {
+    "timestamp": "2026-01-12T22:24:56.417Z",
+    "type": "push",
+    "message": "GET /entities/PayoutBatch/records?"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:57.053Z",
+    "type": "error",
+    "message": "Request failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:57.053Z",
+    "type": "error",
+    "message": "Validation error: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:57.053Z",
+    "type": "info",
+    "message": "Validating: PayoutItems have owner recipients..."
+  },
+  {
+    "timestamp": "2026-01-12T22:24:57.054Z",
+    "type": "push",
+    "message": "GET /entities/PayoutItem/records?"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:58.148Z",
+    "type": "error",
+    "message": "Request failed: Base44 API html_error: 404 - html_response_detected"
+  },
+  {
+    "timestamp": "2026-01-12T22:24:58.149Z",
+    "type": "error",
+    "message": "Validation error: Base44 API html_error: 404 - html_response_detected"
+  }
+]

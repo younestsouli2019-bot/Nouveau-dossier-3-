@@ -167,3 +167,13 @@ export async function createPayPalPayoutBatch({ senderBatchId, items, emailSubje
   };
   return paypalRequest("/v1/payments/payouts", { method: "POST", token, body });
 }
+
+export async function getPayPalBalance() {
+  const token = await getPayPalAccessToken();
+  try {
+    const res = await paypalRequest("/v1/reporting/balances", { token });
+    return res;
+  } catch (e) {
+    throw new Error(e?.message ?? String(e));
+  }
+}
