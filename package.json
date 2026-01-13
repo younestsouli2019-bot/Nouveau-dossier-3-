@@ -29,8 +29,12 @@
     "lint": "eslint . --ext .js,.mjs",
     "lint:fix": "eslint . --ext .js,.mjs --fix",
     "crypto:prepare:cryptobox": "node ./scripts/prepare-cryptobox-instruction.mjs",
+    "revenue:materialize:csv": "node ./scripts/materialize-revenue-csv.mjs",
+    "env:validate:owner-routing": "node ./scripts/validate-owner-routing-env.mjs",
     "swarm:replenish": "node ./scripts/replenish-agents.mjs",
-    "swarm:supervise": "node ./src/swarm/supervisor.mjs"
+    "swarm:supervise": "node ./src/swarm/supervisor.mjs",
+    "owner:sign": "node ./scripts/ownersign.mjs",
+    "swarm:verify": "node ./scripts/swarmverify.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.13",
