@@ -32,9 +32,7 @@
     "revenue:materialize:csv": "node ./scripts/materialize-revenue-csv.mjs",
     "env:validate:owner-routing": "node ./scripts/validate-owner-routing-env.mjs",
     "swarm:replenish": "node ./scripts/replenish-agents.mjs",
-    "swarm:supervise": "node ./src/swarm/supervisor.mjs",
-    "owner:sign": "node ./scripts/ownersign.mjs",
-    "swarm:verify": "node ./scripts/swarmverify.mjs"
+    "swarm:supervise": "node ./src/swarm/supervisor.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.13",
