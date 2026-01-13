@@ -1,0 +1,59 @@
+Security and Secrets
+- Do not log or print API keys; redact sensitive headers and payloads.
+- Enforce BUNKER_MODE kill-switch: refuse new Binance/PayPal orders when active.
+- Whitelist withdrawal destinations; allow only pre-approved OWNER wallets (Trust Wallet 0xA4…fe7, secondary Bybit).
+- Block anti-loop patterns: never route funds through OWNER Binance; prefer direct-to-cold-storage or manual instructions.
+- Rotate keys regularly; use environment-based key selection per environment (dev/staging/prod).
+
+Operational Safety
+- Add dry-run mode for withdrawals and settlements; simulate response, persist intent, do not move funds.
+- Implement exponential backoff with jitter; handle API rate limits and network errors gracefully.
+- Detect restricted/verification_required statuses; enter paused_kyc_required state and export requests to exports/kyc-requests/.
+- Add per-transaction idempotency keys; prevent duplicate withdrawals or settlements on retries.
+
+Settlement and Ledger
+- Queue transactions in SettlementLedger when offline, bunker mode, or keys are missing; never fail hard.
+- Require immutable proof for status changes using ChainVerifier (on-chain or PSP-provided reference).
+- Enforce Obligations: attach PSP ID, Settlement ID, or Bank Ref to every revenue event; auto-fail if >72h unsettled.
+- Auto-approve settlements only to verified OWNER accounts; all other destinations require manual approval.
+
+Unit Economics
+- Compute net profit and margin before initiating a route; abort if Net Profit ≤ $5 or Margin ≤ 15%.
+- Optimize rails dynamically (PayPal vs Payoneer) based on fees and success rates.
+- Cap withdrawal amounts per route to reduce risk; prefer batch splitting where justified.
+
+PoSP (Proof of Service Power)
+- Calculate PoSP score from agent historical success and consistency; cap to [0,1].
+- Generate deterministic posp_proof with agentId, score, transactionIds, timestamp, sha256 hash.
+- Attach posp_proof to mission metadata and settlement payloads; persist under data/swarm/posp-proofs.
+- Do not let PoSP bypass security or policy gates; it is evidence, not an override.
+
+Swarm Aims and Delegation
+- Add aim.HIGHER.txt as the single source of mission intents; one aim per line with optional JSON metadata.
+- Build aims-ingest to parse, validate, and emit missions to data/swarm/missions with an index.
+- Update supervisor to consume missions, attach PoSP proof, and execute only inbound-safe actions.
+- Queue unsafe or blocked actions with clear reason codes; surface manual fallback instructions when needed.
+
+Payoneer CSV Generation
+- Validate payer_email != recipient_email; hard-block identical addresses.
+- Accept genuine client data (payer_name/company/purpose) via arguments or metadata.
+- Persist generated CSVs and receipts with cross-references to SettlementLedger IDs.
+- Add a smoke test that generates batches for 500, 850, and 1000 with three distinct clients.
+
+Observability and Auditing
+- Use structured logs (JSON) with correlation IDs and redaction; store artifacts under reports/ and data/ folders.
+- Emit metrics for queue depth, kill-switch activations, KYC pauses, and profitability checks.
+- Export “Doomsday” bundles including missions/, migrate/ (held settlements), and artifacts for enterprise readiness.
+
+Compliance and Routing
+- Verify recipient emails and account ownership against OWNER directives before processing.
+- Geofence or block restricted jurisdictions as required; maintain configurable sanctions screening.
+- Prefer self-custody routes; use exchange API withdrawal only when policy-compliant and keys are safe.
+
+debug-binance-withdraw.mjs Specific
+- Read BINANCE_API_KEY and BINANCE_API_SECRET from environment; exit to queue if missing.
+- Implement DRY_RUN to preview requests and response parsing without moving funds.
+- Enforce BUNKER_MODE and anti-loop policies; block Binance withdrawals not targeting approved cold storage.
+- Whitelist destination addresses; match memo/tag requirements; validate chain (ERC20/BEP20) per policy.
+- Record withdrawal intent and result with idempotency token; persist references into SettlementLedger and receipts/.
+

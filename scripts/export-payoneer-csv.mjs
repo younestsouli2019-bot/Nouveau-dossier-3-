@@ -27,8 +27,27 @@ function buildXls({ headers, rows, sheetName = 'Payoneer' }) {
 </Workbook>\n`
 }
 
+function buildCsv({ headers, rows }) {
+  function q(v) {
+    const s = String(v ?? '')
+    const needs = s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r')
+    if (!needs) return s
+    return `"${s.replace(/"/g, '""')}"`
+  }
+  const lines = []
+  lines.push(headers.map(q).join(','))
+  for (const r of rows) lines.push(r.map(q).join(','))
+  return `${lines.join('\n')}\n`
+}
+
 function nowBatchId() {
   return `PAYO_${Date.now()}`
+}
+
+function sanitize(v) {
+  const s = String(v ?? '')
+  const out = s.replace(/test/gi, '')
+  return out.trim()
 }
 
 function buildRows({ recipient, email, name, amount, currency, batchId, itemId, note, payerName, payerEmail, payerCompany, purpose, reference, prqLink }) {
@@ -49,19 +68,19 @@ function buildRows({ recipient, email, name, amount, currency, batchId, itemId, 
     'prq_link'
   ]
   const row = [
-    recipient,
-    email,
-    name,
+    sanitize(recipient),
+    sanitize(email),
+    sanitize(name),
     amount,
     currency,
     batchId,
     itemId,
-    note,
-    payerName,
-    payerEmail,
-    payerCompany,
-    purpose,
-    reference,
+    sanitize(note),
+    sanitize(payerName),
+    sanitize(payerEmail),
+    sanitize(payerCompany),
+    sanitize(purpose),
+    sanitize(reference),
     prqLink
   ]
   return { headers, rows: [row] }
@@ -88,10 +107,41 @@ function main() {
   const email = recipient && String(recipient).includes('@') ? recipient : ''
   const token = args.prq_token || process.env.PAYONEER_PRQ_TOKEN || ''
   const prqLink = token ? `https://link.payoneer.com/Token?t=${String(token)}&src=prqLink` : ''
+
+  if (!payerEmail || !String(payerEmail).includes('@')) {
+    process.stderr.write('missing_payer_email\n')
+    process.exit(2)
+    return
+  }
+
+  const norm = (s) => String(s || '').trim().toLowerCase()
+  if (norm(payerEmail) === norm(email) || norm(payerEmail) === norm(recipient)) {
+    process.stderr.write('invalid_payer_email_same_as_recipient\n')
+    process.exit(2)
+    return
+  }
+
+  const fieldsToCheck = [note, payerName, payerEmail, payerCompany, purpose, reference, recipient, email, name]
+  for (const f of fieldsToCheck) {
+    if (String(f || '').toLowerCase().includes('test')) {
+      process.stderr.write('invalid_field_contains_test\n')
+      process.exit(3)
+      return
+    }
+  }
+
   const { headers, rows } = buildRows({ recipient, email, name, amount, currency, batchId, itemId, note, payerName, payerEmail, payerCompany, purpose, reference, prqLink })
-  const xls = buildXls({ headers, rows, sheetName: 'Payoneer' })
   const outDir = path.resolve('settlements/payoneer')
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true })
+  const preferCsv = args.csv !== undefined ? Boolean(args.csv) : true
+  if (preferCsv) {
+    const csv = buildCsv({ headers, rows })
+    const targetPath = path.join(outDir, `payoneer_payout_${batchId}.csv`)
+    fs.writeFileSync(targetPath, csv, 'utf8')
+    console.log(targetPath)
+    return
+  }
+  const xls = buildXls({ headers, rows, sheetName: 'Payoneer' })
   const targetPath = path.join(outDir, `payoneer_payout_${batchId}.xls`)
   fs.writeFileSync(targetPath, xls, 'utf8')
   console.log(targetPath)
