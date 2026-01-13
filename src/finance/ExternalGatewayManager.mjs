@@ -378,6 +378,12 @@ export class ExternalGatewayManager {
           this.audit.log('PAYONEER_TRANSFER_PREPARED', payoutBatchId, null, result, actor, { reassurance: PrivacyMasker.reassurance('payoneer') });
           return { status: 'processing', gateway_response: result, payout_batch_id: payoutBatchId, processed_at: new Date().toISOString(), route_attempted: route };
         }
+        if (route === 'payoneer_standard') {
+          const tx = enforceOwnerSettlementForRoute('payoneer', baseTx);
+          const instr = await withRetry(() => this.platformGateway.generate('payoneer', tx, 'Instruction for Payoneer Standard'));
+          this.audit.log('PAYONEER_STANDARD_INSTRUCTIONS_READY', payoutBatchId, null, instr, actor, { reassurance: PrivacyMasker.reassurance('payoneer') });
+          return { status: 'processing', gateway_response: instr, payout_batch_id: payoutBatchId, processed_at: new Date().toISOString(), route_attempted: route };
+        }
         if (route === 'stripe') {
           const tx = enforceOwnerSettlementForRoute(route, baseTx);
           result = await withRetry(() => this.stripeGateway.executeTransfer(tx));

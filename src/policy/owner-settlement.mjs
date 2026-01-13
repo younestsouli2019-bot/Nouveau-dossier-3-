@@ -35,6 +35,10 @@ export class OwnerSettlementEnforcer {
         clientId: process.env.PAYONEER_CLIENT_ID,
         clientSecret: process.env.PAYONEER_CLIENT_SECRET
       },
+      payoneer_standard: {
+        enabled: String(process.env.PAYONEER_ENABLE_STANDARD || "false").toLowerCase() === "true",
+        email: process.env.OWNER_PAYONEER_EMAIL || process.env.PAYONEER_EMAIL
+      },
       crypto: {
         enabled: String(process.env.CRYPTO_WITHDRAW_ENABLE || "false").toLowerCase() === "true",
         address: process.env.TRUST_WALLET_ADDRESS || process.env.TRUST_WALLET_USDT_ERC20
@@ -75,6 +79,13 @@ export class OwnerSettlementEnforcer {
       if (isPlaceholder(c.base) || isPlaceholder(c.clientId) || isPlaceholder(c.clientSecret)) return true;
       return false;
     }
+    if (r === "payoneer_standard") {
+      const c = cfg?.creds?.payoneer_standard || {};
+      if (!c.enabled) return true;
+      const email = String(c.email || "").trim();
+      if (!email || !email.includes("@")) return true;
+      return false;
+    }
     if (r === "crypto") {
       const c = cfg?.creds?.crypto || {};
       if (!c.enabled) return true;
@@ -91,7 +102,7 @@ export class OwnerSettlementEnforcer {
   static getOwnerAccountForType(type) {
     const t = String(type || "").toLowerCase();
     if (t === "paypal") return normEmail(process.env.OWNER_PAYPAL_EMAIL) || normEmail(process.env.PAYPAL_EMAIL);
-    if (t === "payoneer") return normEmail(process.env.OWNER_PAYONEER_EMAIL) || normEmail(process.env.PAYONEER_EMAIL);
+    if (t === "payoneer" || t === "payoneer_standard") return normEmail(process.env.OWNER_PAYONEER_EMAIL) || normEmail(process.env.PAYONEER_EMAIL);
     if (t === "bank_transfer") {
       return process.env.OWNER_IBAN || process.env.MOROCCAN_BANK_RIB || process.env.BANK_IBAN || null;
     }
