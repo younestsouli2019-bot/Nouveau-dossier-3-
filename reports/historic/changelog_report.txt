@@ -97,3 +97,15 @@ Crucial security safeguards have been implemented to enforce the **Owner Revenue
 
 ---
 *System Secure & Ready for Continued Operation.*
+# Changelog & Status Report - 2026-01-14
+
+## Summary
+Automated payer follow-ups for manually submitted Payoneer batches. The follow-up generator now parses native Excel exports (.xls/.xlsx), extracts the embedded CSV row, and emits structured payloads including PoSP evidence when available.
+
+## Key Changes
+- Spreadsheet ingestion: Locate the header `recipient,recipient_email,...,prq_link` inside .xls/.xlsx and parse the first data row to preserve fields (payer_email, recipient_name, amount, currency, batch_id, prq_link).
+- Directory processing: Support `--dir` to process all batch files and write payloads to `exports/communications/`.
+- Evidence embedding: Include latest PoSP score and proof hash in follow-up body to strengthen service proof prior to payer action.
+
+## Outputs
+- Generated 3 follow-up payloads from `submitted.manually` and stored them under `exports/communications/`.

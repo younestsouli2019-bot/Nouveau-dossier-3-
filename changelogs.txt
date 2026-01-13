@@ -65,6 +65,10 @@
 2026-01-13T00:00:00Z [crypto][binance] Hardened client, cryptobox route, CLI, memory doc
 - Added robust Binance client with periodic time sync, ms timestamps, canonical signing, and retry on -1021/-1022.
 - Added binance_cryptobox route and automatic fallback when API returns recoverable errors.
-- Added CLI scripts/prepare-cryptobox-instruction.mjs to prepare and print cryptobox instructions; new npm script crypto:prepare:cryptobox.
-- Unified ESLint config, added lint:fix, removed duplicate config files.
-- Wrote docs/swarm-memory.md describing Base44 memory access/update flows and autonomy rules.
+68→- Added CLI scripts/prepare-cryptobox-instruction.mjs to prepare and print cryptobox instructions; new npm script crypto:prepare:cryptobox.
+69→- Unified ESLint config, added lint:fix, removed duplicate config files.
+70→- Wrote docs/swarm-memory.md describing Base44 memory access/update flows and autonomy rules.
+2026-01-14T00:00:00Z [finance][payoneer][ops] Follow-up automation and XLS/XLSX support
+- Updated scripts/generate-payoneer-followups.mjs to read Payoneer .xls/.xlsx by extracting embedded CSV and to process directories with --dir.
+- Emitted 3 follow-up payloads from submitted.manually to exports/communications with PoSP evidence lines.
+- Kept CSV ingestion intact and standardized output shape for downstream sending.
