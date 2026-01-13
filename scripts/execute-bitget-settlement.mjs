@@ -2,6 +2,7 @@ import ccxt from 'ccxt';
 import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
+import { parseArgs } from '../src/utils/cli.mjs';
 
 // ============================================================================
 // CONFIGURATION
@@ -19,7 +20,6 @@ if (!fs.existsSync(LOGS_DIR)) {
   fs.mkdirSync(LOGS_DIR, { recursive: true });
 }
 const logFile = path.join(LOGS_DIR, 'bitget-settlement.log');
-
 function log(message) {
   const timestamp = new Date().toISOString();
   const logMessage = `[${timestamp}] ${message}\n`;
@@ -33,6 +33,7 @@ function log(message) {
 
 async function executeBitgetWithdrawal() {
   log('--- Starting Bitget Settlement Execution ---');
+  const args = parseArgs(process.argv);
 
   const apiKey = process.env.BITGET_API_KEY;
   const secret = process.env.BITGET_API_SECRET;
@@ -60,25 +61,29 @@ async function executeBitgetWithdrawal() {
     // 1. Check Balance
     log('Fetching account balances...');
     const balances = await bitget.fetchBalance();
-    const usdtBalance = balances.free['USDT'];
-    log(`Available USDT balance: ${usdtBalance}`);
+    const coin = String(args.coin || TARGET_WALLET.coin).toUpperCase();
+    const network = String(args.network || TARGET_WALLET.network).toUpperCase();
+    const address = String(args.address || TARGET_WALLET.address);
+    const amount = args.amount ? Number(args.amount) : (coin === 'USDT' ? SETTLEMENT_AMOUNT_USD : 0.1);
+    const available = balances.free[coin];
+    log(`Available ${coin} balance: ${available}`);
 
-    if (!usdtBalance || usdtBalance < SETTLEMENT_AMOUNT_USD) {
-      const errorMsg = `Insufficient USDT balance (${usdtBalance}) to perform settlement of ${SETTLEMENT_AMOUNT_USD} USDT.`;
+    if (!available || available < amount) {
+      const errorMsg = `Insufficient ${coin} balance (${available}) to perform settlement of ${amount} ${coin}.`;
       log(errorMsg);
       throw new Error(errorMsg);
     }
 
     // 2. Execute Withdrawal
-    log(`Attempting to withdraw ${SETTLEMENT_AMOUNT_USD} ${TARGET_WALLET.coin} to ${TARGET_WALLET.address} on ${TARGET_WALLET.network}...`);
+    log(`Attempting to withdraw ${amount} ${coin} to ${address} on ${network}...`);
     
     const withdrawal = await bitget.withdraw(
-      TARGET_WALLET.coin,
-      SETTLEMENT_AMOUNT_USD,
-      TARGET_WALLET.address,
+      coin,
+      amount,
+      address,
       undefined, // tag/memo is not needed for this address
       {
-        network: TARGET_WALLET.network
+        network
       }
     );
 
@@ -96,6 +101,29 @@ async function executeBitgetWithdrawal() {
     const errorMsg = `Bitget settlement failed: ${error.message}`;
     log(errorMsg);
     console.error('❌ Bitget settlement failed. See logs/bitget-settlement.log for details.');
+    try {
+      const args = parseArgs(process.argv);
+      const coin = String(args.coin || TARGET_WALLET.coin).toUpperCase();
+      const network = String(args.network || TARGET_WALLET.network).toUpperCase();
+      const address = String(args.address || TARGET_WALLET.address);
+      const amount = args.amount ? Number(args.amount) : (coin === 'USDT' ? SETTLEMENT_AMOUNT_USD : 0.1);
+      const outDir = path.resolve('settlements/crypto');
+      if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+      const filePath = path.join(outDir, `bitget_instruction_${Date.now()}.json`);
+      const payload = {
+        provider: 'bitget',
+        action: 'withdraw',
+        coin,
+        network,
+        address,
+        amount,
+        status: 'WAITING_MANUAL_EXECUTION',
+        creds_present: !!(process.env.BITGET_API_KEY && process.env.BITGET_API_SECRET && process.env.BITGET_PASSPHRASE),
+        origin: 'in_house'
+      };
+      fs.writeFileSync(filePath, JSON.stringify(payload, null, 2));
+      log(`Manual instruction queued at: ${filePath}`);
+    } catch {}
     throw error;
   }
 }
