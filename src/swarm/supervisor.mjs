@@ -5,6 +5,7 @@ import 'dotenv/config'
 import { SwarmMemory } from './shared-memory.mjs'
 import { AgentReplenisher } from './agent-replenisher.mjs'
 import { runRevenueSwarm } from '../revenue/swarm-runner.mjs'
+import { calculatePosp, writePospProof } from '../consensus/posp.mjs'
 
 function ensureDir(p) {
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true })
@@ -34,7 +35,10 @@ async function runCycle({ memory, replenisher, filePath }) {
   const rep = replenisher.replenish()
   saveAgents(filePath, memory.get('agents'))
   const rev = await runRevenueSwarm()
-  const out = { ok: true, replenish: rep, revenue: rev, at: new Date().toISOString() }
+  const holder = process.env.SWARM_INSTANCE_ID || `local:${process.pid}`
+  const posp = calculatePosp({ agentId: holder, windowDays: Number(process.env.POSP_WINDOW_DAYS ?? '30') || 30 })
+  const proofPath = writePospProof(posp)
+  const out = { ok: true, replenish: rep, revenue: rev, posp: { score: posp.score, proof: proofPath }, at: new Date().toISOString() }
   console.log(JSON.stringify(out))
   return out
 }

@@ -17,6 +17,7 @@ import {
   isRevenueExternalIdSettled,
   markRevenueSettledIdempotent
 } from "./base44-settlement-index.mjs";
+import { calculatePosp, enforcePosp, writePospProof } from "./consensus/posp.mjs";
 
 function parseArgs(argv) {
   const args = {};
@@ -240,6 +241,18 @@ async function main() {
     throw new Error(`Intent mandate must have type=ap2.intent (got ${String(intentPayload?.type ?? "")})`);
   }
 
+  const pospProof = calculatePosp({ agentId: holder, windowDays: Number(process.env.POSP_WINDOW_DAYS ?? "30") || 30 });
+  const pospCheck = enforcePosp(pospProof, {
+    minScore: Number(process.env.POSP_MIN_SCORE ?? "5") || 5,
+    minTx: Number(process.env.POSP_MIN_TX ?? "1") || 1
+  });
+  if (!pospCheck.ok) {
+    process.stdout.write(`${JSON.stringify({ ok: false, error: "posp_insufficient", posp: pospCheck })}\n`);
+    process.exitCode = 1;
+    return;
+  }
+  const pospPath = writePospProof(pospProof);
+
   const base44 = buildBase44ServiceClient();
   const mandateCfg = getMandateStoreConfigFromEnv();
   const leaseCfg = getWorkLeaseConfigFromEnv();
@@ -366,7 +379,10 @@ async function main() {
       quote_id: quotePayload.id,
       payment_mandate_id: paymentPayload.id,
       item_count: items.length,
-      items: items.slice(0, 20)
+      items: items.slice(0, 20),
+      posp_proof_hash: pospProof.proof_hash,
+      posp_proof_file: pospPath,
+      posp_score: pospProof.score
     }
   };
 

@@ -37,6 +37,24 @@ The system has been upgraded to **Hard-Binding Execution Evidence-Bound Systems*
 
 ---
 
+# Changelog & Status Report - 2026-01-13
+
+## Summary
+Integrated Proof of Service Power (PoSP) consensus to ensure agents prove services rendered prior to settlements. PoSP derives service power from recent receipts and payer diversity; settlements now require sufficient PoSP score.
+
+## Key Changes
+- Added posp module: src/consensus/posp.mjs for proof calculation and enforcement
+- Orchestrate Settlement: blocks payouts when PoSP score/tx count below thresholds
+- Swarm Supervisor: emits PoSP proof artifacts to exports/posp-proofs/ for auditability
+- Metadata: payout requests carry posp_proof_hash, file path, and score
+
+## Configuration
+- POSP_WINDOW_DAYS (default: 30)
+- POSP_MIN_SCORE (default: 5)
+- POSP_MIN_TX (default: 1)
+
+---
+
 # Changelog & Status Report - 2026-01-02
 
 ## Summary
