@@ -109,3 +109,6 @@ Automated payer follow-ups for manually submitted Payoneer batches. The follow-u
 
 ## Outputs
 - Generated 3 follow-up payloads from `submitted.manually` and stored them under `exports/communications/`.
+# Addenda
+- Parser improved to handle multiple rows and to skip duplicates by batch_id.
+- New flags: `--payer`, `--out`, and `--delay_hours` for targeted processing and scheduled follow-ups.

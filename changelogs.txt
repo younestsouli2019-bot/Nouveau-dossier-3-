@@ -72,3 +72,7 @@
 - Updated scripts/generate-payoneer-followups.mjs to read Payoneer .xls/.xlsx by extracting embedded CSV and to process directories with --dir.
 - Emitted 3 follow-up payloads from submitted.manually to exports/communications with PoSP evidence lines.
 - Kept CSV ingestion intact and standardized output shape for downstream sending.
+2026-01-14T00:15:00Z [ops][payoneer] Multi-row parsing, dedupe, and scheduling
+- Added multi-row parsing for Excel/CSV batches; support --payer and --out.
+- Implemented dedupe: skip emitting when a follow-up for batchId already exists.
+- Added followup_at timestamp with --delay_hours (default 48) for scheduling.

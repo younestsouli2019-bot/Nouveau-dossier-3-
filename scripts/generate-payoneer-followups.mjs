@@ -84,11 +84,25 @@ function readSpreadsheet(file) {
   if (idx < 0) return { headers: [], rows: [] }
   const tail = s.slice(idx).split('\n')
   const headers = tail[0].split(',')
-  let rowLine = ''
-  const m = s.slice(idx).match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+,[^\r\n]+/)
-  if (m) rowLine = m[0]
-  if (!rowLine) return { headers, rows: [] }
-  const vals = parseCsvLine(rowLine)
+  const rows = []
+  for (let k = 1; k < tail.length; k++) {
+    const line = tail[k].trim()
+    if (!line) continue
+    const commaCount = (line.match(/,/g) || []).length
+    if (commaCount >= headers.length - 1) {
+      const vals = parseCsvLine(line)
+      const obj = {}
+      for (let i = 0; i < headers.length; i++) obj[headers[i]] = vals[i] ?? ''
+      rows.push(obj)
+    } else {
+      if (rows.length) break
+    }
+  }
+  if (rows.length) return { headers, rows }
+  const rest = s.slice(idx + cand.length)
+  const m = rest.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+,[^\r\n]+/)
+  if (!m) return { headers, rows: [] }
+  const vals = parseCsvLine(m[0])
   const obj = {}
   for (let i = 0; i < headers.length; i++) obj[headers[i]] = vals[i] ?? ''
   return { headers, rows: [obj] }
@@ -129,6 +143,9 @@ function main() {
     return [k.replace(/^--/, ''), v]
   }))
   const dirArg = args.dir || ''
+  const onlyPayer = args.payer || ''
+  const outDirArg = args.out || ''
+  const delayHours = Number(args.delay_hours || '48')
   if (dirArg) {
     const dir = path.resolve(dirArg)
     if (!fs.existsSync(dir)) {
@@ -140,7 +157,7 @@ function main() {
       const n = f.toLowerCase()
       return n.endsWith('.csv') || n.endsWith('.xls') || n.endsWith('.xlsx')
     })
-    const outDir = path.resolve('exports/communications')
+    const outDir = path.resolve(outDirArg || 'exports/communications')
     if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true })
     const created = []
     for (const f of files) {
@@ -148,34 +165,39 @@ function main() {
       try {
         const { rows } = readSpreadsheet(abs)
         if (!rows.length) continue
-        const r = rows[0]
-        const comm = buildEmail({
-          payerEmail: r.payer_email,
-          payerName: r.payer_name,
-          amount: r.amount,
-          currency: r.currency,
-          recipientName: r.recipient_name,
-          purpose: r.purpose,
-          reference: r.reference,
-          prqLink: r.prq_link,
-          batchId: r.batch_id
-        })
-        const outFile = path.join(outDir, `payoneer_followup_${r.batch_id}_${Date.now()}.json`)
-        const payload = {
-          created_at: new Date().toISOString(),
-          batch_id: r.batch_id,
-          item_id: r.item_id,
-          amount: r.amount,
-          currency: r.currency,
-          payer_email: r.payer_email,
-          payer_name: r.payer_name,
-          purpose: r.purpose,
-          reference: r.reference,
-          prq_link: r.prq_link,
-          email: comm
+        for (const r of rows) {
+          if (onlyPayer && String(r.payer_email || '').toLowerCase() !== String(onlyPayer).toLowerCase()) continue
+          const comm = buildEmail({
+            payerEmail: r.payer_email,
+            payerName: r.payer_name,
+            amount: r.amount,
+            currency: r.currency,
+            recipientName: r.recipient_name,
+            purpose: r.purpose,
+            reference: r.reference,
+            prqLink: r.prq_link,
+            batchId: r.batch_id
+          })
+          const existing = fs.readdirSync(outDir).some((x) => x.includes(`payoneer_followup_${r.batch_id}_`))
+          if (existing) continue
+          const outFile = path.join(outDir, `payoneer_followup_${r.batch_id}_${Date.now()}.json`)
+          const payload = {
+            created_at: new Date().toISOString(),
+            followup_at: new Date(Date.now() + delayHours * 60 * 60 * 1000).toISOString(),
+            batch_id: r.batch_id,
+            item_id: r.item_id,
+            amount: r.amount,
+            currency: r.currency,
+            payer_email: r.payer_email,
+            payer_name: r.payer_name,
+            purpose: r.purpose,
+            reference: r.reference,
+            prq_link: r.prq_link,
+            email: comm
+          }
+          fs.writeFileSync(outFile, JSON.stringify(payload, null, 2))
+          created.push(outFile)
         }
-        fs.writeFileSync(outFile, JSON.stringify(payload, null, 2))
-        created.push(outFile)
       } catch {}
     }
     process.stdout.write(`${JSON.stringify({ ok: true, count: created.length, files: created })}\n`)
@@ -193,7 +215,7 @@ function main() {
     process.exitCode = 3
     return
   }
-  const r = rows[0]
+  const r = onlyPayer ? rows.find((x) => String(x.payer_email || '').toLowerCase() === String(onlyPayer).toLowerCase()) || rows[0] : rows[0]
   const comm = buildEmail({
     payerEmail: r.payer_email,
     payerName: r.payer_name,
@@ -205,11 +227,12 @@ function main() {
     prqLink: r.prq_link,
     batchId: r.batch_id
   })
-  const outDir = path.resolve('exports/communications')
+  const outDir = path.resolve(outDirArg || 'exports/communications')
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true })
   const outFile = path.join(outDir, `payoneer_followup_${r.batch_id}_${Date.now()}.json`)
   const payload = {
     created_at: new Date().toISOString(),
+    followup_at: new Date(Date.now() + delayHours * 60 * 60 * 1000).toISOString(),
     batch_id: r.batch_id,
     item_id: r.item_id,
     amount: r.amount,
