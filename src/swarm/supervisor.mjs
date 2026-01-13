@@ -8,6 +8,8 @@ import { runRevenueSwarm } from '../revenue/swarm-runner.mjs'
 import { calculatePosp, writePospProof } from '../consensus/posp.mjs'
 import { loadAims, aimsToMissions, writeMissions } from './aims-ingest.mjs'
 import { pollNews } from './news-watch.mjs'
+import { checkNewBatches } from './payoneer-watch.mjs'
+import { writeRoutesStatus } from './routes-status.mjs'
 
 function ensureDir(p) {
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true })
@@ -71,7 +73,17 @@ async function runCycle({ memory, replenisher, filePath }) {
   } catch {
     news = { ok: false }
   }
-  const out = { ok: true, replenish: rep, revenue: rev, posp: { score: posp.score, proof: proofPath }, news, at: new Date().toISOString() }
+  let payoneer = null
+  try {
+    payoneer = checkNewBatches({})
+  } catch {
+    payoneer = { ok: false }
+  }
+  let routesFile = null
+  try {
+    routesFile = writeRoutesStatus()
+  } catch {}
+  const out = { ok: true, replenish: rep, revenue: rev, posp: { score: posp.score, proof: proofPath }, news, payoneer, routes_file: routesFile, at: new Date().toISOString() }
   console.log(JSON.stringify(out))
   return out
 }

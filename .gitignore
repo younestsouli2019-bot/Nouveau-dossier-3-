@@ -3,6 +3,7 @@ exports/
 settlements/payoneer/*.csv
 settlements/payoneer/receipts/*.json
 data/swarm/**
+data/notifications/**
 reports/historic/**
 *.log
 *.tmp
