@@ -1,4 +1,3 @@
 export async function runRevenueSwarm() {
-  return { ok: true, ran: true, at: new Date().toISOString() };
+	return { ok: true, ran: true, at: new Date().toISOString() };
 }
-

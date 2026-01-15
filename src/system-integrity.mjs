@@ -1,4 +1,3 @@
 export async function runSystemIntegritySync() {
-  return { ok: true, at: new Date().toISOString() };
+	return { ok: true, at: new Date().toISOString() };
 }
-

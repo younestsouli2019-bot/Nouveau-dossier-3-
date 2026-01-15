@@ -1,20 +1,21 @@
 {
-  "env": {
-    "es2022": true,
-    "node": true
-  },
-  "parserOptions": {
-    "ecmaVersion": 2022,
-    "sourceType": "module"
-  },
-  "extends": [
-    "eslint:recommended"
-  ],
-  "rules": {
-    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
-    "no-undef": "error",
-    "no-console": "off",
-    "eqeqeq": ["warn", "always"],
-    "prefer-const": "warn"
-  }
+	"env": {
+		"es2022": true,
+		"node": true
+	},
+	"parserOptions": {
+		"ecmaVersion": 2022,
+		"sourceType": "module"
+	},
+	"extends": ["eslint:recommended"],
+	"rules": {
+		"no-unused-vars": [
+			"warn",
+			{ "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+		],
+		"no-undef": "error",
+		"no-console": "off",
+		"eqeqeq": ["warn", "always"],
+		"prefer-const": "warn"
+	}
 }

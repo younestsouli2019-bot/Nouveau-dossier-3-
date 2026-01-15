@@ -1,0 +1,4 @@
+earning_id,amount,currency,beneficiary,reference,bank_beneficiary_name,bank_name,bank_iban,bank_rib,bank_swift,bank_account,bank_country,bank_city,occurred_at,status,settlement_id
+REV_1768225534247,25,USD,younestsouli2019@gmail.com,INV-2026-001,Owner,Barclays,,,,,GB,London,2026-01-12T13:46:34.249Z,settled_externally_pending,
+REV_1768225564250,40,USD,younestsouli2019@gmail.com,INV-2026-001,Owner,Barclays,,,,,GB,London,2026-01-12T13:46:34.250Z,settled_externally_pending,
+REV_1768225594250,85,USD,younestsouli2019@gmail.com,INV-2026-001,Owner,Barclays,,,,,GB,London,2026-01-12T13:46:34.250Z,settled_externally_pending,

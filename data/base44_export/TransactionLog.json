@@ -1,0 +1,24 @@
+[
+  {
+    "transaction_type": "withdrawal",
+    "amount": 150,
+    "currency": "USD",
+    "description": "Payout for agent commission RE_001_AGENT_COMMISSION",
+    "category": null,
+    "payment_method": "bank_transfer",
+    "source": null,
+    "transaction_date": "2025-12-22",
+    "reference_id": "TRANS_ID_ABCDEFG",
+    "linked_goal_id": null,
+    "agent_responsible": null,
+    "status": "completed",
+    "receipt_url": null,
+    "notes": null,
+    "id": "6949752b8f7fc3c25241b130",
+    "created_date": "2025-12-22T16:43:23.987000",
+    "updated_date": "2025-12-22T16:43:23.987000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": false
+  }
+]

@@ -1,2 +1,1 @@
-import './src/emit-revenue-events.mjs'
-
+import "./src/emit-revenue-events.mjs";

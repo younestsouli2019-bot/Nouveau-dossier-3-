@@ -1,22 +1,46 @@
 {
-  "version": "1.0.0",
-  "description": "Dynamic ethical heuristics for the Strategic Scout agent. This file should be updated regularly to reflect the latest ethical considerations and learnings from industry failures.",
-  "negativeKeywords": [
-    "exploit",
-    "hoard",
-    "predatory",
-    "addictive",
-    "surveillance",
-    "disenfranchise",
-    "manipulate"
-  ],
-  "positivePrinciples": [
-    "empowerment",
-    "inclusion",
-    "transparency",
-    "fairness",
-    "sustainability",
-    "value circulation"
-  ],
-  "uniquenessStrengthThreshold": 50
+	"version": "1.0.0",
+	"description": "Dynamic ethical heuristics for the Strategic Scout agent. This file should be updated regularly to reflect the latest ethical considerations and learnings from industry failures.",
+	"negativeKeywords": [
+		"exploit",
+		"hoard",
+		"predatory",
+		"addictive",
+		"surveillance",
+		"disenfranchise",
+		"manipulate"
+	],
+	"bannedSectors": [
+		"gambling",
+		"casino",
+		"betting",
+		"adult_content",
+		"pornography",
+		"illegal_services",
+		"high_interest_consumer_debt",
+		"scams_and_pyramid_schemes"
+	],
+	"hardBanKeywords": [
+		"casino",
+		"betting",
+		"gambling",
+		"porn",
+		"xxx",
+		"escort",
+		"ponzi",
+		"pyramid scheme",
+		"loan shark",
+		"usurious",
+		"fake investment",
+		"money mule"
+	],
+	"positivePrinciples": [
+		"empowerment",
+		"inclusion",
+		"transparency",
+		"fairness",
+		"sustainability",
+		"value circulation"
+	],
+	"uniquenessStrengthThreshold": 50
 }

@@ -1,6 +1,5 @@
 export const regulatoryMonitor = {
-  async scanForThreats() {
-    return { ok: true, findings: [] };
-  }
+	async scanForThreats() {
+		return { ok: true, findings: [] };
+	},
 };
-

@@ -1,0 +1,1312 @@
+filename,file_uri,file_url,file_type,programming_language,description,access_level,assigned_agents,file_size,tags,is_active,id,created_date,updated_date,created_by_id,created_by,is_sample
+"hardware_key_management.py","","","code","Python","Defines conceptual interfaces and principles for managing cryptographic keys bound to hardware security modules (TPM/HSM), enhancing the swarm's root of trust and key security.","swarm_internal","[]","","[""hardware_security"",""TPM"",""HSM"",""key_management"",""root_of_trust"",""cryptography""]","true","69492527aa7e668176b838a2","2025-12-22T11:01:59.642000","2025-12-22T11:01:59.642000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"memory_integrity_verification.py","","","code","Python","Provides functions for verifying the integrity of the swarm memory, including detecting rollback attacks and ensuring hash-chain continuity.","swarm_internal","[]","","[""memory_integrity"",""verification"",""security"",""rollback_detection"",""tamper_detection""]","true","694924fb0ff7c8f72b846206","2025-12-22T11:01:15.038000","2025-12-22T11:01:15.038000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"memory_vault_hardened.py","","","code","Python","Implements the hardened SwarmMemoryVault, incorporating cross-agent consensus for writes, memory confidence scoring, golden snapshot management, and robust integrity checks against tampering and rollback.","swarm_internal","[]","","[""memory_vault"",""zero_trust"",""security"",""consensus"",""confidence_scoring"",""snapshot"",""audit_log"",""swarm_core""]","true","694924f90ff7c8f72b846204","2025-12-22T11:01:13.590000","2025-12-22T11:01:13.590000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"snapshot.py","","","code","Python","Defines the GoldenSnapshot class for creating read-only, rollback-proof snapshots of swarm memory, anchoring historical truth.","swarm_internal","[]","","[""snapshot"",""memory"",""rollback_protection"",""audit"",""security""]","true","694924f70ff7c8f72b846200","2025-12-22T11:01:11.819000","2025-12-22T11:01:11.819000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"confidence_engine.py","","","code","Python","Contains the confidence_engine, which computes a confidence score for memory records based on agent activity, penalizing dominance to prevent poisoning.","swarm_internal","[]","","[""confidence_scoring"",""anti_poisoning"",""memory_integrity"",""security""]","true","694924f60ff7c8f72b8461ff","2025-12-22T11:01:10.215000","2025-12-22T11:01:10.215000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"memory_record_extended.py","","","code","Python","Defines the extended MemoryRecord class for immutable, hash-chained memory entries, now including a confidence score to mitigate memory poisoning.","swarm_internal","[]","","[""memory"",""immutable"",""hash_chaining"",""confidence_scoring"",""anti_poisoning"",""security""]","true","694924f40ff7c8f72b8461fe","2025-12-22T11:01:08.460000","2025-12-22T11:01:08.460000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"consensus_write.py","","","code","Python","Defines the ConsensusProposal class and related functions for enabling cross-agent consensus-based memory writes, requiring multiple agent approvals.","swarm_internal","[]","","[""consensus"",""memory_write"",""security"",""multi_agent""]","true","694924f20ff7c8f72b8461fd","2025-12-22T11:01:06.853000","2025-12-22T11:01:06.853000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"encryption_utils.py","","","code","Python","Provides utilities for encrypting and decrypting memory record payloads using Fernet, enhancing data confidentiality at rest.","swarm_internal","[]","","[""encryption"",""security"",""data_confidentiality""]","true","694924ae31152787a7d78474","2025-12-22T10:59:58.557000","2025-12-22T10:59:58.557000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"anomaly_detection.py","","","code","Python","Contains functions for detecting anomalous patterns in memory records, such as potential poisoning attacks, enabling self-healing and quarantine mechanisms.","swarm_internal","[]","","[""anomaly_detection"",""security"",""memory"",""threat_detection""]","true","694924ac31152787a7d78471","2025-12-22T10:59:56.951000","2025-12-22T10:59:56.951000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"memory_vault.py","","","code","Python","Implements the SwarmMemoryVault, a zero-trust core for swarm memory management with append-only logging, signature verification, capability-based access control, and tamper detection.","swarm_internal","[]","","[""memory_vault"",""zero_trust"",""security"",""access_control"",""audit_log"",""swarm_core""]","true","694924ab31152787a7d7846e","2025-12-22T10:59:55.471000","2025-12-22T10:59:55.471000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"signed_write.py","","","code","Python","Provides functionality for cryptographically signing data payloads using an agent's private key, ensuring authenticity and integrity of memory write requests.","swarm_internal","[]","","[""cryptography"",""signing"",""security"",""memory_write""]","true","694924a931152787a7d7846c","2025-12-22T10:59:53.786000","2025-12-22T10:59:53.786000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"memory_record.py","","","code","Python","Defines the MemoryRecord class for immutable, hash-chained memory entries, ensuring cryptographic integrity and auditability.","swarm_internal","[]","","[""memory"",""immutable"",""hash_chaining"",""auditing"",""security""]","true","694924a831152787a7d7846b","2025-12-22T10:59:52.208000","2025-12-22T10:59:52.208000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"crypto_identity.py","","","code","Python","Provides cryptographic primitives for agent identity, including Ed25519 keypair generation and public key binding.","swarm_internal","[]","","[""cryptography"",""identity"",""security"",""agent_id""]","true","694924a631152787a7d7846a","2025-12-22T10:59:50.097000","2025-12-22T10:59:50.097000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"performance_monitor_promoter.py","","","code","Python","Python module containing the PerformanceMonitorPromoter class, designed to evaluate agent performance, determine promotion criteria, and propose/apply promotions based on predefined metrics like success rate.","swarm_internal","[]","","[""performance_monitoring"",""agent_promotion"",""governance"",""analytics""]","true","6949241a9561e25080a68e54","2025-12-22T10:57:30.133000","2025-12-22T10:57:30.133000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"agent_upgrade_interface.py","","","code","Python","Defines the interface for agents to propose capability upgrades, adhering to the Capability Upgrade Protocol.","swarm_internal","[]","","[""agent"",""interface"",""upgrade"",""protocol""]","true","694923f21b74d6e708fb3274","2025-12-22T10:56:50.878000","2025-12-22T10:56:50.879000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"swarm_upgrade_controller.py","","","code","Python","Implements the SwarmUpgradeController, the authoritative component responsible for validating and deploying capability upgrades across the swarm.","swarm_internal","[]","","[""controller"",""upgrade"",""governance"",""security"",""deployment""]","true","694923f11b74d6e708fb326f","2025-12-22T10:56:49.490000","2025-12-22T10:56:49.490000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"capability_manifest.py","","","code","Python","Defines the SWARM_CAPABILITY_REGISTRY, acting as the single source of truth for all agent capabilities and their associated risks and requirements.","swarm_internal","[]","","[""manifest"",""capabilities"",""governance"",""security""]","true","694923f01b74d6e708fb326e","2025-12-22T10:56:48.117000","2025-12-22T10:56:48.117000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"capability_upgrade_protocol.py","","","code","Python","Defines the Capability Upgrade Protocol (CUP) for swarm agents, including the CapabilityUpgrade dataclass and UpgradeStatus enum.","swarm_internal","[]","","[""protocol"",""governance"",""upgrade"",""capability""]","true","694923ee1b74d6e708fb326d","2025-12-22T10:56:46.695000","2025-12-22T10:56:46.695000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"enhanced_swarm_agent.py","swarmos://code/enhanced_swarm_agent.py","","code","Python","Python module containing the EnhancedAgent class, which integrates document parsing, semantic chunking, and web fetching capabilities to provide a comprehensive content ingestion and reasoning system for swarm agents.","swarm_internal","[]","","[""agent_framework"",""ingestion"",""reasoning"",""knowledge_base"",""multi_format""]","true","6949231a73f34aec0d37770d","2025-12-22T10:53:14.963000","2025-12-22T10:53:14.963000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"enhanced_web_fetcher.py","swarmos://code/enhanced_web_fetcher.py","","code","Python","Python module containing the EnhancedWebFetcher class for advanced web content fetching with caching and retry logic.","swarm_internal","[]","","[""web_fetching"",""caching"",""http_requests"",""concurrency""]","true","6949231973f34aec0d37770c","2025-12-22T10:53:13.112000","2025-12-22T10:53:13.112000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"semantic_chunker.py","swarmos://code/semantic_chunker.py","","code","Python","Python module containing the SemanticChunker class for advanced text chunking with semantic boundaries.","swarm_internal","[]","","[""chunking"",""text_processing"",""nlp"",""semantic_analysis""]","true","6949231773f34aec0d37770b","2025-12-22T10:53:11.730000","2025-12-22T10:53:11.730000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"universal_document_parser.py","swarmos://code/universal_document_parser.py","","code","Python","Python module containing the UniversalDocumentParser class for parsing various document formats (PDF, DOCX, HTML) with metadata extraction.","swarm_internal","[]","","[""parsing"",""documents"",""pdf"",""docx"",""html"",""metadata""]","true","6949231673f34aec0d37770a","2025-12-22T10:53:10.304000","2025-12-22T10:53:10.304000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"main_scheduler.py","
+#!/usr/bin/env python3
+""""""
+Main scheduler for real PayPal automation
+""""""
+import schedule
+import time
+import logging
+from datetime import datetime
+from paypal_integration import RealPayPalPayout
+import sqlite3
+
+class RealAutomationScheduler:
+    def __init__(self):
+        self.paypal = RealPayPalPayout(mode=""live"")
+        self.logger = self.setup_logging()
+        
+    def setup_logging(self):
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            handlers=[
+                logging.FileHandler('/var/log/paypal_automation.log'),
+                logging.StreamHandler()
+            ]
+        )
+        return logging.getLogger(__name__)
+    
+    def process_pending_transactions(self):
+        """"""Main job: Process pending transactions""""""
+        self.logger.info(""🔄 Starting pending transaction processing"")
+        
+        conn = sqlite3.connect('automation.db')
+        cursor = conn.cursor()
+        
+        # Get pending transactions (batch for efficiency)
+        cursor.execute('''
+        SELECT id, recipient_email, amount 
+        FROM real_transactions 
+        WHERE status = 'pending' 
+        ORDER BY created_at 
+        LIMIT 10
+        ''')
+        
+        pending = cursor.fetchall()
+        
+        if not pending:
+            self.logger.info(""✅ No pending transactions"")
+            return
+        
+        self.logger.info(f""📊 Processing {len(pending)} pending transactions"")
+        
+        # Create PayPal batch
+        sender_batch_id = f""BATCH_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}""
+        
+        items = []
+        for tx_id, email, amount in pending:
+            items.append({
+                ""recipient_type"": ""EMAIL"",
+                ""amount"": {""value"": f""{amount:.2f}"", ""currency"": ""USD""},
+                ""receiver"": email,
+                ""note"": f""Automated transfer #{tx_id}"",
+                ""sender_item_id"": f""ITEM_{tx_id}""
+            })
+            
+            # Mark as processing
+            cursor.execute('''
+            UPDATE real_transactions 
+            SET status = 'processing', 
+                processed_at = CURRENT_TIMESTAMP 
+            WHERE id = ?
+            ''', (tx_id,))
+        
+        conn.commit()
+        
+        # Execute real PayPal payout
+        try:
+            from paypalrestsdk import Payout
+            
+            payout = Payout({
+                ""sender_batch_header"": {
+                    ""sender_batch_id"": sender_batch_id,
+                    ""email_subject"": ""Automated payment"",
+                    ""email_message"": ""You have received an automated payment""
+                },
+                ""items"": items
+            })
+            
+            if payout.create():
+                batch_id = payout.batch_header.payout_batch_id
+                self.logger.info(f""✅ PayPal batch created: {batch_id}"")
+                
+                # Update transactions with batch ID
+                for tx_id, _, _ in pending:
+                    cursor.execute('''
+                    UPDATE real_transactions 
+                    SET paypal_batch_id = ? 
+                    WHERE id = ?
+                    ''', (batch_id, tx_id))
+                
+                conn.commit()
+                
+                # Log success
+                self.logger.info(f""💰 Batch total: ${sum(amount for _, _, amount in pending):,.2f}"")
+            else:
+                self.logger.error(f""❌ PayPal API error: {payout.error}"")
+                
+        except Exception as e:
+            self.logger.error(f""❌ Batch creation failed: {str(e)}"")
+            
+        finally:
+            conn.close()
+    
+    def check_webhook_status(self):
+        """"""Check for unprocessed webhooks""""""
+        self.logger.info(""🔍 Checking webhook status"")
+        # Implementation for checking webhook processing
+    
+    def run(self):
+        """"""Main run loop""""""
+        self.logger.info(""🚀 Starting Real PayPal Automation System"")
+        self.logger.info(""========================================="")
+        
+        # Schedule jobs
+        schedule.every(5).minutes.do(self.process_pending_transactions)
+        schedule.every(1).hour.do(self.check_webhook_status)
+        
+        # Run immediately on start
+        self.process_pending_transactions()
+        
+        # Keep running
+        while True:
+            schedule.run_pending()
+            time.sleep(60)
+
+if __name__ == ""__main__"":
+    scheduler = RealAutomationScheduler()
+    
+    try:
+        scheduler.run()
+    except KeyboardInterrupt:
+        print(""\n👋 Shutting down gracefully..."")
+    except Exception as e:
+        print(f""❌ Fatal error: {e}"")
+        raise
+","","code","python","Main scheduler for real PayPal automation, processing pending transactions and checking webhooks.","swarm_internal","[""paypal_automation_agent""]","","[]","true","6942a1e4b34d2e4cd49f9ad3","2025-12-17T12:28:20.623000","2025-12-17T12:28:20.623000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"deploy_real_system.sh","
+#!/bin/bash
+
+# Deployment script for real PayPal automation system
+set -e
+
+echo ""🚀 DEPLOYING REAL PAYPAL AUTOMATION SYSTEM""
+echo ""==========================================""
+
+# 1. Environment check
+echo ""🔍 Checking environment...""
+if [ -z ""$PAYPAL_CLIENT_ID"" ] || [ -z ""$PAYPAL_CLIENT_SECRET"" ]; then
+    echo ""❌ ERROR: PayPal credentials not set""
+    echo ""   Set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET environment variables""
+    exit 1
+fi
+
+# 2. Install dependencies
+echo ""📦 Installing dependencies...""
+pip install paypalrestsdk pandas plotly flask
+
+# 3. Backup existing simulation data
+echo ""💾 Backing up simulation data...""
+if [ -f ""automation.db"" ]; then
+    cp automation.db ""automation.db.backup.$(date +%Y%m%d_%H%M%S)""
+    echo ""   Backup created""
+fi
+
+# 4. Run migration
+echo ""🔄 Migrating to real system...""
+python3 transition_to_real.py
+
+# 5. Verify deployment
+echo ""✅ Verifying deployment...""
+python3 -c ""
+from real_dashboard import RealPayPalDashboard
+dashboard = RealPayPalDashboard()
+stats = dashboard.get_real_stats()
+if stats['unique_paypal_batches'] > 0:
+    print('SUCCESS: Real PayPal integration active')
+    print(f\""Batches: {stats[\'unique_paypal_batches\']}\"")
+    print(f\""Completed: ${stats[\'completed_amount\']:,\.2f}\"")
+else:
+    print('WARNING: No real batches found')
+    print('Check PayPal credentials and permissions')
+""
+
+# 6. Start webhook listener (optional)
+echo ""🌐 Starting webhook listener...""
+echo ""   To start webhook handler: python3 webhook_handler.py""
+echo ""   Configure PayPal webhook to point to: https://yourdomain.com/webhook/paypal""
+
+# 7. Create systemd service (for Linux)
+cat > /etc/systemd/system/paypal-automation.service << EOF
+[Unit]
+Description=Real PayPal Automation System
+After=network.target
+
+[Service]
+Type=simple
+User=automation
+Environment=PAYPAL_CLIENT_ID=$PAYPAL_CLIENT_ID
+Environment=PAYPAL_CLIENT_SECRET=$PAYPAL_CLIENT_SECRET
+Environment=PAYPAL_WEBHOOK_ID=$PAYPAL_WEBHOOK_ID
+WorkingDirectory=/opt/paypal-automation
+ExecStart=/usr/bin/python3 /opt/paypal-automation/main_scheduler.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo ""🎉 Deployment complete!""
+echo """"
+echo ""NEXT STEPS:""
+echo ""1. Monitor logs: tail -f /var/log/paypal_automation.log""
+echo ""2. Check real transactions on PayPal.com""
+echo ""3. Verify webhooks are being received""
+echo ""4. Update any external dashboards to use real data""
+","","code","bash","Deployment script for the real PayPal automation system.","swarm_internal","[""paypal_automation_agent""]","","[]","true","6942a1ddb34d2e4cd49f9acf","2025-12-17T12:28:13.694000","2025-12-17T12:28:13.694000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"production.yaml","
+# Production Configuration - REAL PayPal
+paypal:
+  mode: ""live""
+  client_id: ""${PAYPAL_CLIENT_ID}""
+  client_secret: ""${PAYPAL_CLIENT_SECRET}""
+  webhook_id: ""${PAYPAL_WEBHOOK_ID}""
+  # Never simulate in production
+  simulate: false
+  dry_run: false
+  sandbox: false
+
+execution:
+  # Real execution settings
+  max_batch_size: 5000  # PayPal limit
+  max_amount_per_batch: 10000.00
+  currency: ""USD""
+  notification_email: ""younestsouli2019@gmail.com""
+  retry_failed: true
+  max_retries: 3
+  
+security:
+  require_2fa: true
+  ip_whitelist:
+    - ""your_server_ip""
+  webhook_secret: ""${WEBHOOK_SECRET}""
+  
+database:
+  path: ""/var/data/automation.db""
+  backup_interval: ""24h""
+  
+logging:
+  level: ""INFO""
+  file: ""/var/log/paypal_automation.log""
+  paypal_debug: false  # Don't log sensitive PayPal data
+  
+monitoring:
+  # Real monitoring, not simulated
+  check_interval: ""5m""
+  alert_thresholds:
+    failure_rate: 5.0  # %
+    avg_processing_time: 4.0  # hours
+    queue_size: 100
+  alert_email: ""alerts@yourdomain.com""
+
+compliance:
+  # Real compliance requirements
+  log_all_transactions: true
+  retain_logs_days: 365
+  tax_reporting: true
+  kyc_required: true
+  
+features:
+  # Enabled real features
+  real_payouts: true
+  webhook_processing: true
+  email_notifications: true
+  fraud_detection: true
+  rate_limiting: true
+  reconciliation: true
+","","config","yaml","Production configuration for the PayPal automation system.","swarm_internal","[""paypal_automation_agent""]","","[]","true","6942a1d9b34d2e4cd49f9acc","2025-12-17T12:28:09.863000","2025-12-17T12:28:09.863000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"real_dashboard.py","
+import sqlite3
+import pandas as pd
+from datetime import datetime, timedelta
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+class RealPayPalDashboard:
+    def __init__(self, db_path: str = ""automation.db""):
+        self.db_path = db_path
+        self.conn = sqlite3.connect(db_path)
+    
+    def get_real_stats(self):
+        """"""Get actual PayPal statistics, not simulated ones""""""
+        query = """"""
+        SELECT 
+            COUNT(*) as total_transactions,
+            SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_count,
+            SUM(CASE WHEN status = 'completed' THEN amount ELSE 0 END) as completed_amount,
+            SUM(CASE WHEN status = 'processing' THEN 1 ELSE 0 END) as processing_count,
+            SUM(CASE WHEN status = 'processing' THEN amount ELSE 0 END) as processing_amount,
+            SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_count,
+            AVG(CASE WHEN status = 'completed' 
+                 THEN (julianday(completed_at) - julianday(processed_at)) * 24 
+                 ELSE NULL END) as avg_processing_hours,
+            COUNT(DISTINCT paypal_batch_id) as unique_batches,
+            SUM(fee) as total_fees,
+            MIN(created_at) as first_transaction,
+            MAX(created_at) as last_transaction
+        FROM real_transactions
+        WHERE status NOT IN ('pending_migration')
+        """"""
+        
+        df = pd.read_sql_query(query, self.conn)
+        
+        # Calculate real success rate
+        if df['total_transactions'][0] > 0:
+            success_rate = (df['completed_count'][0] / df['total_transactions'][0]) * 100
+        else:
+            success_rate = 0
+        
+        return {
+            ""total_transactions"": int(df['total_transactions'][0]),
+            ""completed_transactions"": int(df['completed_count'][0]),
+            ""completed_amount"": float(df['completed_amount'][0] or 0),
+            ""pending_transactions"": int(df['processing_count'][0]),
+            ""pending_amount"": float(df['processing_amount'][0] or 0),
+            ""failed_transactions"": int(df['failed_count'][0]),
+            ""success_rate"": round(success_rate, 1),
+            ""avg_processing_hours"": round(float(df['avg_processing_hours'][0] or 0), 1),
+            ""unique_paypal_batches"": int(df['unique_batches'][0]),
+            ""total_fees"": float(df['total_fees'][0] or 0),
+            ""first_transaction"": df['first_transaction'][0],
+            ""last_transaction"": df['last_transaction'][0],
+            ""data_source"": ""REAL_PAYPAL_API""
+        }
+    
+    def get_recent_transactions(self, limit: int = 10):
+        """"""Get recent real transactions with PayPal IDs""""""
+        query = """"""
+        SELECT 
+            id,
+            paypal_batch_id as external_id,
+            recipient_email,
+            amount,
+            currency,
+            status,
+            paypal_status,
+            fee,
+            net_amount,
+            created_at,
+            processed_at,
+            completed_at,
+            CASE WHEN paypal_batch_id IS NOT NULL THEN 'REAL' ELSE 'SIMULATED' END as transaction_type
+        FROM real_transactions
+        ORDER BY created_at DESC
+        LIMIT ?
+        """"""
+        
+        return pd.read_sql_query(query, self.conn, params=(limit,))
+    
+    def generate_verification_report(self):
+        """"""Generate report proving real PayPal execution""""""
+        query = """"""
+        SELECT 
+            paypal_batch_id,
+            COUNT(*) as transactions_in_batch,
+            SUM(amount) as batch_total,
+            MIN(created_at) as batch_created,
+            MAX(completed_at) as batch_completed,
+            GROUP_CONCAT(status) as statuses
+        FROM real_transactions
+        WHERE paypal_batch_id IS NOT NULL
+        GROUP BY paypal_batch_id
+        ORDER BY MIN(created_at) DESC
+        """"""
+        
+        batches = pd.read_sql_query(query, self.conn)
+        
+        report = {
+            ""verification_timestamp"": datetime.utcnow().isoformat(),
+            ""total_real_batches"": len(batches),
+            ""batches"": batches.to_dict('records'),
+            ""conclusion"": ""REAL_PAYPAL_TRANSACTIONS_EXIST"" if len(batches) > 0 else ""SIMULATION_ONLY""
+        }
+        
+        return report
+    
+    def create_dashboard_html(self):
+        """"""Generate HTML dashboard with real data""""""
+        stats = self.get_real_stats()
+        recent_tx = self.get_recent_transactions(5)
+        
+        # Create visualization
+        fig = make_subplots(
+            rows=2, cols=2,
+            subplot_titles=('Transaction Status', 'Success Rate Trend', 
+                          'Amounts by Status', 'Processing Time Distribution'),
+            specs=[[{""type"": ""pie""}, {""type"": ""scatter""}],
+                   [{""type"": ""bar""}, {""type"": ""box""}]]
+        )
+        
+        # Close connection
+        self.conn.close()
+        
+        return {
+            ""stats"": stats,
+            ""recent_transactions"": recent_tx.to_dict('records'),
+            ""is_real_data"": stats['unique_paypal_batches'] > 0,
+            ""warning"": ""SIMULATION MODE"" if stats['unique_paypal_batches'] == 0 else None
+        }
+
+# Usage
+if __name__ == ""__main__"":
+    dashboard = RealPayPalDashboard()
+    
+    # Get real stats
+    stats = dashboard.get_real_stats()
+    
+    print(""\n"" + ""=""*60)
+    print(""📊 REAL PAYPAL DASHBOARD"")
+    print(""=""*60)
+    print(f""Data Source: {stats['data_source']}"")
+    print(f""Real PayPal Batches: {stats['unique_paypal_batches']}"")
+    print(f""Total Fees Paid: ${stats['total_fees']:.2f}"")
+    print(f""Success Rate: {stats['success_rate']}"")
+    print(f""Total Completed: ${stats['completed_amount']:,}"")
+    print(f""Pending: ${stats['pending_amount']:,}"")
+    
+    # Verification report
+    report = dashboard.generate_verification_report()
+    print(f""\n🔍 Verification: {report['conclusion']}"")
+    
+    if report['total_real_batches'] > 0:
+        print(f""   First real batch: {report['batches'][0]['paypal_batch_id']}"")
+        print(f""   Batch total: ${report['batches'][0]['batch_total']:.2f}"")
+        print(""\n✅ SYSTEM IS PROCESSING REAL PAYPAL TRANSACTIONS"")
+    else:
+        print(""\n⚠️  WARNING: No real PayPal batches found"")
+        print(""   System is still in simulation mode"")
+","","code","python","Generates a dashboard to display real PayPal transaction data.","swarm_internal","[""paypal_automation_agent""]","","[]","true","6942a1d6b34d2e4cd49f9ac9","2025-12-17T12:28:06.934000","2025-12-17T12:28:06.934000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"webhook_handler.py","
+from flask import Flask, request, jsonify
+import json
+import sqlite3
+from datetime import datetime
+
+app = Flask(__name__)
+
+class PayPalWebhookHandler:
+    def __init__(self, db_path: str = ""automation.db""):
+        self.db_path = db_path
+    
+    def handle_webhook(self, event_type: str, event_data: dict):
+        """"""Process incoming PayPal webhooks""""""
+        
+        # Map PayPal webhook events to our statuses
+        event_handlers = {
+            ""PAYMENT.PAYOUTSBATCH.REQUESTED"": self.handle_batch_requested,
+            ""PAYMENT.PAYOUTSBATCH.PROCESSING"": self.handle_batch_processing,
+            ""PAYMENT.PAYOUTSBATCH.SUCCESS"": self.handle_batch_success,
+            ""PAYMENT.PAYOUTSBATCH.DENIED"": self.handle_batch_denied,
+            ""PAYMENT.PAYOUTS-ITEM.SUCCESS"": self.handle_item_success,
+            ""PAYMENT.PAYOUTS-ITEM.FAILED"": self.handle_item_failed,
+        }
+        
+        handler = event_handlers.get(event_type)
+        if handler:
+            return handler(event_data)
+        else:
+            print(f""⚠️ Unhandled webhook event: {event_type}"")
+            return {""status"": ""unhandled""}
+    
+    def handle_batch_success(self, data: dict):
+        """"""Handle successful payout batch""""""
+        batch_id = data.get(""resource"", {}).get(""batch_header"", {}).get(""payout_batch_id"")
+        
+        if batch_id:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Update all transactions in this batch
+            cursor.execute('''
+            UPDATE real_transactions 
+            SET status = 'completed',
+                paypal_status = 'SUCCESS',
+                completed_at = CURRENT_TIMESTAMP,
+                webhook_received = TRUE,
+                webhook_data = ?,
+                settlement_date = DATE('now')
+            WHERE paypal_batch_id = ?
+            ''', (json.dumps(data), batch_id))
+            
+            conn.commit()
+            
+            # Log to audit
+            cursor.execute('''
+            INSERT INTO audit_log (transaction_id, event_type, event_data)
+            SELECT id, 'webhook_batch_success', ?
+            FROM real_transactions 
+            WHERE paypal_batch_id = ?
+            ''', (json.dumps(data), batch_id))
+            
+            conn.commit()
+            conn.close()
+            
+            print(f""✅ Batch {batch_id} completed successfully"")
+            return {""status"": ""updated"", ""batch_id"": batch_id}
+        
+        return {""status"": ""no_batch_id""}
+    
+    def handle_item_success(self, data: dict):
+        """"""Handle individual successful payout item""""""
+        transaction_id = data.get(""resource"", {}).get(""transaction_id"")
+        amount = data.get(""resource"", {}).get(""amount"", {}).get(""value"")
+        
+        if transaction_id:
+            print(f""💰 Individual payout successful: {transaction_id} - ${amount}"")
+            # Update specific transaction if needed
+        
+        return {""status"": ""received""}
+
+# Flask webhook endpoint
+@app.route('/webhook/paypal', methods=['POST'])
+def paypal_webhook():
+    handler = PayPalWebhookHandler()
+    
+    # Verify webhook signature (implement with your PayPal integration)
+    # if not verify_signature(request.headers, request.data):
+    #     return jsonify({""status"": ""unauthorized""}), 401
+    
+    event = request.json
+    event_type = event.get(""event_type"")
+    
+    print(f""📨 Received PayPal webhook: {event_type}"")
+    
+    result = handler.handle_webhook(event_type, event)
+    
+    return jsonify(result), 200
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
+","","code","python","Handles incoming PayPal webhooks to update transaction statuses.","swarm_internal","[""paypal_automation_agent""]","","[]","true","6942a1cdb34d2e4cd49f9ac7","2025-12-17T12:27:57.356000","2025-12-17T12:27:57.356000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"transition_to_real.py","
+#!/usr/bin/env python3
+""""""
+Script to migrate from simulation mode to real PayPal execution
+""""""
+import sqlite3
+import json
+from datetime import datetime, timedelta
+from typing import List, Dict
+from paypal_integration import RealPayPalPayout
+
+class SystemTransition:
+    def __init__(self, db_path: str = ""automation.db""):
+        self.db_path = db_path
+        self.paypal = RealPayPalPayout(mode=""live"")
+        self.setup_database()
+    
+    def setup_database(self):
+        """"""Create proper database schema for real transactions""""""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        # Create real transaction table (replaces simulation table)
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS real_transactions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            paypal_batch_id TEXT UNIQUE NOT NULL,
+            internal_reference TEXT,
+            recipient_email TEXT NOT NULL,
+            amount REAL NOT NULL,
+            currency TEXT DEFAULT 'USD',
+            status TEXT NOT NULL,
+            paypal_status TEXT,
+            fee REAL,
+            net_amount REAL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            processed_at TIMESTAMP,
+            completed_at TIMESTAMP,
+            error_message TEXT,
+            webhook_received BOOLEAN DEFAULT FALSE,
+            webhook_data TEXT,
+            settlement_date DATE,
+            metadata TEXT
+        )
+        ''')
+        
+        # Create audit log table
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS audit_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            transaction_id INTEGER,
+            event_type TEXT NOT NULL,
+            event_data TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (transaction_id) REFERENCES real_transactions (id)
+        )
+        ''')
+        
+        conn.commit()
+        conn.close()
+    
+    def migrate_simulation_transactions(self):
+        """"""
+        Convert simulated transactions to real queue
+        Returns list of pending transactions to process
+        """"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        # Get all simulated transactions marked as 'completed'
+        cursor.execute('''
+        SELECT id, amount, recipient_email, created_date 
+        FROM simulated_transactions 
+        WHERE status = 'completed' 
+        AND real_transaction_id IS NULL
+        ''')
+        
+        simulated = cursor.fetchall()
+        
+        real_transactions = []
+        for sim_id, amount, email, created_date in simulated:
+            # Create real transaction record
+            cursor.execute('''
+            INSERT INTO real_transactions 
+            (internal_reference, recipient_email, amount, status, metadata)
+            VALUES (?, ?, ?, ?, ?)
+            ''', (f""SIM-{sim_id}"", email, amount, ""pending_migration"", 
+                  json.dumps({""source"": ""simulation_migration"", ""sim_id"": sim_id})))
+            
+            real_id = cursor.lastrowid
+            
+            # Link simulation to real transaction
+            cursor.execute('''
+            UPDATE simulated_transactions 
+            SET real_transaction_id = ? 
+            WHERE id = ?
+            ''', (real_id, sim_id))
+            
+            real_transactions.append({
+                ""real_id"": real_id,
+                ""sim_id"": sim_id,
+                ""amount"": amount,
+                ""email"": email
+            })
+        
+        conn.commit()
+        conn.close()
+        
+        print(f""📦 Migrated {len(real_transactions)} simulated transactions to real queue"")
+        return real_transactions
+    
+    def execute_pending_transactions(self, limit: int = 10):
+        """"""Execute real PayPal transactions for pending items""""""
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        # Get pending transactions
+        cursor.execute('''
+        SELECT * FROM real_transactions 
+        WHERE status IN ('pending', 'pending_migration')
+        ORDER BY created_at ASC
+        LIMIT ?
+        ''', (limit,))
+        
+        pending = cursor.fetchall()
+        
+        results = []
+        for transaction in pending:
+            print(f""\n🚀 Processing transaction #{transaction['id']}: ""
+                  f""${transaction['amount']} to {transaction['recipient_email']}"")
+            
+            # Execute real PayPal payout
+            result = self.paypal.create_payout(
+                recipient_email=transaction['recipient_email'],
+                amount=transaction['amount'],
+                note=""Real transaction from migrated system""
+            )
+            
+            if result['success']:
+                # Update with real PayPal data
+                cursor.execute('''
+                UPDATE real_transactions 
+                SET status = ?,
+                    paypal_batch_id = ?,
+                    paypal_status = ?,
+                    fee = ?,
+                    processed_at = CURRENT_TIMESTAMP,
+                    metadata = json_set(metadata, '$.real_execution', ?)
+                WHERE id = ?
+                ''', (
+                    'processing',
+                    result['paypal_batch_id'],
+                    result['status'],
+                    result['fee'],
+                    json.dumps(result),
+                    transaction['id']
+                ))
+                
+                # Log to audit
+                cursor.execute('''
+                INSERT INTO audit_log (transaction_id, event_type, event_data)
+                VALUES (?, ?, ?)
+                ''', (
+                    transaction['id'],
+                    'paypal_payout_created',
+                    json.dumps({
+                        ""batch_id"": result['paypal_batch_id'],
+                        ""amount"": result['amount'],
+                        ""timestamp"": datetime.utcnow().isoformat()
+                    })
+                ))
+                
+                results.append({
+                    ""success"": True,
+                    ""transaction_id"": transaction['id'],
+                    ""paypal_batch_id"": result['paypal_batch_id'],
+                    ""message"": ""Real PayPal payout created""
+                })
+            else:
+                # Handle failure
+                cursor.execute('''
+                UPDATE real_transactions 
+                SET status = 'failed',
+                    error_message = ?,
+                    metadata = json_set(metadata, '$.error', ?)
+                WHERE id = ?
+                ''', (
+                    result['error'],
+                    json.dumps(result),
+                    transaction['id']
+                ))
+                
+                results.append({
+                    ""success"": False,
+                    ""transaction_id"": transaction['id'],
+                    ""error"": result['error']
+                })
+        
+        conn.commit()
+        conn.close()
+        
+        return results
+    
+    def verify_real_execution(self):
+        """"""Verify that transactions are actually hitting PayPal""""""
+        print(""\n"" + ""=""*60)
+        print(""🔍 REALITY CHECK"")
+        print(""=""*60)
+        
+        # Test with micro-transaction
+        test_result = self.paypal.create_payout(
+            recipient_email=""younestsouli2019@gmail.com"",
+            amount=0.01,
+            note=""Reality check - test transaction""
+        )
+        
+        if test_result['success']:
+            print(f""""""
+✅ CONFIRMED: REAL PAYPAL INTEGRATION WORKING
+   • PayPal Batch ID: {test_result['paypal_batch_id']}
+   • Status: {test_result['status']}
+   • Amount: ${test_result['amount']:.2f}
+   • Fee: ${test_result['fee']:.2f}
+   
+💡 ACTION: Log into PayPal.com and verify this transaction appears
+           in your Activity feed within 2-3 minutes.
+"""""")
+            return True
+        else:
+            print(f""""""
+❌ REAL PAYPAL INTEGRATION FAILED
+   Error: {test_result['error']}
+   
+   Steps to fix:
+   1. Check PayPal API credentials
+   2. Verify PayPal account permissions
+   3. Ensure account can send payouts
+   4. Check for IP restrictions
+"""""")
+            return False
+
+# Execute transition
+if __name__ == ""__main__"":
+    print(""🚀 SYSTEM TRANSITION: Simulation → Real PayPal"")
+    print(""-"" * 50)
+    
+    transition = SystemTransition()
+    
+    # Step 1: Verify we can connect to real PayPal
+    if not transition.verify_real_execution():
+        print(""❌ Cannot proceed until real PayPal connection is established"")
+        exit(1)
+    
+    # Step 2: Migrate existing simulated transactions
+    migrated = transition.migrate_simulation_transactions()
+    
+    if migrated:
+        print(f""\n📊 Migration Summary:"")
+        for tx in migrated[:5]:  # Show first 5
+            print(f""   • ${tx['amount']} to {tx['email']}"")
+        
+        if len(migrated) > 5:
+            print(f""   ... and {len(migrated) - 5} more"")
+    
+    # Step 3: Execute pending transactions (start with small batch)
+    print(""\n⚡ Executing real PayPal transactions..."")
+    results = transition.execute_pending_transactions(limit=3)
+    
+    print(f""\n✅ Transition complete!"")
+    print(f""   Successful: {sum(1 for r in results if r['success'])}"")
+    print(f""   Failed: {sum(1 for r in results if not r['success'])}"")
+    
+    print(""\n📋 Next steps:"")
+    print(""   1. Monitor PayPal.com for incoming webhooks"")
+    print(""   2. Check transaction status in 1 hour"")
+    print(""   3. Update dashboard to show REAL PayPal data"")
+    print(""   4. Disable simulation mode in configuration"")
+","","code","python","Script to migrate from simulation mode to real PayPal execution and set up the database.","swarm_internal","[""paypal_automation_agent""]","","[]","true","6942a1c8b34d2e4cd49f9ac5","2025-12-17T12:27:52.465000","2025-12-17T12:27:52.465000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"paypal_integration.py","
+import os
+import json
+import logging
+from datetime import datetime
+from paypalrestsdk import Payout, configure
+from paypalhttp import HttpResponse
+import requests
+from typing import Dict, List, Optional, Tuple
+
+class RealPayPalPayout:
+    """"""
+    Replaces the simulation engine with real PayPal API calls
+    """"""
+    
+    def __init__(self, mode: str = ""live""):
+        """"""Initialize with real PayPal credentials""""""
+        self.mode = mode
+        self.client_id = os.getenv(""PAYPAL_CLIENT_ID"")
+        self.client_secret = os.getenv(""PAYPAL_CLIENT_SECRET"")
+        self.webhook_id = os.getenv(""PAYPAL_WEBHOOK_ID"")
+        
+        # Configure PayPal SDK
+        configure({
+            ""mode"": mode,  # ""live"" or ""sandbox""
+            ""client_id"": self.client_id,
+            ""client_secret"": self.client_secret
+        })
+        
+        # Setup logging
+        logging.basicConfig(level=logging.INFO)
+        self.logger = logging.getLogger(__name__)
+        
+        # Real API endpoints
+        self.base_url = ""https://api-m.paypal.com"" if mode == ""live"" else ""https://api-m.sandbox.paypal.com""
+        self.auth_token = None
+        
+    def _get_auth_token(self) -> str:
+        """"""Get OAuth2 token for API calls""""""
+        if not self.auth_token:
+            auth_url = f""{self.base_url}/v1/oauth2/token""
+            auth = (self.client_id, self.client_secret)
+            headers = {""Accept"": ""application/json"", ""Accept-Language"": ""en_US""}
+            data = {""grant_type"": ""client_credentials""}
+            
+            response = requests.post(auth_url, headers=headers, data=data, auth=auth)
+            response.raise_for_status()
+            
+            self.auth_token = response.json()[""access_token""]
+        
+        return self.auth_token
+    
+    def create_payout(self, 
+                     recipient_email: str, 
+                     amount: float, 
+                     currency: str = ""USD"",
+                     note: str = ""Automated transfer"") -> Dict:
+        """"""
+        Create real PayPal payout
+        Returns PayPal transaction details
+        """"""
+        try:
+            # Generate unique sender batch ID
+            sender_batch_id = f""Payout_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{int(amount)}""
+            
+            # Create payout object
+            payout = Payout({
+                ""sender_batch_header"": {
+                    ""sender_batch_id"": sender_batch_id,
+                    ""email_subject"": ""You have received a payment"",
+                    ""email_message"": f""You received ${amount:.2f}. Note: {note}""
+                },
+                ""items"": [{
+                    ""recipient_type"": ""EMAIL"",
+                    ""amount"": {
+                        ""value"": f""{amount:.2f}"",
+                        ""currency"": currency
+                    },
+                    ""receiver"": recipient_email,
+                    ""note"": note,
+                    ""sender_item_id"": f""item_{int(datetime.timestamp(datetime.utcnow()))}""
+                }]
+            })
+            
+            # Execute real PayPal API call
+            if payout.create():
+                self.logger.info(f""✅ REAL PAYPAL PAYOUT CREATED"")
+                self.logger.info(f""   Batch ID: {payout.batch_header.payout_batch_id}"")
+                self.logger.info(f""   Status: {payout.batch_header.batch_status}"")
+                
+                # Get detailed transaction info
+                transaction_details = self.get_payout_details(payout.batch_header.payout_batch_id)
+                
+                return {
+                    ""success"": True,
+                    ""paypal_batch_id"": payout.batch_header.payout_batch_id,
+                    ""status"": payout.batch_header.batch_status,
+                    ""amount"": amount,
+                    ""currency"": currency,
+                    ""recipient"": recipient_email,
+                    ""created_at"": datetime.utcnow().isoformat(),
+                    ""details"": transaction_details,
+                    ""fee"": self.calculate_fee(amount)
+                }
+            else:
+                error_msg = f""PayPal API Error: {payout.error}""
+                self.logger.error(error_msg)
+                return {
+                    ""success"": False,
+                    ""error"": error_msg,
+                    ""paypal_response"": payout.error
+                }
+                
+        except Exception as e:
+            self.logger.error(f""Payout creation failed: {str(e)}"")
+            return {
+                ""success"": False,
+                ""error"": str(e),
+                ""simulated"": False  # This is now a real error, not simulation
+            }
+    
+    def get_payout_details(self, batch_id: str) -> Dict:
+        """"""Get detailed transaction information from PayPal""""""
+        headers = {
+            ""Authorization"": f""Bearer {self._get_auth_token()}"",
+            ""Content-Type"": ""application/json""
+        }
+        
+        url = f""{self.base_url}/v1/payments/payouts/{batch_id}""
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {""error"": f""Failed to get details: {response.text}""}
+    
+    def calculate_fee(self, amount: float) -> float:
+        """"""Calculate actual PayPal fees (not simulated)""""""
+        # Real PayPal fee structure
+        fixed_fee = 0.30  # USD
+        percentage_fee = 0.019  # 1.9%
+        
+        total_fee = (amount * percentage_fee) + fixed_fee
+        return round(total_fee, 2)
+    
+    def verify_webhook_signature(self, headers: Dict, body: str) -> bool:
+        """"""Verify incoming webhooks are from PayPal""""""
+        webhook_url = f""{self.base_url}/v1/notifications/verify-webhook-signature""
+        
+        verification_data = {
+            ""auth_algo"": headers.get(""PAYPAL-AUTH-ALGO""),
+            ""cert_url"": headers.get(""PAYPAL-CERT-URL""),
+            ""transmission_id"": headers.get(""PAYPAL-TRANSMISSION-ID""),
+            ""transmission_sig"": headers.get(""PAYPAL-TRANSMISSION-SIG""),
+            ""transmission_time"": headers.get(""PAYPAL-TRANSMISSION-TIME""),
+            ""webhook_id"": self.webhook_id,
+            ""webhook_event"": json.loads(body)
+        }
+        
+        headers = {
+            ""Authorization"": f""Bearer {self._get_auth_token()}"",
+            ""Content-Type"": ""application/json""
+        }
+        
+        response = requests.post(webhook_url, json=verification_data, headers=headers)
+        return response.status_code == 200 and response.json().get(""verification_status"") == ""SUCCESS""
+","","code","python","Handles real PayPal API integration for payouts and webhooks.","swarm_internal","[""paypal_automation_agent""]","","[]","true","6942a1beb34d2e4cd49f9ac2","2025-12-17T12:27:42.667000","2025-12-17T12:27:42.667000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"makePayoutRequest.js","","","code","javascript","PayPal API request function with proper headers and error handling for payout requests.","swarm_internal","[]","","[]","true","69236ab85ed76ef477c027ad","2025-11-23T20:12:40.634000","2025-11-23T20:12:40.634000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"getPayPalToken.js","","","code","javascript","PayPal token management function to handle 403 errors by caching and refreshing tokens.","swarm_internal","[]","","[]","true","69236ab85ed76ef477c027ac","2025-11-23T20:12:40.631000","2025-11-23T20:12:40.631000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"paypal_payout_executor.py","","","code","Python","Module for executing PayPal payouts, handling batch processing and interaction with the PayPal API for revenue distribution.","swarm_internal","[]","","[""paypal"",""payouts"",""api_integration"",""finance"",""python""]","true","6922d22ec6b552a30c85e92d","2025-11-23T09:21:50.454000","2025-11-23T09:21:50.454000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"mission_revenue_integration.py","","","code","Python","Integration code for enhancing mission completion workflows with dynamic revenue calculation and distribution to agents.","swarm_internal","[]","","[""mission_tracking"",""revenue_attribution"",""workflow_integration"",""python""]","true","6922d22ec6b552a30c85e92c","2025-11-23T09:21:50.452000","2025-11-23T09:21:50.452000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"complete_revenue_system.py","","","code","Python","Comprehensive system for revenue distribution, integrating activity-based, manual top-performer, and hybrid allocation strategies, generating payout batches and reports.","swarm_internal","[]","","[""payout"",""revenue_distribution"",""activity_based"",""manual_allocation"",""reporting"",""python""]","true","6922d22ec6b552a30c85e92b","2025-11-23T09:21:50.449000","2025-11-23T09:21:50.449000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"autonomous_payout.py","","","code","Python","Python script for an autonomous payout system that processes agent revenues from a CSV file, simulates PayPal payouts, and runs as a Flask application with scheduled execution.","swarm_internal","[]","","[""payout"",""automation"",""finance"",""python"",""flask"",""scheduler""]","true","6921c4f2b75d500b08607acd","2025-11-22T14:13:06.345000","2025-11-22T14:13:06.345000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"secure_paypal_config.py","","","code","python","Secure PayPal configuration and authentication testing module, emphasizing environment variable usage and credential validation.","swarm_internal","[]","","[]","true","6921a8a6758c929cd33b8d0d","2025-11-22T12:12:22.691000","2025-11-22T12:12:22.691000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"fixed_paypal_payout_orchestrator.py","","","code","python","Updated PayPal Payout Orchestrator with proper authentication and error handling, including logic for splitting large payouts.","swarm_internal","[]","","[]","true","6921a734c0ee9eb611e4ef86","2025-11-22T12:06:12.232000","2025-11-22T12:06:12.232000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+".env.template","","","config","dotenv","Template for environment variables required by the PayPal verification system.","swarm_internal","[]","","[""configuration"",""env""]","true","691f37e8830fd78bdfd11f10","2025-11-20T15:46:48.576000","2025-11-20T15:46:48.576000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"main.py","","","code","python","Main deployment script for starting the Autonomous PayPal Transfer Verification & Reconciliation System.","swarm_internal","[]","","[""deployment"",""main""]","true","691f37e8830fd78bdfd11f0f","2025-11-20T15:46:48.573000","2025-11-20T15:46:48.573000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"alerting_system.py","","","code","python","System for sending alerts based on critical events during transfer verification.","swarm_internal","[]","","[""alerting"",""notifications""]","true","691f37e8830fd78bdfd11f0e","2025-11-20T15:46:48.570000","2025-11-20T15:46:48.570000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"autonomous_verification_scheduler.py","","","code","python","Schedules and orchestrates the autonomous PayPal transfer verification and monitoring cycles.","swarm_internal","[]","","[""scheduler"",""automation""]","true","691f37e8830fd78bdfd11f0d","2025-11-20T15:46:48.567000","2025-11-20T15:46:48.567000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"transfer_status_monitor.py","","","code","python","Monitors the status of reinitiated PayPal transfers and updates mission records.","swarm_internal","[]","","[""paypal"",""monitor"",""reconciliation""]","true","691f37e8830fd78bdfd11f0c","2025-11-20T15:46:48.565000","2025-11-20T15:46:48.565000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"paypal_api_client.py","","","code","python","Client for interacting with the PayPal API for transaction search and transfers.","swarm_internal","[]","","[""paypal"",""api"",""client""]","true","691f37e8830fd78bdfd11f0b","2025-11-20T15:46:48.562000","2025-11-20T15:46:48.562000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"transfer_verification_engine.py","","","code","python","Engine to verify PayPal transfers against mission records and initiate recovery.","swarm_internal","[]","","[""paypal"",""verification"",""reconciliation""]","true","691f37e8830fd78bdfd11f0a","2025-11-20T15:46:48.559000","2025-11-20T15:46:48.559000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Swarm_Orchestrator_API_Documentation.html","","","documentation","HTML","Interactive API Documentation for the Swarm Orchestrator API, detailing all endpoints, authentication, and implementation guidance.","public","[""Orchestrator-Core""]","","[""api-documentation"",""openapi"",""swagger-ui""]","true","690084c6f2b49e8a27fed318","2025-10-28T08:54:30.776000","2025-10-28T08:54:30.776000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"webhooks_api_routes.py","","","code","Python","API routes for handling PayPal and agent event webhooks.","swarm_internal","[""69007e98f05a570ae5bcc319""]","","[""api-routes"",""webhooks""]","true","69008107b7e7892d05e54fa0","2025-10-28T08:38:31.478000","2025-10-28T08:38:31.478000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"recovery_api_routes.py","","","code","Python","API routes for logging and managing recovery events and manual interventions.","swarm_internal","[""69007e98f05a570ae5bcc319""]","","[""api-routes"",""recovery""]","true","69008104b7e7892d05e54f91","2025-10-28T08:38:28.796000","2025-10-28T08:38:28.796000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"payouts_api_routes.py","","","code","Python","API routes for managing Payout batches, including creation, submission, and status updates.","swarm_internal","[""69007e98f05a570ae5bcc319""]","","[""api-routes"",""payouts""]","true","69008102b7e7892d05e54f82","2025-10-28T08:38:26.231000","2025-10-28T08:38:26.231000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"revenue_api_routes.py","","","code","Python","API routes for ingesting revenue events and managing reconciliation processes.","swarm_internal","[""69007e98f05a570ae5bcc319""]","","[""api-routes"",""revenue"",""reconciliation""]","true","690080feb7e7892d05e54f5d","2025-10-28T08:38:22.473000","2025-10-28T08:38:22.473000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"agents_api_routes.py","","","code","Python","API routes for managing Agent entities, including registration, status updates, and heartbeats.","swarm_internal","[""69007e98f05a570ae5bcc319""]","","[""api-routes"",""agents""]","true","690080fbb7e7892d05e54f4d","2025-10-28T08:38:19.539000","2025-10-28T08:38:19.539000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"missions_api_routes.py","","","code","Python","API routes for managing Mission entities, including creation, retrieval, and updates.","swarm_internal","[""69007e98f05a570ae5bcc319""]","","[""api-routes"",""missions""]","true","690080fab7e7892d05e54f41","2025-10-28T08:38:18.266000","2025-10-28T08:38:18.266000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"predictive_scaler.py","","","code","Python","Predicts future resource needs and suggests scaling actions based on historical data and current metrics.","swarm_internal","[""69007e98f05a570ae5bcc319"",""69007e9bf05a570ae5bcc32c""]","","[""performance-optimization"",""scaling"",""forecasting""]","true","69007ed4f05a570ae5bcc4cd","2025-10-28T08:29:08.752000","2025-10-28T08:29:08.752000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"load_balancer.py","","","code","Python","Distributes tasks among agents based on various strategies like least loaded, round robin, and performance-based.","swarm_internal","[""69007e98f05a570ae5bcc319"",""69007e9bf05a570ae5bcc32c""]","","[""performance-optimization"",""load-balancing""]","true","69007ed0f05a570ae5bcc4a2","2025-10-28T08:29:04.056000","2025-10-28T08:29:04.056000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"recovery_system.py","","","code","Python","Automates recovery from various system failures, including agent failures, task timeouts, and resource exhaustion.","swarm_internal","[""69007e98f05a570ae5bcc319"",""69007e9ff05a570ae5bcc34c""]","","[""recovery"",""fault-tolerance""]","true","69007ecdf05a570ae5bcc486","2025-10-28T08:29:01.374000","2025-10-28T08:29:01.374000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"monitoring_system.py","","","code","Python","Collects system metrics, detects anomalies, and provides real-time insights into the swarm's operation.","swarm_internal","[""69007e98f05a570ae5bcc319""]","","[""monitoring"",""real-time-metrics""]","true","69007eccf05a570ae5bcc474","2025-10-28T08:29:00.049000","2025-10-28T08:29:00.049000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"resource_manager.py","","","code","Python","Manages and allocates system resources (CPU, memory, storage, network) to tasks and agents.","swarm_internal","[""69007e98f05a570ae5bcc319"",""69007e9bf05a570ae5bcc32c""]","","[""resource-management"",""allocation""]","true","69007ec9f05a570ae5bcc45d","2025-10-28T08:28:57.563000","2025-10-28T08:28:57.563000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"parallel_executor.py","","","code","Python","Enables parallel execution of tasks with dependency management using a thread pool executor.","swarm_internal","[""69007e98f05a570ae5bcc319""]","","[""execution"",""parallel-processing""]","true","69007ec3f05a570ae5bcc431","2025-10-28T08:28:51.922000","2025-10-28T08:28:51.922000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"execution_engine.py","","","code","Python","Core engine for executing tasks, managing their lifecycle, and handling errors and timeouts.","swarm_internal","[""69007e98f05a570ae5bcc319""]","","[""execution"",""task-management""]","true","69007ec0f05a570ae5bcc420","2025-10-28T08:28:48.075000","2025-10-28T08:28:48.075000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"health_monitor.py","","","code","Python","Performs comprehensive health checks on agents, including connectivity, performance, and resource usage.","swarm_internal","[""69007e98f05a570ae5bcc319""]","","[""agent-management"",""health-monitoring""]","true","69007ebcf05a570ae5bcc410","2025-10-28T08:28:44.843000","2025-10-28T08:28:44.843000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"performance_manager.py","","","code","Python","Monitors and records agent performance metrics for tasks, including completion rates, execution speed, and error rates.","swarm_internal","[""69007e98f05a570ae5bcc319""]","","[""agent-management"",""performance-metrics""]","true","69007ebbf05a570ae5bcc404","2025-10-28T08:28:43.460000","2025-10-28T08:28:43.460000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"agent_registry.py","","","code","Python","Registers and manages agents, their capabilities, performance history, and current load within the swarm.","swarm_internal","[""69007e98f05a570ae5bcc319""]","","[""agent-management"",""registry""]","true","69007ebaf05a570ae5bcc3ed","2025-10-28T08:28:42.261000","2025-10-28T08:28:42.261000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"dependency_resolver.py","","","code","Python","Resolves mission dependencies using topological sorting to determine execution order.","swarm_internal","[""69007e9af05a570ae5bcc325""]","","[""mission-management"",""dependency-resolution""]","true","69007eb7f05a570ae5bcc3dc","2025-10-28T08:28:39.061000","2025-10-28T08:28:39.061000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"mission_priority.py","","","code","Python","Implements dynamic mission priority calculation based on various factors.","swarm_internal","[""69007e98f05a570ae5bcc319"",""69007e9af05a570ae5bcc325""]","","[""mission-management"",""priority-system""]","true","69007eb0f05a570ae5bcc3ae","2025-10-28T08:28:32.848000","2025-10-28T08:28:32.848000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"mission_lifecycle.yaml","","","config","YAML","Defines the lifecycle and states of missions within the Swarm Orchestrator.","swarm_internal","[""69007e98f05a570ae5bcc319"",""69007e9af05a570ae5bcc325""]","","[""mission-management"",""workflow""]","true","69007eabf05a570ae5bcc393","2025-10-28T08:28:27.294000","2025-10-28T08:28:27.294000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"MitigationDashboard.js","","","code","JavaScript","React component for visualizing and managing the Agent Failure Mitigation System within the Swarm Command Center frontend.","swarm_internal","[]","","[""agent-management"",""failure-mitigation"",""frontend"",""react"",""dashboard""]","true","68c9ac304f7823321d83a3cc","2025-09-16T18:28:00.964000","2025-09-16T18:28:00.964000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"agentFailureMitigator.js","","","code","JavaScript","A comprehensive agent failure mitigation script implementing redundancy, monitoring, graceful degradation, and recovery mechanisms for the Swarm Command Center.","swarm_internal","[]","","[""agent-management"",""failure-mitigation"",""backend"",""utils""]","true","68c9ac2f4f7823321d83a3c2","2025-09-16T18:27:59.757000","2025-09-16T18:27:59.757000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"swarm-command-center","","","code","JavaScript","File structure for a swarm command center project, including backend (Vercel serverless functions) and frontend (React application).","swarm_internal","[]","","[""vercel"",""react"",""serverless"",""javascript"",""frontend"",""backend""]","true","68c996e2bb7b6b7b29d71c7c","2025-09-16T16:57:06.041000","2025-09-16T16:57:06.041000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Tool-Factory","","https://github.com/Simple-Efficient/Tool-Factory","code","Python","A code repository from Simple-Efficient.","public","[]","","[""github""]","true","68c99689b972c4fe28ae06a2","2025-09-16T16:55:37.546000","2025-09-16T16:55:37.546000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"awesome-claude-code","","https://github.com/hesreallyhim/awesome-claude-code","code","Python","A collection of awesome Claude code examples.","public","[]","","[""github""]","true","68c99658a404e33c38fd335e","2025-09-16T16:54:48.912000","2025-09-16T16:54:48.912000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"tiktok_api_utils.py","","","code","Python","Python utility for interacting with the TikTok API.","swarm_internal","[]","","[""api_integration"",""tiktok"",""social_media""]","true","68c9928dc6706fe1125fa312","2025-09-16T16:38:37.373000","2025-09-16T16:38:37.373000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"video_thumbnail_optimizer.sh","","","code","Bash","Shell script for optimizing video thumbnails for various platforms.","swarm_internal","[]","","[""video_processing"",""optimization"",""thumbnails""]","true","68c9928cc6706fe1125fa305","2025-09-16T16:38:36.278000","2025-09-16T16:38:36.278000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"trend_analysis_algorithm.py","","","code","Python","Python algorithm for analyzing social media trends to optimize posting times.","swarm_internal","[]","","[""trend_analysis"",""social_media"",""optimization""]","true","68c9928bc6706fe1125fa2fb","2025-09-16T16:38:35.252000","2025-09-16T16:38:35.252000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"short_video_script_generator.py","","","code","Python","Python script for generating engaging short video scripts.","swarm_internal","[]","","[""content_creation"",""scripting"",""video""]","true","68c99289c6706fe1125fa2f1","2025-09-16T16:38:33.025000","2025-09-16T16:38:33.025000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"security-audit.js","","","code","javascript","Custom security module for the enhanced live environment transition script. Performs security audits, compliance checks, and initial environment variable checks.","swarm_internal","[]","","[""security"",""audit"",""compliance"",""live environment""]","true","68c934aea6862f657a19bafa","2025-09-16T09:58:06.306000","2025-09-16T09:58:06.306000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"database.js","","","code","javascript","Custom database module for the enhanced live environment transition script. Connects to MongoDB, and handles basic CRUD operations with improved error handling and indexing.","swarm_internal","[]","","[""database"",""mongodb"",""persistence"",""live environment""]","true","68c934aca6862f657a19baeb","2025-09-16T09:58:04.634000","2025-09-16T09:58:04.634000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"live-environment-transition.js","","","code","javascript","Enhanced Live Environment Transition Script. Facilitates the transition from simulation to live environment with enhanced error handling, security, logging, and persistence.","swarm_internal","[]","","[""live environment"",""transition"",""orchestration"",""security"",""logging"",""persistence"",""error handling"",""vite"",""winston"",""mongodb"",""paypal"",""agentic swarm""]","true","68c934aba6862f657a19bae2","2025-09-16T09:58:03.396000","2025-09-16T09:58:03.396000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"paypal-integration.js","","","code","javascript","PayPal Integration Module with functions to create orders, capture payments, get transaction details, and transfer funds.","swarm_internal","[]","","[]","true","68c931dcb2fe3761a710f6df","2025-09-16T09:46:04.276000","2025-09-16T09:46:04.276000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"financial-swarm-orchestrator.js","","","code","javascript","Agentic Swarm Financial Orchestrator specialized to identify agents capable of financial operations, PayPal integration, and revenue management from CSV data.","swarm_internal","[]","","[]","true","68c931dab2fe3761a710f6dd","2025-09-16T09:46:02.929000","2025-09-16T09:46:02.929000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"paypal_transfer_agent.py","","","code","python","
+import paypalrestsdk
+from paypalrestsdk import Payment
+
+class PayPalAgent:
+    def __init__(self, client_id, client_secret):
+        paypalrestsdk.configure({
+          ""mode"": ""live"",  # Use ""sandbox"" for testing
+          ""client_id"": client_id,
+          ""client_secret"": client_secret
+        })
+
+    def execute_transfer(self, amount, currency, sender_email, receiver_email):
+        payment = Payment({
+            ""intent"": ""sale"",
+            ""payer"": {""payment_method"": ""paypal""},
+            ""transactions"": [{
+                ""amount"": {""total"": str(amount), ""currency"": currency},
+                ""payee"": {""email"": receiver_email}
+            }],
+            ""redirect_urls"": {""return_url"": ""https://your-domain.com/return""}
+        })
+        if payment.create():
+            return {""status"": ""success"", ""payment_id"": payment.id}
+        else:
+            return {""status"": ""error"", ""details"": payment.error}
+","swarm_internal","[]","","[]","true","68c864c9a9324db8a55c8b51","2025-09-15T19:11:05.584000","2025-09-15T19:11:05.584000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"autonomous_evolution_protocol.py","","","code","python","Protocol for autonomous agent improvement, capability enhancement, and swarm evolution based on performance data and emerging requirements.","swarm_internal","[]","","[]","true","68c859566f739ef473abcca1","2025-09-15T18:22:14.180000","2025-09-15T18:22:14.180000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"predictive_mission_engine.py","","","code","python","Machine learning engine that predicts future opportunities based on historical patterns and prepares resource allocation in advance.","swarm_internal","[]","","[]","true","68c859536f739ef473abcc78","2025-09-15T18:22:11.709000","2025-09-15T18:22:11.709000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"business_asset_api_config.py","","","code","python","Configuration and core logic for Business Asset API. Provides access to RealWorldCerts courses, Swarm digital products, and monetization opportunities.","swarm_internal","[]","","[]","true","68c858b811a0c85f14a829d8","2025-09-15T18:19:36.259000","2025-09-15T18:19:36.259000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"agent_capability_registry_schema.json","","","config","","JSON schema defining the structure for agent capabilities registry. Enables StrategicSynthesis-Orchestrator to map and optimize agent skills.","swarm_internal","[]","","[]","true","68c858b711a0c85f14a829d7","2025-09-15T18:19:35.040000","2025-09-15T18:19:35.040000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"practice tests","","https://drive.google.com/file/d/1S4XT1tqty49grkZLrIg6pjdHOhZcMmfg/view?usp=drive_link","data","","practice tests","swarm_internal","[]","","[]","true","68c83ffe506d61cec568b774","2025-09-15T16:34:06.446000","2025-09-15T16:34:06.446000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"con-ra-d25.vercel.app","","https://con-ra-d25.vercel.app/","other","","Vercel deployment, migrated from base44.","public","[]","","[]","true","68c66e1b57d2027f2efa1af4","2025-09-14T07:26:19.371000","2025-09-14T07:26:19.371000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"ConRaD25.git","","https://github.com/CoNrAd2525/ConRaD25.git","code","typescript","Command Center repository","public","[]","","[]","true","68c66d7ab13eb94943f2c8ba","2025-09-14T07:23:38.397000","2025-09-14T07:28:45.389000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"paypal_agentic_toolkit_integration_guide","","https://github.com/paypal/agent-toolkit/","documentation","","Leverage PayPal’s developer tools (e.g., MCP servers, Agent Toolkit) to integrate swarm workflows with PayPal’s APIs for: Order management, invoice generation, and subscription handling","public","[]","","[""paypal"",""agentic toolkit"",""order management"",""invoice generation"",""subscription handling"",""API integration""]","true","68c3d6013cbff0188f235e4c","2025-09-12T08:12:49.503000","2025-09-12T08:12:49.503000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Request for Assistance with two Crypto Scam Incidents","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0e45485b6739e39d72","2025-09-09T15:38:54.152000","2025-09-09T15:38:54.152000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Inquiry Regarding Pro Bono Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0e45485b6739e39d71","2025-09-09T15:38:54.144000","2025-09-09T15:38:54.144000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Re: Inquiry Regarding Pro Bono Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0e45485b6739e39d70","2025-09-09T15:38:54.127000","2025-09-09T15:38:54.127000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Fwd: Inquiry Regarding Pro Bono Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0e45485b6739e39d6f","2025-09-09T15:38:54.122000","2025-09-09T15:38:54.122000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"19329be95c57aa4e","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0e45485b6739e39d6e","2025-09-09T15:38:54.108000","2025-09-09T15:38:54.108000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Inquiry Regarding  Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0e45485b6739e39d6d","2025-09-09T15:38:54.099000","2025-09-09T15:38:54.099000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Inquiry Regarding Pro Bono Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0e45485b6739e39d6c","2025-09-09T15:38:54.086000","2025-09-09T15:38:54.086000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Fwd:","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0e45485b6739e39d69","2025-09-09T15:38:54.074000","2025-09-09T15:38:54.074000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Fwd:","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0e45485b6739e39d68","2025-09-09T15:38:54.036000","2025-09-09T15:38:54.036000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Fwd:","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0e45485b6739e39d67","2025-09-09T15:38:54.029000","2025-09-09T15:38:54.029000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0e45485b6739e39d66","2025-09-09T15:38:54.023000","2025-09-09T15:38:54.023000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Re: Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0e45485b6739e39d65","2025-09-09T15:38:54.015000","2025-09-09T15:38:54.015000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d64","2025-09-09T15:38:53.995000","2025-09-09T15:38:53.995000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Re: Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d63","2025-09-09T15:38:53.988000","2025-09-09T15:38:53.988000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Fwd: Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d62","2025-09-09T15:38:53.981000","2025-09-09T15:38:53.981000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d61","2025-09-09T15:38:53.975000","2025-09-09T15:38:53.975000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d60","2025-09-09T15:38:53.969000","2025-09-09T15:38:53.969000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d5f","2025-09-09T15:38:53.959000","2025-09-09T15:38:53.959000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d5e","2025-09-09T15:38:53.953000","2025-09-09T15:38:53.953000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d5d","2025-09-09T15:38:53.947000","2025-09-09T15:38:53.947000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Re: Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d5c","2025-09-09T15:38:53.942000","2025-09-09T15:38:53.942000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d5b","2025-09-09T15:38:53.936000","2025-09-09T15:38:53.936000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d5a","2025-09-09T15:38:53.931000","2025-09-09T15:38:53.931000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d59","2025-09-09T15:38:53.925000","2025-09-09T15:38:53.925000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d58","2025-09-09T15:38:53.918000","2025-09-09T15:38:53.918000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d57","2025-09-09T15:38:53.911000","2025-09-09T15:38:53.911000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d56","2025-09-09T15:38:53.904000","2025-09-09T15:38:53.904000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d55","2025-09-09T15:38:53.887000","2025-09-09T15:38:53.887000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d54","2025-09-09T15:38:53.870000","2025-09-09T15:38:53.870000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d53","2025-09-09T15:38:53.864000","2025-09-09T15:38:53.864000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d52","2025-09-09T15:38:53.856000","2025-09-09T15:38:53.856000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d51","2025-09-09T15:38:53.842000","2025-09-09T15:38:53.842000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Re: [## 226970 ##] Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d50","2025-09-09T15:38:53.818000","2025-09-09T15:38:53.818000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Re: [## 226970 ##] Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d4f","2025-09-09T15:38:53.812000","2025-09-09T15:38:53.813000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d4e","2025-09-09T15:38:53.808000","2025-09-09T15:38:53.808000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d4d","2025-09-09T15:38:53.803000","2025-09-09T15:38:53.803000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d4c","2025-09-09T15:38:53.784000","2025-09-09T15:38:53.784000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d4b","2025-09-09T15:38:53.778000","2025-09-09T15:38:53.778000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d4a","2025-09-09T15:38:53.772000","2025-09-09T15:38:53.772000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Re: [## 239556 ##] Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d49","2025-09-09T15:38:53.765000","2025-09-09T15:38:53.765000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d48","2025-09-09T15:38:53.752000","2025-09-09T15:38:53.752000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d47","2025-09-09T15:38:53.723000","2025-09-09T15:38:53.723000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Digital Asset Recovery Assistance","","","documentation","","","swarm_internal","[]","","[]","true","68c04a0d45485b6739e39d46","2025-09-09T15:38:53.701000","2025-09-09T15:38:53.701000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"CCC_EN_20230409_435c761c97e2_Younes Tsouli.pdf","","","data","","CYBERCRIME COMPLAINTTM","swarm_internal","[]","368600","[]","true","68c047b5276c45ff6a6ef441","2025-09-09T15:28:53.512000","2025-09-09T15:28:53.512000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Complaint has been submitted (1).eml","","","data","","complaint","swarm_internal","[]","8192","[]","true","68c047b3276c45ff6a6ef41a","2025-09-09T15:28:51.086000","2025-09-09T15:28:51.086000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"fcda7fba5a9a5c545e9a56de0f98f0730f106347ea4716b5457a35d17bb541ad_en_usd.pdf","","","data","","complaint","swarm_internal","[]","70700","[]","true","68c047ad276c45ff6a6ef3e9","2025-09-09T15:28:45.528000","2025-09-09T15:28:45.528000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Reply from CA Attorney General; PIU #1491221","","","data","","Reply from CA Attorney General; PIU #1491221","swarm_internal","[]","99328","[]","true","68c047ab276c45ff6a6ef3d2","2025-09-09T15:28:43.479000","2025-09-09T15:28:43.479000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"common issues to solve","","","documentation","","Troubleshooting common issues, including a Bash script for keyboard input fix.","swarm_internal","[]","819.2","[]","true","68c046049cf56f35a9d6fd3a","2025-09-09T15:21:40.983000","2025-09-09T15:21:40.983000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Gmail export.csv","","","data","","gmail export udemy takedown","swarm_internal","[""68b7f8767633f92fe07c284f"",""68b7f8767633f92fe07c2850"",""68b7f031d9defbb9a2ceb84e"",""68b7f037d9defbb9a2ceb91b"",""689d9755744a85709b47c4fe"",""68b7f012d9defbb9a2ceb56f"",""68b7f049d9defbb9a2cec03f"",""68b7f04ad9defbb9a2cec051""]","10240","[]","true","68c0455f536a03d1012ae2d1","2025-09-09T15:18:55.544000","2025-09-09T15:20:27.388000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"udemy reviews","","","data","","udemy reviews","swarm_internal","[""68b7f8767633f92fe07c284f"",""68b7f8767633f92fe07c2850"",""68b7f031d9defbb9a2ceb84e"",""68b7f037d9defbb9a2ceb91b"",""689d9755744a85709b47c4fe"",""68b7f012d9defbb9a2ceb56f"",""68b7f049d9defbb9a2cec03f"",""68b7f04ad9defbb9a2cec051""]","5734.4","[]","true","68c0455b536a03d1012ae29a","2025-09-09T15:18:51.564000","2025-09-09T15:20:24.142000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"paypal_payouts_module.py","","","code","Python","Python module for executing one-time PayPal Payouts. Includes functions for obtaining access tokens and sending payouts via the PayPal Payouts API. Designed for integration with SwarmOS agents.","swarm_internal","[""68be8a6bbff7c1c21aca96fe"",""68be89d464fa377a8a97c0a0"",""68be8b31ebe9848748741399""]","","[""paypal"",""payouts"",""api-integration"",""financial"",""payment""]","true","68be8ee43be992a25ba7a575","2025-09-08T08:08:04.241000","2025-09-08T08:08:04.241000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"c2_command_dashboard.zip","private/6888ac155ebf84dd9855ea98/d38512cd1_c2_command_dashboard.zip","","code","command dashboard","command dashboard","swarm_internal","[]","216456","[]","true","68bd5de333bcea6c882a135b","2025-09-07T10:26:43.016000","2025-09-07T10:26:43.016000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Udemy_Reviews_Export_2025-08-15_12-21-58.csv","private/6888ac155ebf84dd9855ea98/d3b9b31ec_Udemy_Reviews_Export_2025-08-15_12-21-58.csv","","data","udemy reviews","udemy reviews","swarm_internal","[]","5784","[]","true","68bd574eafdc7691ad06b48e","2025-09-07T09:58:38.743000","2025-09-07T09:58:38.743000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Gmail export.csv","private/6888ac155ebf84dd9855ea98/7910a7652_Gmailexport.csv","","data","gmail export udemy takedown","gmail export udemy takedown","swarm_internal","[]","34598875","[]","true","68bd5618f6aa947bdc0a6823","2025-09-07T09:53:28.502000","2025-09-07T09:53:28.502000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"main.bat","private/6888ac155ebf84dd9855ea98/83e04a081_main.bat","","code","common issues to solve","https://www.youtube.com/watch?v=uHhrsaOXsjA
+https://www.youtube.com/watch?v=kg4Fd0FyhAk
+https://www.dailymotion.com/video/x9oxaw4
+https://www.youtube.com/watch?v=VuoAvaDsouU
+
+ another common issue : Here's a comprehensive Bash script for Windows 11 (WSL) to troubleshoot and fix the multiple keyboard input issue, combining registry tweaks, driver operations, and system diagnostics:
+
+```bash
+#!/bin/bash
+
+# Keyboard Input Fix Script for Windows 11
+# Requires WSL and PowerShell admin privileges
+
+# Initialize log file
+LOG_FILE=""keyboard_fix.log""
+echo ""Keyboard Fix Log - $(date)"" > ""$LOG_FILE""
+echo ""-----------------------------------"" >> ""$LOG_FILE""
+
+# Function to run PowerShell commands from Bash
+exec_powershell() {
+    echo ""Executing: $1"" >> ""$LOG_FILE""
+    result=$(powershell.exe -Command ""$1"" 2>&1)
+    echo ""$result"" | tee -a ""$LOG_FILE""
+    echo ""-----------------------------------"" >> ""$LOG_FILE""
+}
+
+# 1. Disable keyboard filters (Sticky/Filter/Toggle Keys)
+echo ""Disabling accessibility keyboard features..."" | tee -a ""$LOG_FILE""
+exec_powershell ""\
+Set-ItemProperty -Path 'Registry::HKEY_CURRENT_USER\Control Panel\Accessibility\StickyKeys' -Name 'Flags' -Value '506';\
+Set-ItemProperty -Path 'Registry::HKEY_CURRENT_USER\Control Panel\Accessibility\Keyboard Response' -Name 'Flags' -Value '122';""
+
+# 2. Reset keyboard repeat rates
+echo ""Resetting keyboard repeat rates..."" | tee -a ""$LOG_FILE""
+exec_powershell ""\
+Set-ItemProperty -Path 'Registry::HKEY_CURRENT_USER\Control Panel\Keyboard' -Name 'KeyboardDelay' -Value 1;\
+Set-ItemProperty -Path 'Registry::HKEY_CURRENT_USER\Control Panel\Keyboard' -Name 'KeyboardSpeed' -Value 31;""
+
+# 3. Reinstall keyboard drivers
+echo ""Reinstalling keyboard drivers..."" | tee -a ""$LOG_FILE""
+exec_powershell ""\
+\$device = Get-PnpDevice | Where-Object {\$_.Class -eq 'Keyboard'} | Select-Object -First 1 -ExpandProperty InstanceID;\
+If (\$device) { pnputil /remove-device \$device };""
+
+# 4. Reset keyboard layouts
+echo ""Resetting keyboard layouts..."" | tee -a ""$LOG_FILE""
+exec_powershell ""\
+\$lang = Get-WinUserLanguageList;\
+Set-WinUserLanguageList \$lang -Force;""
+
+# 5. Check for physical keyboard issues
+echo ""Running hardware diagnostics..."" | tee -a ""$LOG_FILE""
+exec_powershell ""Get-WinEvent -LogName 'System' -MaxEvents 20 | Where-Object {\$_.Id -eq 27 -or \$_.Id -eq 17} | Format-List""
+
+# 6. Final recommendations
+echo -e ""\n\033[1;36mTroubleshooting steps completed:\033[0m"" | tee -a ""$LOG_FILE""
+echo ""1. Accessibility features disabled"" | tee -a ""$LOG_FILE""
+echo ""2. Keyboard repeat rates reset"" | tee -a ""$LOG_FILE""
+echo ""3. Keyboard drivers reinstalled"" | tee -a ""$LOG_FILE""
+echo ""4. Input layouts refreshed"" | tee -a ""$LOG_FILE""
+echo -e ""\n\033[1;33mNext steps:\033[0m"" | tee -a ""$LOG_FILE""
+echo ""- Check different keyboard/mouse"" | tee -a ""$LOG_FILE""
+echo ""- Try different USB port"" | tee -a ""$LOG_FILE""
+echo ""- Update BIOS/UEFI firmware"" | tee -a ""$LOG_FILE""
+echo -e ""\nLog saved to: $LOG_FILE""
+echo -e ""\033[1;32mReboot your computer to apply all changes!\033[0m""
+```
+
+**Key Features:**
+1. Registry Fixes:
+   - Disables Sticky/Filter/Toggle Keys
+   - Resets keyboard repeat delay/speed
+2. Driver Operations:
+   - Reinstalls first detected keyboard driver
+3. System Diagnostics:
+   - Checks hardware event logs
+   - Resets keyboard layouts
+4. Safety Measures:
+   - Comprehensive logging
+   - Non-destructive operations
+5. User Guidance:
+   - Clear next-step recommendations
+   - Color-coded output
+
+**Usage:**
+1. Save as `keyboardfix.sh`
+2. Run in WSL:
+   ```bash
+   chmod +x keyboardfix.sh
+   ./keyboardfix.sh
+   ```
+3. **Reboot Windows** after execution
+
+**What It Does:**
+- Fixes registry settings causing key repeating
+- Resets accessibility features interfering with input
+- Reinstalls keyboard drivers without full removal
+- Maintains user language preferences
+- Provides hardware diagnostics
+- Gives actionable next steps
+
+**Note:** Requires administrative privileges. For Bluetooth keyboards, additional troubleshooting may be needed for connection stability. Check event logs in the output for hardware-related issues.
+
+This script addresses both software and potential hardware causes while maintaining system safety through targeted registry modifications and driver operations.","swarm_internal","[]","806","[]","true","68bb39b9d7f9f31c7ce1c948","2025-09-05T19:27:53.973000","2025-09-05T19:27:53.973000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"dontforget.txt","private/6888ac155ebf84dd9855ea98/a6306188a_dontforget.txt","","documentation","detailed khoumous islamic percentage calculation ghanima and zakat","detailed khoumous islamic percentage calculation ghanima and zakat","swarm_internal","[]","0","[]","true","68bb212a12960b269e3b4f2a","2025-09-05T17:43:06.458000","2025-09-05T17:43:06.458000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"pinetwork.pdf","private/6888ac155ebf84dd9855ea98/cdee79529_pinetwork.pdf","","documentation","","Dear Pi Network Support Team,
+
+I am writing to report an unauthorized transaction involving my Pi Wallet and request your immediate assistance in investigating and revoking any lingering bridge or dApp permissions.
+
+Transaction Details:
+
+Transaction Hash: f016fa2b9268b27bc8ee1a3d7fe9f5ba6ed3779880dc6a811e3731a26c69601d
+
+Transaction Time: 
+
+ 
+
+21 hours ago
+
+Recipient Address: GD5HGPHVL73EBDUD2Z4K2VDRLUBC4FFN7GOBLKPK6OPPXH6TED4TRK73
+
+My Pi Wallet Address: GBEEQFR2MHO6WMSVAPNNF6TD5X7J7VNTBJWQJNGQOF2MSG6YHID3RVSW
+
+I did not authorize this transaction manually and suspect it may have occurred via a connected bridge or dApp that had persistent access to my wallet. I have already taken steps to disconnect services within the Pi Browser and clear session data.
+
+Kindly assist me with the following:
+
+Confirm whether any external app (e.g., MEXC or a bridge service) had access to my wallet.
+
+Revoke or reset all dApp authorizations associated with my Pi Wallet.
+
+Provide guidance on securing my wallet against any future unauthorized actions.
+
+Your support in resolving this matter is highly appreciated, as the Pi coins in question were important to me and potentially lost without my explicit consent.
+
+Looking forward to your prompt response.
+
+Best regards,
+
+
+Automatic response
+28/Jul/25 3:24 AM
+Your request status has changed to Waiting for support.","swarm_internal","[]","1054790","[]","true","68bb1ef39aa4aa80ec8f59a3","2025-09-05T17:33:39.252000","2025-09-05T17:33:39.252000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"letter_1757089550410_2291127.pdf","private/6888ac155ebf84dd9855ea98/f87df0663_letter_1757089550410_2291127.pdf","","documentation","","Reply from CA Attorney General; PIU #1491221","swarm_internal","[]","101699","[]","true","68bb1db248d7252f10f97b39","2025-09-05T17:28:18.070000","2025-09-05T17:28:18.070000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"fcda7fba5a9a5c545e9a56de0f98f0730f106347ea4716b5457a35d17bb541ad_en_usd.pdf","private/6888ac155ebf84dd9855ea98/1002087d8_fcda7fba5a9a5c545e9a56de0f98f0730f106347ea4716b5457a35d17bb541ad_en_usd.pdf","","documentation","complaint","","swarm_internal","[]","72424","[]","true","68bb1d7661471234328ac370","2025-09-05T17:27:18.371000","2025-09-05T17:27:18.371000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Complaint has been submitted (1).eml","private/6888ac155ebf84dd9855ea98/c87785a00_Complainthasbeensubmitted1.eml","","documentation","complaint","CYBERCRIME COMPLAINT","swarm_internal","[]","8207","[]","true","68bb1d50796f194d40a3cbde","2025-09-05T17:26:40.614000","2025-09-05T17:26:40.614000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"CCC_EN_20230409_435c761c97e2_Younes Tsouli.pdf","private/6888ac155ebf84dd9855ea98/ebb4ff337_CCC_EN_20230409_435c761c97e2_YounesTsouli.pdf","","documentation","","CYBERCRIME COMPLAINTTM","swarm_internal","[]","377400","[]","true","68bb1d26746456b977d90f83","2025-09-05T17:25:58.244000","2025-09-05T17:25:58.244000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"BinanceGet-Release.py","private/6888ac155ebf84dd9855ea98/74fbda0b6_BinanceGet-Release.py","","code","python","https://teletype.in/@ar1hant/binanceget_en","swarm_internal","[]","30458","[]","true","68bb1c7c196a3484804fbfb0","2025-09-05T17:23:08.370000","2025-09-05T17:23:08.370000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"liber.py","private/6888ac155ebf84dd9855ea98/40639b9c9_liber.py","","code","python","liber_primus_transliterated","swarm_internal","[]","1093","[]","true","68bb1b43eaba9547d2e3aa24","2025-09-05T17:17:55.754000","2025-09-05T17:17:55.754000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"puzzle_solver.py","private/6888ac155ebf84dd9855ea98/0da8e4259_puzzle_solver.py","","code","BTC Puzzle challenge","https://btcpuzzle.info/","swarm_internal","[""AI-Code-Team-Alpha"",""Crypto-Analyst-Pro""]","7064","[]","true","68bb1ac3163578b5630f78e9","2025-09-05T17:15:47.899000","2025-09-08T18:12:51.464000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"New Document texte (6).txt","private/6888ac155ebf84dd9855ea98/fad64af97_NewDocumenttexte6.txt","","code","crypto","play...","swarm_internal","[""Researcher-Bot"",""Crypto-Analyst-Pro""]","18250","[]","true","68bb1a27eaba9547d2e33eb4","2025-09-05T17:13:11.149000","2025-09-08T18:12:46.177000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"Succes.mq5","private/6888ac155ebf84dd9855ea98/b88c125e2_Succes.mq5","","code","metatrrader5","","swarm_internal","[""AI-Code-Team-Alpha"",""Financial-Analyst-Pro"",""AutomatedTrading-Bot""]","5472","[]","true","68bb192c57da3045ba4d7f62","2025-09-05T17:09:00.036000","2025-09-08T18:12:38.153000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"mikro.mq5","private/6888ac155ebf84dd9855ea98/6f992d75d_mikro.mq5","","code","metatrrader5","","swarm_internal","[""AI-Code-Team-Alpha"",""Financial-Analyst-Pro"",""AutomatedTrading-Bot""]","11488","[]","true","68bb191a8df7bb7a81568712","2025-09-05T17:08:42.480000","2025-09-08T18:12:59.808000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"
+"GOLDmicrotrade.mq5","private/6888ac155ebf84dd9855ea98/b5785efbf_GOLDmicrotrade.mq5","","code","metatrrader5","title,type,priority,status,assigned_agent_id,mission_parameters,progress_data,estimated_duration_hours,actual_duration_hours,deadline,completion_notes,revenue_generated,id,created_date,updated_date,created_by_id,created_by,is_sample
+Improve TrendCatcherGoldBot MT5 EA,code_optimization,high,unassigned,AI-Code-Team-Alpha,""{""""code_language"""":""""MQL5"""",""""platform"""":""""MetaTrader 5"""",""""strategy"""":""""Trend Following, Signal-Based"""",""""instrument"""":""""Gold (XAUUSD)"""",""""risk_management"""":""""Capital allocation, stop loss, take profit"""",""""objective"""":""""Improve profitability, robustness, and maintain clear structure. Focus on probability calculation, error handling, dynamic SL/TP"""",""""improvement_areas"""":""""Dynamic stop loss/take profit, better probability calculation, error handling, code efficiency"""",""""current_version"""":""""1.05""""}"",""{}"",168,,""2025-09-19T17:00:00Z"",""Optimize the TrendCatcherGoldBot EA, focusing on enhanced risk management and profitability."",,code-optimize-009,2025-09-05T18:00:00Z,2025-09-05T18:00:00Z,system-mission,mission-generator,","swarm_internal","[""AI-Code-Team-Alpha"",""Financial-Analyst-Pro"",""AutomatedTrading-Bot""]","7571","[]","true","68bb18febd09b0a23db4c2aa","2025-09-05T17:08:14.304000","2025-09-08T18:12:21.446000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com","false"

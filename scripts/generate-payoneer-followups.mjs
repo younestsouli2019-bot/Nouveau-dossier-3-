@@ -303,10 +303,21 @@ function main() {
 						prqLink: r.prq_link,
 						batchId: r.batch_id,
 					});
-					const existing = fs
+					const existingFiles = fs
 						.readdirSync(outDir)
-						.some((x) => x.includes(`payoneer_followup_${r.batch_id}_`));
-					if (existing) continue;
+						.filter((x) => x.includes(`payoneer_followup_${r.batch_id}_`))
+						.map((name) => {
+							const absFile = path.join(outDir, name);
+							const stat = fs.statSync(absFile);
+							return { name, mtimeMs: stat.mtimeMs };
+						})
+						.sort((a, b) => b.mtimeMs - a.mtimeMs);
+					if (existingFiles.length) {
+						const latest = existingFiles[0];
+						const ageHours =
+							(Date.now() - latest.mtimeMs) / (1000 * 60 * 60);
+						if (ageHours < delayHours) continue;
+					}
 					const outFile = path.join(
 						outDir,
 						`payoneer_followup_${r.batch_id}_${Date.now()}.json`,

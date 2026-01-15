@@ -119,7 +119,7 @@ async function runCycle({ memory, replenisher, filePath }) {
 			.split(",")
 			.map((d) => d.trim())
 			.filter((d) => !!d);
-		const delay = String(process.env.FOLLOWUP_DELAY_HOURS || "48");
+		const delay = String(process.env.FOLLOWUP_DELAY_HOURS || "24");
 		for (const d of dirs) {
 			const abs = path.resolve(d);
 			if (!fs.existsSync(abs)) continue;
