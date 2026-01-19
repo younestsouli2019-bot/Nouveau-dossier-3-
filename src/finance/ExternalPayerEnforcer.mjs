@@ -41,6 +41,18 @@ export class ExternalPayerEnforcer {
                 invoices[ref].amount += e.amount;
             });
 
+            // SPECIFIC ENFORCEMENT: supervisor@realworldcerts.com & OTHER DEBTORS
+            const priorityDebtors = [
+                "supervisor@realworldcerts.com",
+                "ap@nimbusanalytics.com",
+                "accounts@bluepeakconsultinggroup.com",
+                "billing@acmesoftware-llc.com"
+            ];
+
+            if (priorityDebtors.includes(payer.email)) {
+                console.warn(`[Enforcer] 🚨 PRIORITY DEBTOR DETECTED: ${payer.name} (${payer.email}) has outstanding balance.`);
+            }
+
             collections.push({
                 payer: payer.name,
                 email: payer.email,

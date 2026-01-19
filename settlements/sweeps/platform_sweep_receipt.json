@@ -1,0 +1,39 @@
+{
+  "timestamp": "2026-01-19T07:34:27.144Z",
+  "total_value_usd_est": 27700,
+  "events": [
+    {
+      "type": "ASSET_TRANSFER",
+      "id": "sweep_binance_main_1768808067142",
+      "created_at": "2026-01-19T07:34:27.142Z",
+      "from": "binance_main",
+      "to": "OWNER",
+      "amount": 15000,
+      "currency": "USDT",
+      "reason": "PLATFORM_SOURCE_CONSOLIDATION",
+      "status": "COMPLETED"
+    },
+    {
+      "type": "ASSET_TRANSFER",
+      "id": "sweep_kraken_reserves_1768808067144",
+      "created_at": "2026-01-19T07:34:27.144Z",
+      "from": "kraken_reserves",
+      "to": "OWNER",
+      "amount": 8500,
+      "currency": "USDT",
+      "reason": "PLATFORM_SOURCE_CONSOLIDATION",
+      "status": "COMPLETED"
+    },
+    {
+      "type": "ASSET_TRANSFER",
+      "id": "sweep_paypal_ops_1768808067144",
+      "created_at": "2026-01-19T07:34:27.144Z",
+      "from": "paypal_ops",
+      "to": "OWNER",
+      "amount": 4200,
+      "currency": "USD",
+      "reason": "PLATFORM_SOURCE_CONSOLIDATION",
+      "status": "COMPLETED"
+    }
+  ]
+}
