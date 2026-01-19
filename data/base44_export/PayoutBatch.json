@@ -4,12 +4,12 @@
     "batch_hash": null,
     "total_amount": 850,
     "currency": "USD",
-    "status": "approved",
+    "status": "submitted",
     "approved_by": null,
     "approved_at": "2026-01-14T00:00:00Z",
     "paypal_batch_id": null,
     "paypal_status": null,
-    "submitted_at": null,
+    "submitted_at": "2026-01-16T09:17:40.640Z",
     "completed_at": null,
     "revenue_event_ids": [
       "PAYO_1768332322687-ITEM-1"
@@ -29,12 +29,12 @@
     "batch_hash": "30bd351d4716bee633a2de26cfc8c029076cd5494ea97e97204124f36e78f692",
     "total_amount": 1000,
     "currency": "USD",
-    "status": "approved",
+    "status": "submitted",
     "approved_by": "accounts@bluepeakconsultinggroup.com",
     "approved_at": "2026-01-14T00:00:00Z",
     "paypal_batch_id": null,
     "paypal_status": null,
-    "submitted_at": null,
+    "submitted_at": "2026-01-16T09:17:40.691Z",
     "completed_at": null,
     "revenue_event_ids": [
       "PAYO_1768332356274-ITEM-1"
@@ -54,12 +54,12 @@
     "batch_hash": "30366533323432626661396361393837316665356532613431333132613533336561353638363266363830663431306635326165633639316633306266656265",
     "total_amount": 850,
     "currency": "USD",
-    "status": "approved",
+    "status": "submitted",
     "approved_by": null,
     "approved_at": "2026-01-14T00:00:00Z",
     "paypal_batch_id": null,
     "paypal_status": null,
-    "submitted_at": null,
+    "submitted_at": "2026-01-16T09:17:40.691Z",
     "completed_at": null,
     "revenue_event_ids": [
       "PAYO_1768332322687-ITEM-1"
@@ -79,12 +79,12 @@
     "batch_hash": null,
     "total_amount": 500,
     "currency": "USD",
-    "status": "approved",
+    "status": "submitted",
     "approved_by": null,
     "approved_at": "2026-01-14T00:00:00Z",
     "paypal_batch_id": null,
     "paypal_status": null,
-    "submitted_at": null,
+    "submitted_at": "2026-01-16T09:17:40.692Z",
     "completed_at": null,
     "revenue_event_ids": [
       "PAYO_1768332305884-ITEM-1"

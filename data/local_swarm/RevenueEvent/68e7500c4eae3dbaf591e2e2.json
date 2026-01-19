@@ -1,0 +1,9 @@
+{
+  "id": "68e7500c4eae3dbaf591e2e2",
+  "amount": 0,
+  "currency": "380",
+  "status": "COMPLETED",
+  "source": "csv_migration",
+  "raw": "68e7500c4eae3dbaf591e2e2,011f7b4be1f5d2338f020f7e21c46436dcd443fda3e5ee343b6d969c1ad9b8cb,realworldcerts.com,,380,USD,earned,,,,,\"{\"\"agent_id\"\":\"\"agent-1\"\",\"\"legacy_file\"\":\"\"Analytics_export (1).csv\"\",\"\"ingested_at\"\":\"\"2026-01-02T21:27:17.661Z\"\"}\",6958379345975ac6e9662ca1,2026-01-02T21:24:35.972000,2026-01-02T21:24:35.972000,anonymous,anonymous,false",
+  "created_at": "2026-01-19T05:20:30.280Z"
+}

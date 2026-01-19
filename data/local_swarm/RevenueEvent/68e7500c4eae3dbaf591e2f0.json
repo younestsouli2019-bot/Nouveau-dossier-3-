@@ -1,0 +1,9 @@
+{
+  "id": "68e7500c4eae3dbaf591e2f0",
+  "amount": 0,
+  "currency": "755",
+  "status": "COMPLETED",
+  "source": "csv_migration",
+  "raw": "68e7500c4eae3dbaf591e2f0,29ac164c4127ae3901508fa1a7342b4edceba11a0c204f254e1fe9867dacddfb,Webinar Sales,,755,USD,earned,,,,,\"{\"\"agent_id\"\":\"\"agent-3\"\",\"\"legacy_file\"\":\"\"Analytics_export (1).csv\"\",\"\"ingested_at\"\":\"\"2026-01-02T21:27:23.126Z\"\"}\",695837992b7e4fb789f1c11e,2026-01-02T21:24:41.506000,2026-01-02T21:24:41.506000,anonymous,anonymous,false",
+  "created_at": "2026-01-19T05:20:30.276Z"
+}

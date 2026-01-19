@@ -1,1 +1,1 @@
-{"lastAlertAt":0,"lastApprovalAlertAt":0,"lastDeadmanAt":1768417836986,"consecutiveFailures":1,"freeze":{"active":false},"exportedPayoneerBatches":{},"updatedAt":"2026-01-14T19:12:29.613Z"}
+{"lastAlertAt":0,"lastApprovalAlertAt":0,"lastDeadmanAt":1768802236662,"consecutiveFailures":1,"freeze":{"active":true,"since":"2026-01-19T05:57:17.418Z","violations":[{"type":"webhook_missing","severity":"high","message":"No PayPal webhooks observed"}]},"exportedPayoneerBatches":{},"updatedAt":"2026-01-19T05:57:24.629Z"}

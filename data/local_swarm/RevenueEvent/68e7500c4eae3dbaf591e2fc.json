@@ -1,0 +1,9 @@
+{
+  "id": "68e7500c4eae3dbaf591e2fc",
+  "amount": 0,
+  "currency": "550",
+  "status": "COMPLETED",
+  "source": "csv_migration",
+  "raw": "68e7500c4eae3dbaf591e2fc,cc09e8ee489530866a5c941495e1e9dd9f4c222b6cd75b44f245ce0996781c8e,Direct Sales,,550,USD,earned,,,,,\"{\"\"agent_id\"\":\"\"agent-1\"\",\"\"legacy_file\"\":\"\"Analytics_export (1).csv\"\",\"\"ingested_at\"\":\"\"2026-01-02T21:26:45.074Z\"\"}\",69583773a7dd3a9556f3d821,2026-01-02T21:24:03.444000,2026-01-02T21:24:03.444000,anonymous,anonymous,false",
+  "created_at": "2026-01-19T05:20:30.301Z"
+}

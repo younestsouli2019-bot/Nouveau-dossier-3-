@@ -1,0 +1,9 @@
+{
+  "id": "68e0f56d5a1c0e13fda43224",
+  "amount": 0,
+  "currency": "680.5",
+  "status": "COMPLETED",
+  "source": "csv_migration",
+  "raw": "68e0f56d5a1c0e13fda43224,7071a4a7f666738bf901f015b90c237881dfc4682bb419e1a8641ec7ed7cbdd1,YouTube Referrals,,680.5,USD,earned,,,,,\"{\"\"agent_id\"\":\"\"agent-3\"\",\"\"legacy_file\"\":\"\"Analytics_export (1).csv\"\",\"\"ingested_at\"\":\"\"2026-01-02T21:27:27.096Z\"\"}\",6958379d5d900d28a4c20255,2026-01-02T21:24:45.564000,2026-01-02T21:24:45.564000,anonymous,anonymous,false",
+  "created_at": "2026-01-19T05:20:30.270Z"
+}

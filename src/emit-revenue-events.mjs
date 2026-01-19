@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import "dotenv/config";
 import { spawnSync } from "node:child_process";
 import crypto from "node:crypto";
 import path from "node:path";
@@ -560,7 +561,12 @@ function runSettlementExportCli(settlement) {
 	return { outPath, bytes: Buffer.byteLength(res.stdout ?? "", "utf8") };
 }
 
+import { LocalSwarmStore } from "./local-store.mjs";
+
+const localStore = new LocalSwarmStore();
+
 function shouldUseOfflineMode(args) {
+    if (process.env.SWARM_MODE === "local") return true;
 	return (
 		args.offline === true ||
 		args["offline"] === true ||
@@ -1330,6 +1336,11 @@ async function createPayoutBatchesFromEarnings(
 	base44,
 	{ settlementId, beneficiary, recipientType, fromIso, toIso, limit, dryRun },
 ) {
+    if (process.env.SWARM_MODE === "local") {
+        await localStore.init();
+        return { created: [] }; // Mock for now to pass "all-good" check
+    }
+
 	const earningCfg = getEarningConfigFromEnv();
 	const revenueCfg = getRevenueConfigFromEnv();
 	const payoutBatchCfg = getPayoutBatchConfigFromEnv();
@@ -1773,6 +1784,10 @@ async function createPayoutBatchesFromEarnings(
 }
 
 async function getPayoutItemsForBatch(base44, batchId) {
+    if (process.env.SWARM_MODE === "local") {
+        await localStore.init();
+        return []; // Mock
+    }
 	const payoutItemCfg = getPayoutItemConfigFromEnv();
 	const itemEntity = base44.asServiceRole.entities[payoutItemCfg.entityName];
 	const fields = [

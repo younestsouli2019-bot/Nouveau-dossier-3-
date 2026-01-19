@@ -26,15 +26,15 @@
 		"check:simulation": "node ./src/emit-revenue-events.mjs --check-simulation",
 		"agent:coordinator": "node ./src/agent-coordinator.mjs",
 		"test": "node --test",
-    "lint": "biome check src scripts",
-    "lint:fix": "eslint src scripts --ext .js,.mjs --fix",
-    "lint:apply": "biome check --apply src scripts",
+		"lint": "biome check src scripts",
+		"lint:fix": "eslint src scripts --ext .js,.mjs --fix",
+		"lint:apply": "biome check --apply src scripts",
 		"crypto:prepare:cryptobox": "node ./scripts/prepare-cryptobox-instruction.mjs",
 		"revenue:materialize:csv": "node ./scripts/materialize-revenue-csv.mjs",
 		"env:validate:owner-routing": "node ./scripts/validate-owner-routing-env.mjs",
 		"swarm:replenish": "node ./scripts/replenish-agents.mjs",
 		"swarm:supervise": "node ./src/swarm/supervisor.mjs",
-    "format": "biome format --write src scripts"
+		"format": "biome format --write src scripts"
 	},
 	"dependencies": {
 		"@base44/sdk": "^0.8.13",
@@ -42,10 +42,13 @@
 		"base64-js": "^1.5.1",
 		"body-parser": "^2.2.1",
 		"ccxt": "^4.5.32",
+		"csv-parse": "^6.1.0",
+		"csv-stringify": "^6.6.0",
 		"dotenv": "^16.6.1",
 		"ethers": "^6.0.0",
 		"express": "^5.2.1",
-		"tweetnacl": "^1.0.3"
+		"tweetnacl": "^1.0.3",
+		"xlsx": "^0.18.5"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.11",

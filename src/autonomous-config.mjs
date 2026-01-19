@@ -82,6 +82,7 @@ export function defaultConfig() {
 			storePath: ".autonomous-offline-store.json",
 		},
 		health: { requirePayPal: false },
+		monitor: { payoneerStatus: true },
 		deadman: {
 			intervalMs: 300000,
 			thresholds: {
@@ -114,6 +115,7 @@ export function defaultConfig() {
 			reportPendingApproval: true,
 			reportStuckPayouts: true,
 			deadman: true,
+			monitorPayoneerStatus: true,
 			createPayoutBatches: false,
 			autoApprovePayoutBatches: false,
 			autoSubmitPayPalPayoutBatches: false,
@@ -270,6 +272,11 @@ export function resolveRuntimeConfig(args, fileCfg) {
 					cfg.health?.requirePayPal !== false,
 				));
 
+	const monitorPayoneerStatusEnabled =
+		args["monitor-payoneer-status"] === true ||
+		getEnvBool("AUTONOMOUS_MONITOR_PAYONEER_STATUS", cfg.monitor?.payoneerStatus !== false) ||
+		cfg.tasks?.monitorPayoneerStatus === true;
+
 	const alertsEnabled =
 		getEnvBool("BASE44_ENABLE_ALERTS", false) || cfg.alerts?.enabled === true;
 	const alertCooldownMs = normalizeIntervalMs(
@@ -381,6 +388,7 @@ export function resolveRuntimeConfig(args, fileCfg) {
 			storePath: String(offlineStorePath),
 		},
 		health: { requirePayPal: requirePayPal === true },
+		monitor: { payoneerStatus: monitorPayoneerStatusEnabled === true },
 		payout: {
 			settlementId: payoutSettlementId ? String(payoutSettlementId) : null,
 			beneficiary: payoutBeneficiary ? String(payoutBeneficiary) : null,
@@ -413,6 +421,7 @@ export function resolveRuntimeConfig(args, fileCfg) {
 			reportPendingApproval: cfg.tasks?.reportPendingApproval !== false,
 			reportStuckPayouts: cfg.tasks?.reportStuckPayouts !== false,
 			deadman: deadmanEnabled === true,
+			monitorPayoneerStatus: monitorPayoneerStatusEnabled === true,
 			createPayoutBatches: createPayoutBatchesEnabled === true,
 			autoApprovePayoutBatches: autoApprovePayoutBatchesEnabled === true,
 			autoSubmitPayPalPayoutBatches:

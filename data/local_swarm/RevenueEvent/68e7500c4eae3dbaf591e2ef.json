@@ -1,0 +1,9 @@
+{
+  "id": "68e7500c4eae3dbaf591e2ef",
+  "amount": 0,
+  "currency": "360.5",
+  "status": "COMPLETED",
+  "source": "csv_migration",
+  "raw": "68e7500c4eae3dbaf591e2ef,222411cb947da1229a1d937d25fd0abca707550b3b18fecab5d939d631f8c876,Discord Community,,360.5,USD,earned,,,,,\"{\"\"agent_id\"\":\"\"agent-4\"\",\"\"legacy_file\"\":\"\"Analytics_export (1).csv\"\",\"\"ingested_at\"\":\"\"2026-01-02T21:26:56.044Z\"\"}\",6958377e87ec5f3d67fe115e,2026-01-02T21:24:14.350000,2026-01-02T21:24:14.350000,anonymous,anonymous,false",
+  "created_at": "2026-01-19T05:20:30.296Z"
+}

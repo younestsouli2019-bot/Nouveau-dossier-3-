@@ -1,0 +1,9 @@
+{
+  "id": "68e7500c4eae3dbaf591e2df",
+  "amount": 0,
+  "currency": "340.75",
+  "status": "COMPLETED",
+  "source": "csv_migration",
+  "raw": "68e7500c4eae3dbaf591e2df,9e3eff7b576c9402c8dcec7dedf6ea31093e170f83b26273a99f344197da2164,Twitter Campaign,,340.75,USD,earned,,,,,\"{\"\"agent_id\"\":\"\"agent-4\"\",\"\"legacy_file\"\":\"\"Analytics_export (1).csv\"\",\"\"ingested_at\"\":\"\"2026-01-02T21:27:12.459Z\"\"}\",69583790fed55aa9fff583d8,2026-01-02T21:24:32.439000,2026-01-02T21:24:32.439000,anonymous,anonymous,false",
+  "created_at": "2026-01-19T05:20:30.283Z"
+}

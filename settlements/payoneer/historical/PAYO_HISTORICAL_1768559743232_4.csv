@@ -1,0 +1,2 @@
+recipient,recipient_email,recipient_name,amount,currency,batch_id,item_id,note,payer_name,payer_email,payer_company,purpose,reference,prq_link
+younestsouli2019@gmail.com,younestsouli2019@gmail.com,Younes Tsouli,8894.00,USD,PAYO_HISTORICAL_1768559743232_4,PAYO_HISTORICAL_1768559743232_4_USD,Historical revenue settlement: 16 events from End of Q3 Push,RealWorldCerts,supervisor@realworldcerts.com,RealWorldCerts,Owner revenue distribution,HIST_SETTLE_1768559743232,"https://link.payoneer.com/Token?t=5320FD2780B540E9A0A17228148D5FFC&src=prqLink"

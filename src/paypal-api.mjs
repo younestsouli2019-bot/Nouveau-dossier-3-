@@ -41,13 +41,15 @@ export async function getPayPalAccessToken() {
 	const clientSecret = getEnvOrThrow("PAYPAL_CLIENT_SECRET");
 	const live =
 		String(process.env.SWARM_LIVE ?? "false").toLowerCase() === "true";
+	
+	// HARDENING: Force Live URL if SWARM_LIVE is true
+	const effectiveBase = live ? "https://api-m.paypal.com" : (process.env.PAYPAL_API_BASE_URL ?? "https://api-m.paypal.com");
+
 	const paypalMode = String(process.env.PAYPAL_MODE ?? "live").toLowerCase();
-	const paypalBase = String(
-		process.env.PAYPAL_API_BASE_URL ?? "",
-	).toLowerCase();
+	
 	if (
 		live &&
-		(paypalMode === "sandbox" || paypalBase.includes("sandbox.paypal.com"))
+		(paypalMode === "sandbox" || effectiveBase.includes("sandbox.paypal.com"))
 	) {
 		throw new Error("LIVE MODE NOT GUARANTEED (PayPal sandbox configured)");
 	}
@@ -56,7 +58,7 @@ export async function getPayPalAccessToken() {
 	const timeout = setTimeout(() => controller.abort(), getHttpTimeoutMs());
 	let res;
 	try {
-		res = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
+		res = await fetch(`${effectiveBase}/v1/oauth2/token`, {
 			method: "POST",
 			headers: {
 				Authorization: base64BasicAuth(clientId, clientSecret),
@@ -84,11 +86,15 @@ export async function paypalRequest(
 	path,
 	{ method = "GET", token, headers, body } = {},
 ) {
+	const live = String(process.env.SWARM_LIVE ?? "false").toLowerCase() === "true";
+	// HARDENING: Force Live URL if SWARM_LIVE is true
+	const effectiveBase = live ? "https://api-m.paypal.com" : (process.env.PAYPAL_API_BASE_URL ?? "https://api-m.paypal.com");
+
 	const controller = new AbortController();
 	const timeout = setTimeout(() => controller.abort(), getHttpTimeoutMs());
 	let res;
 	try {
-		res = await fetch(`${PAYPAL_API_BASE}${path}`, {
+		res = await fetch(`${effectiveBase}${path}`, {
 			method,
 			headers: {
 				...(token ? { Authorization: `Bearer ${token}` } : {}),

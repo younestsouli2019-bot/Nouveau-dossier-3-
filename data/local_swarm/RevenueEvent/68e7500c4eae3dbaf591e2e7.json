@@ -1,0 +1,9 @@
+{
+  "id": "68e7500c4eae3dbaf591e2e7",
+  "amount": 0,
+  "currency": "310.25",
+  "status": "COMPLETED",
+  "source": "csv_migration",
+  "raw": "68e7500c4eae3dbaf591e2e7,c18675dbcc491cad3a6a16baac3fb7abfed84e076338b6823becc91275951a93,Reddit Community,,310.25,USD,earned,,,,,\"{\"\"agent_id\"\":\"\"agent-4\"\",\"\"legacy_file\"\":\"\"Analytics_export (1).csv\"\",\"\"ingested_at\"\":\"\"2026-01-02T21:27:05.274Z\"\"}\",69583787d7fff77ee3bc0060,2026-01-02T21:24:23.556000,2026-01-02T21:24:23.556000,anonymous,anonymous,false",
+  "created_at": "2026-01-19T05:20:30.290Z"
+}

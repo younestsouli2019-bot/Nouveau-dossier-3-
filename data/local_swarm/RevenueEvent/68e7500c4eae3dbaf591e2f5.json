@@ -1,0 +1,9 @@
+{
+  "id": "68e7500c4eae3dbaf591e2f5",
+  "amount": 0,
+  "currency": "885.5",
+  "status": "COMPLETED",
+  "source": "csv_migration",
+  "raw": "68e7500c4eae3dbaf591e2f5,da978b0046aa2808d14739789acfadc5aa94829672afaf1eb9cf71d90efacb6a,Bulk Course Sales,,885.5,USD,earned,,,,,\"{\"\"agent_id\"\":\"\"agent-3\"\",\"\"legacy_file\"\":\"\"Analytics_export (1).csv\"\",\"\"ingested_at\"\":\"\"2026-01-02T21:27:00.584Z\"\"}\",695837828e62a3569f6ed3e0,2026-01-02T21:24:18.985000,2026-01-02T21:24:18.985000,anonymous,anonymous,false",
+  "created_at": "2026-01-19T05:20:30.293Z"
+}

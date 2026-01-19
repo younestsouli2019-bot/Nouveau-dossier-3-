@@ -1,0 +1,9 @@
+{
+  "id": "SWARM_EXEC_1767501886827_f2bddbee",
+  "amount": 0,
+  "currency": "142.22",
+  "status": "COMPLETED",
+  "source": "csv_migration",
+  "raw": "SWARM_EXEC_1767501886827_f2bddbee,097801778e927f2ddbf3a9ae5c2e4028160b9559ebe49528e99f9e05738ccefe,swarm_commerce_v1,,142.22,USD,earned,,,,,\"{\"\"product_name\"\":\"\"Monogram Ceramic Coffee Mug\"\",\"\"market_score\"\":0.787851232195237,\"\"execution_mode\"\":\"\"WET_RUN_REALITY\"\",\"\"notes\"\":\"\"Autonomous revenue generation executed by SwarmRunner.\"\",\"\"unit_economics\"\":{\"\"rail\"\":\"\"payoneer\"\",\"\"net_profit\"\":115.7978,\"\"margin\"\":0.8142160033750527}}\",6959ef9da0babf9b0bcf599c,2026-01-04T04:42:05.259000,2026-01-04T04:42:05.259000,anonymous,anonymous,false",
+  "created_at": "2026-01-19T05:20:30.265Z"
+}

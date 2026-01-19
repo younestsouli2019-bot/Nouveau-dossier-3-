@@ -1,0 +1,9 @@
+{
+  "id": "68e750acedec97285a16655b",
+  "amount": 0,
+  "currency": "750",
+  "status": "COMPLETED",
+  "source": "csv_migration",
+  "raw": "68e750acedec97285a16655b,2b47cc6a51117cab8f36b2f00f7a60f3fc0c87a3dc867118549b37b1f40c5ac2,January Resolution Sales,,750,USD,earned,,,,,\"{\"\"agent_id\"\":\"\"agent-3\"\",\"\"legacy_file\"\":\"\"Analytics_export (1).csv\"\",\"\"ingested_at\"\":\"\"2026-01-02T21:26:27.146Z\"\"}\",6958376266d3fc45a77890c2,2026-01-02T21:23:46.933000,2026-01-02T21:23:46.933000,anonymous,anonymous,false",
+  "created_at": "2026-01-19T05:20:30.312Z"
+}
