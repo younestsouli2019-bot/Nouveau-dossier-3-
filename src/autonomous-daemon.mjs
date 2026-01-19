@@ -32,8 +32,13 @@ import { recordAudit } from "./audit-trail.mjs";
 import fsSync from "node:fs";
 import { resolveRuntimeConfig, isWithinWindowUtc } from "./autonomous-config.mjs";
 import { SelfHealer } from "./autonomous-healer.mjs";
+import { ExternalPayerEnforcer } from "./finance/ExternalPayerEnforcer.mjs";
 
 const healer = new SelfHealer();
+const enforcer = new ExternalPayerEnforcer();
+
+// Initialize enforcer
+(async () => { try { await enforcer.init(); } catch (e) { console.error("Enforcer init failed", e); } })();
 
 async function runNodeScript(scriptRelPath, scriptArgs, { env }) {
 	return new Promise((resolve) => {
@@ -2578,6 +2583,15 @@ async function main() {
 	});
 
 	do {
+        // --- External Payer Enforcement Hook ---
+        try {
+            console.log("[Daemon] Running External Payer Enforcement...");
+            await enforcer.runEnforcementCycle();
+        } catch (err) {
+            console.error("[Daemon] Enforcement cycle failed:", err.message);
+        }
+        // ---------------------------------------
+
 		try {
 			const out = await runTick(cfg, state);
 			state.consecutiveFailures = out.ok ? 0 : state.consecutiveFailures + 1;

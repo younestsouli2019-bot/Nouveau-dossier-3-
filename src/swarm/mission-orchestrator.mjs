@@ -1,10 +1,12 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { PaymentAssuranceProtocol } from '../finance/PaymentAssuranceProtocol.mjs';
 
 export class MissionOrchestrator {
     constructor(config = {}) {
         this.config = config;
         this.ledgerPath = path.resolve('data/swarm/mission-ledger.json');
+        this.assurance = new PaymentAssuranceProtocol();
     }
 
     async loadLedger() {
@@ -29,6 +31,7 @@ export class MissionOrchestrator {
             missionId: `mission_${proposal.id}`,
             proposalId: proposal.id,
             status: 'planned',
+            payer_email: proposal.payer_email || null, // Capture Payer Context
             created_at: new Date().toISOString(),
             tasks: []
         };
@@ -53,6 +56,19 @@ export class MissionOrchestrator {
         console.log(`🚀 Orchestrator executing mission: ${mission.missionId}`);
         mission.status = 'in_progress';
         
+        // --- PAYMENT ASSURANCE GATE ---
+        if (mission.payer_email) {
+            await this.assurance.init();
+            const assurance = await this.assurance.verifyMissionAssurance(mission.missionId, mission.payer_email);
+            if (!assurance.ok) {
+                console.warn(`[Orchestrator] 🛑 STOP WORK ORDER: Mission ${mission.missionId} blocked. Reason: ${assurance.reason}`);
+                mission.status = 'blocked_payment_assurance';
+                mission.block_reason = assurance.reason;
+                return mission;
+            }
+        }
+        // ------------------------------
+
         // Execute tasks sequentially
         for (const task of mission.tasks) {
             if (task.status === 'pending') {

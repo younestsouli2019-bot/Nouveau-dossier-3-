@@ -1,0 +1,22 @@
+{
+  "external_payers": [
+    {
+      "id": "PAYER_001",
+      "name": "RealWorldCerts",
+      "email": "supervisor@realworldcerts.com",
+      "company": "RealWorldCerts",
+      "payment_terms_days": 30,
+      "risk_score": "LOW",
+      "preferred_method": "PAYONEER"
+    },
+    {
+      "id": "PAYER_002",
+      "name": "Younes Tsouli",
+      "email": "younestsouli2019@gmail.com",
+      "company": "Private",
+      "payment_terms_days": 14,
+      "risk_score": "LOW",
+      "preferred_method": "PAYPAL_ME"
+    }
+  ]
+}
