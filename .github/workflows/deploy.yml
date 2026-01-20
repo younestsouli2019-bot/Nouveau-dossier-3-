@@ -1,0 +1,46 @@
+name: Deploy Static Site
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */12 * * *"
+permissions:
+  pages: write
+  id-token: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Generate site
+        env:
+          SITE_DOMAIN: ${{ secrets.SITE_DOMAIN }}
+          GA_ID: ${{ secrets.GA_ID }}
+          META_PIXEL_ID: ${{ secrets.META_PIXEL_ID }}
+          TIKTOK_PIXEL_ID: ${{ secrets.TIKTOK_PIXEL_ID }}
+          LEAD_ENDPOINT: ${{ secrets.LEAD_ENDPOINT }}
+          ORDER_ENDPOINT: ${{ secrets.ORDER_ENDPOINT }}
+        run: |
+          cd rank
+          python wet6run_assets.py
+          python wet6run_commercial.py
+          python wet6run.py
+          python wet6run_hubs.py
+          python wet6run/site.py ${SITE_DOMAIN:-www.realworldcerts.com}
+          python wet6run_analytics.py
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: rank/output
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

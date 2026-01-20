@@ -1,3 +1,6 @@
+rank/output/
+rank/site.zip
+rank/__pycache__/
 CREDS.txt
 exports/
 settlements/payoneer/*.csv
