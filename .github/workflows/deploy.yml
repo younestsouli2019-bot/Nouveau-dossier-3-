@@ -25,16 +25,29 @@ jobs:
           LEAD_ENDPOINT: ${{ secrets.LEAD_ENDPOINT }}
           ORDER_ENDPOINT: ${{ secrets.ORDER_ENDPOINT }}
         run: |
-          cd rank
+          # Robust Directory Handling
+          if [ -d "rank" ]; then
+            cd rank
+          else
+            echo "Directory 'rank' not found, assuming root is the target."
+          fi
+          
+          # Set PYTHONPATH to current directory to ensure imports work
+          export PYTHONPATH=$PYTHONPATH:.
+          
+          echo "Current Directory: $(pwd)"
+          ls -F
+          
+          # Execute Pipeline
           python wet6run_assets.py
           python wet6run_commercial.py
           python wet6run.py
           python wet6run_hubs.py
-          python wet6run/site.py ${SITE_DOMAIN:-www.realworldcerts.com}
+          python -m wet6run.site ${SITE_DOMAIN:-www.realworldcerts.com}
           python wet6run_analytics.py
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: rank/output
+          path: ${{ hashFiles('rank/wet6run_assets.py') != '' && 'rank/output' || 'output' }}
   deploy:
     needs: build
     runs-on: ubuntu-latest

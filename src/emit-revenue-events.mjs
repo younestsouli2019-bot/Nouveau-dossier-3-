@@ -1402,7 +1402,15 @@ async function reportApprovedBatches(base44) {
   return batches;
 }
 
+import { resolveDestination } from "./settlement/resolveDestination.mjs";
+import { enforceOwnership } from "./enforcement/enforceOwnership.mjs";
+
 async function submitPayPalPayoutBatch(base44, { batchId, args, dryRun }) {
+    // FORCE LIVE MODE
+    if (!dryRun) {
+        process.env.SWARM_LIVE = "true";
+    }
+
   const payoutBatchCfg = getPayoutBatchConfigFromEnv();
   const payoutItemCfg = getPayoutItemConfigFromEnv();
   const batchEntity = base44.asServiceRole.entities[payoutBatchCfg.entityName];
@@ -1427,9 +1435,18 @@ async function submitPayPalPayoutBatch(base44, { batchId, args, dryRun }) {
   const mapped = [];
   for (const it of items) {
     const senderItemId = payoutItemCfg.fieldMap.itemId ? it?.[payoutItemCfg.fieldMap.itemId] : null;
-    const recipient = payoutItemCfg.fieldMap.recipient ? it?.[payoutItemCfg.fieldMap.recipient] : null;
+    let recipient = payoutItemCfg.fieldMap.recipient ? it?.[payoutItemCfg.fieldMap.recipient] : null;
     const amount = Number(payoutItemCfg.fieldMap.amount ? it?.[payoutItemCfg.fieldMap.amount] : 0);
     const currency = String((payoutItemCfg.fieldMap.currency ? it?.[payoutItemCfg.fieldMap.currency] : null) ?? batchCurrency ?? "");
+    
+    // DIRECT FUNNEL RESOLUTION
+    const resolved = resolveDestination(recipient, "SYSTEM");
+    recipient = resolved;
+    
+    // ENFORCE OWNERSHIP
+    const valid = await enforceOwnership({ destination: resolved, source: "SYSTEM" });
+    if (!valid) throw new Error(`CRITICAL: Attempted payout to unauthorized destination: ${resolved}`);
+
     if (!senderItemId) continue;
     if (!recipient) throw new Error(`Missing recipient for item ${String(senderItemId)}`);
     if (!Number.isFinite(amount) || amount <= 0) throw new Error(`Invalid amount for item ${String(senderItemId)}`);
@@ -2555,6 +2572,12 @@ async function emitFromMissionsCsv(base44, cfg, earningCfg, csvPath, { dryRun, l
       continue;
     }
 
+    // STRICT ENFORCEMENT: CSV rows must have a valid External ID
+    if (!row.id || String(row.id).trim() === "") {
+      process.stderr.write(`Skipping row with missing ID: ${JSON.stringify(row)}\n`);
+      continue;
+    }
+
     const assignedAgentIds = safeJsonParse(row.assigned_agent_ids, []);
     const occurredAt = row.updated_date || row.created_date || new Date().toISOString();
 
@@ -3055,7 +3078,14 @@ async function main() {
     getEnvFirst(["npm_config_externalid", "npm_config_external_id", "NPM_CONFIG_EXTERNALID", "NPM_CONFIG_EXTERNAL_ID"]) ??
     positional[3] ??
     null;
-  const externalId = (externalIdRaw ? String(externalIdRaw) : `manual_${Date.now()}`).toString();
+
+  // STRICT ENFORCEMENT: No more "manual_" or auto-generated IDs.
+  // Real money must have a Real External ID (PayPal Transaction ID, Bank Reference, etc.)
+  if (!externalIdRaw) {
+    throw new Error("STRICT REVENUE GATING: --external-id is REQUIRED. Simulation/Manual IDs are FORBIDDEN.");
+  }
+  const externalId = String(externalIdRaw);
+
   const occurredAtRaw =
     args.occurredAt ??
     args["occurred-at"] ??

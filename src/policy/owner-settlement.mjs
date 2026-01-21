@@ -46,6 +46,26 @@ export class OwnerSettlementEnforcer {
       cryptobox: {
         enabled: String(process.env.CRYPTOBOX_ENABLE || "false").toLowerCase() === "true",
         url: process.env.BINANCE_CRYPTOBOX_URL || "https://www.binance.com/en/my/wallet/account/payment/cryptobox"
+      },
+      attijari_morocco: {
+        enabled: String(process.env.ATTIJARI_ENABLE || "false").toLowerCase() === "true",
+        rib: process.env.ATTIJARI_RIB
+      },
+      chimoney: {
+        enabled: String(process.env.CHIMONEY_ENABLE || "false").toLowerCase() === "true",
+        id: process.env.CHIMONEY_ID
+      },
+      xe: {
+        enabled: String(process.env.XE_ENABLE || "false").toLowerCase() === "true",
+        account: process.env.XE_ACCOUNT_ID
+      },
+      wise: {
+        enabled: String(process.env.WISE_ENABLE || "false").toLowerCase() === "true",
+        email: process.env.WISE_EMAIL
+      },
+      transfi: {
+        enabled: String(process.env.TRANSFI_ENABLE || "false").toLowerCase() === "true",
+        id: process.env.TRANSFI_ID
       }
     };
     return { settlement_priority, creds };
@@ -54,6 +74,30 @@ export class OwnerSettlementEnforcer {
     const live = String(process.env.SWARM_LIVE || "false").toLowerCase() === "true";
     if (!live) return true;
     const r = String(route || "").toLowerCase();
+    
+    // ... existing checks ...
+    
+    if (r === "attijari_morocco") {
+        const c = cfg?.creds?.attijari_morocco || {};
+        return !c.enabled || !c.rib;
+    }
+    if (r === "chimoney") {
+        const c = cfg?.creds?.chimoney || {};
+        return !c.enabled || !c.id;
+    }
+    if (r === "xe") {
+        const c = cfg?.creds?.xe || {};
+        return !c.enabled || !c.account;
+    }
+    if (r === "wise") {
+        const c = cfg?.creds?.wise || {};
+        return !c.enabled || !c.email;
+    }
+    if (r === "transfi") {
+        const c = cfg?.creds?.transfi || {};
+        return !c.enabled || !c.id;
+    }
+
     if (r === "paypal") {
       const c = cfg?.creds?.paypal || {};
       if (c.disabled) return true;

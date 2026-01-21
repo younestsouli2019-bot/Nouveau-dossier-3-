@@ -71,6 +71,20 @@ function buildRevenueData(cfg, event) {
     throw new Error("Revenue event amount must be > 0");
   }
 
+  // NON-REVOKABLE SECURITY: Permanently ban simulation/mock data
+  const src = String(event.source ?? "").toLowerCase();
+  const eid = String(event.externalId ?? "").toLowerCase();
+  
+  if (src.includes("simulation") || src.includes("mock") || src.includes("fake")) {
+    throw new Error("REVENUE SECURITY: Simulation sources are PERMANENTLY BANNED.");
+  }
+  if (eid.includes("mock") || eid.includes("sim_") || eid.includes("demo_")) {
+    throw new Error("REVENUE SECURITY: Mock/Demo External IDs are PERMANENTLY BANNED.");
+  }
+  if (!event.externalId || String(event.externalId).trim() === "") {
+    throw new Error("REVENUE SECURITY: External ID is REQUIRED for all revenue events.");
+  }
+
   data[fieldMap.amount] = event.amount;
   data[fieldMap.currency] = event.currency;
   data[fieldMap.occurredAt] = event.occurredAt;

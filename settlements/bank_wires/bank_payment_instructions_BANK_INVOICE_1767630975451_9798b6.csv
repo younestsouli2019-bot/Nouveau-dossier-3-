@@ -1,0 +1,2 @@
+recipient,amount,currency,batch_id,reference,status,bank_account,bank_beneficiary_name
+007810000448500030594182,1200,USD,BANK_INVOICE_1767630975451_9798b6,HELD_BY_PLATFORM_1200,INVOICES_GENERATED,007810000448500030594182,Younes Tsouli

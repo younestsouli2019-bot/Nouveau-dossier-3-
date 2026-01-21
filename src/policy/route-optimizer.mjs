@@ -49,6 +49,16 @@ export function getEffectiveRoutes(amount, currency) {
 	if (requireHighVolume && !monthlyOk) {
 		routes = routes.filter((r) => r !== "payoneer");
 	}
+
+    // Insert new high-priority routes if enabled/credentialed
+    const newRoutes = ["attijari_morocco", "chimoney", "xe", "wise", "transfi"];
+    for (const nr of newRoutes) {
+        if (!routes.includes(nr) && !OwnerSettlementEnforcer.missingCredentials(nr, cfg)) {
+            // Prioritize these new routes heavily (top of list)
+            routes.unshift(nr);
+        }
+    }
+
 	// Enforce direct-to-owner preference and avoid cryptobox middleman
 	routes = routes.filter((r) => r !== "cryptobox");
 	const cur = String(currency || "").toUpperCase();
@@ -79,12 +89,17 @@ export function getEffectiveRoutes(amount, currency) {
 		routes = order.filter((r) => set.has(r));
 	} else {
 		const order = [
+			"attijari_morocco",
+			"xe",
+			"wise",
+			"transfi",
 			"bank_transfer",
 			"payoneer",
 			"payoneer_standard",
 			"crypto",
 			"google_pay_remittance",
 			"chimoney_ilp",
+			"chimoney",
 			"stripe",
 			"paypal",
 		];

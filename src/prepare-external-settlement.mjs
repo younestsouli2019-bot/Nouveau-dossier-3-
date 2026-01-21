@@ -229,6 +229,12 @@ async function main() {
 	const base44 = buildBase44ServiceClient();
 
 	const earningCfg = getEarningConfigFromEnv();
+    
+    // Explicitly handle "earnings" entity to avoid default mismatches
+    if (process.env.BASE44_EARNING_ENTITY == null) {
+        earningCfg.entityName = "earnings";
+    }
+
 	const rows = await listEarnings(base44, earningCfg, { limit });
 	let items = rows.map((r) => normalizeEarningRow(earningCfg, r));
 

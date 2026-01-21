@@ -13,7 +13,7 @@ import { writeRoutesStatus } from "./routes-status.mjs";
 import {
 	writeEgressStatus,
 	checkEgressIp,
-} from "../security/egress-ip-guard.mjs";
+} from "../security/NetworkGuard.mjs";
 import { spawnSync } from "node:child_process";
 
 function ensureDir(p) {

@@ -28,7 +28,12 @@ const PLATFORMS = [
   { id: 'payoneer', name: 'Payoneer' },
   { id: 'bank', name: 'Bank Wire' },
   { id: 'stripe', name: 'Stripe' },
-  { id: 'tron', name: 'Tron' }
+  { id: 'tron', name: 'Tron' },
+  { id: 'attijari_morocco', name: 'Attijariwafa Bank Morocco' },
+  { id: 'chimoney', name: 'Chimoney' },
+  { id: 'xe', name: 'XE.com' },
+  { id: 'wise', name: 'Wise' },
+  { id: 'transfi', name: 'TransFI' }
 ];
 function getPlatform(id) {
   const k = String(id || '').toLowerCase();
@@ -384,6 +389,16 @@ export class ExternalGatewayManager {
           this.audit.log('PAYONEER_STANDARD_INSTRUCTIONS_READY', payoutBatchId, null, instr, actor, { reassurance: PrivacyMasker.reassurance('payoneer') });
           return { status: 'processing', gateway_response: instr, payout_batch_id: payoutBatchId, processed_at: new Date().toISOString(), route_attempted: route };
         }
+        
+        // Handle new instruction-based routes
+        const instructionRoutes = ['attijari_morocco', 'chimoney', 'xe', 'wise', 'transfi', 'google_pay_remittance', 'chimoney_ilp'];
+        if (instructionRoutes.includes(route)) {
+            // No specific strict enforcement logic yet for these, but we pass baseTx
+            const instr = await withRetry(() => this.platformGateway.generate(route, baseTx, `Instruction for ${route}`));
+            this.audit.log(`${route.toUpperCase()}_INSTRUCTIONS_READY`, payoutBatchId, null, instr, actor);
+            return { status: 'processing', gateway_response: instr, payout_batch_id: payoutBatchId, processed_at: new Date().toISOString(), route_attempted: route };
+        }
+
         if (route === 'stripe') {
           const tx = enforceOwnerSettlementForRoute(route, baseTx);
           result = await withRetry(() => this.stripeGateway.executeTransfer(tx));
