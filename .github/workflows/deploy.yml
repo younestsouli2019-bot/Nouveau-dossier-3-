@@ -24,6 +24,7 @@ jobs:
           TIKTOK_PIXEL_ID: ${{ secrets.TIKTOK_PIXEL_ID }}
           LEAD_ENDPOINT: ${{ secrets.LEAD_ENDPOINT }}
           ORDER_ENDPOINT: ${{ secrets.ORDER_ENDPOINT }}
+          NOSIM: "true" # ENFORCE NO-SIMULATION IN CI
         run: |
           # Robust Directory Handling
           if [ -d "rank" ]; then
@@ -31,6 +32,9 @@ jobs:
           else
             echo "Directory 'rank' not found, assuming root is the target."
           fi
+          
+          # FIX GIT SAFE DIRECTORY (Exit Code 128)
+          git config --global --add safe.directory $(pwd)
           
           # Set PYTHONPATH to current directory to ensure imports work
           export PYTHONPATH=$PYTHONPATH:.

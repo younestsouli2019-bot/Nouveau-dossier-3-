@@ -1349,7 +1349,7 @@ async function runTick(cfg, state) {
   // 0. PURPOSE CHECK (The "Why")
   // Before we do anything, we remember who we are.
   if (state.tickCount % 100 === 0) {
-      await supremePurpose.load();
+      // await supremePurpose.load(); // TEMPORARY DISABLE
       debtManager.reload();
       const status = debtManager.getStatus();
       if (status.totalDebt > 0) {
