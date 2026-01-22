@@ -13,6 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
+      # FIX GIT SAFE DIRECTORY (GLOBAL)
+      - name: Fix Git Safe Directory
+        run: git config --global --add safe.directory '*'
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -32,9 +37,6 @@ jobs:
           else
             echo "Directory 'rank' not found, assuming root is the target."
           fi
-          
-          # FIX GIT SAFE DIRECTORY (Exit Code 128)
-          git config --global --add safe.directory $(pwd)
           
           # Set PYTHONPATH to current directory to ensure imports work
           export PYTHONPATH=$PYTHONPATH:.
