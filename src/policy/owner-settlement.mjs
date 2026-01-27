@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 function isPlaceholder(v) {
   if (v == null) return true;
   const s = String(v).trim();
@@ -13,8 +15,23 @@ function normEmail(v) {
 }
 export class OwnerSettlementEnforcer {
   static getPaymentConfiguration() {
-    const priorityEnv = process.env.PAYMENT_ROUTING_PRIORITY || "bank_transfer,payoneer,crypto,paypal";
-    const settlement_priority = priorityEnv.split(",").map((r) => r.trim()).filter(Boolean);
+    const priorityEnv = process.env.PAYMENT_ROUTING_PRIORITY || "bank_transfer,payoneer,crypto,paypal,googlepay";
+    let settlement_priority = priorityEnv.split(",").map((r) => r.trim()).filter(Boolean);
+    // Load JSON override if present
+    let json = null;
+    try {
+      const p = path.resolve("data/owner/owner-routes.json");
+      if (fs.existsSync(p)) {
+        const txt = fs.readFileSync(p, "utf8");
+        const j = JSON.parse(txt);
+        if (j && typeof j === "object") {
+          json = j;
+          if (Array.isArray(j.priority) && j.priority.length) {
+            settlement_priority = j.priority.map((r) => String(r).trim()).filter(Boolean);
+          }
+        }
+      }
+    } catch {}
     const creds = {
       paypal: {
         clientId: process.env.PAYPAL_CLIENT_ID,
@@ -47,6 +64,10 @@ export class OwnerSettlementEnforcer {
         enabled: String(process.env.CRYPTOBOX_ENABLE || "false").toLowerCase() === "true",
         url: process.env.BINANCE_CRYPTOBOX_URL || "https://www.binance.com/en/my/wallet/account/payment/cryptobox"
       },
+      googlepay: {
+        enabled: String(process.env.GOOGLEPAY_ENABLE || "false").toLowerCase() === "true",
+        email: process.env.OWNER_GOOGLEPAY_EMAIL || process.env.GOOGLEPAY_ACCOUNT_EMAIL
+      },
       attijari_morocco: {
         enabled: String(process.env.ATTIJARI_ENABLE || "false").toLowerCase() === "true",
         rib: process.env.ATTIJARI_RIB
@@ -68,6 +89,21 @@ export class OwnerSettlementEnforcer {
         id: process.env.TRANSFI_ID
       }
     };
+    // Merge JSON overrides if present
+    if (json && typeof json === "object") {
+      if (json.paypal && typeof json.paypal === "object") creds.paypal = { ...creds.paypal, ...json.paypal };
+      if (json.bank && typeof json.bank === "object") creds.bank = { ...creds.bank, ...json.bank };
+      if (json.payoneer && typeof json.payoneer === "object") creds.payoneer = { ...creds.payoneer, ...json.payoneer };
+      if (json.payoneer_standard && typeof json.payoneer_standard === "object") creds.payoneer_standard = { ...creds.payoneer_standard, ...json.payoneer_standard };
+      if (json.crypto && typeof json.crypto === "object") creds.crypto = { ...creds.crypto, ...json.crypto };
+      if (json.cryptobox && typeof json.cryptobox === "object") creds.cryptobox = { ...creds.cryptobox, ...json.cryptobox };
+      if (json.googlepay && typeof json.googlepay === "object") creds.googlepay = { ...creds.googlepay, ...json.googlepay };
+      if (json.attijari_morocco && typeof json.attijari_morocco === "object") creds.attijari_morocco = { ...creds.attijari_morocco, ...json.attijari_morocco };
+      if (json.chimoney && typeof json.chimoney === "object") creds.chimoney = { ...creds.chimoney, ...json.chimoney };
+      if (json.xe && typeof json.xe === "object") creds.xe = { ...creds.xe, ...json.xe };
+      if (json.wise && typeof json.wise === "object") creds.wise = { ...creds.wise, ...json.wise };
+      if (json.transfi && typeof json.transfi === "object") creds.transfi = { ...creds.transfi, ...json.transfi };
+    }
     return { settlement_priority, creds };
   }
   static missingCredentials(route, cfg) {
@@ -77,6 +113,10 @@ export class OwnerSettlementEnforcer {
     
     // ... existing checks ...
     
+    if (r === "googlepay") {
+        const c = cfg?.creds?.googlepay || {};
+        return !c.enabled || !c.email || !String(c.email).includes("@");
+    }
     if (r === "attijari_morocco") {
         const c = cfg?.creds?.attijari_morocco || {};
         return !c.enabled || !c.rib;
@@ -155,6 +195,9 @@ export class OwnerSettlementEnforcer {
     }
     if (t === "cryptobox") {
       return process.env.BINANCE_CRYPTOBOX_URL || null;
+    }
+    if (t === "googlepay") {
+      return normEmail(process.env.OWNER_GOOGLEPAY_EMAIL) || normEmail(process.env.GOOGLEPAY_ACCOUNT_EMAIL);
     }
     return null;
   }

@@ -1,5 +1,5 @@
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 function val(name) {
   return String(process.env[name] ?? '').trim().toLowerCase()
@@ -15,13 +15,16 @@ export function getRoutesStatus() {
   const bankOpen = bankEnabled
   const cryptoWithdrawEnable = val('CRYPTO_WITHDRAW_ENABLE') === 'true'
   const cryptoOpen = cryptoWithdrawEnable && !bunker
+  const googlepayEnable = val('GOOGLEPAY_ENABLE') === 'true'
+  const googlepayOpen = googlepayEnable && !bunker
   const out = {
     created_at: new Date().toISOString(),
     bunker_mode: bunker,
     payoneer_open: payoneerOpen,
     paypal_open: paypalOpen,
     bank_open: bankOpen,
-    crypto_open: cryptoOpen
+    crypto_open: cryptoOpen,
+    googlepay_open: googlepayOpen
   }
   return out
 }

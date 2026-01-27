@@ -1,0 +1,44 @@
+{
+  "priority": [
+    "bank_transfer",
+    "payoneer",
+    "crypto",
+    "paypal",
+    "googlepay"
+  ],
+  "paypal": {
+    "disabled": false,
+    "clientId": "",
+    "clientSecret": ""
+  },
+  "bank": {
+    "enabled": false,
+    "provider": "",
+    "beneficiaryName": "",
+    "iban": "",
+    "swift": "",
+    "allowlist": "[]"
+  },
+  "payoneer": {
+    "enabled": false,
+    "base": "",
+    "clientId": "",
+    "clientSecret": ""
+  },
+  "payoneer_standard": {
+    "enabled": false,
+    "email": ""
+  },
+  "crypto": {
+    "enabled": false,
+    "address": ""
+  },
+  "cryptobox": {
+    "enabled": false,
+    "url": "https://www.binance.com/en/my/wallet/account/payment/cryptobox"
+  },
+  "googlepay": {
+    "enabled": false,
+    "email": ""
+  }
+}
