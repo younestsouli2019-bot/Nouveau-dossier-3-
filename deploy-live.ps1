@@ -13,7 +13,8 @@ Set-Location -LiteralPath $root | Out-Null
 
 $credsPath = Join-Path $root "CREDS.txt"
 if (-not (Test-Path -LiteralPath $credsPath)) {
-  throw "Missing CREDS.txt next to deploy-live.ps1"
+  $alt = Join-Path $root ("Nouveau dossier (3)" + [System.IO.Path]::DirectorySeparatorChar + "CREDS.txt")
+  if (Test-Path -LiteralPath $alt) { $credsPath = $alt } else { throw "Missing CREDS.txt next to deploy-live.ps1" }
 }
 
 $lines = Get-Content -LiteralPath $credsPath -ErrorAction Stop
@@ -310,6 +311,23 @@ $env:AUTONOMOUS_AUTO_EXPORT_PAYONEER_PAYOUT_BATCHES = "false"
 $env:AUTONOMOUS_DISABLE_INCIDENT_LOG_WRITE = "true"
 $env:AUTONOMOUS_ENFORCE_MISSION_HEALTH_FREEZE = "false"
 $env:AUTONOMOUS_DEADMAN = "false"
+$env:SWARM_SUPERVISOR_ENABLED = "true"
+if (-not $env:SWARM_SUPERVISOR_INTERVAL_MS) { $env:SWARM_SUPERVISOR_INTERVAL_MS = "60000" }
+if (-not $env:SWARM_MIN_ACTIVE_AGENTS) { $env:SWARM_MIN_ACTIVE_AGENTS = "5" }
+
+# Enable owner routing when PayPal Owner email is present; only enable auto-approve/send when PPP2 is live and allowlist is set
+if (-not [string]::IsNullOrWhiteSpace($paypalEmail)) {
+  if ([string]::IsNullOrWhiteSpace($env:OWNER_PAYPAL_EMAIL)) { $env:OWNER_PAYPAL_EMAIL = $paypalEmail }
+  $ppp2Approved = ([string]::IsNullOrWhiteSpace($env:PAYPAL_PPP2_APPROVED) -eq $false) -and ($env:PAYPAL_PPP2_APPROVED.ToString().ToLowerInvariant() -eq "true")
+  $ppp2Send    = ([string]::IsNullOrWhiteSpace($env:PAYPAL_PPP2_ENABLE_SEND) -eq $false) -and ($env:PAYPAL_PPP2_ENABLE_SEND.ToString().ToLowerInvariant() -eq "true")
+  $allowCsv    = (-not [string]::IsNullOrWhiteSpace($env:AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS)) -or (-not [string]::IsNullOrWhiteSpace($env:BASE44_ALLOWED_PAYPAL_RECIPIENTS)) -or (-not [string]::IsNullOrWhiteSpace($env:PAYOUT_ALLOWED_PAYPAL_RECIPIENTS))
+  $allowJson   = (-not [string]::IsNullOrWhiteSpace($env:AUTONOMOUS_ALLOWED_PAYOUT_RECIPIENTS_JSON)) -or (-not [string]::IsNullOrWhiteSpace($env:BASE44_ALLOWED_PAYOUT_RECIPIENTS_JSON))
+  if ($ppp2Approved -and $ppp2Send -and ($allowCsv -or $allowJson)) {
+    $env:AUTONOMOUS_AUTO_APPROVE_PAYOUT_BATCHES = "true"
+    $env:AUTONOMOUS_AUTO_SUBMIT_PAYPAL_PAYOUT_BATCHES = "true"
+    $env:AUTONOMOUS_AUTO_APPROVE_PAYOUTS = "true"
+  }
+}
 
 if ([string]::IsNullOrWhiteSpace($env:BASE44_APP_ID)) { $env:BASE44_APP_ID = GetCredValue "BASE44_APP_ID" }
 if ([string]::IsNullOrWhiteSpace($env:BASE44_SERVICE_TOKEN)) { $env:BASE44_SERVICE_TOKEN = GetCredValue "BASE44_SERVICE_TOKEN" }
