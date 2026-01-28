@@ -2606,7 +2606,32 @@ async function main() {
 		}
 
 		try {
-			const out = await runTick(cfg, state);
+			const startH = Number(
+				process.env.AUTONOMOUS_ACTIVE_START_UTC ??
+					process.env.AUTONOMOUS_PAYOUT_WINDOW_START_UTC ??
+					(cfg.payout?.windowUtc?.startHourUtc ?? 0),
+			);
+			const endH = Number(
+				process.env.AUTONOMOUS_ACTIVE_END_UTC ??
+					process.env.AUTONOMOUS_PAYOUT_WINDOW_END_UTC ??
+					(cfg.payout?.windowUtc?.endHourUtc ?? 0),
+			);
+			const activeOk = isWithinWindowUtc({ startHourUtc: startH, endHourUtc: endH });
+			const loopCfg = activeOk
+				? cfg
+				: {
+						...cfg,
+						tasks: {
+							...cfg.tasks,
+							createPayoutBatches: false,
+							autoApprovePayoutBatches: false,
+							autoSubmitPayPalPayoutBatches: false,
+							autoExportPayoneerPayoutBatches: false,
+							syncPayPalLedgerBatches: false,
+							autoSettleOwnerPayoneer: false,
+						},
+					};
+			const out = await runTick(loopCfg, state);
 			state.consecutiveFailures = out.ok ? 0 : state.consecutiveFailures + 1;
 		} catch (e) {
 			const msg = e?.message ?? String(e);

@@ -1,0 +1,159 @@
+{
+  "ok": true,
+  "mode": "PAYMENT_LINKS",
+  "beneficiary": "younestsouli2019@gmail.com",
+  "note": "Settlement batch 1769636155923",
+  "totalAmount": 150,
+  "currency": "USD",
+  "link": "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=younestsouli2019%40gmail.com&item_name=Settlement+batch+1769636155923&amount=150&currency_code=USD",
+  "button": {
+    "label": "Pay via PayPal",
+    "href": "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=younestsouli2019%40gmail.com&item_name=Settlement+batch+1769636155923&amount=150&currency_code=USD",
+    "html": "<a href=\"https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=younestsouli2019%40gmail.com&item_name=Settlement+batch+1769636155923&amount=150&currency_code=USD\" target=\"_blank\" rel=\"noopener noreferrer\" aria-label=\"Pay securely via PayPal\" style=\"display:inline-block;padding:10px 18px;border-radius:999px;background:#0070ba;color:#ffffff;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;text-decoration:none;letter-spacing:.02em;\">Pay via PayPal</a>"
+  },
+  "earnings": [
+    {
+      "id": "offline_Earning_REV_1768225534247",
+      "created_date": "2026-01-12T13:46:34.250Z",
+      "updated_date": "2026-01-12T13:46:34.250Z",
+      "earning_id": "REV_1768225534247",
+      "amount": 25,
+      "currency": "USD",
+      "occurred_at": "2026-01-12T13:46:34.249Z",
+      "source": "swarm_revenue",
+      "beneficiary": "younestsouli2019@gmail.com",
+      "status": "settled_externally_pending",
+      "settlement_id": null,
+      "metadata": {
+        "payer_name": "Younes Tsouli",
+        "payer_email": "younestsouli2019@gmail.com",
+        "payer_company": "Private",
+        "purpose": "Services rendered – Q1 2026 consulting",
+        "reference": "INV-2026-001"
+      }
+    },
+    {
+      "id": "offline_Earning_REV_1768225564250",
+      "created_date": "2026-01-12T13:46:34.250Z",
+      "updated_date": "2026-01-12T13:46:34.250Z",
+      "earning_id": "REV_1768225564250",
+      "amount": 40,
+      "currency": "USD",
+      "occurred_at": "2026-01-12T13:46:34.250Z",
+      "source": "swarm_revenue",
+      "beneficiary": "younestsouli2019@gmail.com",
+      "status": "settled_externally_pending",
+      "settlement_id": null,
+      "metadata": {
+        "payer_name": "Younes Tsouli",
+        "payer_email": "younestsouli2019@gmail.com",
+        "payer_company": "Private",
+        "purpose": "Services rendered – Q1 2026 consulting",
+        "reference": "INV-2026-001"
+      }
+    },
+    {
+      "id": "offline_Earning_REV_1768225594250",
+      "created_date": "2026-01-12T13:46:34.250Z",
+      "updated_date": "2026-01-12T13:46:34.250Z",
+      "earning_id": "REV_1768225594250",
+      "amount": 85,
+      "currency": "USD",
+      "occurred_at": "2026-01-12T13:46:34.250Z",
+      "source": "swarm_revenue",
+      "beneficiary": "younestsouli2019@gmail.com",
+      "status": "settled_externally_pending",
+      "settlement_id": null,
+      "metadata": {
+        "payer_name": "Younes Tsouli",
+        "payer_email": "younestsouli2019@gmail.com",
+        "payer_company": "Private",
+        "purpose": "Services rendered – Q1 2026 consulting",
+        "reference": "INV-2026-001"
+      }
+    }
+  ],
+  "perPayerLinks": [
+    {
+      "payer": "younestsouli2019@gmail.com",
+      "amount": 25,
+      "currency": "USD",
+      "note": "Settlement INV-2026-001",
+      "link": "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=younestsouli2019%40gmail.com&item_name=Settlement+INV-2026-001&amount=25&currency_code=USD",
+      "item": {
+        "id": "offline_Earning_REV_1768225534247",
+        "created_date": "2026-01-12T13:46:34.250Z",
+        "updated_date": "2026-01-12T13:46:34.250Z",
+        "earning_id": "REV_1768225534247",
+        "amount": 25,
+        "currency": "USD",
+        "occurred_at": "2026-01-12T13:46:34.249Z",
+        "source": "swarm_revenue",
+        "beneficiary": "younestsouli2019@gmail.com",
+        "status": "settled_externally_pending",
+        "settlement_id": null,
+        "metadata": {
+          "payer_name": "Younes Tsouli",
+          "payer_email": "younestsouli2019@gmail.com",
+          "payer_company": "Private",
+          "purpose": "Services rendered – Q1 2026 consulting",
+          "reference": "INV-2026-001"
+        }
+      }
+    },
+    {
+      "payer": "younestsouli2019@gmail.com",
+      "amount": 40,
+      "currency": "USD",
+      "note": "Settlement INV-2026-001",
+      "link": "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=younestsouli2019%40gmail.com&item_name=Settlement+INV-2026-001&amount=40&currency_code=USD",
+      "item": {
+        "id": "offline_Earning_REV_1768225564250",
+        "created_date": "2026-01-12T13:46:34.250Z",
+        "updated_date": "2026-01-12T13:46:34.250Z",
+        "earning_id": "REV_1768225564250",
+        "amount": 40,
+        "currency": "USD",
+        "occurred_at": "2026-01-12T13:46:34.250Z",
+        "source": "swarm_revenue",
+        "beneficiary": "younestsouli2019@gmail.com",
+        "status": "settled_externally_pending",
+        "settlement_id": null,
+        "metadata": {
+          "payer_name": "Younes Tsouli",
+          "payer_email": "younestsouli2019@gmail.com",
+          "payer_company": "Private",
+          "purpose": "Services rendered – Q1 2026 consulting",
+          "reference": "INV-2026-001"
+        }
+      }
+    },
+    {
+      "payer": "younestsouli2019@gmail.com",
+      "amount": 85,
+      "currency": "USD",
+      "note": "Settlement INV-2026-001",
+      "link": "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=younestsouli2019%40gmail.com&item_name=Settlement+INV-2026-001&amount=85&currency_code=USD",
+      "item": {
+        "id": "offline_Earning_REV_1768225594250",
+        "created_date": "2026-01-12T13:46:34.250Z",
+        "updated_date": "2026-01-12T13:46:34.250Z",
+        "earning_id": "REV_1768225594250",
+        "amount": 85,
+        "currency": "USD",
+        "occurred_at": "2026-01-12T13:46:34.250Z",
+        "source": "swarm_revenue",
+        "beneficiary": "younestsouli2019@gmail.com",
+        "status": "settled_externally_pending",
+        "settlement_id": null,
+        "metadata": {
+          "payer_name": "Younes Tsouli",
+          "payer_email": "younestsouli2019@gmail.com",
+          "payer_company": "Private",
+          "purpose": "Services rendered – Q1 2026 consulting",
+          "reference": "INV-2026-001"
+        }
+      }
+    }
+  ]
+}

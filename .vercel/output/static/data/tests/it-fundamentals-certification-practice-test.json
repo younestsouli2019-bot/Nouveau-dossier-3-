@@ -1,0 +1,7768 @@
+{
+  "title": "IT Fundamentals Certification Practice Test",
+  "slug": "it-fundamentals-certification-practice-test",
+  "questions": [
+    {
+      "id": "99088077",
+      "type": "multiple-choice",
+      "question": "<p>Did you download the Exam preparation guide?</p>",
+      "answers": [
+        "<p>Yes</p>",
+        "<p>No</p>"
+      ],
+      "feedbacks": [
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084495",
+      "type": "multiple-choice",
+      "question": "Which of the following is a programming language?",
+      "answers": [
+        "HTML",
+        "CSS",
+        "Python",
+        "JPEG"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "c"
+      ]
+    },
+    {
+      "id": "99084499",
+      "type": "multiple-choice",
+      "question": "Which of the following is a relational database management system?",
+      "answers": [
+        "MongoDB",
+        "MySQL",
+        "Redis",
+        "Elasticsearch"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084501",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a router?",
+      "answers": [
+        "To store data",
+        "To connect networks",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084503",
+      "type": "multiple-choice",
+      "question": "Which protocol is used for secure communication over a computer network?",
+      "answers": [
+        "HTTP",
+        "FTP",
+        "HTTPS",
+        "SMTP"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "c"
+      ]
+    },
+    {
+      "id": "99084505",
+      "type": "multiple-choice",
+      "question": "What is the binary representation of the decimal number 10?",
+      "answers": [
+        "1010",
+        "1001",
+        "1100",
+        "1111"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084507",
+      "type": "multiple-choice",
+      "question": "Which of the following is a version control system?",
+      "answers": [
+        "Git",
+        "Jenkins",
+        "Docker",
+        "Kubernetes"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084509",
+      "type": "multiple-choice",
+      "question": "What is the main purpose of an operating system?",
+      "answers": [
+        "To manage hardware resources",
+        "To create documents",
+        "To browse the internet",
+        "To play games"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084511",
+      "type": "multiple-choice",
+      "question": "Which of the following is a cloud service provider?",
+      "answers": [
+        "AWS",
+        "IBM",
+        "Oracle",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084513",
+      "type": "multiple-choice",
+      "question": "What is the file extension for a Python script?",
+      "answers": [
+        ".java",
+        ".py",
+        ".exe",
+        ".html"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084515",
+      "type": "multiple-choice",
+      "question": "Which of the following is a NoSQL database?",
+      "answers": [
+        "MySQL",
+        "PostgreSQL",
+        "MongoDB",
+        "SQLite"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "c"
+      ]
+    },
+    {
+      "id": "99084517",
+      "type": "multiple-choice",
+      "question": "What is the default port for HTTP?",
+      "answers": [
+        "80",
+        "443",
+        "21",
+        "25"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084519",
+      "type": "multiple-choice",
+      "question": "Which of the following is a scripting language?",
+      "answers": [
+        "Java",
+        "C++",
+        "JavaScript",
+        "Swift"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "c"
+      ]
+    },
+    {
+      "id": "99084521",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a firewall?",
+      "answers": [
+        "To store data",
+        "To block unauthorized access",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084523",
+      "type": "multiple-choice",
+      "question": "Which of the following is a markup language?",
+      "answers": [
+        "Python",
+        "HTML",
+        "JavaScript",
+        "SQL"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084525",
+      "type": "multiple-choice",
+      "question": "What is the full form of URL?",
+      "answers": [
+        "Uniform Resource Locator",
+        "Universal Resource Locator",
+        "Uniform Resource Link",
+        "Universal Resource Link"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084527",
+      "type": "multiple-choice",
+      "question": "Which of the following is a containerization platform?",
+      "answers": [
+        "Docker",
+        "Kubernetes",
+        "Jenkins",
+        "Ansible"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084529",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a DNS server?",
+      "answers": [
+        "To store data",
+        "To translate domain names to IP addresses",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084531",
+      "type": "multiple-choice",
+      "question": "Which of the following is a programming paradigm?",
+      "answers": [
+        "Object-Oriented",
+        "Functional",
+        "Procedural",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084533",
+      "type": "multiple-choice",
+      "question": "What is the default port for HTTPS?",
+      "answers": [
+        "80",
+        "443",
+        "21",
+        "25"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084535",
+      "type": "multiple-choice",
+      "question": "Which of the following is a web server?",
+      "answers": [
+        "Apache",
+        "Nginx",
+        "IIS",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084537",
+      "type": "multiple-choice",
+      "question": "What is the full form of SQL?",
+      "answers": [
+        "Structured Query Language",
+        "Simple Query Language",
+        "Standard Query Language",
+        "Sequential Query Language"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084539",
+      "type": "multiple-choice",
+      "question": "Which of the following is a version of Linux?",
+      "answers": [
+        "Ubuntu",
+        "Windows",
+        "macOS",
+        "iOS"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084541",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a CPU?",
+      "answers": [
+        "To store data",
+        "To execute instructions",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084543",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of memory?",
+      "answers": [
+        "RAM",
+        "ROM",
+        "Cache",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084545",
+      "type": "multiple-choice",
+      "question": "What is the full form of API?",
+      "answers": [
+        "Application Programming Interface",
+        "Advanced Programming Interface",
+        "Application Process Interface",
+        "Advanced Process Interface"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084547",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of cloud computing service?",
+      "answers": [
+        "IaaS",
+        "PaaS",
+        "SaaS",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084549",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a GPU?",
+      "answers": [
+        "To store data",
+        "To render graphics",
+        "To process data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084551",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network topology?",
+      "answers": [
+        "Star",
+        "Bus",
+        "Ring",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084553",
+      "type": "multiple-choice",
+      "question": "What is the full form of VPN?",
+      "answers": [
+        "Virtual Private Network",
+        "Virtual Public Network",
+        "Virtual Personal Network",
+        "Virtual Process Network"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084555",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of malware?",
+      "answers": [
+        "Virus",
+        "Worm",
+        "Trojan",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084557",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a compiler?",
+      "answers": [
+        "To execute code",
+        "To translate code",
+        "To debug code",
+        "To store code"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084559",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of database model?",
+      "answers": [
+        "Relational",
+        "Hierarchical",
+        "Network",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084561",
+      "type": "multiple-choice",
+      "question": "What is the full form of HTML?",
+      "answers": [
+        "HyperText Markup Language",
+        "HyperText Machine Language",
+        "HyperText Modeling Language",
+        "HyperText Management Language"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084563",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software testing?",
+      "answers": [
+        "Unit Testing",
+        "Integration Testing",
+        "System Testing",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084565",
+      "type": "multiple-choice",
+      "question": "What is the primary function of an IDE?",
+      "answers": [
+        "To store data",
+        "To develop software",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084567",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network protocol?",
+      "answers": [
+        "TCP",
+        "UDP",
+        "IP",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084569",
+      "type": "multiple-choice",
+      "question": "What is the full form of CSS?",
+      "answers": [
+        "Cascading Style Sheets",
+        "Computer Style Sheets",
+        "Cascading System Sheets",
+        "Computer System Sheets"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084571",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of operating system?",
+      "answers": [
+        "Windows",
+        "Linux",
+        "macOS",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084573",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a web browser?",
+      "answers": [
+        "To store data",
+        "To display web pages",
+        "To process data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084575",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084577",
+      "type": "multiple-choice",
+      "question": "What is the full form of FTP?",
+      "answers": [
+        "File Transfer Protocol",
+        "File Transmission Protocol",
+        "File Transport Protocol",
+        "File Transaction Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084579",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of data structure?",
+      "answers": [
+        "Array",
+        "Linked List",
+        "Stack",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084581",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a server?",
+      "answers": [
+        "To store data",
+        "To provide services",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084583",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software license?",
+      "answers": [
+        "Open Source",
+        "Proprietary",
+        "Freeware",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084585",
+      "type": "multiple-choice",
+      "question": "What is the full form of XML?",
+      "answers": [
+        "Extensible Markup Language",
+        "Extensible Machine Language",
+        "Extensible Modeling Language",
+        "Extensible Management Language"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084587",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network device?",
+      "answers": [
+        "Router",
+        "Switch",
+        "Hub",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084589",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a database?",
+      "answers": [
+        "To store data",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084591",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming error?",
+      "answers": [
+        "Syntax Error",
+        "Runtime Error",
+        "Logical Error",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084593",
+      "type": "multiple-choice",
+      "question": "What is the full form of JSON?",
+      "answers": [
+        "JavaScript Object Notation",
+        "Java Object Notation",
+        "JavaScript Object Network",
+        "Java Object Network"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084595",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of cloud storage?",
+      "answers": [
+        "Google Drive",
+        "Dropbox",
+        "OneDrive",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084597",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a cache?",
+      "answers": [
+        "To store data temporarily",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084599",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming paradigm?",
+      "answers": [
+        "Object-Oriented",
+        "Functional",
+        "Procedural",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084601",
+      "type": "multiple-choice",
+      "question": "What is the full form of SSL?",
+      "answers": [
+        "Secure Sockets Layer",
+        "Secure System Layer",
+        "Secure Server Layer",
+        "Secure Service Layer"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084603",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network security?",
+      "answers": [
+        "Firewall",
+        "Antivirus",
+        "Encryption",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084605",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a load balancer?",
+      "answers": [
+        "To store data",
+        "To distribute network traffic",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084607",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software development model?",
+      "answers": [
+        "Waterfall",
+        "Agile",
+        "Spiral",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084609",
+      "type": "multiple-choice",
+      "question": "What is the full form of TCP?",
+      "answers": [
+        "Transmission Control Protocol",
+        "Transfer Control Protocol",
+        "Transmission Communication Protocol",
+        "Transfer Communication Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084611",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084613",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a proxy server?",
+      "answers": [
+        "To store data",
+        "To act as an intermediary",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084615",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of database?",
+      "answers": [
+        "Relational",
+        "NoSQL",
+        "Graph",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084617",
+      "type": "multiple-choice",
+      "question": "What is the full form of UDP?",
+      "answers": [
+        "User Datagram Protocol",
+        "User Data Protocol",
+        "User Datagram Process",
+        "User Data Process"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084619",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software?",
+      "answers": [
+        "System Software",
+        "Application Software",
+        "Utility Software",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084621",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a modem?",
+      "answers": [
+        "To store data",
+        "To modulate and demodulate signals",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084623",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084625",
+      "type": "multiple-choice",
+      "question": "What is the full form of IP?",
+      "answers": [
+        "Internet Protocol",
+        "Internet Process",
+        "Internet Program",
+        "Internet Port"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084627",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network?",
+      "answers": [
+        "LAN",
+        "WAN",
+        "MAN",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084629",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a switch?",
+      "answers": [
+        "To store data",
+        "To connect devices in a network",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084631",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084633",
+      "type": "multiple-choice",
+      "question": "What is the full form of DNS?",
+      "answers": [
+        "Domain Name System",
+        "Domain Name Server",
+        "Domain Name Service",
+        "Domain Name Software"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084635",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software testing?",
+      "answers": [
+        "Unit Testing",
+        "Integration Testing",
+        "System Testing",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084637",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a router?",
+      "answers": [
+        "To store data",
+        "To connect networks",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084639",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084641",
+      "type": "multiple-choice",
+      "question": "What is the full form of HTTP?",
+      "answers": [
+        "HyperText Transfer Protocol",
+        "HyperText Transmission Protocol",
+        "HyperText Transport Protocol",
+        "HyperText Transaction Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084643",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network security?",
+      "answers": [
+        "Firewall",
+        "Antivirus",
+        "Encryption",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084645",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a server?",
+      "answers": [
+        "To store data",
+        "To provide services",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084647",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084649",
+      "type": "multiple-choice",
+      "question": "What is the full form of SMTP?",
+      "answers": [
+        "Simple Mail Transfer Protocol",
+        "Simple Mail Transmission Protocol",
+        "Simple Mail Transport Protocol",
+        "Simple Mail Transaction Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084651",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software license?",
+      "answers": [
+        "Open Source",
+        "Proprietary",
+        "Freeware",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084653",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a database?",
+      "answers": [
+        "To store data",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084655",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming error?",
+      "answers": [
+        "Syntax Error",
+        "Runtime Error",
+        "Logical Error",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084657",
+      "type": "multiple-choice",
+      "question": "What is the full form of JSON?",
+      "answers": [
+        "JavaScript Object Notation",
+        "Java Object Notation",
+        "JavaScript Object Network",
+        "Java Object Network"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084659",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of cloud storage?",
+      "answers": [
+        "Google Drive",
+        "Dropbox",
+        "OneDrive",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084661",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a cache?",
+      "answers": [
+        "To store data temporarily",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084663",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming paradigm?",
+      "answers": [
+        "Object-Oriented",
+        "Functional",
+        "Procedural",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084665",
+      "type": "multiple-choice",
+      "question": "What is the full form of SSL?",
+      "answers": [
+        "Secure Sockets Layer",
+        "Secure System Layer",
+        "Secure Server Layer",
+        "Secure Service Layer"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084667",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network security?",
+      "answers": [
+        "Firewall",
+        "Antivirus",
+        "Encryption",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084669",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a load balancer?",
+      "answers": [
+        "To store data",
+        "To distribute network traffic",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084671",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software development model?",
+      "answers": [
+        "Waterfall",
+        "Agile",
+        "Spiral",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084673",
+      "type": "multiple-choice",
+      "question": "What is the full form of TCP?",
+      "answers": [
+        "Transmission Control Protocol",
+        "Transfer Control Protocol",
+        "Transmission Communication Protocol",
+        "Transfer Communication Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084675",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084677",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a proxy server?",
+      "answers": [
+        "To store data",
+        "To act as an intermediary",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084679",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of database?",
+      "answers": [
+        "Relational",
+        "NoSQL",
+        "Graph",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084681",
+      "type": "multiple-choice",
+      "question": "What is the full form of UDP?",
+      "answers": [
+        "User Datagram Protocol",
+        "User Data Protocol",
+        "User Datagram Process",
+        "User Data Process"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084683",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software?",
+      "answers": [
+        "System Software",
+        "Application Software",
+        "Utility Software",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084685",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a modem?",
+      "answers": [
+        "To store data",
+        "To modulate and demodulate signals",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084687",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084689",
+      "type": "multiple-choice",
+      "question": "What is the full form of IP?",
+      "answers": [
+        "Internet Protocol",
+        "Internet Process",
+        "Internet Program",
+        "Internet Port"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084691",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network?",
+      "answers": [
+        "LAN",
+        "WAN",
+        "MAN",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084693",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a switch?",
+      "answers": [
+        "To store data",
+        "To connect devices in a network",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084695",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084697",
+      "type": "multiple-choice",
+      "question": "What is the full form of DNS?",
+      "answers": [
+        "Domain Name System",
+        "Domain Name Server",
+        "Domain Name Service",
+        "Domain Name Software"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084699",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software testing?",
+      "answers": [
+        "Unit Testing",
+        "Integration Testing",
+        "System Testing",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084701",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a router?",
+      "answers": [
+        "To store data",
+        "To connect networks",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084703",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084705",
+      "type": "multiple-choice",
+      "question": "What is the full form of HTTP?",
+      "answers": [
+        "HyperText Transfer Protocol",
+        "HyperText Transmission Protocol",
+        "HyperText Transport Protocol",
+        "HyperText Transaction Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084707",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network security?",
+      "answers": [
+        "Firewall",
+        "Antivirus",
+        "Encryption",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084709",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a server?",
+      "answers": [
+        "To store data",
+        "To provide services",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084711",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084713",
+      "type": "multiple-choice",
+      "question": "What is the full form of SMTP?",
+      "answers": [
+        "Simple Mail Transfer Protocol",
+        "Simple Mail Transmission Protocol",
+        "Simple Mail Transport Protocol",
+        "Simple Mail Transaction Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084715",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software license?",
+      "answers": [
+        "Open Source",
+        "Proprietary",
+        "Freeware",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084717",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a database?",
+      "answers": [
+        "To store data",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084719",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming error?",
+      "answers": [
+        "Syntax Error",
+        "Runtime Error",
+        "Logical Error",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084721",
+      "type": "multiple-choice",
+      "question": "What is the full form of JSON?",
+      "answers": [
+        "JavaScript Object Notation",
+        "Java Object Notation",
+        "JavaScript Object Network",
+        "Java Object Network"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084723",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of cloud storage?",
+      "answers": [
+        "Google Drive",
+        "Dropbox",
+        "OneDrive",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084725",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a cache?",
+      "answers": [
+        "To store data temporarily",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084727",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming paradigm?",
+      "answers": [
+        "Object-Oriented",
+        "Functional",
+        "Procedural",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084729",
+      "type": "multiple-choice",
+      "question": "What is the full form of SSL?",
+      "answers": [
+        "Secure Sockets Layer",
+        "Secure System Layer",
+        "Secure Server Layer",
+        "Secure Service Layer"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084731",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network security?",
+      "answers": [
+        "Firewall",
+        "Antivirus",
+        "Encryption",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084733",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a load balancer?",
+      "answers": [
+        "To store data",
+        "To distribute network traffic",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084735",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software development model?",
+      "answers": [
+        "Waterfall",
+        "Agile",
+        "Spiral",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084737",
+      "type": "multiple-choice",
+      "question": "What is the full form of TCP?",
+      "answers": [
+        "Transmission Control Protocol",
+        "Transfer Control Protocol",
+        "Transmission Communication Protocol",
+        "Transfer Communication Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084739",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084741",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a proxy server?",
+      "answers": [
+        "To store data",
+        "To act as an intermediary",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084743",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of database?",
+      "answers": [
+        "Relational",
+        "NoSQL",
+        "Graph",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084745",
+      "type": "multiple-choice",
+      "question": "What is the full form of UDP?",
+      "answers": [
+        "User Datagram Protocol",
+        "User Data Protocol",
+        "User Datagram Process",
+        "User Data Process"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084747",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software?",
+      "answers": [
+        "System Software",
+        "Application Software",
+        "Utility Software",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084749",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a modem?",
+      "answers": [
+        "To store data",
+        "To modulate and demodulate signals",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084751",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084753",
+      "type": "multiple-choice",
+      "question": "What is the full form of IP?",
+      "answers": [
+        "Internet Protocol",
+        "Internet Process",
+        "Internet Program",
+        "Internet Port"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084755",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network?",
+      "answers": [
+        "LAN",
+        "WAN",
+        "MAN",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084759",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a switch?",
+      "answers": [
+        "To store data",
+        "To connect devices in a network",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084761",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084763",
+      "type": "multiple-choice",
+      "question": "What is the full form of DNS?",
+      "answers": [
+        "Domain Name System",
+        "Domain Name Server",
+        "Domain Name Service",
+        "Domain Name Software"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084765",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software testing?",
+      "answers": [
+        "Unit Testing",
+        "Integration Testing",
+        "System Testing",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084767",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a router?",
+      "answers": [
+        "To store data",
+        "To connect networks",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084769",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084771",
+      "type": "multiple-choice",
+      "question": "What is the full form of HTTP?",
+      "answers": [
+        "HyperText Transfer Protocol",
+        "HyperText Transmission Protocol",
+        "HyperText Transport Protocol",
+        "HyperText Transaction Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084773",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network security?",
+      "answers": [
+        "Firewall",
+        "Antivirus",
+        "Encryption",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084775",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a server?",
+      "answers": [
+        "To store data",
+        "To provide services",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084777",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084779",
+      "type": "multiple-choice",
+      "question": "What is the full form of SMTP?",
+      "answers": [
+        "Simple Mail Transfer Protocol",
+        "Simple Mail Transmission Protocol",
+        "Simple Mail Transport Protocol",
+        "Simple Mail Transaction Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084781",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software license?",
+      "answers": [
+        "Open Source",
+        "Proprietary",
+        "Freeware",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084783",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a database?",
+      "answers": [
+        "To store data",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084785",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming error?",
+      "answers": [
+        "Syntax Error",
+        "Runtime Error",
+        "Logical Error",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084787",
+      "type": "multiple-choice",
+      "question": "What is the full form of JSON?",
+      "answers": [
+        "JavaScript Object Notation",
+        "Java Object Notation",
+        "JavaScript Object Network",
+        "Java Object Network"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084789",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of cloud storage?",
+      "answers": [
+        "Google Drive",
+        "Dropbox",
+        "OneDrive",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084791",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a cache?",
+      "answers": [
+        "To store data temporarily",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084793",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming paradigm?",
+      "answers": [
+        "Object-Oriented",
+        "Functional",
+        "Procedural",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084795",
+      "type": "multiple-choice",
+      "question": "What is the full form of SSL?",
+      "answers": [
+        "Secure Sockets Layer",
+        "Secure System Layer",
+        "Secure Server Layer",
+        "Secure Service Layer"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084797",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network security?",
+      "answers": [
+        "Firewall",
+        "Antivirus",
+        "Encryption",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084799",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a load balancer?",
+      "answers": [
+        "To store data",
+        "To distribute network traffic",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084801",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software development model?",
+      "answers": [
+        "Waterfall",
+        "Agile",
+        "Spiral",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084803",
+      "type": "multiple-choice",
+      "question": "What is the full form of TCP?",
+      "answers": [
+        "Transmission Control Protocol",
+        "Transfer Control Protocol",
+        "Transmission Communication Protocol",
+        "Transfer Communication Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084805",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084807",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a proxy server?",
+      "answers": [
+        "To store data",
+        "To act as an intermediary",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084809",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of database?",
+      "answers": [
+        "Relational",
+        "NoSQL",
+        "Graph",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084811",
+      "type": "multiple-choice",
+      "question": "What is the full form of UDP?",
+      "answers": [
+        "User Datagram Protocol",
+        "User Data Protocol",
+        "User Datagram Process",
+        "User Data Process"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084813",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software?",
+      "answers": [
+        "System Software",
+        "Application Software",
+        "Utility Software",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084815",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a modem?",
+      "answers": [
+        "To store data",
+        "To modulate and demodulate signals",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084817",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084819",
+      "type": "multiple-choice",
+      "question": "What is the full form of IP?",
+      "answers": [
+        "Internet Protocol",
+        "Internet Process",
+        "Internet Program",
+        "Internet Port"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084821",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network?",
+      "answers": [
+        "LAN",
+        "WAN",
+        "MAN",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084823",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a switch?",
+      "answers": [
+        "To store data",
+        "To connect devices in a network",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084825",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084827",
+      "type": "multiple-choice",
+      "question": "What is the full form of DNS?",
+      "answers": [
+        "Domain Name System",
+        "Domain Name Server",
+        "Domain Name Service",
+        "Domain Name Software"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084829",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software testing?",
+      "answers": [
+        "Unit Testing",
+        "Integration Testing",
+        "System Testing",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084831",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a router?",
+      "answers": [
+        "To store data",
+        "To connect networks",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084833",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084835",
+      "type": "multiple-choice",
+      "question": "What is the full form of HTTP?",
+      "answers": [
+        "HyperText Transfer Protocol",
+        "HyperText Transmission Protocol",
+        "HyperText Transport Protocol",
+        "HyperText Transaction Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084837",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network security?",
+      "answers": [
+        "Firewall",
+        "Antivirus",
+        "Encryption",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084839",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a server?",
+      "answers": [
+        "To store data",
+        "To provide services",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084841",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084843",
+      "type": "multiple-choice",
+      "question": "What is the full form of SMTP?",
+      "answers": [
+        "Simple Mail Transfer Protocol",
+        "Simple Mail Transmission Protocol",
+        "Simple Mail Transport Protocol",
+        "Simple Mail Transaction Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084845",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software license?",
+      "answers": [
+        "Open Source",
+        "Proprietary",
+        "Freeware",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084847",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a database?",
+      "answers": [
+        "To store data",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084849",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming error?",
+      "answers": [
+        "Syntax Error",
+        "Runtime Error",
+        "Logical Error",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084851",
+      "type": "multiple-choice",
+      "question": "What is the full form of JSON?",
+      "answers": [
+        "JavaScript Object Notation",
+        "Java Object Notation",
+        "JavaScript Object Network",
+        "Java Object Network"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084853",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of cloud storage?",
+      "answers": [
+        "Google Drive",
+        "Dropbox",
+        "OneDrive",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084855",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a cache?",
+      "answers": [
+        "To store data temporarily",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084857",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming paradigm?",
+      "answers": [
+        "Object-Oriented",
+        "Functional",
+        "Procedural",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084859",
+      "type": "multiple-choice",
+      "question": "What is the full form of SSL?",
+      "answers": [
+        "Secure Sockets Layer",
+        "Secure System Layer",
+        "Secure Server Layer",
+        "Secure Service Layer"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084861",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network security?",
+      "answers": [
+        "Firewall",
+        "Antivirus",
+        "Encryption",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084863",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a load balancer?",
+      "answers": [
+        "To store data",
+        "To distribute network traffic",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084865",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software development model?",
+      "answers": [
+        "Waterfall",
+        "Agile",
+        "Spiral",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99088077",
+      "type": "multiple-choice",
+      "question": "<p>Did you download the Exam preparation guide?</p>",
+      "answers": [
+        "<p>Yes</p>",
+        "<p>No</p>"
+      ],
+      "feedbacks": [
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084495",
+      "type": "multiple-choice",
+      "question": "Which of the following is a programming language?",
+      "answers": [
+        "HTML",
+        "CSS",
+        "Python",
+        "JPEG"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "c"
+      ]
+    },
+    {
+      "id": "99084499",
+      "type": "multiple-choice",
+      "question": "Which of the following is a relational database management system?",
+      "answers": [
+        "MongoDB",
+        "MySQL",
+        "Redis",
+        "Elasticsearch"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084501",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a router?",
+      "answers": [
+        "To store data",
+        "To connect networks",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084503",
+      "type": "multiple-choice",
+      "question": "Which protocol is used for secure communication over a computer network?",
+      "answers": [
+        "HTTP",
+        "FTP",
+        "HTTPS",
+        "SMTP"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "c"
+      ]
+    },
+    {
+      "id": "99084505",
+      "type": "multiple-choice",
+      "question": "What is the binary representation of the decimal number 10?",
+      "answers": [
+        "1010",
+        "1001",
+        "1100",
+        "1111"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084507",
+      "type": "multiple-choice",
+      "question": "Which of the following is a version control system?",
+      "answers": [
+        "Git",
+        "Jenkins",
+        "Docker",
+        "Kubernetes"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084509",
+      "type": "multiple-choice",
+      "question": "What is the main purpose of an operating system?",
+      "answers": [
+        "To manage hardware resources",
+        "To create documents",
+        "To browse the internet",
+        "To play games"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084511",
+      "type": "multiple-choice",
+      "question": "Which of the following is a cloud service provider?",
+      "answers": [
+        "AWS",
+        "IBM",
+        "Oracle",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084513",
+      "type": "multiple-choice",
+      "question": "What is the file extension for a Python script?",
+      "answers": [
+        ".java",
+        ".py",
+        ".exe",
+        ".html"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084515",
+      "type": "multiple-choice",
+      "question": "Which of the following is a NoSQL database?",
+      "answers": [
+        "MySQL",
+        "PostgreSQL",
+        "MongoDB",
+        "SQLite"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "c"
+      ]
+    },
+    {
+      "id": "99084517",
+      "type": "multiple-choice",
+      "question": "What is the default port for HTTP?",
+      "answers": [
+        "80",
+        "443",
+        "21",
+        "25"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084519",
+      "type": "multiple-choice",
+      "question": "Which of the following is a scripting language?",
+      "answers": [
+        "Java",
+        "C++",
+        "JavaScript",
+        "Swift"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "c"
+      ]
+    },
+    {
+      "id": "99084521",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a firewall?",
+      "answers": [
+        "To store data",
+        "To block unauthorized access",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084523",
+      "type": "multiple-choice",
+      "question": "Which of the following is a markup language?",
+      "answers": [
+        "Python",
+        "HTML",
+        "JavaScript",
+        "SQL"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084525",
+      "type": "multiple-choice",
+      "question": "What is the full form of URL?",
+      "answers": [
+        "Uniform Resource Locator",
+        "Universal Resource Locator",
+        "Uniform Resource Link",
+        "Universal Resource Link"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084527",
+      "type": "multiple-choice",
+      "question": "Which of the following is a containerization platform?",
+      "answers": [
+        "Docker",
+        "Kubernetes",
+        "Jenkins",
+        "Ansible"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084529",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a DNS server?",
+      "answers": [
+        "To store data",
+        "To translate domain names to IP addresses",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084531",
+      "type": "multiple-choice",
+      "question": "Which of the following is a programming paradigm?",
+      "answers": [
+        "Object-Oriented",
+        "Functional",
+        "Procedural",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084533",
+      "type": "multiple-choice",
+      "question": "What is the default port for HTTPS?",
+      "answers": [
+        "80",
+        "443",
+        "21",
+        "25"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084535",
+      "type": "multiple-choice",
+      "question": "Which of the following is a web server?",
+      "answers": [
+        "Apache",
+        "Nginx",
+        "IIS",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084537",
+      "type": "multiple-choice",
+      "question": "What is the full form of SQL?",
+      "answers": [
+        "Structured Query Language",
+        "Simple Query Language",
+        "Standard Query Language",
+        "Sequential Query Language"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084539",
+      "type": "multiple-choice",
+      "question": "Which of the following is a version of Linux?",
+      "answers": [
+        "Ubuntu",
+        "Windows",
+        "macOS",
+        "iOS"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084541",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a CPU?",
+      "answers": [
+        "To store data",
+        "To execute instructions",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084543",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of memory?",
+      "answers": [
+        "RAM",
+        "ROM",
+        "Cache",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084545",
+      "type": "multiple-choice",
+      "question": "What is the full form of API?",
+      "answers": [
+        "Application Programming Interface",
+        "Advanced Programming Interface",
+        "Application Process Interface",
+        "Advanced Process Interface"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084547",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of cloud computing service?",
+      "answers": [
+        "IaaS",
+        "PaaS",
+        "SaaS",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084549",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a GPU?",
+      "answers": [
+        "To store data",
+        "To render graphics",
+        "To process data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084551",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network topology?",
+      "answers": [
+        "Star",
+        "Bus",
+        "Ring",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084553",
+      "type": "multiple-choice",
+      "question": "What is the full form of VPN?",
+      "answers": [
+        "Virtual Private Network",
+        "Virtual Public Network",
+        "Virtual Personal Network",
+        "Virtual Process Network"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084555",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of malware?",
+      "answers": [
+        "Virus",
+        "Worm",
+        "Trojan",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084557",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a compiler?",
+      "answers": [
+        "To execute code",
+        "To translate code",
+        "To debug code",
+        "To store code"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084559",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of database model?",
+      "answers": [
+        "Relational",
+        "Hierarchical",
+        "Network",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084561",
+      "type": "multiple-choice",
+      "question": "What is the full form of HTML?",
+      "answers": [
+        "HyperText Markup Language",
+        "HyperText Machine Language",
+        "HyperText Modeling Language",
+        "HyperText Management Language"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084563",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software testing?",
+      "answers": [
+        "Unit Testing",
+        "Integration Testing",
+        "System Testing",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084565",
+      "type": "multiple-choice",
+      "question": "What is the primary function of an IDE?",
+      "answers": [
+        "To store data",
+        "To develop software",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084567",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network protocol?",
+      "answers": [
+        "TCP",
+        "UDP",
+        "IP",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084569",
+      "type": "multiple-choice",
+      "question": "What is the full form of CSS?",
+      "answers": [
+        "Cascading Style Sheets",
+        "Computer Style Sheets",
+        "Cascading System Sheets",
+        "Computer System Sheets"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084571",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of operating system?",
+      "answers": [
+        "Windows",
+        "Linux",
+        "macOS",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084573",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a web browser?",
+      "answers": [
+        "To store data",
+        "To display web pages",
+        "To process data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084575",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084577",
+      "type": "multiple-choice",
+      "question": "What is the full form of FTP?",
+      "answers": [
+        "File Transfer Protocol",
+        "File Transmission Protocol",
+        "File Transport Protocol",
+        "File Transaction Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084579",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of data structure?",
+      "answers": [
+        "Array",
+        "Linked List",
+        "Stack",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084581",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a server?",
+      "answers": [
+        "To store data",
+        "To provide services",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084583",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software license?",
+      "answers": [
+        "Open Source",
+        "Proprietary",
+        "Freeware",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084585",
+      "type": "multiple-choice",
+      "question": "What is the full form of XML?",
+      "answers": [
+        "Extensible Markup Language",
+        "Extensible Machine Language",
+        "Extensible Modeling Language",
+        "Extensible Management Language"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084587",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network device?",
+      "answers": [
+        "Router",
+        "Switch",
+        "Hub",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084589",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a database?",
+      "answers": [
+        "To store data",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084591",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming error?",
+      "answers": [
+        "Syntax Error",
+        "Runtime Error",
+        "Logical Error",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084593",
+      "type": "multiple-choice",
+      "question": "What is the full form of JSON?",
+      "answers": [
+        "JavaScript Object Notation",
+        "Java Object Notation",
+        "JavaScript Object Network",
+        "Java Object Network"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084595",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of cloud storage?",
+      "answers": [
+        "Google Drive",
+        "Dropbox",
+        "OneDrive",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084597",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a cache?",
+      "answers": [
+        "To store data temporarily",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084599",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming paradigm?",
+      "answers": [
+        "Object-Oriented",
+        "Functional",
+        "Procedural",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084601",
+      "type": "multiple-choice",
+      "question": "What is the full form of SSL?",
+      "answers": [
+        "Secure Sockets Layer",
+        "Secure System Layer",
+        "Secure Server Layer",
+        "Secure Service Layer"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084603",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network security?",
+      "answers": [
+        "Firewall",
+        "Antivirus",
+        "Encryption",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084605",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a load balancer?",
+      "answers": [
+        "To store data",
+        "To distribute network traffic",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084607",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software development model?",
+      "answers": [
+        "Waterfall",
+        "Agile",
+        "Spiral",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084609",
+      "type": "multiple-choice",
+      "question": "What is the full form of TCP?",
+      "answers": [
+        "Transmission Control Protocol",
+        "Transfer Control Protocol",
+        "Transmission Communication Protocol",
+        "Transfer Communication Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084611",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084613",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a proxy server?",
+      "answers": [
+        "To store data",
+        "To act as an intermediary",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084615",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of database?",
+      "answers": [
+        "Relational",
+        "NoSQL",
+        "Graph",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084617",
+      "type": "multiple-choice",
+      "question": "What is the full form of UDP?",
+      "answers": [
+        "User Datagram Protocol",
+        "User Data Protocol",
+        "User Datagram Process",
+        "User Data Process"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084619",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software?",
+      "answers": [
+        "System Software",
+        "Application Software",
+        "Utility Software",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084621",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a modem?",
+      "answers": [
+        "To store data",
+        "To modulate and demodulate signals",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084623",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084625",
+      "type": "multiple-choice",
+      "question": "What is the full form of IP?",
+      "answers": [
+        "Internet Protocol",
+        "Internet Process",
+        "Internet Program",
+        "Internet Port"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084627",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network?",
+      "answers": [
+        "LAN",
+        "WAN",
+        "MAN",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084629",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a switch?",
+      "answers": [
+        "To store data",
+        "To connect devices in a network",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084631",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084633",
+      "type": "multiple-choice",
+      "question": "What is the full form of DNS?",
+      "answers": [
+        "Domain Name System",
+        "Domain Name Server",
+        "Domain Name Service",
+        "Domain Name Software"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084635",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software testing?",
+      "answers": [
+        "Unit Testing",
+        "Integration Testing",
+        "System Testing",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084637",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a router?",
+      "answers": [
+        "To store data",
+        "To connect networks",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084639",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084641",
+      "type": "multiple-choice",
+      "question": "What is the full form of HTTP?",
+      "answers": [
+        "HyperText Transfer Protocol",
+        "HyperText Transmission Protocol",
+        "HyperText Transport Protocol",
+        "HyperText Transaction Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084643",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network security?",
+      "answers": [
+        "Firewall",
+        "Antivirus",
+        "Encryption",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084645",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a server?",
+      "answers": [
+        "To store data",
+        "To provide services",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084647",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084649",
+      "type": "multiple-choice",
+      "question": "What is the full form of SMTP?",
+      "answers": [
+        "Simple Mail Transfer Protocol",
+        "Simple Mail Transmission Protocol",
+        "Simple Mail Transport Protocol",
+        "Simple Mail Transaction Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084651",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software license?",
+      "answers": [
+        "Open Source",
+        "Proprietary",
+        "Freeware",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084653",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a database?",
+      "answers": [
+        "To store data",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084655",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming error?",
+      "answers": [
+        "Syntax Error",
+        "Runtime Error",
+        "Logical Error",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084657",
+      "type": "multiple-choice",
+      "question": "What is the full form of JSON?",
+      "answers": [
+        "JavaScript Object Notation",
+        "Java Object Notation",
+        "JavaScript Object Network",
+        "Java Object Network"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084659",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of cloud storage?",
+      "answers": [
+        "Google Drive",
+        "Dropbox",
+        "OneDrive",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084661",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a cache?",
+      "answers": [
+        "To store data temporarily",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084663",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming paradigm?",
+      "answers": [
+        "Object-Oriented",
+        "Functional",
+        "Procedural",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084665",
+      "type": "multiple-choice",
+      "question": "What is the full form of SSL?",
+      "answers": [
+        "Secure Sockets Layer",
+        "Secure System Layer",
+        "Secure Server Layer",
+        "Secure Service Layer"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084667",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network security?",
+      "answers": [
+        "Firewall",
+        "Antivirus",
+        "Encryption",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084669",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a load balancer?",
+      "answers": [
+        "To store data",
+        "To distribute network traffic",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084671",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software development model?",
+      "answers": [
+        "Waterfall",
+        "Agile",
+        "Spiral",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084673",
+      "type": "multiple-choice",
+      "question": "What is the full form of TCP?",
+      "answers": [
+        "Transmission Control Protocol",
+        "Transfer Control Protocol",
+        "Transmission Communication Protocol",
+        "Transfer Communication Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084675",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084677",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a proxy server?",
+      "answers": [
+        "To store data",
+        "To act as an intermediary",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084679",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of database?",
+      "answers": [
+        "Relational",
+        "NoSQL",
+        "Graph",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084681",
+      "type": "multiple-choice",
+      "question": "What is the full form of UDP?",
+      "answers": [
+        "User Datagram Protocol",
+        "User Data Protocol",
+        "User Datagram Process",
+        "User Data Process"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084683",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software?",
+      "answers": [
+        "System Software",
+        "Application Software",
+        "Utility Software",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084685",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a modem?",
+      "answers": [
+        "To store data",
+        "To modulate and demodulate signals",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084687",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084689",
+      "type": "multiple-choice",
+      "question": "What is the full form of IP?",
+      "answers": [
+        "Internet Protocol",
+        "Internet Process",
+        "Internet Program",
+        "Internet Port"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084691",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network?",
+      "answers": [
+        "LAN",
+        "WAN",
+        "MAN",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084693",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a switch?",
+      "answers": [
+        "To store data",
+        "To connect devices in a network",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084695",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084697",
+      "type": "multiple-choice",
+      "question": "What is the full form of DNS?",
+      "answers": [
+        "Domain Name System",
+        "Domain Name Server",
+        "Domain Name Service",
+        "Domain Name Software"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084699",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software testing?",
+      "answers": [
+        "Unit Testing",
+        "Integration Testing",
+        "System Testing",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084701",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a router?",
+      "answers": [
+        "To store data",
+        "To connect networks",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084703",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084705",
+      "type": "multiple-choice",
+      "question": "What is the full form of HTTP?",
+      "answers": [
+        "HyperText Transfer Protocol",
+        "HyperText Transmission Protocol",
+        "HyperText Transport Protocol",
+        "HyperText Transaction Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084707",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network security?",
+      "answers": [
+        "Firewall",
+        "Antivirus",
+        "Encryption",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084709",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a server?",
+      "answers": [
+        "To store data",
+        "To provide services",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084711",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084713",
+      "type": "multiple-choice",
+      "question": "What is the full form of SMTP?",
+      "answers": [
+        "Simple Mail Transfer Protocol",
+        "Simple Mail Transmission Protocol",
+        "Simple Mail Transport Protocol",
+        "Simple Mail Transaction Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084715",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software license?",
+      "answers": [
+        "Open Source",
+        "Proprietary",
+        "Freeware",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084717",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a database?",
+      "answers": [
+        "To store data",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084719",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming error?",
+      "answers": [
+        "Syntax Error",
+        "Runtime Error",
+        "Logical Error",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084721",
+      "type": "multiple-choice",
+      "question": "What is the full form of JSON?",
+      "answers": [
+        "JavaScript Object Notation",
+        "Java Object Notation",
+        "JavaScript Object Network",
+        "Java Object Network"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084723",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of cloud storage?",
+      "answers": [
+        "Google Drive",
+        "Dropbox",
+        "OneDrive",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084725",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a cache?",
+      "answers": [
+        "To store data temporarily",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084727",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming paradigm?",
+      "answers": [
+        "Object-Oriented",
+        "Functional",
+        "Procedural",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084729",
+      "type": "multiple-choice",
+      "question": "What is the full form of SSL?",
+      "answers": [
+        "Secure Sockets Layer",
+        "Secure System Layer",
+        "Secure Server Layer",
+        "Secure Service Layer"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084731",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network security?",
+      "answers": [
+        "Firewall",
+        "Antivirus",
+        "Encryption",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084733",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a load balancer?",
+      "answers": [
+        "To store data",
+        "To distribute network traffic",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084735",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software development model?",
+      "answers": [
+        "Waterfall",
+        "Agile",
+        "Spiral",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084737",
+      "type": "multiple-choice",
+      "question": "What is the full form of TCP?",
+      "answers": [
+        "Transmission Control Protocol",
+        "Transfer Control Protocol",
+        "Transmission Communication Protocol",
+        "Transfer Communication Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084739",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084741",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a proxy server?",
+      "answers": [
+        "To store data",
+        "To act as an intermediary",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084743",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of database?",
+      "answers": [
+        "Relational",
+        "NoSQL",
+        "Graph",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084745",
+      "type": "multiple-choice",
+      "question": "What is the full form of UDP?",
+      "answers": [
+        "User Datagram Protocol",
+        "User Data Protocol",
+        "User Datagram Process",
+        "User Data Process"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084747",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software?",
+      "answers": [
+        "System Software",
+        "Application Software",
+        "Utility Software",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084749",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a modem?",
+      "answers": [
+        "To store data",
+        "To modulate and demodulate signals",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084751",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084753",
+      "type": "multiple-choice",
+      "question": "What is the full form of IP?",
+      "answers": [
+        "Internet Protocol",
+        "Internet Process",
+        "Internet Program",
+        "Internet Port"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084755",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network?",
+      "answers": [
+        "LAN",
+        "WAN",
+        "MAN",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084759",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a switch?",
+      "answers": [
+        "To store data",
+        "To connect devices in a network",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084761",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084763",
+      "type": "multiple-choice",
+      "question": "What is the full form of DNS?",
+      "answers": [
+        "Domain Name System",
+        "Domain Name Server",
+        "Domain Name Service",
+        "Domain Name Software"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084765",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software testing?",
+      "answers": [
+        "Unit Testing",
+        "Integration Testing",
+        "System Testing",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084767",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a router?",
+      "answers": [
+        "To store data",
+        "To connect networks",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084769",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084771",
+      "type": "multiple-choice",
+      "question": "What is the full form of HTTP?",
+      "answers": [
+        "HyperText Transfer Protocol",
+        "HyperText Transmission Protocol",
+        "HyperText Transport Protocol",
+        "HyperText Transaction Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084773",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network security?",
+      "answers": [
+        "Firewall",
+        "Antivirus",
+        "Encryption",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084775",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a server?",
+      "answers": [
+        "To store data",
+        "To provide services",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084777",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084779",
+      "type": "multiple-choice",
+      "question": "What is the full form of SMTP?",
+      "answers": [
+        "Simple Mail Transfer Protocol",
+        "Simple Mail Transmission Protocol",
+        "Simple Mail Transport Protocol",
+        "Simple Mail Transaction Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084781",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software license?",
+      "answers": [
+        "Open Source",
+        "Proprietary",
+        "Freeware",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084783",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a database?",
+      "answers": [
+        "To store data",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084785",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming error?",
+      "answers": [
+        "Syntax Error",
+        "Runtime Error",
+        "Logical Error",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084787",
+      "type": "multiple-choice",
+      "question": "What is the full form of JSON?",
+      "answers": [
+        "JavaScript Object Notation",
+        "Java Object Notation",
+        "JavaScript Object Network",
+        "Java Object Network"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084789",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of cloud storage?",
+      "answers": [
+        "Google Drive",
+        "Dropbox",
+        "OneDrive",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084791",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a cache?",
+      "answers": [
+        "To store data temporarily",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084793",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming paradigm?",
+      "answers": [
+        "Object-Oriented",
+        "Functional",
+        "Procedural",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084795",
+      "type": "multiple-choice",
+      "question": "What is the full form of SSL?",
+      "answers": [
+        "Secure Sockets Layer",
+        "Secure System Layer",
+        "Secure Server Layer",
+        "Secure Service Layer"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084797",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network security?",
+      "answers": [
+        "Firewall",
+        "Antivirus",
+        "Encryption",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084799",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a load balancer?",
+      "answers": [
+        "To store data",
+        "To distribute network traffic",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084801",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software development model?",
+      "answers": [
+        "Waterfall",
+        "Agile",
+        "Spiral",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084803",
+      "type": "multiple-choice",
+      "question": "What is the full form of TCP?",
+      "answers": [
+        "Transmission Control Protocol",
+        "Transfer Control Protocol",
+        "Transmission Communication Protocol",
+        "Transfer Communication Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084805",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084807",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a proxy server?",
+      "answers": [
+        "To store data",
+        "To act as an intermediary",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084809",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of database?",
+      "answers": [
+        "Relational",
+        "NoSQL",
+        "Graph",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084811",
+      "type": "multiple-choice",
+      "question": "What is the full form of UDP?",
+      "answers": [
+        "User Datagram Protocol",
+        "User Data Protocol",
+        "User Datagram Process",
+        "User Data Process"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084813",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software?",
+      "answers": [
+        "System Software",
+        "Application Software",
+        "Utility Software",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084815",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a modem?",
+      "answers": [
+        "To store data",
+        "To modulate and demodulate signals",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084817",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084819",
+      "type": "multiple-choice",
+      "question": "What is the full form of IP?",
+      "answers": [
+        "Internet Protocol",
+        "Internet Process",
+        "Internet Program",
+        "Internet Port"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084821",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network?",
+      "answers": [
+        "LAN",
+        "WAN",
+        "MAN",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084823",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a switch?",
+      "answers": [
+        "To store data",
+        "To connect devices in a network",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084825",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084827",
+      "type": "multiple-choice",
+      "question": "What is the full form of DNS?",
+      "answers": [
+        "Domain Name System",
+        "Domain Name Server",
+        "Domain Name Service",
+        "Domain Name Software"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084829",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software testing?",
+      "answers": [
+        "Unit Testing",
+        "Integration Testing",
+        "System Testing",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084831",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a router?",
+      "answers": [
+        "To store data",
+        "To connect networks",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084833",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084835",
+      "type": "multiple-choice",
+      "question": "What is the full form of HTTP?",
+      "answers": [
+        "HyperText Transfer Protocol",
+        "HyperText Transmission Protocol",
+        "HyperText Transport Protocol",
+        "HyperText Transaction Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084837",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network security?",
+      "answers": [
+        "Firewall",
+        "Antivirus",
+        "Encryption",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084839",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a server?",
+      "answers": [
+        "To store data",
+        "To provide services",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084841",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming language?",
+      "answers": [
+        "Python",
+        "Java",
+        "C++",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084843",
+      "type": "multiple-choice",
+      "question": "What is the full form of SMTP?",
+      "answers": [
+        "Simple Mail Transfer Protocol",
+        "Simple Mail Transmission Protocol",
+        "Simple Mail Transport Protocol",
+        "Simple Mail Transaction Protocol"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084845",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software license?",
+      "answers": [
+        "Open Source",
+        "Proprietary",
+        "Freeware",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084847",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a database?",
+      "answers": [
+        "To store data",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084849",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming error?",
+      "answers": [
+        "Syntax Error",
+        "Runtime Error",
+        "Logical Error",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084851",
+      "type": "multiple-choice",
+      "question": "What is the full form of JSON?",
+      "answers": [
+        "JavaScript Object Notation",
+        "Java Object Notation",
+        "JavaScript Object Network",
+        "Java Object Network"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084853",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of cloud storage?",
+      "answers": [
+        "Google Drive",
+        "Dropbox",
+        "OneDrive",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084855",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a cache?",
+      "answers": [
+        "To store data temporarily",
+        "To process data",
+        "To display data",
+        "To connect networks"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084857",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of programming paradigm?",
+      "answers": [
+        "Object-Oriented",
+        "Functional",
+        "Procedural",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084859",
+      "type": "multiple-choice",
+      "question": "What is the full form of SSL?",
+      "answers": [
+        "Secure Sockets Layer",
+        "Secure System Layer",
+        "Secure Server Layer",
+        "Secure Service Layer"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "a"
+      ]
+    },
+    {
+      "id": "99084861",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of network security?",
+      "answers": [
+        "Firewall",
+        "Antivirus",
+        "Encryption",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    },
+    {
+      "id": "99084863",
+      "type": "multiple-choice",
+      "question": "What is the primary function of a load balancer?",
+      "answers": [
+        "To store data",
+        "To distribute network traffic",
+        "To process data",
+        "To display data"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "b"
+      ]
+    },
+    {
+      "id": "99084865",
+      "type": "multiple-choice",
+      "question": "Which of the following is a type of software development model?",
+      "answers": [
+        "Waterfall",
+        "Agile",
+        "Spiral",
+        "All of the above"
+      ],
+      "feedbacks": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "explanation": "",
+      "correct": [
+        "d"
+      ]
+    }
+  ]
+}

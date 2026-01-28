@@ -1,0 +1,31 @@
+name: Deploy Static Site to GitHub Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 1"
+permissions:
+  pages: write
+  id-token: write
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Generate catalog and tests
+        run: node scripts/generate-catalog.mjs
+      - name: Upload static artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .vercel/output/static
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4

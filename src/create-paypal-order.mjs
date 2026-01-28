@@ -20,6 +20,9 @@ function parseArgs(argv) {
 function getEnvBool(name, fallback = "false") {
 	return (process.env[name] ?? fallback).toLowerCase() === "true";
 }
+function isBunkerMode() {
+	return (process.env.BUNKER_MODE ?? "false").toLowerCase() === "true";
+}
 
 function normalizeCurrency(value, fallback) {
 	if (!value) return fallback;
@@ -84,6 +87,10 @@ async function createPayPalOrder({
 
 async function main() {
 	const args = parseArgs(process.argv);
+
+	if (isBunkerMode()) {
+		throw new Error("Payment Kill Switch active (BUNKER_MODE=true). Refusing to create PayPal orders.");
+	}
 
 	if (!getEnvBool("PAYPAL_ENABLE_ORDER_CREATE")) {
 		throw new Error(

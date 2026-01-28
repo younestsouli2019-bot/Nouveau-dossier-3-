@@ -2,6 +2,7 @@ import http from "node:http";
 import crypto from "node:crypto";
 import { spawn } from "node:child_process";
 import { buildBase44ServiceClient } from "./base44-client.mjs";
+import { addSecurityHeaders, validateRequest, validateAuth } from "./security-middleware.mjs";
 import { LocalSwarmStore } from "./local-store.mjs"; // PATCH: Import local store
 import {
 	extractPayPalWebhookHeaders,
@@ -31,6 +32,20 @@ function getEnvBool(name, defaultValue = false) {
 	const v = process.env[name];
 	if (v == null) return defaultValue;
 	return v.toLowerCase() === "true";
+}
+
+function isBunkerMode() {
+	return getEnvBool("BUNKER_MODE", false);
+}
+
+function getAcpTokens() {
+	const raw = String(process.env.ACP_TOKENS ?? "").trim();
+	if (!raw) return [];
+	return raw.split(",").map((s) => s.trim()).filter(Boolean);
+}
+
+function shouldRequireAcpAuth() {
+	return String(process.env.ACP_REQUIRE_AUTH ?? "true").toLowerCase() === "true";
 }
 
 function requireLiveMode(reason) {
@@ -1176,6 +1191,12 @@ if (args.check === true || args["config-check"] === true) {
 	attachFlushOnSignals();
 
 	const server = http.createServer(async (req, res) => {
+		addSecurityHeaders(res);
+		const invalid = validateRequest(req);
+		if (invalid) {
+			json(res, invalid.status, { ok: false, error: invalid.error });
+			return;
+		}
 		const startMs = Date.now();
 		try {
 			const pathname = getPathname(req);
@@ -1235,6 +1256,13 @@ if (args.check === true || args["config-check"] === true) {
 					json(res, 405, { ok: false, error: "Method not allowed" });
 					return;
 				}
+				if (shouldRequireAcpAuth()) {
+					const tokens = getAcpTokens();
+					if (!validateAuth(req, tokens)) {
+						json(res, 401, { ok: false, error: "Unauthorized" });
+						return;
+					}
+				}
 				const products = safeJsonParse(process.env.ACP_PRODUCTS_JSON, []) ?? [];
 				json(res, 200, {
 					ok: true,
@@ -1262,6 +1290,17 @@ if (args.check === true || args["config-check"] === true) {
 			if (pathname === "/acp/v1/transactions") {
 				if (req.method !== "POST") {
 					json(res, 405, { ok: false, error: "Method not allowed" });
+					return;
+				}
+				if (shouldRequireAcpAuth()) {
+					const tokens = getAcpTokens();
+					if (!validateAuth(req, tokens)) {
+						json(res, 401, { ok: false, error: "Unauthorized" });
+						return;
+					}
+				}
+				if (isBunkerMode()) {
+					json(res, 403, { ok: false, error: "Order creation disabled (Bunker Mode active)" });
 					return;
 				}
 				if (!shouldCreatePayPalOrders()) {

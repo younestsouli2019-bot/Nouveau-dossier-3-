@@ -112,7 +112,9 @@ function main() {
       BANK_INTEGRATION_ENABLED: "true",
       PAYONEER_ENABLE_STANDARD: "true",
       CRYPTO_WITHDRAW_ENABLE: "true",
-      GOOGLEPAY_ENABLE: "true"
+      GOOGLEPAY_ENABLE: "true",
+      AUTONOMOUS_ACTIVE_START_UTC: "4",
+      AUTONOMOUS_ACTIVE_END_UTC: "22"
     };
     for (const [k, v] of Object.entries(flags)) {
       lines = upsertEnv(lines, k, v);

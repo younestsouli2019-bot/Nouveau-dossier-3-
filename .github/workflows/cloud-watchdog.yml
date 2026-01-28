@@ -1,0 +1,27 @@
+name: Cloud Watchdog
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [watchdog]
+  schedule:
+    - cron: "0 */4 * * *"
+jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: cloud-watchdog
+      cancel-in-progress: false
+    env:
+      BASE44_APP_ID: ${{ secrets.BASE44_APP_ID }}
+      BASE44_SERVICE_TOKEN: ${{ secrets.BASE44_SERVICE_TOKEN }}
+      PAYPAL_WEBHOOK_ID: ${{ secrets.PAYPAL_WEBHOOK_ID }}
+      PAYPAL_CLIENT_ID: ${{ secrets.PAYPAL_CLIENT_ID }}
+      PAYPAL_CLIENT_SECRET: ${{ secrets.PAYPAL_CLIENT_SECRET }}
+      PUBLIC_WEBHOOK_BASE_URL: ${{ secrets.PUBLIC_WEBHOOK_BASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npm run live:readiness:ping

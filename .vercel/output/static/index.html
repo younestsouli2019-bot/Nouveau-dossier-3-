@@ -352,3 +352,189 @@
         
 </body>
 </html>
+<script>
+  (function() {
+    const DROPDOWN_ID = 'practice-tests-dropdown';
+    if (document.getElementById(DROPDOWN_ID)) return;
+    const container = document.createElement('div');
+    container.id = DROPDOWN_ID;
+    container.style.position = 'fixed';
+    container.style.top = '20px';
+    container.style.left = '20px';
+    container.style.zIndex = '9998';
+    container.style.fontFamily = 'system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif';
+    const button = document.createElement('button');
+    button.textContent = 'Practice Tests';
+    button.style.padding = '8px 12px';
+    button.style.borderRadius = '6px';
+    button.style.border = '1px solid #333';
+    button.style.background = '#fff';
+    button.style.cursor = 'pointer';
+    const list = document.createElement('div');
+    list.style.position = 'absolute';
+    list.style.top = '40px';
+    list.style.left = '0';
+    list.style.minWidth = '280px';
+    list.style.maxHeight = '380px';
+    list.style.overflowY = 'auto';
+    list.style.boxShadow = '0 6px 18px rgba(0,0,0,0.15)';
+    list.style.border = '1px solid #ddd';
+    list.style.borderRadius = '8px';
+    list.style.background = '#fff';
+    list.style.display = 'none';
+    button.addEventListener('click', () => {
+      list.style.display = list.style.display === 'none' ? 'block' : 'none';
+    });
+    document.addEventListener('click', (e) => {
+      if (!container.contains(e.target)) list.style.display = 'none';
+    });
+    container.appendChild(button);
+    container.appendChild(list);
+    const button2 = document.createElement('button');
+    button2.textContent = 'Admissions & Trends';
+    button2.style.padding = '8px 12px';
+    button2.style.borderRadius = '6px';
+    button2.style.border = '1px solid #333';
+    button2.style.background = '#fff';
+    button2.style.cursor = 'pointer';
+    button2.style.marginLeft = '8px';
+    const list2 = document.createElement('div');
+    list2.style.position = 'absolute';
+    list2.style.top = '40px';
+    list2.style.left = '0';
+    list2.style.minWidth = '320px';
+    list2.style.maxHeight = '380px';
+    list2.style.overflowY = 'auto';
+    list2.style.boxShadow = '0 6px 18px rgba(0,0,0,0.15)';
+    list2.style.border = '1px solid #ddd';
+    list2.style.borderRadius = '8px';
+    list2.style.background = '#fff';
+    list2.style.display = 'none';
+    button2.addEventListener('click', () => {
+      list2.style.display = list2.style.display === 'none' ? 'block' : 'none';
+    });
+    document.addEventListener('click', (e) => {
+      if (!container.contains(e.target)) list2.style.display = 'none';
+    });
+    container.appendChild(button2);
+    container.appendChild(list2);
+    const button3 = document.createElement('a');
+    button3.textContent = 'Cybersecurity Portal';
+    button3.style.padding = '8px 12px';
+    button3.style.borderRadius = '6px';
+    button3.style.border = '1px solid #333';
+    button3.style.background = '#0b0c10';
+    button3.style.color = '#fff';
+    button3.style.cursor = 'pointer';
+    button3.style.marginLeft = '8px';
+    button3.href = '/cybersecurity.html';
+    container.appendChild(button3);
+    document.body.appendChild(container);
+    fetch('/data/catalog.json').then(r => r.json()).then(catalog => {
+      const items = Array.isArray(catalog.items) ? catalog.items : [];
+      const siemFirst = items.filter(i => /siem|security|soc|incident|threat|gcsa|splunk|elk|elastic|azure security|aws security/i.test(i.title || ''));
+      const dcFirst = items.filter(i => /(data\s*cent(er|re)|cdcp|cdcs|cdce|cdca|dcoc|dcdc|tia[- ]?942|ansi[- ]?tia[- ]?942)/i.test(i.title || ''));
+      const isoFirst = items.filter(i => /(iso|iec|ansi|nfpa|osha|nist|quality\s*management|qms|six\s*sigma|lean\s*six\s*sigma|9001|27001|45001|14001)/i.test(i.title || ''));
+      const used = new Set();
+      const take = (arr, n) => {
+        const out = [];
+        for (const it of arr) {
+          if (out.length >= n) break;
+          const k = String(it.slug || it.title || '').toLowerCase();
+          if (used.has(k)) continue;
+          used.add(k);
+          out.push(it);
+        }
+        return out;
+      };
+      const siemTop = take(siemFirst, 10);
+      const dcTop = take(dcFirst, 10);
+      const isoTop = take(isoFirst, 10);
+      const rest = items.filter(i => {
+        const k = String(i.slug || i.title || '').toLowerCase();
+        return !used.has(k);
+      });
+      const restTop = take(rest, 10);
+      const top = [...siemTop, ...dcTop, ...isoTop, ...restTop];
+      if (siemTop.length) {
+        const label = document.createElement('div');
+        label.textContent = 'Security / SIEM';
+        label.style.fontWeight = '600';
+        label.style.padding = '8px 10px';
+        label.style.background = '#f7f7f7';
+        list.appendChild(label);
+      }
+      if (dcTop.length) {
+        const label = document.createElement('div');
+        label.textContent = 'Data Centre / DC';
+        label.style.fontWeight = '600';
+        label.style.padding = '8px 10px';
+        label.style.background = '#f7f7f7';
+        list.appendChild(label);
+      }
+      if (isoTop.length) {
+        const label = document.createElement('div');
+        label.textContent = 'Standards / ISO';
+        label.style.fontWeight = '600';
+        label.style.padding = '8px 10px';
+        label.style.background = '#f7f7f7';
+        list.appendChild(label);
+      }
+      top.forEach(item => {
+        const row = document.createElement('a');
+        row.textContent = item.title;
+        row.style.display = 'block';
+        row.style.padding = '8px 10px';
+        row.style.textDecoration = 'none';
+        row.style.color = '#111';
+        row.style.borderBottom = '1px solid #eee';
+        const slug = item.slug;
+        if (slug === 'cyber-threat-intelligence-cti-practice-test') {
+          row.href = '/practice.html?slug=' + encodeURIComponent(slug);
+        } else {
+          row.href = '/catalog/' + slug + '.html';
+        }
+        list.appendChild(row);
+      });
+    }).catch(() => {
+      const err = document.createElement('div');
+      err.textContent = 'Unable to load practice tests';
+      err.style.padding = '8px 10px';
+      list.appendChild(err);
+    });
+    fetch('/data/trends.json').then(r => r.json()).then(trends => {
+      const items = Array.isArray(trends.trends) ? trends.trends : [];
+      const cats = new Map();
+      for (const t of items) {
+        const k = String(t.category || 'General');
+        if (!cats.has(k)) cats.set(k, []);
+        cats.get(k).push(t);
+      }
+      for (const [cat, arr] of cats.entries()) {
+        const label = document.createElement('div');
+        label.textContent = cat;
+        label.style.fontWeight = '600';
+        label.style.padding = '8px 10px';
+        label.style.background = '#f7f7f7';
+        list2.appendChild(label);
+        arr.forEach(t => {
+          const row = document.createElement('a');
+          row.textContent = t.title;
+          row.style.display = 'block';
+          row.style.padding = '8px 10px';
+          row.style.textDecoration = 'none';
+          row.style.color = '#111';
+          row.style.borderBottom = '1px solid #eee';
+          row.href = t.url;
+          row.target = '_blank';
+          list2.appendChild(row);
+        });
+      }
+    }).catch(() => {
+      const err = document.createElement('div');
+      err.textContent = 'Unable to load trends';
+      err.style.padding = '8px 10px';
+      list2.appendChild(err);
+    });
+  })();
+</script>
