@@ -17,6 +17,8 @@
 		"paypal:sync:payout": "node ./src/sync-paypal-payout-batch.mjs",
 		"paypal:create:order": "node ./src/create-paypal-order.mjs",
 		"paypal:links:generate": "node ./scripts/generate-paypal-links.mjs --csv ./archive/paypal_masspayout_ready.csv",
+		"paypal:links:confirm": "node ./scripts/confirm-paypal-links.mjs --csv ./archive/paypal_masspayout_ready.csv --out-json ./out/paypal/payer-links.json --confirm-out ./out/paypal/confirmation.json",
+		"crypto:withdraw:owner": "node ./scripts/execute-crypto-withdraw.mjs",
 		"monitor:health": "node ./src/monitor-health.mjs",
 		"monitor:once": "node ./src/monitor-health.mjs --once",
 		"live:readiness": "node ./src/monitor-health.mjs --readiness",

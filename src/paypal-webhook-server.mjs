@@ -1288,6 +1288,15 @@ if (args.check === true || args["config-check"] === true) {
 			}
 
 			if (pathname === "/acp/v1/transactions") {
+				if (req.method === "GET") {
+					json(res, 200, {
+						ok: true,
+						linking_ready: true,
+						require_auth: shouldRequireAcpAuth(),
+						create_order_enabled: shouldCreatePayPalOrders(),
+					});
+					return;
+				}
 				if (req.method !== "POST") {
 					json(res, 405, { ok: false, error: "Method not allowed" });
 					return;
