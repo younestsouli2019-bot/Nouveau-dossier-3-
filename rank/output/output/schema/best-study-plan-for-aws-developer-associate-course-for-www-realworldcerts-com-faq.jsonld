@@ -1,0 +1,19 @@
+{
+	"@context": "https://schema.org",
+	"@type": "FAQPage",
+	"mainEntity": [
+		{
+			"@type": "Question",
+			"name": "Write a detailed, practical, step-by-step guide: Best study plan for AWS Developer Associate Course for www.realworldcerts.com. Include FAQs and resources.",
+			"acceptedAnswer": {
+				"@type": "Answer",
+				"text": "Write a detailed, practical, step-by-step guide: Best study plan for AWS Developer Associate Course for www.realworldcerts.com. Include FAQs and resources."
+			}
+		},
+		{
+			"@type": "Question",
+			"name": "Write a detailed, practical, step-by-step guide: Best study plan for AWS Developer Associate Course for www.realworldcerts.com. Include FAQs and resources.",
+			"acceptedAnswer": { "@type": "Answer", "text": "" }
+		}
+	]
+}
