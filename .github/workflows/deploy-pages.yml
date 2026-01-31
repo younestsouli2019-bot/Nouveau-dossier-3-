@@ -20,8 +20,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: Generate catalog and tests
-        run: node scripts/generate-catalog.mjs
       - name: Upload static artifact
         uses: actions/upload-pages-artifact@v3
         with:

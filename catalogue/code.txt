@@ -1,0 +1,16 @@
+{
+  "KINGGIFT": {
+    "primary_color": "#1a237e",
+    "secondary_color": "#3949ab",
+    "accent_color": "#c5cae9",
+    "logo_path": "catalogue/logos/kinggift.png",
+    "font": "Helvetica-Bold"
+  },
+  "BIC": {
+    "primary_color": "#0066b3",
+    "secondary_color": "#0099cc",
+    "accent_color": "#b3e0ff",
+    "logo_path": "catalogue/logos/bic.png",
+    "font": "Helvetica-Bold"
+  }
+}

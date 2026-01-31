@@ -25,6 +25,7 @@ function sign(hash, pem) {
 }
 
 export async function ensureOwnerSignature() {
+<<<<<<< Updated upstream
 	const jsonPath = "./swarm.constitution.json";
 	const hash = computeConstitutionHashFromFile(jsonPath);
 	const sigPath = "./owner.signature";
@@ -52,4 +53,26 @@ export async function ensureOwnerSignature() {
 	const signatureB64 = sign(hash, privatePem);
 	fs.writeFileSync(sigPath, signatureB64, "utf8");
 	return { ok: true, created: true };
+=======
+  const jsonPath = './swarm.constitution.json';
+  const hash = computeConstitutionHashFromFile(jsonPath);
+  const sigPath = './owner.signature';
+  const existing = fs.existsSync(sigPath) ? fs.readFileSync(sigPath, 'utf8').trim() : null;
+  if (existing && existing.length > 10) return { ok: true, reused: true };
+  let privatePem = null;
+  try {
+    privatePem = fs.readFileSync('./owner_private.key', 'utf8');
+  } catch {
+    const backupPath = './backup/owner_private.key.enc';
+    if (!fs.existsSync(backupPath)) return { ok: false, error: 'no_key_or_backup' };
+    const secret = (process.env.OWNER_KEY_BACKUP_SECRET || process.env.CONSTITUTION_RUNTIME_SECRET || '').trim();
+    if (!secret) return { ok: false, error: 'missing_backup_secret' };
+    const raw = fs.readFileSync(backupPath, 'utf8');
+    const parsed = JSON.parse(raw);
+    privatePem = decryptBackup(parsed, secret);
+  }
+  const signatureB64 = sign(hash, privatePem);
+  fs.writeFileSync(sigPath, signatureB64, 'utf8');
+  return { ok: true, created: true };
+>>>>>>> Stashed changes
 }

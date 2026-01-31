@@ -89,7 +89,9 @@ async function main() {
 	const args = parseArgs(process.argv);
 
 	if (isBunkerMode()) {
-		throw new Error("Payment Kill Switch active (BUNKER_MODE=true). Refusing to create PayPal orders.");
+		throw new Error(
+			"Payment Kill Switch active (BUNKER_MODE=true). Refusing to create PayPal orders.",
+		);
 	}
 
 	if (!getEnvBool("PAYPAL_ENABLE_ORDER_CREATE")) {

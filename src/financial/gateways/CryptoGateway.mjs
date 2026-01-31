@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import ccxt from "ccxt";
 import fs from "node:fs";
 import path from "node:path";
@@ -77,6 +78,67 @@ async function listWithdrawals(startTime) {
 		// If history fetch fails (e.g., creds/time), return empty array to avoid crashing polling loops
 		return [];
 	}
+=======
+import ccxt from 'ccxt';
+import fs from 'node:fs';
+import path from 'node:path';
+import https from 'node:https';
+import crypto from 'node:crypto';
+
+async function withdrawUSDTBEP20(address, amount) {
+  const binance = new ccxt.binance({
+    apiKey: process.env.BINANCE_API_KEY,
+    secret: process.env.BINANCE_API_SECRET,
+  });
+
+  try {
+    const withdrawal = await binance.withdraw('USDT', amount, address, undefined, { network: 'BSC' });
+    return withdrawal;
+  } catch (e) {
+    throw new Error(`Binance withdrawal failed: ${e.message}`);
+  }
+}
+
+async function withdrawUSDTBybit(address, amount, network = 'ERC20') {
+  const bybit = new ccxt.bybit({
+    apiKey: process.env.BYBIT_API_KEY,
+    secret: process.env.BYBIT_API_SECRET,
+    options: { adjustForTimeDifference: true },
+  });
+
+  try {
+    // Manually sync time if needed (local clock drift workaround)
+    const serverTime = await bybit.fetchTime();
+    const diff = Date.now() - serverTime;
+    if (Math.abs(diff) > 5000) {
+        bybit.options['timeDifference'] = diff;
+    }
+
+    // Bybit network parameter might need mapping, e.g., 'ETH', 'BSC', 'TRX'
+    // CCXT usually handles standard network codes, but we should be careful.
+    // Passing network in params is the standard CCXT way for many exchanges.
+    const params = { network }; 
+    const withdrawal = await bybit.withdraw('USDT', amount, address, undefined, params);
+    return withdrawal;
+  } catch (e) {
+    throw new Error(`Bybit withdrawal failed: ${e.message}`);
+  }
+}
+
+async function listWithdrawals(startTime) {
+  const binance = new ccxt.binance({
+    apiKey: process.env.BINANCE_API_KEY,
+    secret: process.env.BINANCE_API_SECRET,
+  });
+  const since = startTime != null ? Number(startTime) : undefined;
+  try {
+    const rows = await binance.fetchWithdrawals('USDT', since);
+    return Array.isArray(rows) ? rows : [];
+  } catch (e) {
+    // If history fetch fails (e.g., creds/time), return empty array to avoid crashing polling loops
+    return [];
+  }
+>>>>>>> Stashed changes
 }
 
 export class CryptoGateway {
@@ -151,6 +213,7 @@ export class CryptoGateway {
 			});
 		}
 
+<<<<<<< Updated upstream
 		if (provider === "binance") {
 			const preferApi =
 				String(
@@ -271,6 +334,74 @@ export class CryptoGateway {
 		if (provider === "bybit") {
 			const hasCreds = !!(bybitCreds.apiKey && bybitCreds.secret);
 			const network = transactions[0]?.network || "ERC20"; // Try to get network from transaction, default to ERC20
+=======
+    if (provider === 'binance') {
+      if (!enabled) {
+        return { status: 'prepared', provider, network, prepared_at, transactions };
+      }
+      const hasBinanceCreds = !!(process.env.BINANCE_API_KEY && process.env.BINANCE_API_SECRET);
+      if (!hasBinanceCreds) {
+        return { status: 'MISSING_CREDENTIALS', provider, network, prepared_at };
+      }
+      const r = await withdrawUSDTBEP20(dest, amount);
+      const applyId = r.id || r.applyId || null;
+      let txId = null;
+      const startTime = Date.now() - 60 * 60 * 1000;
+      for (let i = 0; i < 3 && !txId; i++) {
+        await new Promise((res) => setTimeout(res, 1500));
+        try {
+          const hist = await listWithdrawals(startTime);
+          if (Array.isArray(hist)) {
+            // Prefer matching by id if available
+            let m = null;
+            if (applyId) {
+              m = hist.find((h) => String(h.id || h.applyId || '') === String(applyId));
+            }
+            if (!m) {
+              const addrMatch = String(dest).toLowerCase();
+              const tol = 1e-6;
+              m = hist.find((h) => String(h.address || '').toLowerCase() === addrMatch && Math.abs(Number(h.amount) - Number(amount)) < tol);
+            }
+            if (m && (m.txid || m.txId)) txId = m.txid || m.txId;
+          }
+        } catch {}
+      }
+      if (!txId) return { status: 'submitted', applyId, provider, network, prepared_at };
+      return { status: 'submitted_with_tx', applyId, txHash: txId, provider, network, prepared_at };
+    }
+
+    if (provider === 'bybit') {
+      const hasCreds = !!(bybitCreds.apiKey && bybitCreds.secret);
+      const network = transactions[0]?.network || 'ERC20'; // Try to get network from transaction, default to ERC20
+
+      if (enabled && hasCreds) {
+        try {
+           const r = await withdrawUSDTBybit(dest, amount, network);
+           return { 
+             status: 'submitted', 
+             applyId: r.id, 
+             provider: 'bybit', 
+             network, 
+             prepared_at, 
+             txHash: r.txid || null 
+           };
+        } catch (e) {
+           console.error('Bybit withdrawal failed, falling back to manual:', e.message);
+           // Fallback to manual
+        }
+      }
+
+      const outDir = 'settlements/crypto';
+      const filename = `bybit_instruction_${Date.now()}.json`;
+      const filePath = path.join(process.cwd(), outDir, filename);
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      fs.writeFileSync(
+        filePath,
+        JSON.stringify({ provider: 'bybit', action: 'withdraw', coin: 'USDT', network: 'ERC20', address: dest, amount, status: 'WAITING_MANUAL_EXECUTION', creds_present: !!(bybitCreds.apiKey && bybitCreds.secret), origin: 'in_house' }, null, 2)
+      );
+      return { status: 'INSTRUCTIONS_READY', provider: 'bybit', filePath, network: 'ERC20', prepared_at, creds_present: !!(bybitCreds.apiKey && bybitCreds.secret) };
+    }
+>>>>>>> Stashed changes
 
 			if (enabled && hasCreds) {
 				try {
@@ -324,6 +455,7 @@ export class CryptoGateway {
 			};
 		}
 
+<<<<<<< Updated upstream
 		if (provider === "bitget") {
 			const hasCreds = !!(
 				bitgetCreds.apiKey &&
@@ -566,4 +698,28 @@ export class CryptoGateway {
 		}
 		return { status: "unsupported_provider", provider };
 	}
+=======
+    return { status: 'UNKNOWN_PROVIDER', provider, network, prepared_at };
+  }
+  async getWithdrawalStatus({ provider = 'binance', address, amount, startTime } = {}) {
+    if (provider === 'binance') {
+      try {
+        const hist = await listWithdrawals(startTime ?? Date.now() - 7 * 24 * 60 * 60 * 1000);
+        if (!Array.isArray(hist)) return { status: 'unknown', provider };
+        const m = hist.find((h) => String(h.address || '').toLowerCase() === String(address || '').toLowerCase() && (amount == null || Number(h.amount) === Number(amount)));
+        if (!m) return { status: 'not_found', provider };
+        return {
+          status: String(m.status || '').toLowerCase() || 'unknown',
+          txId: m.txId || null,
+          id: m.id || m.applyId || null,
+          coin: m.coin || 'USDT',
+          network: m.network || 'BEP20'
+        };
+      } catch (e) {
+        return { status: 'error', error: e?.message || String(e), provider };
+      }
+    }
+    return { status: 'unsupported_provider', provider };
+  }
+>>>>>>> Stashed changes
 }

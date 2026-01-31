@@ -70,7 +70,9 @@ async function main() {
 		if (!Number.isFinite(amt) || amt <= 0) continue;
 		total += amt;
 		if (!currency) currency = String(r.currency || "USD");
-		const payer = String(r?.metadata?.payer_email || r?.metadata?.payer || "").trim();
+		const payer = String(
+			r?.metadata?.payer_email || r?.metadata?.payer || "",
+		).trim();
 		const note = r?.metadata?.reference
 			? `Settlement ${String(r.metadata.reference)}`
 			: defaultNote;

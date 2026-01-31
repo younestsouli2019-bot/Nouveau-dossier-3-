@@ -29,8 +29,14 @@ export class AgentNegotiator {
 	 * @param {Object} context - { buyerResources, sellerResources } (Leverage/Assets)
 	 */
 	async negotiate(buyerIntent, sellerOffering, context = {}) {
-		const buyerResources = context.buyerResources || { budget: Infinity, reputation: 50 };
-		const sellerResources = context.sellerResources || { inventory: Infinity, brand: 50 };
+		const buyerResources = context.buyerResources || {
+			budget: Infinity,
+			reputation: 50,
+		};
+		const sellerResources = context.sellerResources || {
+			inventory: Infinity,
+			brand: 50,
+		};
 
 		const session = {
 			id: crypto.randomUUID(),
@@ -38,17 +44,20 @@ export class AgentNegotiator {
 			rounds: [],
 			startedAt: new Date().toISOString(),
 			buyer: { intent: buyerIntent, resources: buyerResources },
-			seller: { offering: createExperienceEnvelope(sellerOffering), resources: sellerResources },
+			seller: {
+				offering: createExperienceEnvelope(sellerOffering),
+				resources: sellerResources,
+			},
 		};
 
 		// 1. Initial Proposal from Seller (List Price)
 		// Adjust initial offer based on Seller Leverage (e.g., high brand = strict price)
 		const basePrice = session.seller.offering.economics.price;
 		let initialAsk = basePrice;
-		
+
 		if (sellerResources.brand > 80 || sellerResources.inventory < 5) {
 			// High leverage: Start firm or even slightly higher (premium)
-			initialAsk = basePrice; 
+			initialAsk = basePrice;
 		} else if (sellerResources.inventory > 100) {
 			// Low leverage: Start with a slight discount to move volume? Or standard.
 			initialAsk = basePrice;
@@ -133,10 +142,10 @@ export class AgentNegotiator {
 	decideBuyer(intent, resources, proposal, product) {
 		const maxPrice = intent.maxPrice || Infinity;
 		let targetPrice = intent.targetPrice || maxPrice * 0.9;
-		
+
 		// Leverage: If buyer has high reputation or bulk commitment, target lower
 		if (resources.reputation > 80) targetPrice *= 0.95;
-		if (resources.volumeCommitment > 10) targetPrice *= 0.90;
+		if (resources.volumeCommitment > 10) targetPrice *= 0.9;
 
 		if (proposal.price <= targetPrice) {
 			return { action: "ACCEPT" };
@@ -164,9 +173,9 @@ export class AgentNegotiator {
 		let acceptanceThreshold = product.economics.price;
 		if (resources.cashCrunch) acceptanceThreshold *= 0.8;
 		else if (resources.inventory > 1000) acceptanceThreshold *= 0.9;
-		
+
 		if (proposal.price >= acceptanceThreshold) {
-			return { action: "ACCEPT" }; 
+			return { action: "ACCEPT" };
 		} else if (proposal.price >= minPrice) {
 			// Accept if it still meets min margin, maybe adding a counter to nudge up?
 			const acceptable = Math.max(minPrice * 1.05, acceptanceThreshold * 0.9);

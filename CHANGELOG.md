@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-02-01]
+- Added hourly Autonomous Scheduler (agents registration, headhunter discovery, autonomous tick, readiness ping, catalogue build, truth marker write, auto-commit/push).
+- Integrated headhunter discovery into supervisor cycle for continuous agent onboarding.
+- Added local .env loader and optional NaCl secretbox decrypt for encrypted env.
+- Introduced Org Broadcast workflow to dispatch agentic_tick across organization repos.
+- Generated catalogue_master.pdf with fallback to placeholder when assets are missing.
+- Maintained safety rails for owner routing and bunker mode kill switch; no secrets committed.
+
 ## [Unreleased] - 2026-01-19
 
 ### Autonomous Finance & Enforcement

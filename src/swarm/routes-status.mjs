@@ -17,7 +17,8 @@ export function getRoutesStatus() {
 		val("PPP2_ENABLE_SEND") === "true" ||
 		val("PAYPAL_PPP2_ENABLE_SEND") === "true";
 	const paypalDisabled = val("PAYPAL_DISABLED") === "true";
-	const paypalOpen = paypalMeApproved && paypalMeSendEnabled && !paypalDisabled && !bunker;
+	const paypalOpen =
+		paypalMeApproved && paypalMeSendEnabled && !paypalDisabled && !bunker;
 	const bankEnabled = val("BANK_INTEGRATION_ENABLED") === "true";
 	const bankOpen = bankEnabled;
 	const cryptoWithdrawEnable = val("CRYPTO_WITHDRAW_ENABLE") === "true";

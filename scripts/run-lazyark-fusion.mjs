@@ -3,7 +3,24 @@ import { execSync } from "child_process";
 import path from "path";
 
 async function runFusionAndReconciliation() {
+<<<<<<< Updated upstream
 	console.log("🚀 STARTING LAZYARK FUSION & RECONCILIATION PROTOCOL...");
+=======
+  console.log('🚀 STARTING LAZYARK FUSION & RECONCILIATION PROTOCOL...');
+  
+  const upgrader = new AutonomousAgentUpgrader();
+  
+  // MOCKING DATA FOR LOCAL TEST IF API FAILS
+  const originalFetch = upgrader.fetchAgentEntities.bind(upgrader);
+  
+  upgrader.fetchAgentEntities = async () => {
+    const agents = await originalFetch();
+    if (!agents || agents.length === 0) {
+      throw new Error('CRITICAL: No agents found or API is unreachable. Halting fusion.');
+    }
+    return agents;
+  };
+>>>>>>> Stashed changes
 
 	const upgrader = new AutonomousAgentUpgrader();
 

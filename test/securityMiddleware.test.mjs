@@ -1,12 +1,16 @@
 import { describe, it, before, after } from "node:test";
 import assert from "node:assert";
 import crypto from "node:crypto";
+<<<<<<< Updated upstream
 import {
 	validateRequest,
 	validateAuth,
 	sanitizeInput,
 	addSecurityHeaders,
 } from "../src/security-middleware.mjs";
+=======
+import { validateRequest, validateAuth, sanitizeInput, addSecurityHeaders } from "../src/security-middleware.mjs";
+>>>>>>> Stashed changes
 
 describe("Security Middleware", () => {
 	describe("validateRequest", () => {
@@ -46,6 +50,7 @@ describe("Security Middleware", () => {
 		});
 	});
 
+<<<<<<< Updated upstream
 	describe("validateAuth", () => {
 		const tokens = [
 			crypto.randomBytes(20).toString("hex"),
@@ -61,6 +66,20 @@ describe("Security Middleware", () => {
 			const req = { headers: { "x-api-key": tokens[1] } };
 			assert.strictEqual(validateAuth(req, tokens), true);
 		});
+=======
+  describe("validateAuth", () => {
+    const tokens = [crypto.randomBytes(20).toString('hex'), crypto.randomBytes(20).toString('hex')];
+
+    it("should allow valid Bearer token", () => {
+      const req = { headers: { authorization: `Bearer ${tokens[0]}` } };
+      assert.strictEqual(validateAuth(req, tokens), true);
+    });
+
+    it("should allow valid X-API-KEY", () => {
+      const req = { headers: { "x-api-key": tokens[1] } };
+      assert.strictEqual(validateAuth(req, tokens), true);
+    });
+>>>>>>> Stashed changes
 
 		it("should reject invalid token", () => {
 			const req = { headers: { authorization: "Bearer bad" } };
@@ -73,6 +92,7 @@ describe("Security Middleware", () => {
 		});
 	});
 
+<<<<<<< Updated upstream
 	describe("sanitizeInput", () => {
 		it("should escape basic HTML chars", () => {
 			const input = '<script>alert("xss")</script>';
@@ -94,4 +114,24 @@ describe("Security Middleware", () => {
 			assert.strictEqual(sanitizeInput(input), input);
 		});
 	});
+=======
+  describe("sanitizeInput", () => {
+    it("should escape basic HTML chars", () => {
+      const input = '<script>alert("xss")</script>';
+      const expected = '&lt;script&gt;alert(&quot;xss&quot;)&lt;&#x2F;script&gt;';
+      assert.strictEqual(sanitizeInput(input), expected);
+    });
+
+    it("should handle nested HTML and attributes", () => {
+      const input = '<div onclick="alert(1)" onload="alert(2)"><a>Link</a></div>';
+      const expected = '&lt;div onclick=&quot;alert(1)&quot; onload=&quot;alert(2)&quot;&gt;&lt;a&gt;Link&lt;&#x2F;a&gt;&lt;&#x2F;div&gt;';
+      assert.strictEqual(sanitizeInput(input), expected);
+    });
+
+    it("should not alter safe text", () => {
+      const input = "This is a safe sentence.";
+      assert.strictEqual(sanitizeInput(input), input);
+    });
+  });
+>>>>>>> Stashed changes
 });

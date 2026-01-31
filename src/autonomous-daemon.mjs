@@ -30,10 +30,15 @@ import { MissionOrchestrator } from "./swarm/mission-orchestrator.mjs";
 import { startSupervisor as startSwarmSupervisor } from "./swarm/supervisor.mjs";
 import { recordAudit } from "./audit-trail.mjs";
 import fsSync from "node:fs";
-import { resolveRuntimeConfig, isWithinWindowUtc } from "./autonomous-config.mjs";
+import {
+	normalizeIntervalMs,
+	loadAutonomousConfig,
+	resolveRuntimeConfig,
+} from "./autonomous-config.mjs";
 import { SelfHealer } from "./autonomous-healer.mjs";
 import { ExternalPayerEnforcer } from "./finance/ExternalPayerEnforcer.mjs";
 import { ReplenishmentProtocol } from "./finance/ReplenishmentProtocol.mjs";
+import { LocalSwarmStore } from "./local-store.mjs";
 
 const healer = new SelfHealer();
 const enforcer = new ExternalPayerEnforcer();
@@ -93,6 +98,7 @@ async function runNodeScript(scriptRelPath, scriptArgs, { env }) {
 		});
 	});
 }
+function parseArgs(argv) {
 	const args = {};
 	for (let i = 2; i < argv.length; i++) {
 		const a = argv[i];
@@ -350,38 +356,35 @@ async function atomicWriteJson(filePath, value) {
 }
 
 async function maybeRunStrategicScouting(cfg, state) {
-	const enabled = cfg?.strategicScouting?.enabled !== false;
-	if (!enabled) return { ok: true, skipped: true, reason: "disabled" };
+	// removed duplicate definition; see later consolidated version
 
-	const nowMs = Date.now();
-	const lastAt = Number(state.lastScoutAt ?? 0) || 0;
-	const intervalMs =
-		Number(cfg?.strategicScouting?.intervalMs ?? 14400000) || 14400000; // 4 hours
+async function maybeRunStrategicScouting(cfg, state) {
+  const enabled = cfg?.strategicScouting?.enabled !== false;
+  if (!enabled) return { ok: true, skipped: true, reason: "disabled" };
+  
+  const nowMs = Date.now();
+  const lastAt = Number(state.lastScoutAt ?? 0) || 0;
+  const intervalMs = Number(cfg?.strategicScouting?.intervalMs ?? 14400000) || 14400000; // 4 hours
 
-	if (nowMs - lastAt < intervalMs) {
-		return { ok: true, skipped: true, reason: "interval" };
-	}
+  if (nowMs - lastAt < intervalMs) {
+    return { ok: true, skipped: true, reason: "interval" };
+  }
 
-	try {
-		const scout = new StrategicScout();
-		const proposal = await scout.runCycle();
-		state.lastScoutAt = nowMs;
-
-		if (proposal) {
-			const filename = `proposal_${Date.now()}.json`;
-			const filepath = path.resolve(
-				process.cwd(),
-				"exports",
-				"proposals",
-				filename,
-			);
-			await atomicWriteJson(filepath, proposal);
-			return { ok: true, proposalPath: filepath };
-		}
-		return { ok: true, found: false };
-	} catch (e) {
-		return { ok: false, error: e?.message ?? String(e) };
-	}
+  try {
+    const scout = new StrategicScout();
+    const proposal = await scout.runCycle();
+    state.lastScoutAt = nowMs;
+    
+    if (proposal) {
+        const filename = `proposal_${Date.now()}.json`;
+        const filepath = path.resolve(process.cwd(), 'exports', 'proposals', filename);
+        await atomicWriteJson(filepath, proposal);
+        return { ok: true, proposalPath: filepath };
+    }
+    return { ok: true, found: false };
+  } catch (e) {
+    return { ok: false, error: e?.message ?? String(e) };
+  }
 }
 
 async function maybeRunAutonomousOptimization(cfg, state) {
@@ -853,38 +856,7 @@ function getTransactionLogConfigFromEnv() {
 	return { entityName, fieldMap };
 }
 
-async function runNodeScript(scriptRelPath, scriptArgs, { env }) {
-	return new Promise((resolve) => {
-		const child = spawn(process.execPath, [scriptRelPath, ...scriptArgs], {
-			cwd: process.cwd(),
-			env: { ...process.env, ...(env ?? {}) },
-			stdio: ["ignore", "pipe", "pipe"],
-		});
-
-		let stdout = "";
-		let stderr = "";
-		child.stdout.on("data", (d) => {
-			stdout += String(d);
-		});
-		child.stderr.on("data", (d) => {
-			stderr += String(d);
-		});
-		child.on("close", (code) => {
-			const lines = `${stdout}\n${stderr}`
-				.split(/\r?\n/)
-				.map((l) => l.trim())
-				.filter(Boolean);
-			let lastJson = null;
-			for (let i = lines.length - 1; i >= 0; i--) {
-				try {
-					lastJson = JSON.parse(lines[i]);
-					break;
-				} catch {}
-			}
-			resolve({ code: Number(code ?? 1), stdout, stderr, lastJson });
-		});
-	});
-}
+// removed duplicate runNodeScript; consolidated earlier version includes self-healing
 
 function inferOfflineRetry(errText) {
 	const t = String(errText ?? "");
@@ -1029,8 +1001,6 @@ async function runMonitorHealthWithOfflineFallback(commandArgs, cfg) {
 
 	return { mode: cfg.offline.enabled ? "offline" : "online", ...primary };
 }
-
-import { LocalSwarmStore } from "./local-store.mjs";
 
 // Global Local Store Instance
 const localStore = new LocalSwarmStore();
@@ -2680,5 +2650,3 @@ if (isMain) {
 		process.exitCode = 1;
 	});
 }
-
-export { resolveRuntimeConfig, isWithinWindowUtc };

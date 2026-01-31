@@ -107,7 +107,21 @@ class Base44Pusher {
 			options.body = JSON.stringify(body);
 		}
 
+<<<<<<< Updated upstream
 		this.log(`${method} ${endpoint}`, "push");
+=======
+      if (!response.ok) {
+        // Fallback for Method Not Allowed (405) - Try POST if PUT/PATCH fails
+        if (response.status === 405 && (method === 'PUT' || method === 'PATCH')) {
+            this.log(`Method ${method} not allowed (405). Retrying with POST...`, 'warning');
+            return this.request(endpoint, 'POST', body);
+        }
+
+        throw new Error(
+          `Base44 API error: ${response.status} - ${JSON.stringify(data)}`
+        );
+      }
+>>>>>>> Stashed changes
 
 		try {
 			const response = await fetch(url, options);
@@ -558,6 +572,7 @@ class Base44Deployment {
 				created_at: timestamp,
 			};
 
+<<<<<<< Updated upstream
 			await this.pusher.createRecord("PayoutItem", item);
 			this.results.records.created.push({
 				entity: "PayoutItem",
@@ -579,12 +594,19 @@ class Base44Deployment {
 		};
 		recordSuccess(summary, details, "base44: push");
 	}
+=======
+  async validateOwnerDirective() {
+    console.log('\n' + '='.repeat(60));
+    console.log('🔒 VALIDATING OWNER DIRECTIVE (STRICT MODE)');
+    console.log('='.repeat(60) + '\n');
+>>>>>>> Stashed changes
 
 	async validateOwnerDirective() {
 		console.log("\n" + "=".repeat(60));
 		console.log("🔒 VALIDATING OWNER DIRECTIVE (STRICT MODE)");
 		console.log("=".repeat(60) + "\n");
 
+<<<<<<< Updated upstream
 		const validations = [
 			{
 				name: "Earnings have owner beneficiaries",
@@ -605,14 +627,50 @@ class Base44Deployment {
 				expectedValues: Object.values(OWNER_ACCOUNTS),
 			},
 		];
+=======
+    let hasCriticalViolations = false;
+
+    for (const validation of validations) {
+      this.pusher.log(`Validating: ${validation.name}...`, 'info');
+>>>>>>> Stashed changes
 
 		let hasCriticalViolations = false;
 
 		for (const validation of validations) {
 			this.pusher.log(`Validating: ${validation.name}...`, "info");
 
+<<<<<<< Updated upstream
 			try {
 				const records = await this.pusher.queryRecords(validation.entity);
+=======
+        if (violations.length > 0) {
+          hasCriticalViolations = true;
+          this.pusher.log(`CRITICAL VIOLATIONS FOUND: ${violations.length}`, 'error');
+          violations.forEach(v => {
+            this.pusher.log(`  → ${v[validation.field]} (Unauthorized Recipient)`, 'error');
+          });
+          this.results.validation.failed.push({
+            name: validation.name,
+            violations: violations.length
+          });
+        } else {
+          this.pusher.log(`All ${records.records.length} records compliant`, 'success');
+          this.results.validation.passed.push(validation.name);
+        }
+      } catch (error) {
+        this.pusher.log(`Validation error: ${error.message}`, 'error');
+        this.results.validation.failed.push({
+          name: validation.name,
+          error: error.message
+        });
+      }
+    }
+
+    if (hasCriticalViolations) {
+        throw new Error('SECURITY VIOLATION: Owner Directive verification failed. Halting deployment.');
+    }
+  }
+>>>>>>> Stashed changes
 
 				if (!records?.records || records.records.length === 0) {
 					this.pusher.log(
@@ -743,6 +801,7 @@ async function main() {
 		"╚════════════════════════════════════════════════════════════╝\n",
 	);
 
+<<<<<<< Updated upstream
 	// SECURITY CHECK: Verify Owner Accounts
 	if (!OWNER_ACCOUNTS || Object.keys(OWNER_ACCOUNTS).length === 0) {
 		console.error(
@@ -750,6 +809,25 @@ async function main() {
 		);
 		process.exit(1);
 	}
+=======
+  // SECURITY CHECK: Verify Owner Accounts
+  if (!OWNER_ACCOUNTS || Object.keys(OWNER_ACCOUNTS).length === 0) {
+      console.error('❌ CRITICAL SECURITY ERROR: OWNER_ACCOUNTS not loaded or empty.');
+      process.exit(1);
+  }
+  
+  const invalidAccounts = Object.entries(OWNER_ACCOUNTS).filter(([k, v]) => !v || v.includes('undefined'));
+  if (invalidAccounts.length > 0) {
+      console.error('❌ CRITICAL SECURITY ERROR: Invalid Owner Account configurations:');
+      invalidAccounts.forEach(([k, v]) => console.error(`   - ${k}: ${v}`));
+      process.exit(1);
+  }
+
+  if (!BASE44_CONFIG.appId || !BASE44_CONFIG.serviceToken) {
+    console.error('❌ ERROR: Missing BASE44_APP_ID or BASE44_SERVICE_TOKEN in environment');
+    process.exit(1);
+  }
+>>>>>>> Stashed changes
 
 	const invalidAccounts = Object.entries(OWNER_ACCOUNTS).filter(
 		([k, v]) => !v || v.includes("undefined"),

@@ -38,6 +38,7 @@ function listPlatforms() {
 }
 
 export class ExternalGatewayManager {
+<<<<<<< Updated upstream
 	constructor(storage, auditLogger, executor) {
 		this.storage = storage;
 		this.audit = auditLogger;
@@ -56,6 +57,22 @@ export class ExternalGatewayManager {
 			TRON: Number(process.env.MIN_GAS_TRON || "20"),
 			TON: Number(process.env.MIN_GAS_TON || "1"),
 		};
+=======
+  constructor(storage, auditLogger, executor) {
+    this.storage = storage;
+    this.audit = auditLogger;
+    this.executor = executor;
+    this.paypalGateway = new PayPalGateway();
+    this.cryptoGateway = new CryptoGateway();
+    this.bankGateway = new BankWireGateway();
+    this.payoneerGateway = new PayoneerGateway();
+    this.stripeGateway = new StripeGateway();
+    this.tronGateway = new TronGateway();
+    this.platformGateway = new InstructionGateway();
+    // Route failover manager is loaded lazily to avoid import cycles
+    this._routeManager = null;
+  }
+>>>>>>> Stashed changes
 
 		// Payout Guardrail: Velocity Check
 		this.payoutGuardrail = {
@@ -242,6 +259,7 @@ export class ExternalGatewayManager {
 		let record = this.storage.load("events", payoutItemId);
 		let type = "events";
 
+<<<<<<< Updated upstream
 		if (!record) {
 			// Try payouts (schedules) - unlikely but possible
 			record = this.storage.load("payouts", payoutItemId);
@@ -251,6 +269,116 @@ export class ExternalGatewayManager {
 		if (!record) {
 			throw new Error(`Payout Item ${payoutItemId} not found in storage.`);
 		}
+=======
+  async initiateAutoSettlement(payoutBatchId, recipientItems, idempotencyKey, actor = 'System') {
+    const context = { action: 'INITIATE_AUTO_SETTLEMENT', actor, payoutBatchId };
+    return this.executor.execute(idempotencyKey, async () => {
+      if (!recipientItems || recipientItems.length === 0) {
+        throw new Error('No recipient items provided');
+      }
+      const amount0 = recipientItems[0]?.amount;
+      const currency0 = recipientItems[0]?.currency || 'USD';
+      const routes = getEffectiveRoutes(amount0, currency0);
+      const baseTx = recipientItems.map(item => ({
+        amount: Number(item.amount),
+        currency: item.currency || 'USD',
+        destination: item.recipient_address || item.recipient_email || item.email,
+        reference: item.note || `Batch ${payoutBatchId}`
+      }));
+
+      if (!this._routeManager) {
+        // Lazy load to avoid top-level import cycle
+        const { RouteManager } = await import('../util/RouteManager.mjs');
+        this._routeManager = new RouteManager({ routes });
+      }
+
+      const attempt = async ({ route }) => {
+        let result = null;
+        if (route === 'bank_transfer') {
+          const tx = enforceOwnerSettlementForRoute(route, baseTx);
+          result = await withRetry(() => this.bankGateway.executeTransfer(tx));
+          this.audit.log('BANK_WIRE_PREPARED', payoutBatchId, null, result, actor, { reassurance: PrivacyMasker.reassurance('bank_wire') });
+          return { status: 'processing', gateway_response: result, payout_batch_id: payoutBatchId, processed_at: new Date().toISOString(), route_attempted: route };
+        }
+        if (route === 'crypto') {
+          const tx = enforceOwnerSettlementForRoute(route, baseTx);
+          result = await withRetry(() => this.cryptoGateway.executeTransfer(tx));
+          this.audit.log('CRYPTO_TRANSFER_PREPARED', payoutBatchId, null, result, actor, { reassurance: PrivacyMasker.reassurance('crypto') });
+          return { status: 'processing', gateway_response: result, payout_batch_id: payoutBatchId, processed_at: new Date().toISOString(), route_attempted: route };
+        }
+        if (route === 'payoneer') {
+          const tx = enforceOwnerSettlementForRoute(route, baseTx);
+          result = await withRetry(() => this.payoneerGateway.executeTransfer(tx));
+          this.audit.log('PAYONEER_TRANSFER_PREPARED', payoutBatchId, null, result, actor, { reassurance: PrivacyMasker.reassurance('payoneer') });
+          return { status: 'processing', gateway_response: result, payout_batch_id: payoutBatchId, processed_at: new Date().toISOString(), route_attempted: route };
+        }
+        if (route === 'stripe') {
+          const tx = enforceOwnerSettlementForRoute(route, baseTx);
+          result = await withRetry(() => this.stripeGateway.executeTransfer(tx));
+          this.audit.log('STRIPE_TRANSFER_PREPARED', payoutBatchId, null, result, actor, { reassurance: PrivacyMasker.reassurance('stripe') });
+          return { status: 'processing', gateway_response: result, payout_batch_id: payoutBatchId, processed_at: new Date().toISOString(), route_attempted: route };
+        }
+        if (route === 'paypal') {
+          if (shouldAvoidPayPal()) {
+            throw new Error('paypal_disallowed_by_policy');
+          }
+          const tx = enforceOwnerSettlementForRoute(route, baseTx);
+          const paypalTx = tx.map(t => ({ amount: t.amount, currency: t.currency, destination: t.destination, reference: t.reference }));
+          const resultPayPal = await withRetry(() => this.paypalGateway.executePayout(paypalTx));
+          const masked = paypalTx.map(t => ({ amount: t.amount, currency: t.currency, masked_destination: PrivacyMasker.maskEmail(t.destination) }));
+          this.audit.log('PAYPAL_PAYOUT_EXECUTED', payoutBatchId, null, resultPayPal, actor, { masked_recipients: masked, reassurance: PrivacyMasker.reassurance('paypal') });
+          return { status: resultPayPal.status === 'IN_TRANSIT' ? 'success' : 'processing', gateway_response: resultPayPal, payout_batch_id: payoutBatchId, processed_at: new Date().toISOString(), route_attempted: route };
+        }
+        throw new Error(`unknown_route:${route}`);
+      };
+
+      const res = await this._routeManager.withFailover(attempt, {
+        onAttempt: ({ route, attempt, remaining }) => {
+          this.audit.log('ROUTE_ATTEMPT', payoutBatchId, null, { route, attempt, remaining }, actor);
+        }
+      });
+
+      if (!res.ok) {
+        this.audit.log('ALL_ROUTES_FAILED', payoutBatchId, null, { tried: res.tried, error: res.error }, actor);
+        throw new Error(res.error || 'all routes failed');
+      }
+      return res.result;
+    }, context);
+  }
+
+// Builder Notes:
+// - initiateAutoSettlement now uses RouteManager failover. Order comes from policy/getEffectiveRoutes or env ROUTE_LIST.
+// - Route health is persisted to data/locks/route-health.json to avoid flapping after restarts.
+// - To tune behavior, set ROUTE_BACKOFF_BASE_MS, ROUTE_BACKOFF_MAX_MS, ROUTE_WEIGHTS_JSON.
+// - If you need per-route capability/limit constraints, extend getEffectiveRoutes to filter routes before passing to RouteManager.
+
+  async broadcastSettlement(route, prepared, transactions, actor = 'System') {
+    if (route === 'bank_transfer') {
+      const r = await withRetry(() => prepareBankWire(transactions));
+      this.audit.log('BANK_WIRE_FILE_READY', prepared?.payout_batch_id || null, null, r, actor);
+      return r;
+    }
+    if (route === 'crypto') {
+      const r = await withRetry(() => broadcastCrypto(transactions));
+      this.audit.log('CRYPTO_BROADCAST_RESULT', prepared?.payout_batch_id || null, null, r, actor);
+      return r;
+    }
+    if (route === 'payoneer') {
+      const r = await withRetry(() => broadcastPayoneer(transactions));
+      this.audit.log('PAYONEER_BROADCAST_RESULT', prepared?.payout_batch_id || null, null, r, actor);
+      return r;
+    }
+    if (route === 'stripe') {
+      const r = await withRetry(() => broadcastStripe(transactions));
+      this.audit.log('STRIPE_BROADCAST_RESULT', prepared?.payout_batch_id || null, null, r, actor);
+      return r;
+    }
+    if (route === 'paypal') {
+      return { status: 'prepared' };
+    }
+    return { status: 'unknown_route' };
+  }
+>>>>>>> Stashed changes
 
 		const oldState = { ...record };
 

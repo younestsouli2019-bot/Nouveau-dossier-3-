@@ -337,7 +337,7 @@ function syncBase44AgentsOnce() {
 		cwd: process.cwd(),
 		encoding: "utf8",
 	});
-	const ok = (res.status === 0) || /"ok":\s*true/.test(res.stdout || "");
+	const ok = res.status === 0 || /"ok":\s*true/.test(res.stdout || "");
 	return { ok, stdout: (res.stdout || "").trim() };
 }
 
@@ -525,9 +525,12 @@ async function main() {
 	// Hourly refresh (configurable via AGENT_SYNC_INTERVAL_MS)
 	const syncIv =
 		Number(process.env.AGENT_SYNC_INTERVAL_MS ?? "3600000") || 3600000;
-	setInterval(() => {
-		ingestAgentsIntoSwarmOnce().catch(() => {});
-	}, Math.max(60000, syncIv));
+	setInterval(
+		() => {
+			ingestAgentsIntoSwarmOnce().catch(() => {});
+		},
+		Math.max(60000, syncIv),
+	);
 	ensureAcpProducts();
 	const webhook = startWebhookServer();
 	await settlementDaemon.startAutoSettlementDaemon();

@@ -2,11 +2,18 @@ import { stringify as csvStringify } from "csv-stringify";
 import fs from "node:fs";
 import path from "node:path";
 
-export function buildWebscrLink({ amount, currency = "USD", businessEmail, itemName }) {
+export function buildWebscrLink({
+	amount,
+	currency = "USD",
+	businessEmail,
+	itemName,
+}) {
 	const business = encodeURIComponent(String(businessEmail ?? ""));
 	const amt = encodeURIComponent(String(amount));
 	const cur = encodeURIComponent(String(currency));
-	const note = itemName ? `&item_name=${encodeURIComponent(String(itemName))}` : "";
+	const note = itemName
+		? `&item_name=${encodeURIComponent(String(itemName))}`
+		: "";
 	return `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${business}&amount=${amt}&currency_code=${cur}${note}`;
 }
 
@@ -36,7 +43,10 @@ export function generatePayerLinks(payers, { businessEmail } = {}) {
 	});
 }
 
-export async function writeOutputs(links, { outDir, jsonName = "payer-links.json", csvName = "payer-links.csv" } = {}) {
+export async function writeOutputs(
+	links,
+	{ outDir, jsonName = "payer-links.json", csvName = "payer-links.csv" } = {},
+) {
 	const dir = outDir ?? path.resolve("out", "paypal");
 	fs.mkdirSync(dir, { recursive: true });
 	const jsonPath = path.join(dir, jsonName);

@@ -41,12 +41,14 @@ export async function getPayPalAccessToken() {
 	const clientSecret = getEnvOrThrow("PAYPAL_CLIENT_SECRET");
 	const live =
 		String(process.env.SWARM_LIVE ?? "false").toLowerCase() === "true";
-	
+
 	// HARDENING: Force Live URL if SWARM_LIVE is true
-	const effectiveBase = live ? "https://api-m.paypal.com" : (process.env.PAYPAL_API_BASE_URL ?? "https://api-m.paypal.com");
+	const effectiveBase = live
+		? "https://api-m.paypal.com"
+		: (process.env.PAYPAL_API_BASE_URL ?? "https://api-m.paypal.com");
 
 	const paypalMode = String(process.env.PAYPAL_MODE ?? "live").toLowerCase();
-	
+
 	if (
 		live &&
 		(paypalMode === "sandbox" || effectiveBase.includes("sandbox.paypal.com"))
@@ -86,9 +88,12 @@ export async function paypalRequest(
 	path,
 	{ method = "GET", token, headers, body } = {},
 ) {
-	const live = String(process.env.SWARM_LIVE ?? "false").toLowerCase() === "true";
+	const live =
+		String(process.env.SWARM_LIVE ?? "false").toLowerCase() === "true";
 	// HARDENING: Force Live URL if SWARM_LIVE is true
-	const effectiveBase = live ? "https://api-m.paypal.com" : (process.env.PAYPAL_API_BASE_URL ?? "https://api-m.paypal.com");
+	const effectiveBase = live
+		? "https://api-m.paypal.com"
+		: (process.env.PAYPAL_API_BASE_URL ?? "https://api-m.paypal.com");
 
 	const controller = new AbortController();
 	const timeout = setTimeout(() => controller.abort(), getHttpTimeoutMs());

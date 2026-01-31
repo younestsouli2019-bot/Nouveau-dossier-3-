@@ -57,6 +57,7 @@
   - fake_txhash_detected=true for invalid TX formats (non-64 hex)
   - real=false when simulation detected
 - Produces exports/reports/simulation_audit_report_<ts>.json summarizing updates.
+<<<<<<< Updated upstream
 2026-01-12T00:00:00Z [finance][paypal] Payout hardening and Base44 push
 - Hardened scripts/payout-paypal-once.mjs with live-mode preflight, sandbox guard, and credential verification; structured JSON outputs added.
 - Added fallback routes on AUTHORIZATION_ERROR: invoice/link generation and manual instruction JSON creation.
@@ -76,3 +77,5 @@
 - Added multi-row parsing for Excel/CSV batches; support --payer and --out.
 - Implemented dedupe: skip emitting when a follow-up for batchId already exists.
 - Added followup_at timestamp with --delay_hours (default 48) for scheduling.
+=======
+>>>>>>> Stashed changes

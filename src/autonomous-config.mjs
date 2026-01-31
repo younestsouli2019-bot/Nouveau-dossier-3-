@@ -274,7 +274,10 @@ export function resolveRuntimeConfig(args, fileCfg) {
 
 	const monitorPayoneerStatusEnabled =
 		args["monitor-payoneer-status"] === true ||
-		getEnvBool("AUTONOMOUS_MONITOR_PAYONEER_STATUS", cfg.monitor?.payoneerStatus !== false) ||
+		getEnvBool(
+			"AUTONOMOUS_MONITOR_PAYONEER_STATUS",
+			cfg.monitor?.payoneerStatus !== false,
+		) ||
 		cfg.tasks?.monitorPayoneerStatus === true;
 
 	const alertsEnabled =

@@ -1,4 +1,4 @@
-import fs from "node:fs";
+port fs from "node:fs";
 import path from "node:path";
 import { parse } from "csv-parse/sync";
 

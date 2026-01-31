@@ -2,7 +2,11 @@ import http from "node:http";
 import crypto from "node:crypto";
 import { spawn } from "node:child_process";
 import { buildBase44ServiceClient } from "./base44-client.mjs";
-import { addSecurityHeaders, validateRequest, validateAuth } from "./security-middleware.mjs";
+import {
+	addSecurityHeaders,
+	validateRequest,
+	validateAuth,
+} from "./security-middleware.mjs";
 import { LocalSwarmStore } from "./local-store.mjs"; // PATCH: Import local store
 import {
 	extractPayPalWebhookHeaders,
@@ -41,11 +45,16 @@ function isBunkerMode() {
 function getAcpTokens() {
 	const raw = String(process.env.ACP_TOKENS ?? "").trim();
 	if (!raw) return [];
-	return raw.split(",").map((s) => s.trim()).filter(Boolean);
+	return raw
+		.split(",")
+		.map((s) => s.trim())
+		.filter(Boolean);
 }
 
 function shouldRequireAcpAuth() {
-	return String(process.env.ACP_REQUIRE_AUTH ?? "true").toLowerCase() === "true";
+	return (
+		String(process.env.ACP_REQUIRE_AUTH ?? "true").toLowerCase() === "true"
+	);
 }
 
 function requireLiveMode(reason) {
@@ -1172,9 +1181,9 @@ if (args.check === true || args["config-check"] === true) {
 	await dedupeStore.load().catch(() => {});
 	dedupeStore.start();
 
-    // PATCH: Initialize local store if in local mode
-    const localStore = new LocalSwarmStore();
-    const isLocalMode = process.env.SWARM_MODE === "local";
+	// PATCH: Initialize local store if in local mode
+	const localStore = new LocalSwarmStore();
+	const isLocalMode = process.env.SWARM_MODE === "local";
 
 	function attachFlushOnSignals() {
 		if (!dedupeStore.stats().enabled) return;
@@ -1309,7 +1318,10 @@ if (args.check === true || args["config-check"] === true) {
 					}
 				}
 				if (isBunkerMode()) {
-					json(res, 403, { ok: false, error: "Order creation disabled (Bunker Mode active)" });
+					json(res, 403, {
+						ok: false,
+						error: "Order creation disabled (Bunker Mode active)",
+					});
 					return;
 				}
 				if (!shouldCreatePayPalOrders()) {
@@ -1539,197 +1551,200 @@ if (args.check === true || args["config-check"] === true) {
 
 			let created = null;
 			if (wantWriteEvent) {
-                if (isLocalMode) {
-                    await localStore.init();
-                    created = await localStore.create("PayPalWebhookEvent", evt);
-                } else {
-				    const cfg = getEntityConfig();
-				    created = await writeEventToBase44Idempotent(base44, cfg, evt);
-                }
+				if (isLocalMode) {
+					await localStore.init();
+					created = await localStore.create("PayPalWebhookEvent", evt);
+				} else {
+					const cfg = getEntityConfig();
+					created = await writeEventToBase44Idempotent(base44, cfg, evt);
+				}
 			}
 
 			let revenueCreatedId = null;
 			let revenueDeduped = false;
 			if (wantRevenueWrite) {
-                if (isLocalMode) {
-                    await localStore.init();
-                    const createdRevenue = await localStore.create("RevenueEvent", revenueEvent);
-                    revenueCreatedId = createdRevenue.id;
-                } else {
-                    if (wantMetrics && base44) {
-                        await writeMetricToBase44(base44, evt, {
-                            kind: "revenue_create_started",
-                            ok: true,
-                        });
-                    }
-                    try {
-                        const createdRevenue = await createBase44RevenueEventIdempotent(
-                            base44,
-                            revenueCfg,
-                            revenueEvent,
-                            {
-                                dryRun: false,
-                            },
-                        );
-                        revenueCreatedId = createdRevenue?.id ?? null;
-                        revenueDeduped = createdRevenue?.deduped === true;
-                        if (wantMetrics && base44) {
-                            await writeMetricToBase44(base44, evt, {
-                                kind: revenueDeduped
-                                    ? "revenue_create_deduped"
-                                    : "revenue_create_succeeded",
-                                ok: true,
-                                summaryExtra: { revenueCreatedId },
-                            });
-                        }
-                    } catch (err) {
-                        if (wantMetrics && base44) {
-                            await writeMetricToBase44(base44, evt, {
-                                kind: "revenue_create_failed",
-                                ok: false,
-                                summaryExtra: {
-                                    error: truncate(err?.message ?? String(err), 500),
-                                },
-                            });
-                        }
+				if (isLocalMode) {
+					await localStore.init();
+					const createdRevenue = await localStore.create(
+						"RevenueEvent",
+						revenueEvent,
+					);
+					revenueCreatedId = createdRevenue.id;
+				} else {
+					if (wantMetrics && base44) {
+						await writeMetricToBase44(base44, evt, {
+							kind: "revenue_create_started",
+							ok: true,
+						});
+					}
+					try {
+						const createdRevenue = await createBase44RevenueEventIdempotent(
+							base44,
+							revenueCfg,
+							revenueEvent,
+							{
+								dryRun: false,
+							},
+						);
+						revenueCreatedId = createdRevenue?.id ?? null;
+						revenueDeduped = createdRevenue?.deduped === true;
+						if (wantMetrics && base44) {
+							await writeMetricToBase44(base44, evt, {
+								kind: revenueDeduped
+									? "revenue_create_deduped"
+									: "revenue_create_succeeded",
+								ok: true,
+								summaryExtra: { revenueCreatedId },
+							});
+						}
+					} catch (err) {
+						if (wantMetrics && base44) {
+							await writeMetricToBase44(base44, evt, {
+								kind: "revenue_create_failed",
+								ok: false,
+								summaryExtra: {
+									error: truncate(err?.message ?? String(err), 500),
+								},
+							});
+						}
 
-                        if (shouldAlertOnWebhookErrors()) {
-                            const now = Date.now();
-                            const cooldownMs = getAlertCooldownMs();
-                            if (now - lastWebhookAlertAt >= cooldownMs) {
-                                lastWebhookAlertAt = now;
-                                try {
-                                    const alertClient = base44 ?? buildBase44ServiceClient();
-                                    await maybeSendAlert(alertClient, {
-                                        subject: "Revenue Creation Failed",
-                                        body: JSON.stringify(
-                                            {
-                                                at: new Date().toISOString(),
-                                                error: err?.message ?? String(err),
-                                                summary: buildSummary(evt),
-                                            },
-                                            null,
-                                            2,
-                                        ),
-                                    });
-                                } catch {}
-                            }
-                        }
+						if (shouldAlertOnWebhookErrors()) {
+							const now = Date.now();
+							const cooldownMs = getAlertCooldownMs();
+							if (now - lastWebhookAlertAt >= cooldownMs) {
+								lastWebhookAlertAt = now;
+								try {
+									const alertClient = base44 ?? buildBase44ServiceClient();
+									await maybeSendAlert(alertClient, {
+										subject: "Revenue Creation Failed",
+										body: JSON.stringify(
+											{
+												at: new Date().toISOString(),
+												error: err?.message ?? String(err),
+												summary: buildSummary(evt),
+											},
+											null,
+											2,
+										),
+									});
+								} catch {}
+							}
+						}
 
-                        throw err;
-                    }
-                }
+						throw err;
+					}
+				}
 			}
 
 			let payoutStatusResult = null;
 			if (wantPayoutStatusWrite) {
-                if (isLocalMode) {
-                     // Minimal local payout status update mock
-                     payoutStatusResult = { updated: true, mode: "local" };
-                } else if (base44) {
-                    if (wantMetrics) {
-                        await writeMetricToBase44(base44, evt, {
-                            kind: "payout_status_update_started",
-                            ok: true,
-                        });
-                    }
-                    try {
-                        payoutStatusResult = await applyPayoutItemUpdate(
-                            base44,
-                            payoutUpdate,
-                        );
-                        if (wantMetrics) {
-                            await writeMetricToBase44(base44, evt, {
-                                kind: payoutStatusResult?.updated
-                                    ? "payout_status_update_succeeded"
-                                    : "payout_status_update_skipped",
-                                ok: !!payoutStatusResult?.updated,
-                                summaryExtra: payoutStatusResult,
-                            });
-                        }
+				if (isLocalMode) {
+					// Minimal local payout status update mock
+					payoutStatusResult = { updated: true, mode: "local" };
+				} else if (base44) {
+					if (wantMetrics) {
+						await writeMetricToBase44(base44, evt, {
+							kind: "payout_status_update_started",
+							ok: true,
+						});
+					}
+					try {
+						payoutStatusResult = await applyPayoutItemUpdate(
+							base44,
+							payoutUpdate,
+						);
+						if (wantMetrics) {
+							await writeMetricToBase44(base44, evt, {
+								kind: payoutStatusResult?.updated
+									? "payout_status_update_succeeded"
+									: "payout_status_update_skipped",
+								ok: !!payoutStatusResult?.updated,
+								summaryExtra: payoutStatusResult,
+							});
+						}
 
-                        if (
-                            shouldAlertOnPayoutFailures() &&
-                            (payoutUpdate?.status === "failed" ||
-                                payoutUpdate?.status === "refunded" ||
-                                payoutUpdate?.status === "unclaimed")
-                        ) {
-                            const now = Date.now();
-                            const cooldownMs = getAlertCooldownMs();
-                            if (now - lastWebhookAlertAt >= cooldownMs) {
-                                lastWebhookAlertAt = now;
-                                try {
-                                    const alertClient = base44 ?? buildBase44ServiceClient();
-                                    await maybeSendAlert(alertClient, {
-                                        subject: "Payout Item Failure",
-                                        body: JSON.stringify(
-                                            {
-                                                at: new Date().toISOString(),
-                                                payout: payoutUpdate,
-                                                result: payoutStatusResult,
-                                                summary: buildSummary(evt),
-                                            },
-                                            null,
-                                            2,
-                                        ),
-                                    });
-                                } catch {}
-                            }
-                        }
-                    } catch (err) {
-                        if (wantMetrics) {
-                            await writeMetricToBase44(base44, evt, {
-                                kind: "payout_status_update_failed",
-                                ok: false,
-                                summaryExtra: {
-                                    error: truncate(err?.message ?? String(err), 500),
-                                },
-                            });
-                        }
-                        throw err;
-                    }
-                }
+						if (
+							shouldAlertOnPayoutFailures() &&
+							(payoutUpdate?.status === "failed" ||
+								payoutUpdate?.status === "refunded" ||
+								payoutUpdate?.status === "unclaimed")
+						) {
+							const now = Date.now();
+							const cooldownMs = getAlertCooldownMs();
+							if (now - lastWebhookAlertAt >= cooldownMs) {
+								lastWebhookAlertAt = now;
+								try {
+									const alertClient = base44 ?? buildBase44ServiceClient();
+									await maybeSendAlert(alertClient, {
+										subject: "Payout Item Failure",
+										body: JSON.stringify(
+											{
+												at: new Date().toISOString(),
+												payout: payoutUpdate,
+												result: payoutStatusResult,
+												summary: buildSummary(evt),
+											},
+											null,
+											2,
+										),
+									});
+								} catch {}
+							}
+						}
+					} catch (err) {
+						if (wantMetrics) {
+							await writeMetricToBase44(base44, evt, {
+								kind: "payout_status_update_failed",
+								ok: false,
+								summaryExtra: {
+									error: truncate(err?.message ?? String(err), 500),
+								},
+							});
+						}
+						throw err;
+					}
+				}
 			}
 
 			let payoutBatchStatusResult = null;
 			if (wantPayoutBatchWrite) {
-                if (isLocalMode) {
-                     // Minimal local payout batch update mock
-                     payoutBatchStatusResult = { updated: true, mode: "local" };
-                } else if (base44) {
-                    if (wantMetrics) {
-                        await writeMetricToBase44(base44, evt, {
-                            kind: "payout_batch_status_update_started",
-                            ok: true,
-                        });
-                    }
-                    try {
-                        payoutBatchStatusResult = await applyPayoutBatchUpdate(
-                            base44,
-                            payoutBatchUpdate,
-                        );
-                        if (wantMetrics) {
-                            await writeMetricToBase44(base44, evt, {
-                                kind: payoutBatchStatusResult?.updated
-                                    ? "payout_batch_status_update_succeeded"
-                                    : "payout_batch_status_update_skipped",
-                                ok: !!payoutBatchStatusResult?.updated,
-                                summaryExtra: payoutBatchStatusResult,
-                            });
-                        }
-                    } catch (err) {
-                        if (wantMetrics) {
-                            await writeMetricToBase44(base44, evt, {
-                                kind: "payout_batch_status_update_failed",
-                                ok: false,
-                                summaryExtra: {
-                                    error: truncate(err?.message ?? String(err), 500),
-                                },
-                            });
-                        }
-                        throw err;
-                    }
-                }
+				if (isLocalMode) {
+					// Minimal local payout batch update mock
+					payoutBatchStatusResult = { updated: true, mode: "local" };
+				} else if (base44) {
+					if (wantMetrics) {
+						await writeMetricToBase44(base44, evt, {
+							kind: "payout_batch_status_update_started",
+							ok: true,
+						});
+					}
+					try {
+						payoutBatchStatusResult = await applyPayoutBatchUpdate(
+							base44,
+							payoutBatchUpdate,
+						);
+						if (wantMetrics) {
+							await writeMetricToBase44(base44, evt, {
+								kind: payoutBatchStatusResult?.updated
+									? "payout_batch_status_update_succeeded"
+									: "payout_batch_status_update_skipped",
+								ok: !!payoutBatchStatusResult?.updated,
+								summaryExtra: payoutBatchStatusResult,
+							});
+						}
+					} catch (err) {
+						if (wantMetrics) {
+							await writeMetricToBase44(base44, evt, {
+								kind: "payout_batch_status_update_failed",
+								ok: false,
+								summaryExtra: {
+									error: truncate(err?.message ?? String(err), 500),
+								},
+							});
+						}
+						throw err;
+					}
+				}
 			}
 
 			dedupeStore.markDone(dedupeKey);

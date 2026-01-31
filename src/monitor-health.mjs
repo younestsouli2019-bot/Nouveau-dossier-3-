@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { buildBase44ServiceClient } from "./base44-client.mjs";
 import { getPayPalAccessToken } from "./paypal-api.mjs";
 import { maybeSendAlert } from "./alerts.mjs";
@@ -9,6 +11,18 @@ function sleep(ms) {
 
 function nowIso() {
 	return new Date().toISOString();
+}
+
+function readSuccessMetrics() {
+	try {
+		const file = path.resolve("data/swarm/success_metrics.json");
+		if (!fs.existsSync(file)) return null;
+		const txt = fs.readFileSync(file, "utf8");
+		const json = JSON.parse(txt);
+		return json && typeof json === "object" ? json : null;
+	} catch {
+		return null;
+	}
 }
 
 function hasEnv(name) {
@@ -203,6 +217,7 @@ function buildReadinessSummary() {
 		warnings,
 		nextSteps,
 		missing,
+		successMetrics: readSuccessMetrics(),
 	};
 }
 
@@ -842,6 +857,7 @@ async function main() {
 						base44: base44Ping.ok ? "ok" : base44Ping.error,
 					},
 				},
+				successMetrics: summary.successMetrics ?? null,
 			})}\n`,
 			() => process.exit(0),
 		);
@@ -906,6 +922,7 @@ async function main() {
 		const at = nowIso();
 		const paypal = await checkPayPal();
 		const base44Ping = await checkBase44(base44);
+		const successMetrics = readSuccessMetrics();
 
 		const payload = {
 			at,
@@ -916,6 +933,7 @@ async function main() {
 				paypal: paypal.ok ? "ok" : paypal.error,
 				base44: base44Ping.ok ? "ok" : base44Ping.error,
 			},
+			successMetrics: successMetrics ?? null,
 		};
 
 		if (enableWrite) {

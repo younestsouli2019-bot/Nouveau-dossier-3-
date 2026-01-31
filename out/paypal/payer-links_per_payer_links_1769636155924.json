@@ -1,0 +1,23 @@
+[
+  {
+    "email": "younestsouli2019@gmail.com",
+    "amount": 25,
+    "currency": "USD",
+    "note": "Settlement INV-2026-001",
+    "url": "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=younestsouli2019%40gmail.com&item_name=Settlement+INV-2026-001&amount=25&currency_code=USD"
+  },
+  {
+    "email": "younestsouli2019@gmail.com",
+    "amount": 40,
+    "currency": "USD",
+    "note": "Settlement INV-2026-001",
+    "url": "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=younestsouli2019%40gmail.com&item_name=Settlement+INV-2026-001&amount=40&currency_code=USD"
+  },
+  {
+    "email": "younestsouli2019@gmail.com",
+    "amount": 85,
+    "currency": "USD",
+    "note": "Settlement INV-2026-001",
+    "url": "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=younestsouli2019%40gmail.com&item_name=Settlement+INV-2026-001&amount=85&currency_code=USD"
+  }
+]

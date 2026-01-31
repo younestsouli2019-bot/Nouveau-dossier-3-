@@ -16,10 +16,9 @@ function main() {
 				name: "Checkout",
 				channel: "paypal_me",
 				status: "active",
-				link:
-					(process.env.PAYPAL_ME_HANDLE
-						? `https://paypal.me/${String(process.env.PAYPAL_ME_HANDLE).replace(/^@/, "")}`
-						: null),
+				link: process.env.PAYPAL_ME_HANDLE
+					? `https://paypal.me/${String(process.env.PAYPAL_ME_HANDLE).replace(/^@/, "")}`
+					: null,
 			},
 			{
 				name: "Settlement",

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Atlas Fournitures Catalogue</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .page { width: 210mm; min-height: 297mm; padding: 20mm; margin: 10mm auto; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box; }
+        header { text-align: center; border-bottom: 5px solid #004a99; padding-bottom: 20px; margin-bottom: 30px; }
+        header h1 { color: #004a99; font-size: 36px; margin: 0; }
+        header h2 { color: #f39200; font-size: 24px; margin: 5px 0; }
+        .section-title { background-color: #004a99; color: white; padding: 10px; font-size: 20px; margin-top: 30px; text-transform: uppercase; }
+        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .product-card { border: 1px solid #ddd; padding: 15px; display: flex; flex-direction: column; }
+        .product-image { width: 100%; height: 150px; object-fit: contain; margin-bottom: 15px; }
+        .product-info { flex-grow: 1; }
+        .brand { font-weight: bold; color: #004a99; margin-bottom: 5px; }
+        .name-fr { font-size: 16px; margin-bottom: 5px; text-align: left; }
+        .name-ar { font-size: 18px; margin-bottom: 10px; text-align: right; direction: rtl; font-family: 'Amiri', serif; }
+        .ref { font-size: 12px; color: #666; }
+        .specs { font-size: 12px; color: #333; margin-top: 5px; }
+        .price-box { border-top: 1px dashed #ccc; margin-top: 10px; padding-top: 10px; text-align: right; font-weight: bold; color: #d00; }
+        footer { margin-top: 50px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header>
+            <h1>ATLAS FOURNITURES</h1>
+            <h2>CATALOGUE GÉNÉRAL 2026 | الدليل العام 2026</h2>
+        </header>
+
+        <div class="section-title">ECRITURE & STYLOS | الكتابة والأقلام</div>
+        <div class="product-grid">
+            <!-- ST-001 -->
+            <div class="product-card">
+                <img src="images/ST-001.jpg" class="product-image" alt="BIC Cristal">
+                <div class="product-info">
+                    <div class="brand">BIC</div>
+                    <div class="name-fr">Stylo Bic Cristal Medium</div>
+                    <div class="name-ar">قلم بيك كريستال مديوم</div>
+                    <div class="ref">REF: 9132XX</div>
+                    <div class="specs">Cap color indicates ink. Box of 50.</div>
+                </div>
+                <div class="price-box">Prix: ___________</div>
+            </div>
+            <!-- ST-003 -->
+            <div class="product-card">
+                <img src="images/ST-003.jpg" class="product-image" alt="Pilot G2">
+                <div class="product-info">
+                    <div class="brand">PILOT</div>
+                    <div class="name-fr">Stylo Pilot G2 Retractable</div>
+                    <div class="name-ar">قلم بايلوت جي 2</div>
+                    <div class="ref">REF: 490250516</div>
+                    <div class="specs">Gel Ink, Retractable. Box of 12.</div>
+                </div>
+                <div class="price-box">Prix: ___________</div>
+            </div>
+        </div>
+
+        <div class="section-title">TECH PRODUCTS | المنتجات التقنية</div>
+        <div class="product-grid">
+            <!-- TECH-003 -->
+            <div class="product-card">
+                <img src="images/TECH-003.jpg" class="product-image" alt="Samsung Charger">
+                <div class="product-info">
+                    <div class="brand">SAMSUNG</div>
+                    <div class="name-fr">Samsung 25W PD Adapter USBC</div>
+                    <div class="name-ar">شاحن سامسونج 25 واط</div>
+                    <div class="ref">REF: EP-TA800</div>
+                    <div class="specs">Super Fast Charging, USB-C.</div>
+                </div>
+                <div class="price-box">Prix: ___________</div>
+            </div>
+            <!-- TECH-005 -->
+            <div class="product-card">
+                <img src="images/TECH-005.jpg" class="product-image" alt="Kioxia USB">
+                <div class="product-info">
+                    <div class="brand">KIOXIA</div>
+                    <div class="name-fr">Cle USB 32GB Kioxia</div>
+                    <div class="name-ar">فلاش ميموري كيوكسيا 32 جيجا</div>
+                    <div class="ref">REF: LU301W032GG4</div>
+                    <div class="specs">USB 3.2 Gen 1 TransMemory.</div>
+                </div>
+                <div class="price-box">Prix: ___________</div>
+            </div>
+        </div>
+
+        <footer>
+            www.atlasfournitures.com | 05 55 44 77 88 | info@atlasfournitures.com
+        </footer>
+    </div>
+</body>
+</html>

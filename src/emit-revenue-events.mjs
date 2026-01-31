@@ -566,7 +566,7 @@ import { LocalSwarmStore } from "./local-store.mjs";
 const localStore = new LocalSwarmStore();
 
 function shouldUseOfflineMode(args) {
-    if (process.env.SWARM_MODE === "local") return true;
+	if (process.env.SWARM_MODE === "local") return true;
 	return (
 		args.offline === true ||
 		args["offline"] === true ||
@@ -1336,10 +1336,10 @@ async function createPayoutBatchesFromEarnings(
 	base44,
 	{ settlementId, beneficiary, recipientType, fromIso, toIso, limit, dryRun },
 ) {
-    if (process.env.SWARM_MODE === "local") {
-        await localStore.init();
-        return { created: [] }; // Mock for now to pass "all-good" check
-    }
+	if (process.env.SWARM_MODE === "local") {
+		await localStore.init();
+		return { created: [] }; // Mock for now to pass "all-good" check
+	}
 
 	const earningCfg = getEarningConfigFromEnv();
 	const revenueCfg = getRevenueConfigFromEnv();
@@ -1609,15 +1609,25 @@ async function createPayoutBatchesFromEarnings(
 			let approvedBy = null;
 
 			if (!existingBatch) {
-				const ownerAccount = OwnerSettlementEnforcer.getOwnerAccountForType(recipType);
+				const ownerAccount =
+					OwnerSettlementEnforcer.getOwnerAccountForType(recipType);
 				const isOwner =
 					ownerAccount &&
 					list.every((e) => {
-						const meta = earningCfg.fieldMap.metadata ? e?.[earningCfg.fieldMap.metadata] : null;
-						const recipient = resolveRecipientAddress(recipType, meta, benefKey || null);
-						return String(recipient).toLowerCase() === String(ownerAccount).toLowerCase();
+						const meta = earningCfg.fieldMap.metadata
+							? e?.[earningCfg.fieldMap.metadata]
+							: null;
+						const recipient = resolveRecipientAddress(
+							recipType,
+							meta,
+							benefKey || null,
+						);
+						return (
+							String(recipient).toLowerCase() ===
+							String(ownerAccount).toLowerCase()
+						);
 					});
-				
+
 				if (isOwner) {
 					initialStatus = "approved";
 					approvedAt = new Date().toISOString();
@@ -1645,7 +1655,9 @@ async function createPayoutBatchesFromEarnings(
 							),
 							[payoutBatchCfg.fieldMap.currency]: currencyKey || null,
 							[payoutBatchCfg.fieldMap.status]: initialStatus,
-							...(approvedAt && payoutBatchCfg.fieldMap.approvedAt ? { [payoutBatchCfg.fieldMap.approvedAt]: approvedAt } : {}),
+							...(approvedAt && payoutBatchCfg.fieldMap.approvedAt
+								? { [payoutBatchCfg.fieldMap.approvedAt]: approvedAt }
+								: {}),
 							...(approvedBy ? { approved_by: approvedBy } : {}),
 							...(payoutBatchCfg.fieldMap.settlementId && settlementId != null
 								? { [payoutBatchCfg.fieldMap.settlementId]: settlementId }
@@ -1784,10 +1796,10 @@ async function createPayoutBatchesFromEarnings(
 }
 
 async function getPayoutItemsForBatch(base44, batchId) {
-    if (process.env.SWARM_MODE === "local") {
-        await localStore.init();
-        return []; // Mock
-    }
+	if (process.env.SWARM_MODE === "local") {
+		await localStore.init();
+		return []; // Mock
+	}
 	const payoutItemCfg = getPayoutItemConfigFromEnv();
 	const itemEntity = base44.asServiceRole.entities[payoutItemCfg.entityName];
 	const fields = [

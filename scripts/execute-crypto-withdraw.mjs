@@ -18,15 +18,20 @@ function mapNetwork(v) {
 }
 
 async function main() {
-	const amountStr = getArg("--amount", process.env.CRYPTO_OVERRIDE_AMOUNT_USDT ?? "0");
+	const amountStr = getArg(
+		"--amount",
+		process.env.CRYPTO_OVERRIDE_AMOUNT_USDT ?? "0",
+	);
 	const network = mapNetwork(process.env.CRYPTO_NETWORK ?? "BEP20");
 	const address =
 		process.env.TRUST_WALLET_USDT_ERC20 ??
 		process.env.TRUST_WALLET_USDT_BEP20 ??
 		process.env.TRUST_WALLET_ADDRESS;
 	const amount = Number(amountStr);
-	if (!address || String(address).trim() === "") throw new Error("Missing TRUST_WALLET address");
-	if (!Number.isFinite(amount) || amount <= 0) throw new Error("Invalid amount");
+	if (!address || String(address).trim() === "")
+		throw new Error("Missing TRUST_WALLET address");
+	if (!Number.isFinite(amount) || amount <= 0)
+		throw new Error("Invalid amount");
 	const outDir = path.resolve("out", "crypto");
 	fs.mkdirSync(outDir, { recursive: true });
 	let result;
@@ -46,8 +51,18 @@ async function main() {
 			result,
 			at: new Date().toISOString(),
 		};
-		fs.writeFileSync(path.join(outDir, `binance_withdraw_${Date.now()}.json`), JSON.stringify(payload, null, 2), "utf8");
-		console.log(JSON.stringify({ ok: true, id: result?.id ?? null, status: result?.msg ?? result?.message ?? "sent" }));
+		fs.writeFileSync(
+			path.join(outDir, `binance_withdraw_${Date.now()}.json`),
+			JSON.stringify(payload, null, 2),
+			"utf8",
+		);
+		console.log(
+			JSON.stringify({
+				ok: true,
+				id: result?.id ?? null,
+				status: result?.msg ?? result?.message ?? "sent",
+			}),
+		);
 	} catch (e) {
 		const payload = {
 			ok: false,
@@ -57,7 +72,11 @@ async function main() {
 			error: e?.message ?? String(e),
 			at: new Date().toISOString(),
 		};
-		fs.writeFileSync(path.join(outDir, `binance_withdraw_err_${Date.now()}.json`), JSON.stringify(payload, null, 2), "utf8");
+		fs.writeFileSync(
+			path.join(outDir, `binance_withdraw_err_${Date.now()}.json`),
+			JSON.stringify(payload, null, 2),
+			"utf8",
+		);
 		console.error(e?.message ?? String(e));
 		process.exitCode = 1;
 	}

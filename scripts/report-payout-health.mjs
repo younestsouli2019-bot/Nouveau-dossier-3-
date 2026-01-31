@@ -74,7 +74,9 @@ function main() {
 	}
 
 	console.log("");
-	console.log(`Submitted_to_paypal older than ${maxAgeHours}h without completed_at:`);
+	console.log(
+		`Submitted_to_paypal older than ${maxAgeHours}h without completed_at:`,
+	);
 	if (submittedStale.length === 0) {
 		console.log("  none");
 	} else {
@@ -95,4 +97,3 @@ function main() {
 }
 
 main();
-

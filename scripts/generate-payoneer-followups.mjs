@@ -185,7 +185,11 @@ function resolvePayerEmail({
 			byEnv = JSON.parse(process.env.PAYER_EMAIL_OVERRIDES_JSON);
 		}
 	} catch {}
-	const sources = [() => byEnv[key], () => byEnv[batch_id], () => registryEmail];
+	const sources = [
+		() => byEnv[key],
+		() => byEnv[batch_id],
+		() => registryEmail,
+	];
 	const recipientLower = String(recipient_email || "").toLowerCase();
 	for (const get of sources) {
 		const v = get();
@@ -220,9 +224,7 @@ function main() {
 			.readdirSync(dir)
 			.filter((f) => {
 				const n = f.toLowerCase();
-				return (
-					n.endsWith(".csv") || n.endsWith(".xls") || n.endsWith(".xlsx")
-				);
+				return n.endsWith(".csv") || n.endsWith(".xls") || n.endsWith(".xlsx");
 			})
 			.sort();
 		const byBase = new Map();
@@ -314,8 +316,7 @@ function main() {
 						.sort((a, b) => b.mtimeMs - a.mtimeMs);
 					if (existingFiles.length) {
 						const latest = existingFiles[0];
-						const ageHours =
-							(Date.now() - latest.mtimeMs) / (1000 * 60 * 60);
+						const ageHours = (Date.now() - latest.mtimeMs) / (1000 * 60 * 60);
 						if (ageHours < delayHours) continue;
 					}
 					const outFile = path.join(
