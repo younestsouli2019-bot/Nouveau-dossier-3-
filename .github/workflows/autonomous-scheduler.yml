@@ -31,6 +31,8 @@ jobs:
         run: npm run catalogue:ultimate
       - name: Build catalogue (advanced)
         run: npm run catalogue:pdfkit
+      - name: Sync catalogue PDF into static artifact
+        run: node ./scripts/sync-catalogue-to-static.mjs
       - name: Fallback placeholder if missing
         run: |
           if [ ! -f "catalogue/catalogue_master.pdf" ]; then
