@@ -2,14 +2,13 @@ import { OwnerSettlementEnforcer } from "./owner-settlement.mjs";
 import { shouldAvoidPayPal } from "./geopolicy.mjs";
 
 export function getEffectiveRoutes(amount, currency) {
-<<<<<<< Updated upstream
 	const cfg = OwnerSettlementEnforcer.getPaymentConfiguration();
 	let routes = [...cfg.settlement_priority];
 	if (shouldAvoidPayPal()) routes = routes.filter((r) => r !== "paypal");
 	routes = routes.filter(
 		(r) => !OwnerSettlementEnforcer.missingCredentials(r, cfg),
 	);
-	// If Payoneer API route is unavailable but standard route is available, add it
+	// Add Payoneer Standard if API route is unavailable but standard is available
 	const hasPayoneerApi = routes.includes("payoneer");
 	const payoneerStdAvailable = !OwnerSettlementEnforcer.missingCredentials(
 		"payoneer_standard",
@@ -51,22 +50,4 @@ export function getEffectiveRoutes(amount, currency) {
 		routes = order.filter((r) => set.has(r));
 	}
 	return routes;
-=======
-  const cfg = OwnerSettlementEnforcer.getPaymentConfiguration();
-  let routes = [...cfg.settlement_priority];
-  if (shouldAvoidPayPal()) routes = routes.filter(r => r !== 'paypal');
-  routes = routes.filter(r => !OwnerSettlementEnforcer.missingCredentials(r, cfg));
-  const cur = String(currency || '').toUpperCase();
-  if (cur === 'USDT') {
-    // Prioritize crypto for USDT, then Tron, then others
-    const order = ['crypto', 'tron', 'bank_transfer', 'payoneer', 'stripe', 'paypal'];
-    const set = new Set(routes);
-    routes = order.filter(r => set.has(r));
-  } else if (String(process.env.FORCE_BANK_WIRE || '').toLowerCase() === 'true') {
-    const order = ['bank_transfer', 'crypto', 'payoneer', 'stripe', 'paypal'];
-    const set = new Set(routes);
-    routes = order.filter(r => set.has(r));
-  }
-  return routes;
->>>>>>> Stashed changes
 }
