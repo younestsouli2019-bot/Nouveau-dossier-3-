@@ -48,7 +48,9 @@
     "catalogue:build": "node ./scripts/build-catalogue-pro.mjs",
     "catalogue:pdfkit": "node ./scripts/advancedCatalogueSwarm.mjs",
     "catalogue:ultimate": "node ./scripts/ultimateCatalogueSwarm.mjs",
-    "backend:plumber": "node ./src/backend-pipework-plumber.mjs"
+    "backend:plumber": "node ./src/backend-pipework-plumber.mjs",
+    "env:local:load": "node ./scripts/env-local-load.mjs",
+    "env:secretbox:load": "node ./scripts/env-secretbox-load.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.13",
@@ -61,10 +63,10 @@
     "dotenv": "^16.6.1",
     "ethers": "^6.0.0",
     "express": "^5.2.1",
-    "tweetnacl": "^1.0.3",
-    "xlsx": "^0.18.5",
     "pdfjs-dist": "^3.10.111",
-    "pdfkit": "^0.13.0"
+    "pdfkit": "^0.13.0",
+    "tweetnacl": "^1.0.3",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.11",
