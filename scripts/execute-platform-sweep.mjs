@@ -25,6 +25,16 @@ async function executePlatformSweep() {
 		const amount = wallet.balance;
 		if (amount <= 0) continue;
 
+		const ownerRoute =
+			wallet.type === "crypto" ? "crypto" : wallet.type === "fiat" ? "paypal" : "owner";
+		const destination =
+			ownerRoute === "crypto"
+				? process.env.TRUST_WALLET_ADDRESS || null
+				: ownerRoute === "paypal"
+				? process.env.PAYPAL_OWNER_EMAIL || process.env.PAYPAL_EMAIL || null
+				: null;
+		const proofType = ownerRoute === "crypto" ? "chain_txhash" : ownerRoute === "paypal" ? "paypal_payout_id" : null;
+
 		const sweepEvent = {
 			type: "ASSET_TRANSFER",
 			id: `sweep_${wallet.id}_${Date.now()}`,
@@ -34,7 +44,11 @@ async function executePlatformSweep() {
 			amount: amount,
 			currency: wallet.currency,
 			reason: "PLATFORM_SOURCE_CONSOLIDATION",
-			status: "COMPLETED",
+			status: "PENDING_PROOF",
+			owner_route: ownerRoute,
+			destination,
+			proof_required: proofType,
+			proof: null
 		};
 
 		sweepEvents.push(sweepEvent);

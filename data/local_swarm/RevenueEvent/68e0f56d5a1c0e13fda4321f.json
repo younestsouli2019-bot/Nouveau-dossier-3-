@@ -5,5 +5,5 @@
   "status": "COMPLETED",
   "source": "csv_migration",
   "raw": "68e0f56d5a1c0e13fda4321f,52f2ac613039f0e9f855678d336450cc63630c9f50d40da8954f4d953964af08,Affiliate Program,,275,USD,earned,,,,,\"{\"\"agent_id\"\":\"\"agent-2\"\",\"\"legacy_file\"\":\"\"Analytics_export (1).csv\"\",\"\"ingested_at\"\":\"\"2026-01-02T21:27:24.990Z\"\"}\",6958379b1f058bad78bfd978,2026-01-02T21:24:43.320000,2026-01-02T21:24:43.320000,anonymous,anonymous,false",
-  "created_at": "2026-01-19T05:20:30.273Z"
+  "created_at": "2026-02-01T23:10:29.609Z"
 }

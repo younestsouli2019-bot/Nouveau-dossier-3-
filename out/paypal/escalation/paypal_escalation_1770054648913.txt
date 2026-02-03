@@ -1,0 +1,42 @@
+Escalation: Activate API Payouts + Pending Permissions
+
+Dear PayPal Support Team,
+
+I request activation of API Payouts and resolution of pending permissions blocking integration.
+
+Account Details:
+• PayPal Account Email: younestsouli2019@gmail.com
+• Business Name: realworldcerts
+
+Observed Errors:
+• Endpoint: /v1/payments/payouts
+• Status: 403
+• Debug IDs: 440a9e5527d7f, 028ac57f400ba, ed54b699d1b51, 7aba66415437a, 5831d13ecb339
+
+Pending Permissions:
+• Login with PayPal
+• Customer Disputes
+
+Portal Access:
+• Attijariwafa PayPal: https://attijaripaypal.attijariwafa.com/paypal/preferences
+
+Business Domain:
+• http://realworldcerts.com/ (404)
+
+Request:
+1) Activate API Payouts or provide required steps
+2) Approve pending permissions or clarify documentation needed
+3) Provide an estimated timeline for activation
+
+Timeline:
+• Initial request: 2025-12-20
+• Follow-up: 2026-01-30
+
+Contact:
+• Younes Tsouli (younestsouli2019@gmail.com)
+• +212639158209
+
+Thank you for your assistance.
+
+Best regards,
+Younes Tsouli

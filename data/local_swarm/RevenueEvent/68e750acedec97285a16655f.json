@@ -5,5 +5,5 @@
   "status": "COMPLETED",
   "source": "csv_migration",
   "raw": "68e750acedec97285a16655f,a67698054007ccdaaf6319047bdc3806f187c2d0bcc4a44e677a0dad108aa985,New Year Special,,620,USD,earned,,,,,\"{\"\"agent_id\"\":\"\"agent-3\"\",\"\"legacy_file\"\":\"\"Analytics_export (1).csv\"\",\"\"ingested_at\"\":\"\"2026-01-02T21:26:33.126Z\"\"}\",695837681238221369f6f055,2026-01-02T21:23:52.594000,2026-01-02T21:23:52.594000,anonymous,anonymous,false",
-  "created_at": "2026-01-19T05:20:30.309Z"
+  "created_at": "2026-02-01T23:10:29.641Z"
 }

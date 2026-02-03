@@ -156,13 +156,29 @@ async function main() {
 	const args = parseArgs(process.argv);
 	let items = [];
 	let fromBase44 = true;
-	try {
-		const base44 = buildBase44ServiceClient({ mode: "auto" });
-		const earningCfg = getEarningConfigFromEnv();
-		const limit = Number(process.env.EARNING_LIST_LIMIT || "500") || 500;
-		const rows = await listEarnings(base44, earningCfg, { limit });
-		items = rows.map((r) => normalizeEarningRow(earningCfg, r));
-	} catch {
+	const disableBase44 =
+		String(process.env.BASE44_DISABLE || "").toLowerCase() === "true" ||
+		String(process.env.MIGRATION_MODE || "").toLowerCase() === "true";
+	if (!disableBase44) {
+		try {
+			const base44 = buildBase44ServiceClient({ mode: "auto" });
+			const earningCfg = getEarningConfigFromEnv();
+			const limit = Number(process.env.EARNING_LIST_LIMIT || "500") || 500;
+			const rows = await listEarnings(base44, earningCfg, { limit });
+			items = rows.map((r) => normalizeEarningRow(earningCfg, r));
+		} catch {
+			const amt = Number(process.env.SETTLEMENT_AMOUNT_USD || "25") || 25;
+			items = [
+				{
+					earning_id: `sim_${Date.now()}`,
+					amount: amt,
+					currency: "USD",
+					metadata: {},
+				},
+			];
+			fromBase44 = false;
+		}
+	} else {
 		const amt = Number(process.env.SETTLEMENT_AMOUNT_USD || "25") || 25;
 		items = [
 			{

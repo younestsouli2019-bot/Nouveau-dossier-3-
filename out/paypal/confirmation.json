@@ -4,7 +4,5 @@
   "missingEmailRows": 10,
   "generatedLinksCount": 0,
   "confirmed": false,
-  "issues": [
-    "Missing OWNER_PAYPAL_EMAIL"
-  ]
+  "issues": []
 }

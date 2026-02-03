@@ -5,5 +5,5 @@
   "status": "COMPLETED",
   "source": "csv_migration",
   "raw": "68e7500c4eae3dbaf591e2f2,cb445b65d91c8f4e56610d3cf13e13da06a00058c695259f7d8b34817a0bfa85,Instagram Campaign,,615,USD,earned,,,,,\"{\"\"agent_id\"\":\"\"agent-2\"\",\"\"legacy_file\"\":\"\"Analytics_export (1).csv\"\",\"\"ingested_at\"\":\"\"2026-01-02T21:26:36.784Z\"\"}\",6958376b3cdc6b6e38d8210a,2026-01-02T21:23:55.111000,2026-01-02T21:23:55.111000,anonymous,anonymous,false",
-  "created_at": "2026-01-19T05:20:30.307Z"
+  "created_at": "2026-02-01T23:10:29.639Z"
 }

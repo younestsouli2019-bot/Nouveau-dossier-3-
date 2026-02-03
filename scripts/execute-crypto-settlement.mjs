@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 import fs from "fs";
 import path from "path";
 import ccxt from "ccxt";
@@ -11,27 +10,17 @@ import {
 	formatUnits,
 } from "ethers";
 import { binanceClient } from "../src/crypto/binance-client.mjs";
-=======
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
-import https from 'https';
-import { binanceClient } from '../src/crypto/binance-client.mjs';
-import 'dotenv/config';
->>>>>>> Stashed changes
 
 // ------------------------------------------------------------------
 // CONFIGURATION - REAL SETTLEMENT WITH PRIVATE KEYS
 // ------------------------------------------------------------------
 
 const TARGET_WALLET = {
-<<<<<<< Updated upstream
 	address: process.env.OWNER_CRYPTO_BEP20 || process.env.TRUST_WALLET_ADDRESS,
-	network: "BSC", // BEP20
+	network: "BSC",
 	coin: "USDT",
 };
 
-// Trust Wallet private key for direct transfers
 const TRUST_WALLET_PRIVATE_KEY =
 	process.env.BNB_CHAIN_PRIVATE_KEY || process.env.TRUST_WALLET_PRIVATE_KEY;
 
@@ -39,15 +28,6 @@ if (!TARGET_WALLET.address) {
 	throw new Error(
 		"OWNER_CRYPTO_BEP20 or TRUST_WALLET_ADDRESS not set in environment.",
 	);
-=======
-  address: process.env.OWNER_CRYPTO_BEP20,
-  network: 'BSC', // BEP20
-  coin: 'USDT'
-};
-
-if (!TARGET_WALLET.address) {
-  throw new Error("OWNER_CRYPTO_BEP20 not set in environment. Please set OWNER_CRYPTO_BEP20 in your .env or CREDS.txt");
->>>>>>> Stashed changes
 }
 
 const BATCH_ID = process.argv[2];
@@ -71,8 +51,67 @@ const OBSERVE_ONLY =
 
 // BSC USDT Contract Address (BEP20)
 const BSC_USDT_CONTRACT = "0x55d398326f99059fF775485246999027B3197955";
-const BSC_RPC_URL =
-	process.env.BSC_RPC_URL || "https://bsc-dataseed.binance.org";
+function pickBscRpcUrls() {
+	const urls = [];
+	if (process.env.BSC_RPC_URL_FAST) urls.push(process.env.BSC_RPC_URL_FAST);
+	if (process.env.BSC_RPC_URL) urls.push(process.env.BSC_RPC_URL);
+	if (process.env.BSC_RPC_URL_ALT) urls.push(process.env.BSC_RPC_URL_ALT);
+	urls.push("https://bsc-dataseed.binance.org");
+	return Array.from(new Set(urls.filter(Boolean)));
+}
+
+async function withTimeout(p, ms) {
+	return Promise.race([
+		p,
+		new Promise((_, rej) => setTimeout(() => rej(new Error("RPC_TIMEOUT")), ms)),
+	]);
+}
+
+async function getWorkingBscProvider(timeoutMs = 15000) {
+	const urls = pickBscRpcUrls();
+	for (const u of urls) {
+		try {
+			const provider = new JsonRpcProvider(u);
+			await withTimeout(provider.getBlockNumber(), timeoutMs);
+			return provider;
+		} catch {}
+	}
+	const fallback = urls[urls.length - 1];
+	return new JsonRpcProvider(fallback);
+
+async function getNativeBalance(provider, address) {
+	const b = await provider.getBalance(address);
+	return Number(formatUnits(b, 18));
+}
+
+function writeRefuelInstruction({
+	chain,
+	token,
+	amountToken,
+	address,
+	service,
+	reason,
+}) {
+	const dir = path.resolve("out", "gasless");
+	if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+	const file = path.join(
+		dir,
+		`refuel_${chain.toLowerCase()}_${Date.now()}.json`,
+	);
+	const payload = {
+		chain,
+		token,
+		amount_token: amountToken,
+		address,
+		service,
+		status: "REQUESTED",
+		reason,
+		timestamp: new Date().toISOString(),
+	};
+	fs.writeFileSync(file, JSON.stringify(payload, null, 2));
+	return file;
+}
+
 
 // ERC20 ABI for USDT transfers
 const ERC20_ABI = [
@@ -319,10 +358,33 @@ async function executeDirectWalletTransfer({
 	console.log("🔐 DIRECT WALLET TRANSFER MODE - Using Private Key");
 	console.log(`📤 Sending ${amount} ${coin} to ${toAddress} on ${network}`);
 
-	const provider = new JsonRpcProvider(BSC_RPC_URL);
+	const provider = await getWorkingBscProvider(
+		Number(process.env.RPC_TIMEOUT_MS || 15000),
+	);
 	const wallet = new Wallet(TRUST_WALLET_PRIVATE_KEY, provider);
 
 	console.log(`📍 Source wallet: ${wallet.address}`);
+
+		const minNative =
+			network === "BSC"
+				? Number(process.env.MIN_GAS_BSC || "0.01")
+				: Number(process.env.MIN_GAS_ETH || "0.002");
+		const nativeBal = await getNativeBalance(provider, wallet.address);
+		if (!Number.isFinite(nativeBal) || nativeBal < minNative) {
+			const refuelAmount =
+				Number(process.env.GASLESS_REFUEL_AMOUNT_USDT || "5");
+			const chainLabel = network === "BSC" ? "BNB" : "ETH";
+			const file = writeRefuelInstruction({
+				chain: chainLabel,
+				token: "USDT",
+				amountToken: refuelAmount,
+				address: wallet.address,
+				service: "SmolRefuel|0xGasless",
+				reason: "INSUFFICIENT_NATIVE_GAS",
+			});
+			console.log(`🚨 Native gas insufficient. Refuel instruction: ${file}`);
+			throw new Error("NATIVE_GAS_INSUFFICIENT_REFUEL_REQUESTED");
+		}
 
 	// Get USDT contract
 	const usdtContract = new Contract(BSC_USDT_CONTRACT, ERC20_ABI, wallet);
@@ -344,8 +406,16 @@ async function executeDirectWalletTransfer({
 	const amountWei = parseUnits(String(amount), decimals);
 
 	// Execute transfer
-	console.log("⏳ Submitting transaction to BSC network...");
-	const tx = await usdtContract.transfer(toAddress, amountWei);
+	const gasPriceGwei = process.env.BSC_GAS_PRICE_GWEI
+		? String(process.env.BSC_GAS_PRICE_GWEI)
+		: null;
+	const gasLimitNum = process.env.BSC_GAS_LIMIT
+		? Number(process.env.BSC_GAS_LIMIT)
+		: null;
+	const overrides = {};
+	if (gasPriceGwei) overrides["gasPrice"] = parseUnits(gasPriceGwei, "gwei");
+	if (gasLimitNum && gasLimitNum > 0) overrides["gasLimit"] = gasLimitNum;
+	const tx = await usdtContract.transfer(toAddress, amountWei, overrides);
 
 	console.log(`📝 Transaction submitted: ${tx.hash}`);
 	console.log("⏳ Waiting for confirmation...");
@@ -397,13 +467,22 @@ async function verifyExternalTxHash(
 		throw new Error(`Unsupported network for verification: ${network}`);
 	}
 
-	const provider = new JsonRpcProvider(BSC_RPC_URL);
-
-	// Get transaction receipt
-	const receipt = await provider.getTransactionReceipt(txHash);
-	if (!receipt) {
-		return { verified: false, reason: "transaction_not_found" };
+	const timeoutMs = Number(process.env.RPC_TIMEOUT_MS || 15000);
+	const urls = pickBscRpcUrls();
+	let provider = null;
+	let receipt = null;
+	for (const u of urls) {
+		try {
+			const p = new JsonRpcProvider(u);
+			const r = await withTimeout(p.getTransactionReceipt(txHash), timeoutMs);
+			if (r) {
+				provider = p;
+				receipt = r;
+				break;
+			}
+		} catch {}
 	}
+	if (!receipt) return { verified: false, reason: "transaction_not_found" };
 
 	// Get transaction details
 	const tx = await provider.getTransaction(txHash);
@@ -976,9 +1055,21 @@ async function run() {
 				RECEIPTS_DIR,
 				`crypto_settlement_${tx.id}_submitted.json`,
 			);
+			const payerType =
+				String(tx.details?.payer_type || "").toLowerCase() ||
+				(tx.channel && tx.channel.includes("API") ? "internal" : "external");
+			const payerId =
+				tx.details?.payer_id ||
+				tx.agent_id ||
+				tx.details?.client_id ||
+				null;
 			const receipt = {
 				timestamp: result.timestamp,
 				batch_id: tx.id,
+				payer: {
+					type: payerType,
+					id: payerId,
+				},
 				amount: amount,
 				currency: coin,
 				network: result.network || network,
