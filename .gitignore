@@ -8,3 +8,7 @@ reports/historic/**
 *.log
 *.tmp
 node_modules/
+ .env
+ .env.*
+ .keys/
+ *.pem

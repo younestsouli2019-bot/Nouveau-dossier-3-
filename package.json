@@ -43,6 +43,7 @@
     "owner:routes:update": "node ./scripts/update-owner-routes.mjs",
     "env:bulk:update": "node ./scripts/env-bulk-update.mjs",
     "secrets:org:sync": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/gh-sync-org-secrets.ps1 -Org $env:GITHUB_ORG -Repos $env:GITHUB_REPOS -Visibility all",
+    "secrets:sync": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$m = $env:ORG_MODE; if (($m ?? 'false').ToString().ToLower() -eq 'true') { & ./scripts/gh-sync-org-secrets.ps1 -Org $env:GITHUB_ORG -Visibility all } else { Write-Output 'ORG_MODE_DISABLED' }\"",
     "swarm:replenish": "node ./scripts/replenish-agents.mjs",
     "swarm:supervise": "node ./src/swarm/supervisor.mjs",
     "swarm:add:agents": "node ./scripts/register-external-agents.mjs",
