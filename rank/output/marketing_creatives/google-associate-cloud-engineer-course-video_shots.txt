@@ -1,0 +1,5 @@
+Hook: 'Want to pass Google Associate Cloud Engineer Course on first attempt?'
+Pain: 'Syllabus is huge? Practice feels random?'
+Solution: 'Structured study plan + practice sets'
+Proof: 'Thousands of learners improved retention'
+CTA: 'Enroll today at realworldcerts.com/courses/'

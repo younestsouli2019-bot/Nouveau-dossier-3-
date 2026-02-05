@@ -1,0 +1,287 @@
+// JavaScript Example: Reading Entities
+// Filterable fields: name, category, subcategory, description, platform, target_social_platforms, automation_level, setup_difficulty, cost, expected_traffic_boost, viral_potential, setup_time, status, swarm_compatible, swarm_role, success_rate, median_latency, value_per_hour, setup_instructions, api_requirements, target_urls, content_types, real_time_metrics, workflow_config, coordination_settings
+async function fetchAgentEntities() {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/Agent`, {
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        }
+    });
+    const data = await response.json();
+    console.log(data);
+}
+
+// JavaScript Example: Updating an Entity
+// Filterable fields: name, category, subcategory, description, platform, target_social_platforms, automation_level, setup_difficulty, cost, expected_traffic_boost, viral_potential, setup_time, status, swarm_compatible, swarm_role, success_rate, median_latency, value_per_hour, setup_instructions, api_requirements, target_urls, content_types, real_time_metrics, workflow_config, coordination_settings
+async function updateAgentEntity(entityId, updateData) {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/Agent/${entityId}`, {
+        method: 'PUT',
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+    });
+    const data = await response.json();
+    console.log(data);// JavaScript Example: Reading Entities
+// Filterable fields: name, description, target_url, agents, status, start_date, end_date, target_metrics, budget
+async function fetchCampaignEntities() {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/Campaign`, {
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        }
+    });
+    const data = await response.json();
+    console.log(data);
+}
+
+// JavaScript Example: Updating an Entity
+// Filterable fields: name, description, target_url, agents, status, start_date, end_date, target_metrics, budget
+async function updateCampaignEntity(entityId, updateData) {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/Campaign/${entityId}`, {
+        method: 'PUT',
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+    });
+    const data = await response.json();
+    console.log(data);
+}// JavaScript Example: Reading Entities
+// Filterable fields: agent_id, campaign_id, metric_type, value, date, source_platform, target_url, outcome, error_details, cost_incurred, notes
+async function fetchAnalyticsEntities() {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/Analytics`, {
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        }
+    });
+    const data = await response.json();
+    console.log(data);
+}
+
+// JavaScript Example: Updating an Entity
+// Filterable fields: agent_id, campaign_id, metric_type, value, date, source_platform, target_url, outcome, error_details, cost_incurred, notes
+async function updateAnalyticsEntity(entityId, updateData) {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/Analytics/${entityId}`, {
+        method: 'PUT',
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+    });
+    const data = await response.json();
+    console.log(data);// JavaScript Example: Reading Entities
+// Filterable fields: course_name, udemy_course_id, referral_url, coupon_code, currency, best_price, min_price, max_price, coupons_remaining, is_discounted, promotion_status, assigned_agent, promo_content, hashtags, platforms_posted, engagement_metrics
+async function fetchCoursePromotionEntities() {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/CoursePromotion`, {
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        }
+    });
+    const data = await response.json();
+    console.log(data);
+}
+
+// JavaScript Example: Updating an Entity
+// Filterable fields: course_name, udemy_course_id, referral_url, coupon_code, currency, best_price, min_price, max_price, coupons_remaining, is_discounted, promotion_status, assigned_agent, promo_content, hashtags, platforms_posted, engagement_metrics
+async function updateCoursePromotionEntity(entityId, updateData) {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/CoursePromotion/${entityId}`, {
+        method: 'PUT',
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+    });
+    const data = await response.json();
+    console.log(data);
+}// JavaScript Example: Reading Entities
+// Filterable fields: workflow_name, trigger_type, status, participating_agents, execution_steps, start_time, end_time, total_duration, success_metrics, execution_logs
+async function fetchWorkflowExecutionEntities() {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/WorkflowExecution`, {
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        }
+    });
+    const data = await response.json();
+    console.log(data);
+}
+
+// JavaScript Example: Updating an Entity
+// Filterable fields: workflow_name, trigger_type, status, participating_agents, execution_steps, start_time, end_time, total_duration, success_metrics, execution_logs
+async function updateWorkflowExecutionEntity(entityId, updateData) {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/WorkflowExecution/${entityId}`, {
+        method: 'PUT',
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+    });
+    const data = await response.json();
+    console.log(data);
+}// JavaScript Example: Reading Entities
+// Filterable fields: coordination_id, coordinator_agent, participating_agents, coordination_type, objective, status, task_allocation, resource_requirements, performance_metrics, communication_log
+async function fetchSwarmCoordinationEntities() {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/SwarmCoordination`, {
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        }
+    });
+    const data = await response.json();
+    console.log(data);
+}
+
+// JavaScript Example: Updating an Entity
+// Filterable fields: coordination_id, coordinator_agent, participating_agents, coordination_type, objective, status, task_allocation, resource_requirements, performance_metrics, communication_log
+async function updateSwarmCoordinationEntity(entityId, updateData) {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/SwarmCoordination/${entityId}`, {
+        method: 'PUT',
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+    });
+    const data = await response.json();
+    console.log(data);
+}// JavaScript Example: Reading Entities
+// Filterable fields: title, type, priority, status, assigned_agent_ids, mission_parameters, progress_data, estimated_duration_hours, actual_duration_hours, deadline, completion_notes, revenue_generated
+async function fetchMissionEntities() {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/Mission`, {
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        }
+    });
+    const data = await response.json();
+    console.log(data);
+}
+
+// JavaScript Example: Updating an Entity
+// Filterable fields: title, type, priority, status, assigned_agent_ids, mission_parameters, progress_data, estimated_duration_hours, actual_duration_hours, deadline, completion_notes, revenue_generated
+async function updateMissionEntity(entityId, updateData) {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/Mission/${entityId}`, {
+        method: 'PUT',
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+    });
+    const data = await response.json();
+    console.log(data);// JavaScript Example: Reading Entities
+// Filterable fields: goal_name, target_amount, current_amount, deadline, priority, category, status, recurring, recurrence_period, notes
+async function fetchFinancialGoalEntities() {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/FinancialGoal`, {
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        }
+    });
+    const data = await response.json();
+    console.log(data);
+}
+
+// JavaScript Example: Updating an Entity
+// Filterable fields: goal_name, target_amount, current_amount, deadline, priority, category, status, recurring, recurrence_period, notes
+async function updateFinancialGoalEntity(entityId, updateData) {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/FinancialGoal/${entityId}`, {
+        method: 'PUT',
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+    });
+    const data = await response.json();
+    console.log(data);
+}// JavaScript Example: Reading Entities
+// Filterable fields: transaction_type, amount, currency, description, category, payment_method, source, transaction_date, reference_id, linked_goal_id, agent_responsible, status, receipt_url, notes
+async function fetchTransactionLogEntities() {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/TransactionLog`, {
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        }
+    });
+    const data = await response.json();
+    console.log(data);
+}
+
+// JavaScript Example: Updating an Entity
+// Filterable fields: transaction_type, amount, currency, description, category, payment_method, source, transaction_date, reference_id, linked_goal_id, agent_responsible, status, receipt_url, notes
+async function updateTransactionLogEntity(entityId, updateData) {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/TransactionLog/${entityId}`, {
+        method: 'PUT',
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+    });
+    const data = await response.json();
+    console.log(data);
+}// JavaScript Example: Reading Entities
+// Filterable fields: event_id, event_hash, source, source_id, amount, currency, status, confirmation_date, reconciliation_key, payout_batch_id, notes, metadata
+async function fetchRevenueEventEntities() {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/RevenueEvent`, {
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        }
+    });
+    const data = await response.json();
+    console.log(data);
+}
+
+// JavaScript Example: Updating an Entity
+// Filterable fields: event_id, event_hash, source, source_id, amount, currency, status, confirmation_date, reconciliation_key, payout_batch_id, notes, metadata
+async function updateRevenueEventEntity(entityId, updateData) {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/RevenueEvent/${entityId}`, {
+        method: 'PUT',
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+    });
+    const data = await response.json();
+    console.log(data);
+}// JavaScript Example: Reading Entities
+// Filterable fields: batch_id, batch_hash, total_amount, currency, status, approved_by, approved_at, paypal_batch_id, paypal_status, submitted_at, completed_at, revenue_event_ids, error_message, retry_count, notes
+async function fetchPayoutBatchEntities() {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/PayoutBatch`, {
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        }
+    });
+    const data = await response.json();
+    console.log(data);
+}
+
+// JavaScript Example: Updating an Entity
+// Filterable fields: batch_id, batch_hash, total_amount, currency, status, approved_by, approved_at, paypal_batch_id, paypal_status, submitted_at, completed_at, revenue_event_ids, error_message, retry_count, notes
+async function updatePayoutBatchEntity(entityId, updateData) {
+    const response = await fetch(`https://app.base44.com/api/apps/6888ac155ebf84dd9855ea98/entities/PayoutBatch/${entityId}`, {
+        method: 'PUT',
+        headers: {
+            'api_key': '2f3df25fb1734602ac59d0a36ba30da3', // or use await User.me() to get the API key
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+    });
+    const data = await response.json();
+    console.log(data);
+}
+}
+}
+}

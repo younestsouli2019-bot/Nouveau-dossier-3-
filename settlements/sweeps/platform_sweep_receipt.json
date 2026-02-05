@@ -1,0 +1,51 @@
+{
+  "timestamp": "2026-02-02T08:11:47.016Z",
+  "total_value_usd_est": 27700,
+  "events": [
+    {
+      "type": "ASSET_TRANSFER",
+      "id": "sweep_binance_main_1770019907015",
+      "created_at": "2026-02-02T08:11:47.015Z",
+      "from": "binance_main",
+      "to": "OWNER",
+      "amount": 15000,
+      "currency": "USDT",
+      "reason": "PLATFORM_SOURCE_CONSOLIDATION",
+      "status": "PENDING_PROOF",
+      "owner_route": "crypto",
+      "destination": null,
+      "proof_required": "chain_txhash",
+      "proof": null
+    },
+    {
+      "type": "ASSET_TRANSFER",
+      "id": "sweep_kraken_reserves_1770019907016",
+      "created_at": "2026-02-02T08:11:47.016Z",
+      "from": "kraken_reserves",
+      "to": "OWNER",
+      "amount": 8500,
+      "currency": "USDT",
+      "reason": "PLATFORM_SOURCE_CONSOLIDATION",
+      "status": "PENDING_PROOF",
+      "owner_route": "crypto",
+      "destination": null,
+      "proof_required": "chain_txhash",
+      "proof": null
+    },
+    {
+      "type": "ASSET_TRANSFER",
+      "id": "sweep_paypal_ops_1770019907016",
+      "created_at": "2026-02-02T08:11:47.016Z",
+      "from": "paypal_ops",
+      "to": "OWNER",
+      "amount": 4200,
+      "currency": "USD",
+      "reason": "PLATFORM_SOURCE_CONSOLIDATION",
+      "status": "PENDING_PROOF",
+      "owner_route": "paypal",
+      "destination": null,
+      "proof_required": "paypal_payout_id",
+      "proof": null
+    }
+  ]
+}

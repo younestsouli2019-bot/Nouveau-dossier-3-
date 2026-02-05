@@ -1,0 +1,10 @@
+{
+  "at": "2026-01-19T07:22:23.307Z",
+  "batchId": "PAYO_HISTORICAL_1768559743222_3",
+  "submittedAt": "2026-01-16T11:20:00.331Z",
+  "ageHours": 68.04,
+  "prqLink": "https://link.payoneer.com/Token?t=20CF6CF2E346465C8C1374799EB46548&src=prqLink",
+  "manifestPath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\payoneer\\historical\\PAYO_HISTORICAL_1768559743222_3_manifest.json",
+  "csvPath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\payoneer\\historical\\PAYO_HISTORICAL_1768559743222_3.csv",
+  "thresholdHours": 48
+}

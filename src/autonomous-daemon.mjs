@@ -1,0 +1,2652 @@
+import fs from "node:fs/promises";
+import "dotenv/config";
+import path from "node:path";
+import os from "node:os";
+import crypto from "node:crypto";
+import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { buildBase44ServiceClient } from "./base44-client.mjs";
+import { getPayPalAccessToken } from "./paypal-api.mjs";
+import { maybeSendAlert } from "./alerts.mjs";
+import { enforceAuthorityProtocol } from "./authority.mjs";
+import { AgentHealthMonitor } from "./swarm/health-monitor.mjs";
+import { ConfigManager } from "./swarm/config-manager.mjs";
+import { SwarmMemory } from "./swarm/shared-memory.mjs";
+import { RailOptimizer } from "./swarm/rail-optimizer.mjs";
+import { TaskManager } from "./swarm/task-manager.mjs";
+import { globalRecorder } from "./swarm/flight-recorder.mjs";
+import { LearningAgent } from "./swarm/learning-agent.mjs";
+import { runRevenueSwarm } from "./revenue/swarm-runner.mjs";
+import { runFullBackup } from "./backup-runner.mjs";
+import { runSystemIntegritySync } from "./system-integrity.mjs";
+import { threatMonitor } from "./security/threat-monitor.mjs";
+import { regulatoryMonitor } from "./contingency/regulatory-monitor.mjs";
+import { NetworkGuard } from "./security/NetworkGuard.mjs";
+import { runDoomsdayExport } from "./real/ledger/doomsday-export.mjs";
+import { enforceOwnerDirective } from "./owner-directive.mjs";
+import { AutonomousAgentUpgrader } from "./agents/autonomous-upgrader.mjs";
+import { StrategicScout } from "./agents/strategic-scout.mjs";
+import { MissionOrchestrator } from "./swarm/mission-orchestrator.mjs";
+import { startSupervisor as startSwarmSupervisor } from "./swarm/supervisor.mjs";
+import { recordAudit } from "./audit-trail.mjs";
+import fsSync from "node:fs";
+import {
+	normalizeIntervalMs,
+	loadAutonomousConfig,
+	resolveRuntimeConfig,
+} from "./autonomous-config.mjs";
+import { SelfHealer } from "./autonomous-healer.mjs";
+import { ExternalPayerEnforcer } from "./finance/ExternalPayerEnforcer.mjs";
+import { ReplenishmentProtocol } from "./finance/ReplenishmentProtocol.mjs";
+import { LocalSwarmStore } from "./local-store.mjs";
+
+const healer = new SelfHealer();
+const enforcer = new ExternalPayerEnforcer();
+const replenisher = new ReplenishmentProtocol();
+
+// Initialize modules
+(async () => { 
+    try { 
+        await enforcer.init();
+        await replenisher.init();
+    } catch (e) { 
+        console.error("Module init failed", e); 
+    } 
+})();
+
+async function runNodeScript(scriptRelPath, scriptArgs, { env }) {
+	return new Promise((resolve) => {
+		const child = spawn(process.execPath, [scriptRelPath, ...scriptArgs], {
+			cwd: process.cwd(),
+			env: { ...process.env, ...(env ?? {}) },
+			stdio: ["ignore", "pipe", "pipe"],
+		});
+
+		let stdout = "";
+		let stderr = "";
+		child.stdout.on("data", (d) => {
+			stdout += String(d);
+		});
+		child.stderr.on("data", (d) => {
+			stderr += String(d);
+		});
+		child.on("close", async (code) => {
+			const lines = `${stdout}\n${stderr}`
+				.split(/\r?\n/)
+				.map((l) => l.trim())
+				.filter(Boolean);
+			let lastJson = null;
+			for (let i = lines.length - 1; i >= 0; i--) {
+				try {
+					lastJson = JSON.parse(lines[i]);
+					break;
+				} catch {}
+			}
+
+            // AUTONOMOUS SELF-HEALING HOOK
+            if (code !== 0) {
+                const combinedError = `${stdout}\n${stderr}`;
+                const healed = await healer.attemptHeal(combinedError);
+                if (healed) {
+                    // In a real loop, we might retry immediately.
+                    // For now, we log the heal so the next cycle succeeds.
+                    stderr += "\n[Daemon] SelfHealer applied a fix based on this error.";
+                }
+            }
+
+			resolve({ code: Number(code ?? 1), stdout, stderr, lastJson });
+		});
+	});
+}
+function parseArgs(argv) {
+	const args = {};
+	for (let i = 2; i < argv.length; i++) {
+		const a = argv[i];
+		if (!a.startsWith("--")) continue;
+		const key = a.slice(2);
+		const next = argv[i + 1];
+		if (!next || next.startsWith("--")) {
+			args[key] = true;
+		} else {
+			args[key] = next;
+			i++;
+		}
+	}
+	return args;
+}
+
+function nowIso() {
+	return new Date().toISOString();
+}
+
+function envIsTrue(value, fallback = "true") {
+	return String(value ?? fallback).toLowerCase() === "true";
+}
+
+function isPlaceholderValue(value) {
+	if (value === null || value === undefined) return true;
+	const v = String(value).trim();
+	if (!v) return true;
+	if (/^\s*<\s*YOUR_[A-Z0-9_]+\s*>\s*$/i.test(v)) return true;
+	if (/^\s*YOUR_[A-Z0-9_]+\s*$/i.test(v)) return true;
+	if (/^\s*(REPLACE_ME|CHANGEME|TODO)\s*$/i.test(v)) return true;
+	return false;
+}
+
+function requireRealEnv(name) {
+	const v = process.env[name];
+	if (isPlaceholderValue(v))
+		throw new Error(
+			`LIVE MODE NOT GUARANTEED (missing/placeholder env: ${name})`,
+		);
+	return String(v);
+}
+
+function isUnsafePath(p) {
+	const abs = path.resolve(process.cwd(), String(p ?? ""));
+	const lower = abs.toLowerCase();
+	const tmp = os.tmpdir().toLowerCase();
+	if (tmp && lower.startsWith(tmp)) return true;
+	const needles = [
+		"\\test\\",
+		"/test/",
+		"\\mock\\",
+		"/mock/",
+		"\\tmp\\",
+		"/tmp/",
+		"\\temp\\",
+		"/temp/",
+	];
+	return needles.some((n) => lower.includes(n));
+}
+
+function enforceSwarmLiveHardInvariant({ component, action }) {
+	if (!envIsTrue(process.env.SWARM_LIVE, "false")) {
+		throw new Error(`LIVE MODE NOT GUARANTEED (${component} ${action})`);
+	}
+	return { forced: false };
+}
+
+function isMoneyMovingTasks(cfg) {
+	const t = cfg?.tasks ?? {};
+	return (
+		t.createPayoutBatches === true ||
+		t.autoApprovePayoutBatches === true ||
+		t.autoSubmitPayPalPayoutBatches === true ||
+		t.autoExportPayoneerPayoutBatches === true ||
+		t.syncPayPalLedgerBatches === true
+	);
+}
+
+function verifyNoSandboxPayPal() {
+	const paypalMode = String(process.env.PAYPAL_MODE ?? "live").toLowerCase();
+	const paypalBase = String(
+		process.env.PAYPAL_API_BASE_URL ?? "",
+	).toLowerCase();
+	if (paypalMode === "sandbox" || paypalBase.includes("sandbox.paypal.com")) {
+		throw new Error("LIVE MODE NOT GUARANTEED (PayPal sandbox configured)");
+	}
+}
+
+function isPayPalPayoutSendEnabled() {
+	const override =
+		process.env.AUTONOMOUS_ALLOW_PAYPAL_PAYOUTS ??
+		process.env.BASE44_ALLOW_PAYPAL_PAYOUTS ??
+		null;
+	if (
+		override !== null &&
+		override !== undefined &&
+		String(override).trim() !== ""
+	)
+		return String(override).toLowerCase() === "true";
+
+	const approved =
+		String(
+			process.env.PAYPAL_PPP2_APPROVED ?? process.env.PPP2_APPROVED ?? "false",
+		).toLowerCase() === "true";
+	const enableSend =
+		String(
+			process.env.PAYPAL_PPP2_ENABLE_SEND ??
+				process.env.PPP2_ENABLE_SEND ??
+				"false",
+		).toLowerCase() === "true";
+	return approved && enableSend;
+}
+
+function hasAllowedPayPalRecipientsConfigured() {
+	const csv =
+		process.env.AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS ??
+		process.env.BASE44_ALLOWED_PAYPAL_RECIPIENTS ??
+		process.env.PAYOUT_ALLOWED_PAYPAL_RECIPIENTS ??
+		null;
+	if (
+		csv !== null &&
+		csv !== undefined &&
+		String(csv).trim() &&
+		!isPlaceholderValue(csv)
+	)
+		return true;
+
+	const json =
+		process.env.AUTONOMOUS_ALLOWED_PAYOUT_RECIPIENTS_JSON ??
+		process.env.BASE44_ALLOWED_PAYOUT_RECIPIENTS_JSON ??
+		null;
+	if (
+		json === null ||
+		json === undefined ||
+		!String(json).trim() ||
+		isPlaceholderValue(json)
+	)
+		return false;
+	try {
+		const parsed = JSON.parse(String(json));
+		if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
+			return false;
+		const paypal =
+			parsed.paypal ?? parsed.paypal_email ?? parsed.paypalEmail ?? [];
+		return Array.isArray(paypal) && paypal.length > 0;
+	} catch {
+		return false;
+	}
+}
+
+function validateDaemonLiveModeOrThrow(cfg) {
+	if (!envIsTrue(process.env.SWARM_LIVE, "false"))
+		throw new Error("LIVE MODE NOT GUARANTEED (SWARM_LIVE not true)");
+	// if (cfg?.offline?.enabled === true)
+	// 	throw new Error("LIVE MODE NOT GUARANTEED (offline enabled)");
+	if (cfg?.payout?.dryRun === true)
+		throw new Error("LIVE MODE NOT GUARANTEED (dry-run enabled)");
+	requireRealEnv("BASE44_APP_ID");
+	requireRealEnv("BASE44_SERVICE_TOKEN");
+
+	if (
+		cfg?.tasks?.createPayoutBatches === true ||
+		cfg?.tasks?.autoApprovePayoutBatches === true ||
+		cfg?.tasks?.autoSubmitPayPalPayoutBatches === true ||
+		cfg?.tasks?.autoExportPayoneerPayoutBatches === true ||
+		cfg?.tasks?.syncPayPalLedgerBatches === true
+	) {
+		if (!envIsTrue(process.env.BASE44_ENABLE_PAYOUT_LEDGER_WRITE, "false")) {
+			throw new Error(
+				"LIVE MODE NOT GUARANTEED (BASE44_ENABLE_PAYOUT_LEDGER_WRITE not true)",
+			);
+		}
+	}
+
+	if (
+		cfg?.tasks?.autoExportPayoneerPayoutBatches === true &&
+		isUnsafePath(cfg?.payout?.export?.payoneerOutDir ?? "")
+	) {
+		throw new Error("LIVE MODE NOT GUARANTEED (unsafe Payoneer out dir)");
+	}
+	if (
+		cfg?.tasks?.autoSubmitPayPalPayoutBatches === true ||
+		cfg?.tasks?.syncPayPalLedgerBatches === true
+	) {
+		verifyNoSandboxPayPal();
+		requireRealEnv("PAYPAL_CLIENT_ID");
+		requireRealEnv("PAYPAL_CLIENT_SECRET");
+	}
+	if (
+		cfg?.tasks?.autoSubmitPayPalPayoutBatches === true &&
+		!isPayPalPayoutSendEnabled()
+	) {
+		throw new Error(
+			"LIVE MODE NOT GUARANTEED (PayPal payouts not enabled; set PAYPAL_PPP2_APPROVED=true and PAYPAL_PPP2_ENABLE_SEND=true)",
+		);
+	}
+	if (
+		cfg?.tasks?.autoSubmitPayPalPayoutBatches === true &&
+		!hasAllowedPayPalRecipientsConfigured()
+	) {
+		throw new Error(
+			"LIVE MODE NOT GUARANTEED (missing owner allowlist; set AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS or AUTONOMOUS_ALLOWED_PAYOUT_RECIPIENTS_JSON)",
+		);
+	}
+}
+
+function sleep(ms) {
+	return new Promise((r) => setTimeout(r, ms));
+}
+
+async function fileExists(filePath) {
+	try {
+		await fs.stat(filePath);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+function isWithinWindowUtc({ startHourUtc, endHourUtc }, at = new Date()) {
+	const start = Number(startHourUtc ?? 0);
+	const end = Number(endHourUtc ?? 0);
+	if (!Number.isFinite(start) || !Number.isFinite(end)) return true;
+	const s = Math.floor(start);
+	const e = Math.floor(end);
+	if (s === e) return true;
+	const h = at.getUTCHours();
+	if (s < e) return h >= s && h < e;
+	return h >= s || h < e;
+}
+
+async function readJsonFile(filePath, fallback) {
+	try {
+		const txt = await fs.readFile(filePath, "utf8");
+		const parsed = JSON.parse(String(txt));
+		return parsed && typeof parsed === "object" ? parsed : fallback;
+	} catch {
+		return fallback;
+	}
+}
+
+async function atomicWriteJson(filePath, value) {
+	const dir = path.dirname(filePath);
+	await fs.mkdir(dir, { recursive: true });
+	const tmp = `${filePath}.${process.pid}.tmp`;
+	const text = `${JSON.stringify(value)}\n`;
+	await fs.writeFile(tmp, text, "utf8");
+	try {
+		await fs.rename(tmp, filePath);
+	} catch {
+		await fs.copyFile(tmp, filePath);
+		await fs.unlink(tmp).catch(() => {});
+	}
+}
+
+async function maybeRunStrategicScouting(cfg, state) {
+	// removed duplicate definition; see later consolidated version
+
+async function maybeRunStrategicScouting(cfg, state) {
+  const enabled = cfg?.strategicScouting?.enabled !== false;
+  if (!enabled) return { ok: true, skipped: true, reason: "disabled" };
+  
+  const nowMs = Date.now();
+  const lastAt = Number(state.lastScoutAt ?? 0) || 0;
+  const intervalMs = Number(cfg?.strategicScouting?.intervalMs ?? 14400000) || 14400000; // 4 hours
+
+  if (nowMs - lastAt < intervalMs) {
+    return { ok: true, skipped: true, reason: "interval" };
+  }
+
+  try {
+    const scout = new StrategicScout();
+    const proposal = await scout.runCycle();
+    state.lastScoutAt = nowMs;
+    
+    if (proposal) {
+        const filename = `proposal_${Date.now()}.json`;
+        const filepath = path.resolve(process.cwd(), 'exports', 'proposals', filename);
+        await atomicWriteJson(filepath, proposal);
+        return { ok: true, proposalPath: filepath };
+    }
+    return { ok: true, found: false };
+  } catch (e) {
+    return { ok: false, error: e?.message ?? String(e) };
+  }
+}
+
+async function maybeRunAutonomousOptimization(cfg, state) {
+	const enabled = cfg?.selfOptimization?.enabled !== false;
+	if (!enabled) return { ok: true, skipped: true, reason: "disabled" };
+	if (cfg?.offline?.enabled === true)
+		return { ok: true, skipped: true, reason: "offline" };
+	const nowMs = Date.now();
+	const lastAt = Number(state.lastFusionAt ?? 0) || 0;
+	const intervalMs =
+		Number(cfg?.selfOptimization?.intervalMs ?? 900000) || 900000;
+	if (nowMs - lastAt < intervalMs) {
+		return {
+			ok: true,
+			skipped: true,
+			reason: "interval",
+			nextInMs: Math.max(0, intervalMs - (nowMs - lastAt)),
+		};
+	}
+	if (state.optimizing === true)
+		return { ok: true, skipped: true, reason: "busy" };
+	state.optimizing = true;
+	try {
+		const upgrader = new AutonomousAgentUpgrader();
+		const fusion = await upgrader.runLazyArkFusion();
+		state.lastFusionAt = nowMs;
+		return { ok: true, fusion };
+	} catch (e) {
+		return { ok: false, error: e?.message ?? String(e) };
+	} finally {
+		state.optimizing = false;
+	}
+}
+async function withTempEnv(pairs, fn) {
+	const prev = {};
+	for (const [k, v] of Object.entries(pairs ?? {})) {
+		prev[k] = process.env[k];
+		if (v === null || v === undefined) {
+			delete process.env[k];
+		} else {
+			process.env[k] = String(v);
+		}
+	}
+	try {
+		return await fn();
+	} finally {
+		for (const [k, v] of Object.entries(prev)) {
+			if (v === null || v === undefined) delete process.env[k];
+			else process.env[k] = v;
+		}
+	}
+}
+
+function parseJsonMaybe(value) {
+	if (value === null || value === undefined) return null;
+	if (typeof value === "object") return value;
+	const s = String(value).trim();
+	if (!s) return null;
+	try {
+		return JSON.parse(s);
+	} catch {
+		return null;
+	}
+}
+
+function getKnowledgeGraphFromEnv() {
+	const graph = parseJsonMaybe(process.env.KNOWLEDGE_GRAPH) ?? {
+		nodes: [
+			{ id: "policy:payout_route", type: "policy", value: "DIRECT_TO_OWNER" },
+			{ id: "policy:recipient_allowlist", type: "policy", value: "OWNER_ONLY" },
+			{
+				id: "consensus:roles",
+				type: "consensus",
+				value: ["finance", "compliance"],
+			},
+		],
+		edges: [],
+		constraints: [
+			{ field: "payout_route", operator: "equals", value: "DIRECT_TO_OWNER" },
+			{ field: "recipient_policy", operator: "equals", value: "OWNER_ONLY" },
+		],
+		consensus: {
+			rolesRequired: ["finance", "compliance"],
+			minApprovals: 2,
+			timeoutMs: 300000,
+		},
+	};
+	return graph;
+}
+
+async function startNetworkGuardIfLive() {
+	if (String(process.env.SWARM_LIVE || "false").toLowerCase() !== "true")
+		return { started: false };
+	const guard = new NetworkGuard({
+		intervalMs: Number(process.env.NETWORK_GUARD_INTERVAL_MS || 30000) || 30000,
+	});
+	await guard.start();
+	return { started: true };
+}
+
+async function startSwarmSupervisorIfEnabled(cfg, state) {
+	const enabled = envIsTrue(process.env.SWARM_SUPERVISOR_ENABLED, "true");
+	if (!enabled) return { started: false, skipped: true, reason: "disabled" };
+	if (state.supervisorStarted === true) return { started: true, already: true };
+	const envInterval = Number(process.env.SWARM_SUPERVISOR_INTERVAL_MS ?? 60000);
+	const envMinAgents = Number(process.env.SWARM_MIN_ACTIVE_AGENTS ?? 5);
+	const intervalMs = Number.isFinite(cfg?.supervisor?.intervalMs)
+		? cfg.supervisor.intervalMs
+		: normalizeIntervalMs(envInterval);
+	const minActive = Number.isFinite(cfg?.supervisor?.minAgents)
+		? cfg.supervisor.minAgents
+		: Number.isFinite(envMinAgents)
+			? envMinAgents
+			: 5;
+	// Ensure agents registry exists; if missing or empty, sync from Base44
+	try {
+		const swarmDir = path.resolve("data/swarm");
+		if (!fsSync.existsSync(swarmDir)) fsSync.mkdirSync(swarmDir, { recursive: true });
+		const swarmFile = path.join(swarmDir, "agents.json");
+		let needSync = true;
+		if (fsSync.existsSync(swarmFile)) {
+			try {
+				const txt = fsSync.readFileSync(swarmFile, "utf8");
+				const json = JSON.parse(txt);
+				const agents = Array.isArray(json?.agents) ? json.agents : [];
+				needSync = agents.length === 0;
+			} catch {
+				needSync = true;
+			}
+		}
+		if (needSync) {
+			const res = spawn("node", ["scripts/sync-base44-agents.mjs"], {
+				cwd: process.cwd(),
+				stdio: ["ignore", "inherit", "inherit"],
+			});
+			await new Promise((resolve) => res.on("exit", resolve));
+			try {
+				const baseFile = path.resolve("data/base44/agents.json");
+				if (fsSync.existsSync(baseFile)) {
+					const raw = JSON.parse(fsSync.readFileSync(baseFile, "utf8"));
+					const mapped = (Array.isArray(raw) ? raw : []).map((a) => ({
+						id: a?.id ?? a?.agent_id ?? `base44_${Date.now()}`,
+						name: a?.name ?? a?.title ?? "agent",
+						role: a?.swarm_role ?? a?.category ?? "worker",
+						status: a?.status ?? "ACTIVE",
+						metadata: a,
+					}));
+					fsSync.writeFileSync(
+						swarmFile,
+						JSON.stringify({ agents: mapped }, null, 2),
+					);
+				}
+			} catch {}
+		}
+	} catch {}
+	await startSwarmSupervisor({ intervalMs, minActive }).catch(() => {});
+	state.supervisorStarted = true;
+	return { started: true, intervalMs, minActive };
+}
+
+function getPolicyConfigFromEnv() {
+	const authz = parseJsonMaybe(process.env.AUTHORIZATION_POLICY) ?? {};
+	const oblig = parseJsonMaybe(process.env.OBLIGATION_POLICY) ?? {};
+	return { authz, oblig };
+}
+
+function getConsensusSignalsFromEnv() {
+	const signals = parseJsonMaybe(process.env.CONSENSUS_SIGNALS) ?? {
+		approvals: [],
+	};
+	return signals;
+}
+
+function constraintSatisfied(graph, assertion) {
+	const list = Array.isArray(graph?.constraints) ? graph.constraints : [];
+	for (const c of list) {
+		if (
+			c?.field &&
+			c?.operator &&
+			c?.value !== null &&
+			c?.value !== undefined
+		) {
+			const v = assertion?.[c.field];
+			if (c.operator === "equals" && v !== c.value) return false;
+			if (c.operator === "not_equals" && v === c.value) return false;
+			if (c.operator === "in" && Array.isArray(c.value) && !c.value.includes(v))
+				return false;
+			if (
+				c.operator === "not_in" &&
+				Array.isArray(c.value) &&
+				c.value.includes(v)
+			)
+				return false;
+		}
+	}
+	return true;
+}
+
+function evaluatePolicies(action, context, policies) {
+	const authz = policies?.authz ?? {};
+	const oblig = policies?.oblig ?? {};
+	const role = String(context?.role ?? "").toLowerCase();
+	const actionKey = String(action?.type ?? "").toLowerCase();
+	const authzRules = authz[actionKey] ?? authz["*"] ?? {};
+	if (authzRules?.deny === true) return { ok: false, reason: "denied" };
+	if (
+		Array.isArray(authzRules?.allowRoles) &&
+		authzRules.allowRoles.length > 0 &&
+		!authzRules.allowRoles.includes(role)
+	) {
+		return { ok: false, reason: "role_not_allowed" };
+	}
+	const obligations = oblig[actionKey] ?? [];
+	return { ok: true, obligations };
+}
+
+async function queueApproval(base44, change) {
+	const txCfg = getTransactionLogConfigFromEnv();
+	const txEntity = base44.asServiceRole.entities[txCfg.entityName];
+	const created = await txEntity.create({
+		[txCfg.fieldMap.transactionType]: "APPROVAL_REQUEST",
+		[txCfg.fieldMap.amount]: 0,
+		[txCfg.fieldMap.description]: change?.description ?? "change",
+		[txCfg.fieldMap.transactionDate]: nowIso(),
+		[txCfg.fieldMap.category]: "approval",
+		[txCfg.fieldMap.paymentMethod]: "system",
+		[txCfg.fieldMap.referenceId]: `approval:${Date.now()}`,
+		[txCfg.fieldMap.status]: "pending",
+		change,
+	});
+	const filePath = path.resolve(
+		process.cwd(),
+		"exports",
+		"approvals",
+		`approval_${Date.now()}.json`,
+	);
+	await atomicWriteJson(filePath, {
+		at: nowIso(),
+		change,
+		id: created?.id ?? null,
+	}).catch(() => {});
+	return { id: created?.id ?? null, filePath };
+}
+
+function assertPayoutRoutingConstraints(cfg, graph) {
+	const mustRoute =
+		graph?.constraints?.find((c) => c.field === "payout_route")?.value ??
+		"DIRECT_TO_OWNER";
+	const routeOk = String(mustRoute) === "DIRECT_TO_OWNER";
+	const noPlatformWallet =
+		envIsTrue(process.env.NO_PLATFORM_WALLET, "false") === true;
+	const ownerPaypal = process.env.OWNER_PAYPAL_EMAIL;
+	const ownerBank =
+		process.env.OWNER_BANK_IBAN ?? process.env.OWNER_BANK_ACCOUNT ?? null;
+	const ownerSinkConfigured =
+		!isPlaceholderValue(ownerPaypal) || !isPlaceholderValue(ownerBank);
+	const allowlistOk = hasAllowedPayPalRecipientsConfigured();
+	if (!routeOk || !noPlatformWallet || !ownerSinkConfigured || !allowlistOk) {
+		const reason = !routeOk
+			? "route_policy_invalid"
+			: !noPlatformWallet
+				? "NO_PLATFORM_WALLET_false"
+				: !ownerSinkConfigured
+					? "owner_sink_missing"
+					: "recipient_allowlist_missing";
+		return { ok: false, reason };
+	}
+	return { ok: true };
+}
+
+function assertRecipientValidationConstraints(cfg, graph) {
+	const policy =
+		graph?.constraints?.find((c) => c.field === "recipient_policy")?.value ??
+		"OWNER_ONLY";
+	const ownerOnly = String(policy) === "OWNER_ONLY";
+	const allowlistOk = hasAllowedPayPalRecipientsConfigured();
+	if (!ownerOnly || !allowlistOk) {
+		return {
+			ok: false,
+			reason: !ownerOnly
+				? "recipient_policy_invalid"
+				: "recipient_allowlist_missing",
+		};
+	}
+	return { ok: true };
+}
+
+function assertMultiAgentConsensusGuard(cfg, graph) {
+	const rolesRequired = Array.isArray(graph?.consensus?.rolesRequired)
+		? graph.consensus.rolesRequired
+		: ["finance", "compliance"];
+	const minApprovals = Number(graph?.consensus?.minApprovals ?? 2);
+	const signals = getConsensusSignalsFromEnv();
+	const approvals = Array.isArray(signals?.approvals) ? signals.approvals : [];
+	const hasAllRoles = rolesRequired.every((r) => approvals.includes(r));
+	const countOk = approvals.length >= minApprovals;
+	if (!hasAllRoles || !countOk) {
+		return {
+			ok: false,
+			reason: !hasAllRoles
+				? "consensus_roles_missing"
+				: "consensus_count_insufficient",
+			required: rolesRequired,
+			approvals,
+		};
+	}
+	return { ok: true };
+}
+
+async function runNeuroSymbolicCycle(cfg, state) {
+	const graph = getKnowledgeGraphFromEnv();
+	const policies = getPolicyConfigFromEnv();
+	const perception = {
+		health: await checkHealthOnce(cfg),
+		regulatory: await regulatoryMonitor.scanForThreats(),
+		freeze: isFreezeActive(state),
+	};
+	const action = { type: "execute_tick" };
+	const context = { role: "system" };
+	const pol = evaluatePolicies(action, context, policies);
+	if (!pol.ok) return { ok: false, policyDenied: pol.reason };
+	const payoutOk = assertPayoutRoutingConstraints(cfg, graph);
+	if (payoutOk.ok !== true) {
+		try {
+			const base44 = buildBase44ServiceClient({
+				mode: cfg.offline.enabled ? "offline" : "auto",
+			});
+			await queueApproval(base44, {
+				description: "Payout routing constraint violation",
+				detail: payoutOk,
+			});
+		} catch {}
+		return { ok: false, constraintViolation: true, detail: payoutOk };
+	}
+	const recipientOk = assertRecipientValidationConstraints(cfg, graph);
+	if (recipientOk.ok !== true) {
+		try {
+			const base44 = buildBase44ServiceClient({
+				mode: cfg.offline.enabled ? "offline" : "auto",
+			});
+			await queueApproval(base44, {
+				description: "Recipient validation constraint violation",
+				detail: recipientOk,
+			});
+		} catch {}
+		return { ok: false, constraintViolation: true, detail: recipientOk };
+	}
+	const consensusOk = assertMultiAgentConsensusGuard(cfg, graph);
+	if (consensusOk.ok !== true) {
+		try {
+			const base44 = buildBase44ServiceClient({
+				mode: cfg.offline.enabled ? "offline" : "auto",
+			});
+			await queueApproval(base44, {
+				description: "Consensus guard not satisfied",
+				detail: consensusOk,
+			});
+		} catch {}
+		return { ok: false, consensusViolation: true, detail: consensusOk };
+	}
+	const assertion = {
+		environment: envIsTrue(process.env.SWARM_LIVE, "false")
+			? "live"
+			: "not_live",
+	};
+	const ok = constraintSatisfied(graph, assertion);
+	if (!ok) {
+		try {
+			const base44 = buildBase44ServiceClient({
+				mode: cfg.offline.enabled ? "offline" : "auto",
+			});
+			await queueApproval(base44, {
+				description: "Constraint violation on execute_tick",
+				assertion,
+			});
+		} catch {}
+		return { ok: false, constraintViolation: true };
+	}
+	return { ok: true, perception, obligations: pol.obligations };
+}
+
+async function maybeRunMissionOrchestration(cfg, state) {
+	const enabled = cfg?.missionOrchestration?.enabled !== false;
+	if (!enabled) return { ok: true, skipped: true, reason: "disabled" };
+
+	const nowMs = Date.now();
+	const lastAt = Number(state.lastOrchestrationAt ?? 0) || 0;
+	const intervalMs =
+		Number(cfg?.missionOrchestration?.intervalMs ?? 600000) || 600000; // 10 mins
+
+	if (nowMs - lastAt < intervalMs) {
+		return { ok: true, skipped: true, reason: "interval" };
+	}
+
+	try {
+		// Read proposals from exports/proposals (generated by Scout)
+		const proposalsDir = path.resolve(process.cwd(), "exports", "proposals");
+		await fs.mkdir(proposalsDir, { recursive: true });
+		const files = await fs.readdir(proposalsDir);
+		const proposals = [];
+		for (const f of files) {
+			if (!f.endsWith(".json")) continue;
+			try {
+				const data = await fs.readFile(path.join(proposalsDir, f), "utf8");
+				proposals.push(JSON.parse(data));
+			} catch {}
+		}
+
+		if (proposals.length === 0) return { ok: true, skipped: true, reason: "no_proposals" };
+
+		const orchestrator = new MissionOrchestrator();
+		const results = await orchestrator.processProposals(proposals);
+		state.lastOrchestrationAt = nowMs;
+
+		// Cleanup processed proposals
+		// (In a real system, we might archive them instead of deleting)
+		for (const f of files) {
+			await fs.unlink(path.join(proposalsDir, f)).catch(() => {});
+		}
+
+		return { ok: true, missionsExecuted: results.length };
+	} catch (e) {
+		return { ok: false, error: e?.message ?? String(e) };
+	}
+}
+
+async function runPDCAOnce(cfg, state) {
+	const plan = {
+		goals: ["produce_real_value", "enforce_policies", "avoid_freeze"],
+	};
+	const ns = await runNeuroSymbolicCycle(cfg, state);
+	if (ns.ok !== true)
+		return { ok: false, at: nowIso(), pdca: { plan, result: ns } };
+
+	await maybeRunStrategicScouting(cfg, state);
+	await maybeRunMissionOrchestration(cfg, state);
+
+	const out = await runTick(cfg, state);
+	const check = {
+		ok: out.ok,
+		failures: Array.isArray(out.summary?.failures) ? out.summary.failures : [],
+	};
+	const act = {};
+	if (!check.ok) {
+		if (check.failures.includes("mission_health"))
+			act.missionHealthEnforce = true;
+		if (check.failures.includes("deadman")) act.backoffIncrease = true;
+	}
+	return { ok: out.ok, at: out.at, out, pdca: { plan, check, act } };
+}
+function getTransactionLogConfigFromEnv() {
+	const entityName =
+		process.env.BASE44_LEDGER_TRANSACTION_LOG_ENTITY ?? "TransactionLog";
+	const mapFromEnv = parseJsonMaybe(
+		process.env.BASE44_LEDGER_TRANSACTION_LOG_FIELD_MAP,
+	);
+	const fieldMap = mapFromEnv ?? {
+		transactionType: "transaction_type",
+		amount: "amount",
+		description: "description",
+		transactionDate: "transaction_date",
+		category: "category",
+		paymentMethod: "payment_method",
+		referenceId: "reference_id",
+		status: "status",
+		payoutBatchId: "payout_batch_id",
+		payoutItemId: "payout_item_id",
+	};
+	return { entityName, fieldMap };
+}
+
+// removed duplicate runNodeScript; consolidated earlier version includes self-healing
+
+function inferOfflineRetry(errText) {
+	const t = String(errText ?? "");
+	const needles = [
+		"ENOTFOUND",
+		"ECONNREFUSED",
+		"ETIMEDOUT",
+		"fetch failed",
+		"network",
+		"socket hang up",
+		"Missing required env var: BASE44_APP_ID",
+		"Missing required env var: BASE44_SERVICE_TOKEN",
+		"Base44 client not configured",
+	];
+	return needles.some((n) => t.includes(n));
+}
+
+async function runEmit(commandArgs, { offline, offlineStorePath }) {
+	const env = {};
+	const args = [];
+
+	if (offline) {
+		env.BASE44_OFFLINE = "true";
+		env.BASE44_OFFLINE_STORE_PATH = String(offlineStorePath);
+		args.push("--offline", "--offline-store", String(offlineStorePath));
+	}
+
+	args.push(...commandArgs);
+	const res = await runNodeScript("./src/emit-revenue-events.mjs", args, {
+		env,
+	});
+	if (res.code === 0 && res.lastJson) return { ok: true, result: res.lastJson };
+
+	const errJson =
+		res.lastJson && res.lastJson.ok === false ? res.lastJson : null;
+	const msg = errJson?.error ?? res.stderr ?? res.stdout ?? "";
+	return {
+		ok: false,
+		error: String(msg).trim() || "emit command failed",
+		raw: { code: res.code, lastJson: res.lastJson },
+	};
+}
+
+async function runEmitWithOfflineFallback(commandArgs, cfg) {
+	const primary = await runEmit(commandArgs, {
+		offline: cfg.offline.enabled,
+		offlineStorePath: cfg.offline.storePath,
+	});
+	if (primary.ok)
+		return { mode: cfg.offline.enabled ? "offline" : "online", ...primary };
+
+	if (
+		!cfg.offline.enabled &&
+		cfg.offline.auto &&
+		inferOfflineRetry(primary.error)
+	) {
+		const fallback = await runEmit(commandArgs, {
+			offline: true,
+			offlineStorePath: cfg.offline.storePath,
+		});
+		return {
+			mode: fallback.ok ? "offline" : "online",
+			...fallback,
+			fallbackAttempted: true,
+			primaryError: primary.error,
+		};
+	}
+
+	return { mode: cfg.offline.enabled ? "offline" : "auto", ...primary };
+}
+
+async function runAutoSettleOwner(cfg) {
+	const args = [];
+	if (cfg.payout?.dryRun) args.push("--dry-run");
+	const env = {};
+	env.BASE44_OFFLINE = "true";
+	env.BASE44_OFFLINE_STORE_PATH = String(
+		cfg.offline?.storePath ?? ".autonomous-offline-store.json",
+	);
+	const res = await runNodeScript("./scripts/auto-settle-owner.mjs", args, {
+		env,
+	});
+	if (res.code === 0)
+		return { ok: true, resultPath: res.stdout.trim() || null };
+	const errJson =
+		res.lastJson && res.lastJson.ok === false ? res.lastJson : null;
+	const msg = errJson?.error ?? res.stderr ?? res.stdout ?? "";
+	return {
+		ok: false,
+		error: String(msg).trim() || "auto-settle-owner failed",
+		raw: { code: res.code, lastJson: res.lastJson },
+	};
+}
+
+async function runMonitorHealth(commandArgs, { offline, offlineStorePath }) {
+	const env = {};
+	const args = [];
+	if (offline) {
+		env.BASE44_OFFLINE = "true";
+		env.BASE44_OFFLINE_STORE_PATH = String(offlineStorePath);
+		args.push("--offline", "--offline-store", String(offlineStorePath));
+	}
+	env.BASE44_ENABLE_MISSION_HEALTH_WRITE = "true";
+	args.push(...commandArgs);
+	const res = await runNodeScript("./src/monitor-health.mjs", args, { env });
+	if (res.code === 0 && res.lastJson) return { ok: true, result: res.lastJson };
+
+	const errJson =
+		res.lastJson && res.lastJson.ok === false ? res.lastJson : null;
+	const msg = errJson?.error ?? res.stderr ?? res.stdout ?? "";
+	return {
+		ok: false,
+		error: String(msg).trim() || "monitor-health command failed",
+		raw: { code: res.code, lastJson: res.lastJson },
+	};
+}
+
+async function runMonitorHealthWithOfflineFallback(commandArgs, cfg) {
+	const primary = await runMonitorHealth(commandArgs, {
+		offline: cfg.offline.enabled,
+		offlineStorePath: cfg.offline.storePath,
+	});
+	if (primary.ok)
+		return { mode: cfg.offline.enabled ? "offline" : "online", ...primary };
+
+	if (
+		!cfg.offline.enabled &&
+		cfg.offline.auto &&
+		inferOfflineRetry(primary.error)
+	) {
+		const fallback = await runMonitorHealth(commandArgs, {
+			offline: true,
+			offlineStorePath: cfg.offline.storePath,
+		});
+		return {
+			mode: fallback.ok ? "offline" : "online",
+			...fallback,
+			fallbackAttempted: true,
+			primaryError: primary.error,
+		};
+	}
+
+	return { mode: cfg.offline.enabled ? "offline" : "online", ...primary };
+}
+
+// Global Local Store Instance
+const localStore = new LocalSwarmStore();
+
+async function checkHealthOnce(cfg) {
+	let mode = cfg.offline.enabled ? "offline" : "auto";
+    const useLocalStore = process.env.SWARM_MODE === "local";
+
+    if (useLocalStore) {
+        await localStore.init();
+        return {
+            at: nowIso(),
+            ok: true,
+            mode: "local",
+            details: { base44: "bypassed_local", paypal: "live_check_skipped" }
+        };
+    }
+
+	let paypalOk = false;
+	let paypalErr = null;
+	const wantPayPal = cfg.health?.requirePayPal === true;
+	if (!wantPayPal) {
+		paypalOk = true;
+		paypalErr = "skipped";
+	} else {
+		try {
+			const token = await getPayPalAccessToken();
+			paypalOk = !!token;
+			if (!token) paypalErr = "Missing token";
+		} catch (e) {
+			paypalOk = false;
+			paypalErr = e?.message ?? String(e);
+		}
+	}
+
+	let base44Ok = false;
+	let base44Err = null;
+	const base44Attempt = async () => {
+		const base44 = buildBase44ServiceClient({ mode });
+		const entityName = process.env.BASE44_HEALTH_PING_ENTITY ?? "RevenueEvent";
+		const entity = base44.asServiceRole.entities[entityName];
+		await entity.list("-created_date", 1, 0, ["id"]);
+	};
+
+	try {
+		await withTempEnv(
+			cfg.offline.enabled
+				? {
+						BASE44_OFFLINE: "true",
+						BASE44_OFFLINE_STORE_PATH: cfg.offline.storePath,
+					}
+				: {},
+			base44Attempt,
+		);
+		base44Ok = true;
+	} catch (e) {
+		base44Ok = false;
+		base44Err = e?.message ?? String(e);
+	}
+
+	if (
+		!base44Ok &&
+		!cfg.offline.enabled &&
+		cfg.offline.auto &&
+		inferOfflineRetry(base44Err)
+	) {
+		try {
+			mode = "offline";
+			await withTempEnv(
+				{
+					BASE44_OFFLINE: "true",
+					BASE44_OFFLINE_STORE_PATH: cfg.offline.storePath,
+				},
+				base44Attempt,
+			);
+			base44Ok = true;
+			base44Err = null;
+		} catch (e2) {
+			base44Ok = false;
+			base44Err = e2?.message ?? String(e2);
+		}
+	}
+
+	const payload = {
+		at: nowIso(),
+		ok: paypalOk && base44Ok,
+		paypalOk,
+		base44Ok,
+		details: {
+			paypal: paypalOk ? "ok" : paypalErr,
+			base44: base44Ok ? "ok" : base44Err,
+			base44Mode: mode,
+		},
+	};
+
+	return payload;
+}
+
+async function maybeAlertOnFailure(cfg, health, state) {
+	if (!cfg.alerts.enabled) return;
+	if (health.ok) return;
+	const now = Date.now();
+	if (now - state.lastAlertAt < cfg.alerts.cooldownMs) return;
+	state.lastAlertAt = now;
+
+	try {
+		const mode = cfg.offline.enabled ? "offline" : "auto";
+		await withTempEnv(
+			cfg.offline.enabled
+				? {
+						BASE44_OFFLINE: "true",
+						BASE44_OFFLINE_STORE_PATH: cfg.offline.storePath,
+					}
+				: {},
+			async () => {
+				const base44 = buildBase44ServiceClient({ mode });
+				await maybeSendAlert(base44, {
+					subject: "Swarm Autonomous Alert",
+					body: JSON.stringify(health, null, 2),
+				});
+			},
+		);
+	} catch {}
+}
+
+async function maybeAlertOnAutoApproval(cfg, summary, state) {
+	if (!cfg.alerts.enabled) return;
+	if (!summary || summary.ok === true) return;
+	const now = Date.now();
+	if (now - state.lastApprovalAlertAt < cfg.alerts.cooldownMs) return;
+	state.lastApprovalAlertAt = now;
+
+	try {
+		const mode = cfg.offline.enabled ? "offline" : "auto";
+		await withTempEnv(
+			cfg.offline.enabled
+				? {
+						BASE44_OFFLINE: "true",
+						BASE44_OFFLINE_STORE_PATH: cfg.offline.storePath,
+					}
+				: {},
+			async () => {
+				const base44 = buildBase44ServiceClient({ mode });
+				await maybeSendAlert(base44, {
+					subject: "Swarm Auto-Approval Needs Review",
+					body: JSON.stringify(summary, null, 2),
+				});
+			},
+		);
+	} catch {}
+}
+
+function getBatchId(rec) {
+	return rec?.batch_id ?? rec?.batchId ?? rec?.batch ?? null;
+}
+
+function getBatchAmount(rec) {
+	const v = rec?.total_amount ?? rec?.totalAmount ?? rec?.amount ?? null;
+	const n = Number(v);
+	return Number.isFinite(n) ? n : null;
+}
+
+function getBatchCreatedAtMs(rec) {
+	const v = rec?.created_date ?? rec?.createdAt ?? rec?.created_at ?? null;
+	const ms = Date.parse(String(v ?? ""));
+	return Number.isNaN(ms) ? null : ms;
+}
+
+function effectiveOk(result) {
+	if (!result || typeof result !== "object") return false;
+	if (result.ok !== true) return false;
+	const innerOk = result.result?.ok;
+	if (innerOk === false) return false;
+	return true;
+}
+
+function isFreezeActive(state) {
+	return state?.freeze?.active === true;
+}
+
+function freezeSkip(state, reason, extra = null) {
+	const base = {
+		ok: true,
+		skipped: true,
+		reason,
+		freeze: state?.freeze ?? { active: true },
+	};
+	if (!extra || typeof extra !== "object") return base;
+	return { ...base, ...extra };
+}
+
+function parseMaybeDateMs(value) {
+	const ms = Date.parse(String(value ?? ""));
+	return Number.isNaN(ms) ? null : ms;
+}
+
+function isSchemaNotFoundError(err) {
+	const msg = err?.message ?? String(err ?? "");
+	return (
+		msg.includes("Entity schema") && msg.toLowerCase().includes("not found")
+	);
+}
+
+async function deadmanFetchLastWebhook(base44) {
+	const entityName =
+		process.env.BASE44_PAYPAL_EVENT_ENTITY ?? "PayPalWebhookEvent";
+	const entity = base44.asServiceRole.entities[entityName];
+	const fields = ["id", "created_date", "created_at", "event_id", "event_type"];
+	let rows = [];
+	try {
+		rows = await entity.list("-created_date", 1, 0, fields);
+	} catch (e) {
+		if (isSchemaNotFoundError(e))
+			return { ok: true, unavailable: true, entityName };
+		return { ok: false, error: e?.message ?? String(e) };
+	}
+	const rec = Array.isArray(rows) && rows[0] ? rows[0] : null;
+	const at = rec?.created_at ?? rec?.created_date ?? null;
+	const atMs = parseMaybeDateMs(at);
+	return rec && atMs !== null && atMs !== undefined
+		? {
+				ok: true,
+				atMs,
+				atRaw: at,
+				eventId: rec?.event_id ?? null,
+				eventType: rec?.event_type ?? null,
+			}
+		: { ok: false };
+}
+
+async function deadmanFetchRecentMetrics(base44, limit = 25) {
+	const entityName = process.env.BASE44_PAYPAL_METRIC_ENTITY ?? "PayPalMetric";
+	const entity = base44.asServiceRole.entities[entityName];
+	const mapFromEnv = parseJsonMaybe(process.env.BASE44_PAYPAL_METRIC_FIELD_MAP);
+	const fieldMap = mapFromEnv ?? {
+		at: "at",
+		kind: "kind",
+		ok: "ok",
+		summary: "summary",
+	};
+	const fields = [
+		"id",
+		"created_date",
+		fieldMap.at,
+		fieldMap.kind,
+		fieldMap.ok,
+		fieldMap.summary,
+	].filter(Boolean);
+	let rows = [];
+	try {
+		rows = await entity.list(
+			"-created_date",
+			Math.max(1, Math.floor(Number(limit ?? 25))),
+			0,
+			fields,
+		);
+	} catch (e) {
+		if (isSchemaNotFoundError(e))
+			return { fieldMap, rows: [], unavailable: true, entityName };
+		return { fieldMap, rows: [], error: e?.message ?? String(e) };
+	}
+	return { fieldMap, rows: Array.isArray(rows) ? rows : [] };
+}
+
+function computeDeadmanViolations({ lastWebhook, metrics, cfg, nowMs }) {
+	const violations = [];
+	const thresholds = cfg.deadman?.thresholds ?? {};
+
+	if (lastWebhook?.unavailable === true) {
+	} else if (lastWebhook?.ok === true) {
+		const hoursSilent = (nowMs - lastWebhook.atMs) / (1000 * 60 * 60);
+		if (
+			Number.isFinite(hoursSilent) &&
+			hoursSilent > Number(thresholds.webhookSilenceHours ?? 4)
+		) {
+			violations.push({
+				type: "webhook_silence",
+				severity: "critical",
+				message: `No PayPal webhooks for ${hoursSilent.toFixed(2)} hours`,
+				lastWebhookAt: lastWebhook.atRaw,
+				lastWebhookEventId: lastWebhook.eventId ?? null,
+				lastWebhookEventType: lastWebhook.eventType ?? null,
+			});
+		}
+	} else {
+		violations.push({
+			type: "webhook_missing",
+			severity: "high",
+			message: "No PayPal webhooks observed",
+		});
+	}
+
+	const windowMinutes = Number(thresholds.metricWindowMinutes ?? 30);
+	const windowMs = Math.max(1, windowMinutes) * 60 * 1000;
+	const failureCountThreshold = Math.max(
+		1,
+		Math.floor(Number(thresholds.metricFailureCount ?? 3)),
+	);
+	const { fieldMap, rows } = metrics ?? {
+		fieldMap: { at: "at", kind: "kind", ok: "ok" },
+		rows: [],
+	};
+	const withinWindow = rows.filter((r) => {
+		const at = r?.[fieldMap.at] ?? r?.created_date ?? null;
+		const atMs = parseMaybeDateMs(at);
+		return atMs !== null && atMs !== undefined && nowMs - atMs <= windowMs;
+	});
+
+	let consecutiveFailures = 0;
+	for (const r of withinWindow) {
+		const ok = r?.[fieldMap.ok];
+		const isOk = ok === true || String(ok).toLowerCase() === "true";
+		if (isOk) break;
+		consecutiveFailures += 1;
+	}
+
+	if (consecutiveFailures >= failureCountThreshold) {
+		const kinds = withinWindow
+			.slice(0, consecutiveFailures)
+			.map((r) => r?.[fieldMap.kind] ?? null)
+			.filter(Boolean);
+		violations.push({
+			type: "paypal_metric_failures",
+			severity: "critical",
+			message: `${consecutiveFailures} consecutive PayPal metrics failures within ${windowMinutes} minutes`,
+			kinds,
+		});
+	}
+
+	const payoutFailureRatePercent =
+		thresholds.payoutFailureRatePercent !== null &&
+		thresholds.payoutFailureRatePercent !== undefined
+			? Number(thresholds.payoutFailureRatePercent)
+			: null;
+	const payoutFailureMinSamples = Math.max(
+		1,
+		Math.floor(Number(thresholds.payoutFailureMinSamples ?? 10)),
+	);
+	if (
+		Number.isFinite(payoutFailureRatePercent) &&
+		payoutFailureRatePercent > 0
+	) {
+		const payoutWindow = withinWindow.filter((r) => {
+			const kind = String(r?.[fieldMap.kind] ?? "").toLowerCase();
+			return kind.startsWith("payout_") || kind.startsWith("payout");
+		});
+		if (payoutWindow.length >= payoutFailureMinSamples) {
+			const failures = payoutWindow.filter((r) => {
+				const ok = r?.[fieldMap.ok];
+				return !(ok === true || String(ok).toLowerCase() === "true");
+			}).length;
+			const rate = failures / Math.max(1, payoutWindow.length);
+			if (rate >= payoutFailureRatePercent / 100) {
+				violations.push({
+					type: "paypal_payout_failure_rate",
+					severity: "critical",
+					message: `PayPal payout failure rate ${(rate * 100).toFixed(1)}% within ${windowMinutes} minutes`,
+					failureRatePercent: Number((rate * 100).toFixed(3)),
+					sampleCount: payoutWindow.length,
+					failureCount: failures,
+				});
+			}
+		}
+	}
+
+	return violations;
+}
+
+function sumAmount(records, fieldName) {
+	let sum = 0;
+	for (const r of Array.isArray(records) ? records : []) {
+		const n = Number(
+			r?.[fieldName] ?? r?.totalAmount ?? r?.total_amount ?? r?.amount ?? 0,
+		);
+		if (Number.isFinite(n)) sum += n;
+	}
+	return Number(sum.toFixed(2));
+}
+
+function maxIsoFrom(values) {
+	let bestMs = null;
+	for (const v of Array.isArray(values) ? values : []) {
+		const ms = Date.parse(String(v ?? ""));
+		if (Number.isNaN(ms)) continue;
+		if (bestMs === null || bestMs === undefined || ms > bestMs) bestMs = ms;
+	}
+	return bestMs === null || bestMs === undefined
+		? null
+		: new Date(bestMs).toISOString();
+}
+
+async function runRealityCheckOnce(cfg) {
+	const at = nowIso();
+
+	const payoutTruth = await runEmitWithOfflineFallback(
+		["--export-payout-truth", "--limit", "2000"],
+		cfg,
+	);
+	const truthRows = effectiveOk(payoutTruth)
+		? (payoutTruth.result?.rows ?? [])
+		: [];
+	const withProvider = truthRows.filter((r) => {
+		const id = r?.externalProviderId ?? r?.paypal_payout_batch_id ?? null;
+		return id !== null && id !== undefined && String(id) !== "NOT_SUBMITTED";
+	});
+	const withoutProvider = truthRows.filter((r) => {
+		const id = r?.externalProviderId ?? r?.paypal_payout_batch_id ?? null;
+		return id === null || id === undefined || String(id) === "NOT_SUBMITTED";
+	});
+
+	const approvedBatchesRes = await runEmitWithOfflineFallback(
+		["--report-approved-batches"],
+		cfg,
+	);
+	const approvedBatches = effectiveOk(approvedBatchesRes)
+		? (approvedBatchesRes.result?.batches ?? [])
+		: [];
+	const approvedPayPalMissingProviderId = approvedBatches.filter((b) => {
+		const notes = b?.notes ?? b?.Notes ?? null;
+		const recipientType = String(
+			notes?.recipient_type ?? notes?.recipientType ?? "",
+		).toLowerCase();
+		const providerId =
+			notes?.paypal_payout_batch_id ?? notes?.paypalPayoutBatchId ?? null;
+		if (
+			recipientType &&
+			recipientType !== "paypal" &&
+			recipientType !== "paypal_email"
+		)
+			return false;
+		return !providerId;
+	});
+
+	const stuckRes = await runEmitWithOfflineFallback(
+		["--report-stuck-payouts"],
+		cfg,
+	);
+	const stuckBatchCount = effectiveOk(stuckRes)
+		? Number(
+				stuckRes.result?.stuckBatchCount ??
+					stuckRes.result?.stuckBatchCount ??
+					0,
+			)
+		: null;
+	const stuckItemCount = effectiveOk(stuckRes)
+		? Number(
+				stuckRes.result?.stuckItemCount ?? stuckRes.result?.stuckItemCount ?? 0,
+			)
+		: null;
+
+	const balanceRes = await runEmitWithOfflineFallback(
+		["--available-balance"],
+		cfg,
+	);
+	const availableBalance = effectiveOk(balanceRes)
+		? Number(
+				balanceRes.result?.availableBalance ??
+					balanceRes.result?.available_balance ??
+					null,
+			)
+		: null;
+	const pendingApprovedTotal = sumAmount(approvedBatches, "total_amount");
+
+	const webhook = await withTempEnv(
+		cfg.offline.enabled
+			? {
+					BASE44_OFFLINE: "true",
+					BASE44_OFFLINE_STORE_PATH: String(cfg.offline.storePath),
+				}
+			: {},
+		async () => {
+			try {
+				const base44 = buildBase44ServiceClient({
+					mode: cfg.offline.enabled ? "offline" : "auto",
+				});
+				const lastWebhook = await deadmanFetchLastWebhook(base44);
+				if (lastWebhook?.ok !== true)
+					return { ok: false, error: lastWebhook?.error ?? "no_webhook" };
+				const hoursSince = (Date.now() - lastWebhook.atMs) / (1000 * 60 * 60);
+				return {
+					ok: true,
+					lastWebhookAt: lastWebhook.atRaw,
+					lastWebhookEventId: lastWebhook.eventId ?? null,
+					lastWebhookEventType: lastWebhook.eventType ?? null,
+					hoursSince: Number(hoursSince.toFixed(3)),
+				};
+			} catch (e) {
+				return { ok: false, error: e?.message ?? String(e) };
+			}
+		},
+	);
+
+	const lastSuccessfulPayoutAt = maxIsoFrom(
+		truthRows
+			.filter((r) => String(r?.truthStatus ?? "").toUpperCase() === "COMPLETED")
+			.flatMap((r) => [
+				r?.providerTimeCompleted ?? null,
+				r?.lastProviderSyncAt ?? null,
+			]),
+	);
+
+	const autoApprovalEnabled =
+		cfg.tasks?.autoApprovePayoutBatches === true &&
+		cfg.payout?.autoApprove?.enabled === true;
+	const nextAutoApprovalCheckAt = autoApprovalEnabled
+		? new Date(Date.now() + Number(cfg.intervalMs ?? 60000)).toISOString()
+		: null;
+
+	return {
+		ok: true,
+		at,
+		payouts: {
+			totalBatches: truthRows.length,
+			batchesWithProviderId: withProvider.length,
+			batchesWithoutProviderId: withoutProvider.length,
+			totalWithProviderIdAmount: sumAmount(withProvider, "totalAmount"),
+			totalWithoutProviderIdAmount: sumAmount(withoutProvider, "totalAmount"),
+			approvedBatches: approvedBatches.length,
+			approvedPayPalMissingProviderId: approvedPayPalMissingProviderId.length,
+			lastSuccessfulPayoutAt,
+		},
+		webhook,
+		balance: {
+			availableBalance,
+			pendingApprovedTotal,
+			belowPendingTotal: Number.isFinite(availableBalance)
+				? availableBalance < pendingApprovedTotal
+				: null,
+		},
+		stuck: {
+			stuckBatchCount,
+			stuckItemCount,
+		},
+		schedule: {
+			intervalMs: Number(cfg.intervalMs ?? 60000),
+			autoApprovalEnabled,
+			nextAutoApprovalCheckAt,
+		},
+	};
+}
+
+async function recordFreezeIncident(base44, violations) {
+	if (envIsTrue(process.env.AUTONOMOUS_DISABLE_INCIDENT_LOG_WRITE, "false")) {
+		return { ok: true, skipped: true, reason: "incident_write_disabled" };
+	}
+	const txCfg = getTransactionLogConfigFromEnv();
+	const txEntity = base44.asServiceRole.entities[txCfg.entityName];
+	const now = nowIso();
+	const desc = `Freeze: ${violations.map((v) => v.type).join(", ")}`;
+	try {
+		const created = await txEntity.create({
+			[txCfg.fieldMap.transactionType]: "SYSTEM_INCIDENT",
+			[txCfg.fieldMap.amount]: 0,
+			[txCfg.fieldMap.description]: desc,
+			[txCfg.fieldMap.transactionDate]: now,
+			[txCfg.fieldMap.category]: "incident",
+			[txCfg.fieldMap.paymentMethod]: "system",
+			[txCfg.fieldMap.referenceId]: `deadman:${Date.now()}`,
+			[txCfg.fieldMap.status]: "incident",
+			violations,
+		});
+		return { ok: true, id: created?.id ?? null };
+	} catch (e) {
+		return { ok: false, error: e?.message ?? String(e) };
+	}
+}
+
+function summarizeMissionHealthForFreeze(res) {
+	const outerOk = effectiveOk(res);
+	if (!outerOk) {
+		return {
+			ok: false,
+			violations: [
+				{
+					type: "mission_health_failed",
+					severity: "critical",
+					message:
+						res?.error ?? res?.result?.error ?? "Mission health check failed",
+				},
+			],
+		};
+	}
+
+	const results = res?.result?.results;
+	const list = Array.isArray(results) ? results : [];
+	const violations = [];
+	for (const r of list) {
+		if (!r || typeof r !== "object") continue;
+		if (r.ok !== true) {
+			violations.push({
+				type: "mission_health_error",
+				severity: "critical",
+				message: r.error ?? "Mission health error",
+				missionId: r.missionId ?? null,
+			});
+			continue;
+		}
+		if (r.deployable !== true) {
+			violations.push({
+				type: "mission_not_deployable",
+				severity: "critical",
+				message: "Mission is not deployable under evidence-gated health",
+				missionId: r.missionId ?? null,
+				classKey: r.classKey ?? null,
+				healthScore: r.healthScore ?? null,
+			});
+		}
+	}
+
+	return { ok: violations.length === 0, violations };
+}
+
+async function maybeActivateFreezeFromMissionHealth(
+	cfg,
+	state,
+	missionHealthRes,
+) {
+	if (!envIsTrue(process.env.SWARM_LIVE, "false"))
+		return { ok: true, skipped: true, reason: "not_live" };
+	if (cfg.offline.enabled)
+		return { ok: true, skipped: true, reason: "offline_mode" };
+
+	const summary = summarizeMissionHealthForFreeze(missionHealthRes);
+	if (summary.ok) return { ok: true, violations: [] };
+	if (
+		!envIsTrue(process.env.AUTONOMOUS_ENFORCE_MISSION_HEALTH_FREEZE, "false") ||
+		!isMoneyMovingTasks(cfg)
+	) {
+		return {
+			ok: true,
+			skipped: true,
+			reason: "not_enforced",
+			violations: summary.violations,
+		};
+	}
+
+	const now = nowIso();
+	const previous = state.freeze?.active === true;
+	const nextViolations = summary.violations;
+	state.freeze = {
+		active: true,
+		since: previous && state.freeze?.since ? state.freeze.since : now,
+		violations: nextViolations,
+		source: "mission_health",
+		updatedAt: now,
+	};
+
+	let incident = null;
+	try {
+		const base44 = buildBase44ServiceClient({ mode: "auto" });
+		incident = await recordFreezeIncident(base44, nextViolations);
+		if (cfg.alerts.enabled) {
+			try {
+				await maybeSendAlert(base44, {
+					subject: "Swarm Freeze Activated (Mission Health)",
+					body: JSON.stringify(
+						{ at: now, violations: nextViolations, incident },
+						null,
+						2,
+					),
+				});
+			} catch {}
+		}
+	} catch {}
+
+	return { ok: false, freeze: true, violations: nextViolations, incident };
+}
+
+async function runDeadmanOnce(cfg, state) {
+	const nowMs = Date.now();
+	const lastAt = Number(state.lastDeadmanAt ?? 0) || 0;
+	const intervalMs = Number(cfg.deadman?.intervalMs ?? 300000) || 300000;
+	if (nowMs - lastAt < intervalMs) {
+		return {
+			ok: true,
+			skipped: true,
+			reason: "interval",
+			nextInMs: Math.max(0, intervalMs - (nowMs - lastAt)),
+		};
+	}
+	state.lastDeadmanAt = nowMs;
+
+	if (!envIsTrue(process.env.SWARM_LIVE, "false"))
+		return { ok: true, skipped: true, reason: "not_live" };
+	if (cfg.offline.enabled)
+		return { ok: true, skipped: true, reason: "offline_mode" };
+
+	let base44 = null;
+	try {
+		base44 = buildBase44ServiceClient({ mode: "auto" });
+	} catch (e) {
+		return {
+			ok: true,
+			skipped: true,
+			reason: "base44_unavailable",
+			error: e?.message ?? String(e),
+		};
+	}
+
+	const [lastWebhook, metrics] = await Promise.all([
+		deadmanFetchLastWebhook(base44).catch((e) => ({
+			ok: false,
+			error: e?.message ?? String(e),
+		})),
+		deadmanFetchRecentMetrics(base44, 25).catch((e) => ({
+			fieldMap: { at: "at", kind: "kind", ok: "ok" },
+			rows: [],
+			error: e?.message ?? String(e),
+		})),
+	]);
+
+	const violations = computeDeadmanViolations({
+		lastWebhook,
+		metrics,
+		cfg,
+		nowMs,
+	});
+	if (violations.length === 0)
+		return { ok: true, at: nowIso(), violations: [] };
+
+	if (!isMoneyMovingTasks(cfg)) {
+		return { ok: true, advisory: true, at: nowIso(), violations };
+	}
+
+	state.freeze = { active: true, since: nowIso(), violations };
+	const incident = await recordFreezeIncident(base44, violations);
+	if (cfg.alerts.enabled) {
+		try {
+			await maybeSendAlert(base44, {
+				subject: "Swarm Deadman Freeze Activated",
+				body: JSON.stringify({ at: nowIso(), violations, incident }, null, 2),
+			});
+		} catch {}
+	}
+	return { ok: false, at: nowIso(), violations, freeze: true, incident };
+}
+
+async function recordDeploymentOnce(cfg) {
+	const mode = cfg.offline.enabled ? "offline" : "auto";
+	const base44 = buildBase44ServiceClient({ mode });
+	const txCfg = getTransactionLogConfigFromEnv();
+	const txEntity = base44.asServiceRole.entities[txCfg.entityName];
+
+	const fileList = [
+		"package.json",
+		"src/emit-revenue-events.mjs",
+		"src/paypal-webhook-server.mjs",
+		"src/autonomous-daemon.mjs",
+		"src/monitor-health.mjs",
+		"src/sbds-enforcer.mjs",
+	];
+
+	const fileHashes = [];
+	for (const rel of fileList) {
+		const abs = path.resolve(process.cwd(), rel);
+		const content = await fs.readFile(abs);
+		const hash = crypto.createHash("sha256").update(content).digest("hex");
+		fileHashes.push({ file: rel, sha256: hash });
+	}
+	fileHashes.sort((a, b) => a.file.localeCompare(b.file));
+
+	const artifactHash = crypto
+		.createHash("sha256")
+		.update(JSON.stringify(fileHashes))
+		.digest("hex");
+	const now = nowIso();
+	const ref = `deploy:${artifactHash.slice(0, 12)}:${Date.now()}`;
+
+	const created = await txEntity.create({
+		[txCfg.fieldMap.transactionType]: "SYSTEM_DEPLOYMENT",
+		[txCfg.fieldMap.amount]: 0,
+		[txCfg.fieldMap.description]: `Deployment record ${artifactHash}`,
+		[txCfg.fieldMap.transactionDate]: now,
+		[txCfg.fieldMap.category]: "deployment",
+		[txCfg.fieldMap.paymentMethod]: "system",
+		[txCfg.fieldMap.referenceId]: ref,
+		[txCfg.fieldMap.status]: "completed",
+		metadata: {
+			at: now,
+			artifact_hash: artifactHash,
+			file_hashes: fileHashes,
+			truth_only_ui_enabled: getEnvBool("BASE44_ENABLE_TRUTH_ONLY_UI", false),
+			sbds_policy_active: true,
+			swarm_live: envIsTrue(process.env.SWARM_LIVE, "false"),
+		},
+	});
+
+	return {
+		ok: true,
+		artifactHash,
+		referenceId: ref,
+		id: created?.id ?? null,
+		mode,
+	};
+}
+
+async function runAllGoodOnce(cfg, state) {
+	const at = nowIso();
+	const readinessEnv = cfg.offline.enabled
+		? {
+				BASE44_OFFLINE: "true",
+				BASE44_OFFLINE_STORE_PATH: String(cfg.offline.storePath),
+			}
+		: {};
+	const readinessRes = await runNodeScript(
+		"./src/monitor-health.mjs",
+		["--readiness", "--ping"],
+		{ env: readinessEnv },
+	);
+	const readiness = readinessRes.lastJson ?? {
+		ok: false,
+		error: "readiness_failed",
+	};
+
+	const missionArgs = ["--mission-health", "--once"];
+	if (cfg.missionHealth?.missionId)
+		missionArgs.push("--mission-id", String(cfg.missionHealth.missionId));
+	if (
+		cfg.missionHealth?.limit !== null &&
+		cfg.missionHealth?.limit !== undefined
+	)
+		missionArgs.push("--mission-limit", String(cfg.missionHealth.limit));
+	const missionHealth = await runMonitorHealthWithOfflineFallback(
+		missionArgs,
+		cfg,
+	);
+
+	const simulation = await runEmitWithOfflineFallback(
+		["--check-simulation", "--scan-limit", "200"],
+		cfg,
+	);
+	const payoutTruth = await runEmitWithOfflineFallback(
+		["--export-payout-truth", "--only-real", "--limit", "5"],
+		cfg,
+	);
+
+	const deadman = cfg.tasks.deadman
+		? await runDeadmanOnce(cfg, state)
+		: { ok: true, skipped: true, reason: "disabled" };
+
+	const missionFreeze = await maybeActivateFreezeFromMissionHealth(
+		cfg,
+		state,
+		missionHealth,
+	).catch((e) => ({
+		ok: false,
+		error: e?.message ?? String(e),
+	}));
+
+	const mhSummary = summarizeMissionHealthForFreeze(missionHealth);
+	const simulationOk =
+		effectiveOk(simulation) && simulation?.result?.ok === true;
+	const payoutTruthOk = effectiveOk(payoutTruth);
+	const deadmanOk = deadman?.ok !== false;
+	const readinessOk = readiness?.ok === true;
+	const paypalOk = readiness?.ping?.paypalOk === true;
+	const base44Ok = readiness?.ping?.base44Ok === true;
+	const freezeActive = isFreezeActive(state) === true;
+	const missionFreezeOk = missionFreeze?.ok !== false;
+
+	const failures = [];
+	if (!readinessOk) failures.push("readiness");
+	if (!paypalOk) failures.push("paypal_ping");
+	if (!base44Ok) failures.push("base44_ping");
+	if (!mhSummary.ok) failures.push("mission_health");
+	if (!simulationOk) failures.push("simulation_artifacts");
+	if (!payoutTruthOk) failures.push("payout_truth");
+	if (freezeActive) failures.push("freeze_active");
+	if (!deadmanOk) failures.push("deadman");
+	if (!missionFreezeOk) failures.push("freeze_activation");
+
+	const ok =
+		readinessOk &&
+		paypalOk &&
+		base44Ok &&
+		mhSummary.ok === true &&
+		simulationOk &&
+		payoutTruthOk &&
+		freezeActive !== true &&
+		deadmanOk &&
+		missionFreezeOk;
+
+	return {
+		ok,
+		at,
+		summary: {
+			ok,
+			failures,
+			readinessOk,
+			paypalOk,
+			base44Ok,
+			missionHealthOk: mhSummary.ok === true,
+			simulationOk,
+			payoutTruthOk,
+			freezeActive,
+			deadmanOk,
+			missionFreezeOk,
+		},
+		readiness,
+		missionHealth,
+		missionHealthSummary: mhSummary,
+		simulation,
+		payoutTruth,
+		deadman,
+		freeze: state.freeze ?? { active: false },
+	};
+}
+
+async function runTick(cfg, state) {
+	const startedAt = nowIso();
+	const out = {
+		ok: true,
+		at: startedAt,
+		mode: cfg.offline.enabled ? "offline" : "auto",
+		results: {},
+		meta: {},
+	};
+	out.meta.policy = {
+		truthOnlyUiEnabled: getEnvBool("BASE44_ENABLE_TRUTH_ONLY_UI", false),
+		allowlists: {
+			paypalConfigured: hasAllowedPayPalRecipientsConfigured(),
+		},
+	};
+	out.meta.freeze = state.freeze ?? { active: false };
+
+	if (isMoneyMovingTasks(cfg)) {
+		if (!envIsTrue(process.env.SWARM_LIVE, "false")) {
+			throw new Error("LIVE MODE NOT GUARANTEED (SWARM_LIVE downgraded)");
+		}
+	}
+
+	if (cfg.tasks.deadman) {
+		out.results.deadman = await runDeadmanOnce(cfg, state);
+		out.meta.freeze = state.freeze ?? out.meta.freeze;
+	}
+
+	if (cfg.tasks.health) {
+		const health = await checkHealthOnce(cfg);
+		out.results.health = health;
+		await maybeAlertOnFailure(cfg, health, state);
+	}
+
+	if (cfg.tasks.missionHealth) {
+		const args = ["--mission-health", "--once"];
+		if (cfg.missionHealth?.missionId)
+			args.push("--mission-id", String(cfg.missionHealth.missionId));
+		if (
+			cfg.missionHealth?.limit !== null &&
+			cfg.missionHealth?.limit !== undefined
+		)
+			args.push("--mission-limit", String(cfg.missionHealth.limit));
+		out.results.missionHealth = await runMonitorHealthWithOfflineFallback(
+			args,
+			cfg,
+		);
+		out.results.missionFreeze = await maybeActivateFreezeFromMissionHealth(
+			cfg,
+			state,
+			out.results.missionHealth,
+		).catch((e) => ({
+			ok: false,
+			error: e?.message ?? String(e),
+		}));
+		out.meta.freeze = state.freeze ?? out.meta.freeze;
+	}
+
+	if (cfg.tasks.availableBalance) {
+		out.results.availableBalance = await runEmitWithOfflineFallback(
+			["--available-balance"],
+			cfg,
+		);
+	}
+
+	if (cfg.tasks.reportPendingApproval) {
+		out.results.pendingApproval = await runEmitWithOfflineFallback(
+			["--report-pending-approval"],
+			cfg,
+		);
+	}
+
+	if (cfg.tasks.reportStuckPayouts) {
+		out.results.stuckPayouts = await runEmitWithOfflineFallback(
+			["--report-stuck-payouts"],
+			cfg,
+		);
+	}
+
+  if (cfg.tasks.monitorPayoneerStatus === true || cfg.monitor?.payoneerStatus === true) {
+    const res = await runNodeScript("./scripts/monitor-prq-status.mjs", [], { env: {} });
+    const payload =
+      res.lastJson ??
+      {
+        ok: false,
+        error:
+          res?.stderr?.trim() ||
+          res?.stdout?.trim() ||
+          "monitor_prq_status_failed",
+      };
+    out.results.monitorPayoneerStatus = payload;
+    await recordAudit("monitor_prq_status", payload).catch(() => {});
+  }
+
+	if (cfg.tasks.createPayoutBatches) {
+		if (isFreezeActive(state)) {
+			out.results.createPayoutBatches = freezeSkip(state, "freeze_active");
+		} else {
+			const windowOk = isWithinWindowUtc(
+				cfg.payout?.windowUtc ?? { startHourUtc: 0, endHourUtc: 0 },
+			);
+			if (!windowOk) {
+				out.results.createPayoutBatches = {
+					ok: true,
+					skipped: true,
+					reason: "outside_payout_window_utc",
+					windowUtc: cfg.payout?.windowUtc ?? null,
+				};
+			} else {
+				let bal = null;
+				const balRes = out.results.availableBalance;
+				if (effectiveOk(balRes)) bal = balRes.result;
+				if (!bal && !cfg.tasks.availableBalance) {
+					const fetched = await runEmitWithOfflineFallback(
+						["--available-balance"],
+						cfg,
+					);
+					out.results.availableBalance = fetched;
+					if (effectiveOk(fetched)) bal = fetched.result;
+				}
+
+				const avail = Number(bal?.availableBalance ?? "");
+				if (
+					Number.isFinite(cfg.payout?.minAvailableBalance) &&
+					Number.isFinite(avail) &&
+					avail < cfg.payout.minAvailableBalance
+				) {
+					out.results.createPayoutBatches = {
+						ok: true,
+						skipped: true,
+						reason: "below_min_available_balance",
+						availableBalance: avail,
+						minAvailableBalance: cfg.payout.minAvailableBalance,
+					};
+				} else {
+					const args = [];
+					if (cfg.payout.dryRun) args.push("--dry-run");
+					args.push("--create-payout-batches");
+					if (cfg.payout.settlementId)
+						args.push("--payout-settlement-id", cfg.payout.settlementId);
+					if (cfg.payout.beneficiary)
+						args.push("--payout-beneficiary", cfg.payout.beneficiary);
+					if (cfg.payout.recipientType)
+						args.push("--payout-recipient-type", cfg.payout.recipientType);
+					out.results.createPayoutBatches = await runEmitWithOfflineFallback(
+						args,
+						cfg,
+					);
+				}
+			}
+		}
+	}
+
+	if (
+		cfg.tasks.autoApprovePayoutBatches &&
+		cfg.payout?.autoApprove?.enabled === true
+	) {
+		if (isFreezeActive(state)) {
+			out.results.autoApproval = freezeSkip(state, "freeze_active");
+		} else {
+			let pending = null;
+			const pendingRes = out.results.pendingApproval;
+			if (effectiveOk(pendingRes)) pending = pendingRes.result;
+			if (!pending && !cfg.tasks.reportPendingApproval) {
+				const fetched = await runEmitWithOfflineFallback(
+					["--report-pending-approval"],
+					cfg,
+				);
+				out.results.pendingApproval = fetched;
+				if (effectiveOk(fetched)) pending = fetched.result;
+			}
+
+			const batches = Array.isArray(pending?.batches) ? pending.batches : [];
+			const nowMs = Date.now();
+			const thresholdMs =
+				Math.max(0, Number(cfg.payout.autoApprove.pendingAgeMinutes ?? 120)) *
+				60 *
+				1000;
+			const twoFaThreshold = Number(
+				process.env.PAYOUT_APPROVAL_2FA_THRESHOLD ?? "500",
+			);
+			const approvals = [];
+			const needsReview = [];
+
+			for (const b of batches) {
+				const batchId = getBatchId(b);
+				const createdAtMs = getBatchCreatedAtMs(b);
+				const amount = getBatchAmount(b);
+				if (!batchId) continue;
+				if (createdAtMs === null || createdAtMs === undefined) {
+					needsReview.push({ batchId, reason: "missing_created_date", amount });
+					continue;
+				}
+				if (nowMs - createdAtMs < thresholdMs) continue;
+				if (amount === null || amount === undefined) {
+					needsReview.push({ batchId, reason: "missing_amount" });
+					continue;
+				}
+				if (
+					Number.isFinite(twoFaThreshold) &&
+					twoFaThreshold > 0 &&
+					amount > twoFaThreshold
+				) {
+					needsReview.push({
+						batchId,
+						reason: "above_2fa_threshold",
+						amount,
+						threshold: twoFaThreshold,
+					});
+					continue;
+				}
+				if (
+					cfg.payout.autoApprove.maxBatchAmount !== null &&
+					cfg.payout.autoApprove.maxBatchAmount !== undefined &&
+					amount !== null &&
+					amount !== undefined &&
+					amount > cfg.payout.autoApprove.maxBatchAmount
+				) {
+					needsReview.push({
+						batchId,
+						reason: "amount_above_max",
+						amount,
+						max: cfg.payout.autoApprove.maxBatchAmount,
+					});
+					continue;
+				}
+
+				const approveArgs = [];
+				if (cfg.payout.dryRun) approveArgs.push("--dry-run");
+				approveArgs.push(
+					"--approve-payout-batch",
+					"--batch-id",
+					String(batchId),
+				);
+				if (cfg.payout.autoApprove.totp)
+					approveArgs.push("--totp", String(cfg.payout.autoApprove.totp));
+				const res = await runEmitWithOfflineFallback(approveArgs, cfg);
+				approvals.push({ batchId, res });
+				if (!effectiveOk(res)) {
+					needsReview.push({
+						batchId,
+						reason: "approve_failed",
+						error: res?.error ?? null,
+					});
+				}
+			}
+
+			const summary = {
+				ok: needsReview.length === 0,
+				approvedCount:
+					approvals.length -
+					needsReview.filter((x) => x.reason === "approve_failed").length,
+				attemptedCount: approvals.length,
+				needsReviewCount: needsReview.length,
+				needsReview,
+			};
+			out.results.autoApproval = summary;
+			await maybeAlertOnAutoApproval(cfg, summary, state);
+		}
+	}
+
+	if (cfg.tasks.autoSubmitPayPalPayoutBatches) {
+		if (isFreezeActive(state)) {
+			out.results.autoSubmitPayPal = freezeSkip(state, "freeze_active");
+		} else {
+			const windowOk = isWithinWindowUtc(
+				cfg.payout?.windowUtc ?? { startHourUtc: 0, endHourUtc: 0 },
+			);
+			if (!windowOk) {
+				out.results.autoSubmitPayPal = {
+					ok: true,
+					skipped: true,
+					reason: "outside_payout_window_utc",
+					windowUtc: cfg.payout?.windowUtc ?? null,
+				};
+			} else if (
+				cfg.tasks.health &&
+				out.results.health &&
+				out.results.health.paypalOk === false
+			) {
+				out.results.autoSubmitPayPal = {
+					ok: true,
+					skipped: true,
+					reason: "paypal_unhealthy",
+					health: out.results.health,
+				};
+			} else if (cfg.payout?.dryRun) {
+				out.results.autoSubmitPayPal = {
+					ok: true,
+					skipped: true,
+					reason: "payout_dry_run_enabled",
+				};
+			} else {
+				const repairLimit = Math.max(
+					1,
+					Math.floor(Number(cfg.payout?.repairTruthLimit ?? 250)),
+				);
+				out.results.repairPayoutTruth = await runEmitWithOfflineFallback(
+					["--repair-payout-truth", "--limit", String(repairLimit)],
+					cfg,
+				);
+
+				const approvedRes = await runEmitWithOfflineFallback(
+					["--report-approved-batches"],
+					cfg,
+				);
+				out.results.approvedBatches = approvedRes;
+				const batches = effectiveOk(approvedRes)
+					? (approvedRes.result?.batches ?? [])
+					: [];
+				const attempts = [];
+				for (const b of Array.isArray(batches) ? batches : []) {
+					const batchId = getBatchId(b);
+					const notesRaw = b?.notes ?? b?.Notes ?? null;
+					const notes = parseJsonMaybe(notesRaw) ?? notesRaw;
+					const recipientType = String(
+						notes?.recipient_type ?? notes?.recipientType ?? "",
+					).toLowerCase();
+					const providerId =
+						notes?.paypal_payout_batch_id ?? notes?.paypalPayoutBatchId ?? null;
+					if (!batchId) continue;
+					if (providerId) continue;
+					if (
+						recipientType &&
+						recipientType !== "paypal" &&
+						recipientType !== "paypal_email"
+					)
+						continue;
+					const res = await runEmitWithOfflineFallback(
+						["--submit-payout-batch", "--batch-id", String(batchId)],
+						cfg,
+					);
+					attempts.push({ batchId, res });
+				}
+				const failures = attempts.filter((a) => !effectiveOk(a.res));
+				out.results.autoSubmitPayPal = {
+					ok: failures.length === 0,
+					attemptedCount: attempts.length,
+					failedCount: failures.length,
+					failures,
+					attempts,
+				};
+			}
+		}
+	}
+
+	if (cfg.tasks.autoExportPayoneerPayoutBatches) {
+		if (isFreezeActive(state)) {
+			out.results.autoExportPayoneer = freezeSkip(state, "freeze_active");
+		} else {
+			const windowOk = isWithinWindowUtc(
+				cfg.payout?.windowUtc ?? { startHourUtc: 0, endHourUtc: 0 },
+			);
+			if (!windowOk) {
+				out.results.autoExportPayoneer = {
+					ok: true,
+					skipped: true,
+					reason: "outside_payout_window_utc",
+					windowUtc: cfg.payout?.windowUtc ?? null,
+				};
+			} else {
+				const approvedRes = await runEmitWithOfflineFallback(
+					["--report-approved-batches"],
+					cfg,
+				);
+				out.results.approvedBatchesForPayoneer = approvedRes;
+				const batches = effectiveOk(approvedRes)
+					? (approvedRes.result?.batches ?? [])
+					: [];
+				const attempts = [];
+				const outDir = cfg.payout?.export?.payoneerOutDir
+					? String(cfg.payout.export.payoneerOutDir)
+					: "out/payoneer";
+				const absOutDir = path.resolve(process.cwd(), outDir);
+				await fs.mkdir(absOutDir, { recursive: true });
+				const exported =
+					state.exportedPayoneerBatches &&
+					typeof state.exportedPayoneerBatches === "object"
+						? state.exportedPayoneerBatches
+						: {};
+				state.exportedPayoneerBatches = exported;
+
+				for (const b of Array.isArray(batches) ? batches : []) {
+					const batchId = getBatchId(b);
+					const notesRaw = b?.notes ?? b?.Notes ?? null;
+					const notes = parseJsonMaybe(notesRaw) ?? notesRaw;
+					const recipientType = String(
+						notes?.recipient_type ?? notes?.recipientType ?? "",
+					).toLowerCase();
+					if (!batchId) continue;
+					if (recipientType !== "payoneer" && recipientType !== "payoneer_id")
+						continue;
+
+					const outPath = path.join(
+						absOutDir,
+						`payoneer_payout_${String(batchId)}.xls`,
+					);
+					const already = exported[String(batchId)]?.outPath
+						? String(exported[String(batchId)].outPath)
+						: null;
+					if (already && (await fileExists(already))) continue;
+					if (!already && (await fileExists(outPath))) {
+						exported[String(batchId)] = { outPath, exportedAt: nowIso() };
+						continue;
+					}
+
+					const res = await runEmitWithOfflineFallback(
+						[
+							"--export-payoneer-batch",
+							"--batch-id",
+							String(batchId),
+							"--out",
+							outPath,
+						],
+						cfg,
+					);
+					attempts.push({ batchId, outPath, res });
+					if (effectiveOk(res)) {
+						exported[String(batchId)] = { outPath, exportedAt: nowIso() };
+					}
+				}
+
+				const failures = attempts.filter((a) => !effectiveOk(a.res));
+				out.results.autoExportPayoneer = {
+					ok: failures.length === 0,
+					attemptedCount: attempts.length,
+					failedCount: failures.length,
+					failures,
+					attempts,
+				};
+			}
+		}
+	}
+
+	if (cfg.tasks.autoSettleOwnerPayoneer) {
+		if (isFreezeActive(state)) {
+			out.results.autoSettleOwnerPayoneer = freezeSkip(state, "freeze_active");
+		} else {
+			const windowOk = isWithinWindowUtc(
+				cfg.payout?.windowUtc ?? { startHourUtc: 0, endHourUtc: 0 },
+			);
+			if (!windowOk) {
+				out.results.autoSettleOwnerPayoneer = {
+					ok: true,
+					skipped: true,
+					reason: "outside_payout_window_utc",
+					windowUtc: cfg.payout?.windowUtc ?? null,
+				};
+			} else {
+				const res = await runAutoSettleOwner(cfg);
+				out.results.autoSettleOwnerPayoneer = res;
+			}
+		}
+	}
+
+	if (cfg.tasks.syncPayPalLedgerBatches) {
+		if (isFreezeActive(state)) {
+			out.results.syncPayPalLedger = freezeSkip(state, "freeze_active");
+		} else {
+			if (
+				cfg.tasks.health &&
+				out.results.health &&
+				out.results.health.paypalOk === false
+			) {
+				out.results.syncPayPalLedger = {
+					ok: true,
+					skipped: true,
+					reason: "paypal_unhealthy",
+					health: out.results.health,
+				};
+			} else {
+				const limit = Math.max(
+					1,
+					Math.floor(Number(cfg.payout?.syncPayPalLimit ?? 25)),
+				);
+				const minAgeMs =
+					Math.max(0, Number(cfg.payout?.syncPayPalMinAgeMinutes ?? 10)) *
+					60 *
+					1000;
+				const truthArgs = [];
+				if (cfg.payout.dryRun) truthArgs.push("--dry-run");
+				truthArgs.push("--export-payout-truth", "--limit", String(limit));
+				const truthRes = await runEmitWithOfflineFallback(truthArgs, cfg);
+				out.results.payoutTruth = truthRes;
+
+				const rows = effectiveOk(truthRes) ? (truthRes.result?.rows ?? []) : [];
+				const nowMs = Date.now();
+				const attempts = [];
+				for (const r of Array.isArray(rows) ? rows : []) {
+					const internalBatchId = r?.internalPayoutBatchId ?? null;
+					const externalProviderId = r?.externalProviderId ?? null;
+					const truthStatus = r?.truthStatus ?? null;
+					if (!internalBatchId) continue;
+					if (
+						!externalProviderId ||
+						String(externalProviderId) === "NOT_SUBMITTED"
+					)
+						continue;
+					if (String(truthStatus) === "COMPLETED") continue;
+					const lastAt = r?.lastProviderSyncAt ?? null;
+					if (lastAt && minAgeMs > 0) {
+						const ms = Date.parse(String(lastAt));
+						if (!Number.isNaN(ms) && nowMs - ms < minAgeMs) continue;
+					}
+
+					const syncArgs = [];
+					if (cfg.payout.dryRun) syncArgs.push("--dry-run");
+					syncArgs.push(
+						"--sync-paypal-ledger-batch",
+						"--batch-id",
+						String(internalBatchId),
+					);
+					const res = await runEmitWithOfflineFallback(syncArgs, cfg);
+					attempts.push({ batchId: String(internalBatchId), res });
+				}
+				out.results.syncPayPalLedger = {
+					ok: true,
+					attemptedCount: attempts.length,
+					attempts,
+				};
+			}
+		}
+	}
+
+	out.ok = true;
+	if (cfg.tasks.health && out.results.health?.ok === false) out.ok = false;
+	for (const v of Object.values(out.results)) {
+		if (v && typeof v === "object" && v.ok === false) out.ok = false;
+		if (v && typeof v === "object" && v.result?.ok === false) out.ok = false;
+	}
+
+	process.stdout.write(`${JSON.stringify(out)}\n`);
+	return out;
+}
+
+async function main() {
+	const args = parseArgs(process.argv);
+	const once = args.once === true;
+
+	const loaded = await loadAutonomousConfig({
+		configPath: args.config ?? args["config"] ?? null,
+	});
+	const cfg = resolveRuntimeConfig(args, loaded.config);
+
+	if (isMoneyMovingTasks(cfg)) {
+		enforceSwarmLiveHardInvariant({
+			component: "autonomous-daemon",
+			action: "startup",
+		});
+		validateDaemonLiveModeOrThrow(cfg);
+		const health = await checkHealthOnce({
+			...cfg,
+			health: {
+				requirePayPal:
+					cfg.health?.requirePayPal === true ||
+					cfg.tasks?.autoSubmitPayPalPayoutBatches === true ||
+					cfg.tasks?.syncPayPalLedgerBatches === true,
+			},
+		});
+		if (!health.ok)
+			throw new Error("LIVE MODE NOT GUARANTEED (endpoints/credentials)");
+	}
+
+	const statePath = path.resolve(process.cwd(), cfg.state.path);
+	const persisted = await readJsonFile(statePath, null);
+	const state = {
+		lastAlertAt: Number(persisted?.lastAlertAt ?? 0) || 0,
+		lastApprovalAlertAt: Number(persisted?.lastApprovalAlertAt ?? 0) || 0,
+		lastDeadmanAt: Number(persisted?.lastDeadmanAt ?? 0) || 0,
+		consecutiveFailures: Number(persisted?.consecutiveFailures ?? 0) || 0,
+		freeze:
+			persisted?.freeze && typeof persisted.freeze === "object"
+				? persisted.freeze
+				: { active: false },
+		exportedPayoneerBatches:
+			persisted?.exportedPayoneerBatches &&
+			typeof persisted.exportedPayoneerBatches === "object"
+				? persisted.exportedPayoneerBatches
+				: {},
+	};
+
+	if (!once) {
+		await startSwarmSupervisorIfEnabled(cfg, state);
+	}
+
+	const allGood = args["all-good"] === true || args.allGood === true;
+	const allGoodSummary =
+		args["all-good-summary"] === true || args.allGoodSummary === true;
+	const realityCheck =
+		args["reality-check"] === true ||
+		args.realityCheck === true ||
+		args["status-reality-check"] === true ||
+		args.statusRealityCheck === true;
+	if (args["record-deployment"] === true || args.recordDeployment === true) {
+		const out = await recordDeploymentOnce(cfg);
+		process.stdout.write(`${JSON.stringify(out)}\n`);
+		return;
+	}
+	if (realityCheck) {
+		const out = await runRealityCheckOnce(cfg);
+		process.stdout.write(`${JSON.stringify(out)}\n`);
+		process.exitCode = out.ok ? 0 : 2;
+		return;
+	}
+	if (allGood || allGoodSummary) {
+		const safeCfg = {
+			...cfg,
+			tasks: {
+				...cfg.tasks,
+				createPayoutBatches: false,
+				autoApprovePayoutBatches: false,
+				autoSubmitPayPalPayoutBatches: false,
+				autoExportPayoneerPayoutBatches: false,
+				syncPayPalLedgerBatches: false,
+				health: true,
+				missionHealth: true,
+				deadman: true,
+			},
+		};
+		const out = await runAllGoodOnce(safeCfg, state);
+		if (allGoodSummary) {
+			process.stdout.write(
+				`${JSON.stringify({ ok: out.ok, at: out.at, summary: out.summary })}\n`,
+			);
+		} else {
+			process.stdout.write(`${JSON.stringify(out)}\n`);
+		}
+		process.exitCode = out.ok ? 0 : 2;
+		await atomicWriteJson(statePath, {
+			lastAlertAt: state.lastAlertAt,
+			lastApprovalAlertAt: state.lastApprovalAlertAt,
+			lastDeadmanAt: state.lastDeadmanAt,
+			consecutiveFailures: state.consecutiveFailures,
+			freeze: state.freeze,
+			exportedPayoneerBatches: state.exportedPayoneerBatches,
+			updatedAt: nowIso(),
+		}).catch(() => {});
+		return;
+	}
+
+	process.stdout.write(
+		`${JSON.stringify({ ok: true, daemon: true, once, configPath: loaded.configPath, cfg })}\n`,
+	);
+
+	let stop = false;
+	process.on("SIGINT", () => {
+		stop = true;
+	});
+	process.on("SIGTERM", () => {
+		stop = true;
+	});
+
+	do {
+		try {
+			console.log("[Daemon] Running External Payer Enforcement...");
+			await enforcer.runEnforcementCycle();
+		} catch (err) {
+			console.error("[Daemon] Enforcement cycle failed:", err.message);
+		}
+		try {
+			console.log("[Daemon] Checking Reserve Health...");
+			await replenisher.executeReplenishment();
+		} catch (err) {
+			console.error("[Daemon] Replenishment protocol failed:", err.message);
+		}
+
+		try {
+			const startH = Number(
+				process.env.AUTONOMOUS_ACTIVE_START_UTC ??
+					process.env.AUTONOMOUS_PAYOUT_WINDOW_START_UTC ??
+					(cfg.payout?.windowUtc?.startHourUtc ?? 0),
+			);
+			const endH = Number(
+				process.env.AUTONOMOUS_ACTIVE_END_UTC ??
+					process.env.AUTONOMOUS_PAYOUT_WINDOW_END_UTC ??
+					(cfg.payout?.windowUtc?.endHourUtc ?? 0),
+			);
+			const activeOk = isWithinWindowUtc({ startHourUtc: startH, endHourUtc: endH });
+			const loopCfg = activeOk
+				? cfg
+				: {
+						...cfg,
+						tasks: {
+							...cfg.tasks,
+							createPayoutBatches: false,
+							autoApprovePayoutBatches: false,
+							autoSubmitPayPalPayoutBatches: false,
+							autoExportPayoneerPayoutBatches: false,
+							syncPayPalLedgerBatches: false,
+							autoSettleOwnerPayoneer: false,
+						},
+					};
+			const out = await runTick(loopCfg, state);
+			state.consecutiveFailures = out.ok ? 0 : state.consecutiveFailures + 1;
+		} catch (e) {
+			const msg = e?.message ?? String(e);
+			if (String(msg).includes("LIVE MODE NOT GUARANTEED")) {
+				process.stderr.write(
+					`${JSON.stringify({ ok: false, at: nowIso(), error: msg })}\n`,
+				);
+				process.exitCode = 1;
+				break;
+			}
+			process.stderr.write(
+				`${JSON.stringify({ ok: false, at: nowIso(), error: e?.message ?? String(e) })}\n`,
+			);
+			state.consecutiveFailures += 1;
+		}
+		await atomicWriteJson(statePath, {
+			lastAlertAt: state.lastAlertAt,
+			lastApprovalAlertAt: state.lastApprovalAlertAt,
+			lastDeadmanAt: state.lastDeadmanAt,
+			consecutiveFailures: state.consecutiveFailures,
+			freeze: state.freeze,
+			exportedPayoneerBatches: state.exportedPayoneerBatches,
+			updatedAt: nowIso(),
+		}).catch(() => {});
+		if (once) break;
+		const base = Number(cfg.intervalMs);
+		const max = Number(cfg.backoff?.maxMs ?? 300000);
+		const exp =
+			state.consecutiveFailures <= 0
+				? 1
+				: Math.min(8, Math.pow(2, state.consecutiveFailures));
+		const delay = Math.min(max, Math.max(1000, Math.floor(base * exp)));
+		await sleep(delay);
+	} while (!stop);
+}
+
+const selfPath = fileURLToPath(import.meta.url);
+const argvPath = process.argv[1] ? path.resolve(process.argv[1]) : null;
+const isMain = argvPath && path.resolve(selfPath) === argvPath;
+
+if (isMain) {
+	main().catch((err) => {
+		process.stderr.write(
+			`${JSON.stringify({ ok: false, error: err?.message ?? String(err) })}\n`,
+		);
+		process.exitCode = 1;
+	});
+}

@@ -1,0 +1,37 @@
+{
+  "to": "help-loginappreview@paypal.com",
+  "from_email": "younestsouli2019@gmail.com",
+  "account_email": "younestsouli2019@gmail.com",
+  "business_name": "realworldcerts",
+  "subject": "Escalation: Activate API Payouts + Pending Permissions",
+  "requested": {
+    "activate_api_payouts": true,
+    "pending_permissions": [
+      "Login with PayPal",
+      "Customer Disputes"
+    ],
+    "endpoint": "/v1/payments/payouts",
+    "status_code": "403"
+  },
+  "timeline": {
+    "first_request_date": "2025-12-20",
+    "followup_date": "2026-01-30",
+    "created_at": "2026-02-02T17:50:48.902Z"
+  },
+  "evidence": {
+    "debug_ids": [
+      "440a9e5527d7f",
+      "028ac57f400ba",
+      "ed54b699d1b51",
+      "7aba66415437a",
+      "5831d13ecb339"
+    ],
+    "attijari_portal_url": "https://attijaripaypal.attijariwafa.com/paypal/preferences",
+    "domain_url": "http://realworldcerts.com/",
+    "domain_status": "404"
+  },
+  "contact": {
+    "name": "Younes Tsouli",
+    "phone": "+212639158209"
+  }
+}
