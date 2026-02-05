@@ -1,9 +1,0 @@
-{
-  "type": "PAYPAL_PAYOUT",
-  "amount": 150,
-  "currency": "USD",
-  "recipient": "younestsouli2019@gmail.com",
-  "reason": "Owner payout from offline earnings",
-  "timestamp": "2026-01-28T18:57:39.578Z",
-  "status": "WAITING_MANUAL_EXECUTION"
-}

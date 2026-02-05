@@ -1,5 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://www.realworldcerts.com/sitemap.xml
-Sitemap: https://www.realworldcerts.com/site_sitemap.xml

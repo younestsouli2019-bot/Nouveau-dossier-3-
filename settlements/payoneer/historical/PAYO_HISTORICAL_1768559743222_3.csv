@@ -1,2 +1,0 @@
-recipient,recipient_email,recipient_name,amount,currency,batch_id,item_id,note,payer_name,payer_email,payer_company,purpose,reference,prq_link
-younestsouli2019@gmail.com,younestsouli2019@gmail.com,Younes Tsouli,8329.00,USD,PAYO_HISTORICAL_1768559743222_3,PAYO_HISTORICAL_1768559743222_3_USD,Historical revenue settlement: 15 events from YouTube Traffic,RealWorldCerts,supervisor@realworldcerts.com,RealWorldCerts,Owner revenue distribution,HIST_SETTLE_1768559743222,"https://link.payoneer.com/Token?t=20CF6CF2E346465C8C1374799EB46548&src=prqLink"
