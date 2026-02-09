@@ -79,3 +79,7 @@
 - Added followup_at timestamp with --delay_hours (default 48) for scheduling.
 =======
 >>>>>>> Stashed changes
+2026-02-09T00:00:00Z [crypto][ops] ED25519 setup and Binance client keyfile support
+- Added scripts/setup-binance-ed25519-env.mjs to generate a local 32-byte Ed25519 seed, store it in secrets/binance_ed25519_seed.hex, and append BINANCE_ED25519_PRIVATE_KEY_FILE plus BINANCE_SIGNATURE_ENCODING=hex to .env (local only, not committed).
+- Enhanced src/crypto/binance-client.mjs to read BINANCE_ED25519_PRIVATE_KEY_FILE contents when BINANCE_ED25519_PRIVATE_KEY is absent.
+- Attempted USDT BEP20 withdrawal; on signature invalid (-1022), emitted receipt and manual instruction for custodial execution.

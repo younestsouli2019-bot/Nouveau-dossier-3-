@@ -1,6 +1,7 @@
 import { Spot } from "@binance/connector";
 import https from "node:https";
 import crypto from "node:crypto";
+import nacl from "tweetnacl";
 import "dotenv/config";
 
 /**
@@ -8,10 +9,13 @@ import "dotenv/config";
  * corrections to avoid -1021 (timestamp ahead) and -1022 (signature) issues.
  */
 export class BinanceClient {
-	constructor({
+		constructor({
 		apiKey = process.env.BINANCE_API_KEY,
 		apiSecret = process.env.BINANCE_API_SECRET,
 		baseURL = process.env.BINANCE_API_BASE || "https://api.binance.com",
+			ed25519PrivateKey = process.env.BINANCE_ED25519_PRIVATE_KEY,
+			signatureEncoding =
+				(process.env.BINANCE_SIGNATURE_ENCODING || "hex").toLowerCase(),
 	} = {}) {
 		this.apiKey = apiKey;
 		this.apiSecret = apiSecret;
@@ -20,6 +24,17 @@ export class BinanceClient {
 		this._offsetReady = false;
 		this._timeOffset = 0;
 		this._lastSync = 0;
+			const filePath = process.env.BINANCE_ED25519_PRIVATE_KEY_FILE || null;
+			let keyVal = ed25519PrivateKey || null;
+			if (!keyVal && filePath) {
+				try {
+					const txt = require("node:fs").readFileSync(String(filePath), "utf8");
+					keyVal = String(txt || "").trim();
+				} catch {}
+			}
+			this.ed25519PrivateKey = keyVal || null;
+			this.signatureEncoding =
+				signatureEncoding === "base64" ? "base64" : "hex";
 	}
 
 	async ensureTimeOffset(force = false) {
@@ -53,7 +68,7 @@ export class BinanceClient {
 			amount: String(amount),
 			network: String(network || "BSC"),
 			name: name ? String(name) : undefined,
-			recvWindow: 60000,
+				recvWindow: 5000,
 			timestamp: this.ms(),
 		};
 		try {
@@ -67,14 +82,43 @@ export class BinanceClient {
 		}
 	}
 
-	_signQuery(params) {
-		const qs = new URLSearchParams(params).toString();
-		const sig = crypto
-			.createHmac("sha256", String(this.apiSecret || ""))
-			.update(qs)
-			.digest("hex");
-		return { qs, sig };
-	}
+		_signQuery(params) {
+			// Percent-encode first, then sign
+			const qs = new URLSearchParams(params).toString();
+			// Prefer Ed25519 if private key is provided
+			if (this.ed25519PrivateKey) {
+				const keyStr = String(this.ed25519PrivateKey).trim();
+				let keyBuf;
+				if (/^[0-9a-fA-F]+$/.test(keyStr) && keyStr.length % 2 === 0) {
+					keyBuf = Buffer.from(keyStr, "hex");
+				} else {
+					keyBuf = Buffer.from(keyStr, "base64");
+				}
+				let secretKey = keyBuf;
+				if (secretKey.length === 32) {
+					secretKey = Buffer.from(
+						nacl.sign.keyPair.fromSeed(new Uint8Array(secretKey)).secretKey,
+					);
+				}
+				if (secretKey.length !== 64) {
+					throw new Error("Invalid Ed25519 private key length");
+				}
+				const msg = Buffer.from(qs, "utf8");
+				const sigBytes = nacl.sign.detached(new Uint8Array(msg), secretKey);
+				const sigBuf = Buffer.from(sigBytes);
+				const sig =
+					this.signatureEncoding === "base64"
+						? sigBuf.toString("base64")
+						: sigBuf.toString("hex");
+				return { qs, sig };
+			}
+			// Legacy HMAC-SHA256 (may be rejected post-2026)
+			const sig = crypto
+				.createHmac("sha256", String(this.apiSecret || ""))
+				.update(qs)
+				.digest("hex");
+			return { qs, sig };
+		}
 
 	async withdrawUsingServerTime({ coin, address, amount, network, name }) {
 		await this.ensureTimeOffset(true);
@@ -84,7 +128,7 @@ export class BinanceClient {
 			amount: String(amount),
 			network: String(network || "BSC"),
 			name: name ? String(name) : undefined,
-			recvWindow: 60000,
+				recvWindow: 5000,
 			timestamp: this.ms(),
 		};
 		return this._robustPost("/sapi/v1/capital/withdraw/apply", params);
@@ -95,7 +139,7 @@ export class BinanceClient {
 		const params = {
 			coin: String(coin || "USDT"),
 			timestamp: this.ms(),
-			recvWindow: 60000,
+				recvWindow: 5000,
 		};
 		if (startTime != null) params.startTime = Number(startTime);
 		return this._robustGet("/sapi/v1/capital/withdraw/history", params);
@@ -124,7 +168,7 @@ export class BinanceClient {
 		const p1 = {
 			...params,
 			timestamp: this.ms(),
-			recvWindow: Number(params.recvWindow || 60000),
+				recvWindow: Number(params.recvWindow || 5000),
 		};
 		const { qs, sig } = this._signQuery(p1);
 		const body = `${qs}&signature=${sig}`;
@@ -146,7 +190,7 @@ export class BinanceClient {
 			const p2 = {
 				...params,
 				timestamp: this.ms(),
-				recvWindow: Number(params.recvWindow || 60000),
+					recvWindow: Number(params.recvWindow || 5000),
 			};
 			const s2 = this._signQuery(p2);
 			const b2 = `${s2.qs}&signature=${s2.sig}`;
@@ -165,7 +209,7 @@ export class BinanceClient {
 			const p3 = {
 				...params,
 				timestamp: this.ms(),
-				recvWindow: Number(params.recvWindow || 60000),
+					recvWindow: Number(params.recvWindow || 5000),
 			};
 			const s3 = this._signQuery(p3);
 			const b3 = `${s3.qs}&signature=${s3.sig}`;
@@ -187,7 +231,7 @@ export class BinanceClient {
 		const p1 = {
 			...params,
 			timestamp: this.ms(),
-			recvWindow: Number(params.recvWindow || 60000),
+				recvWindow: Number(params.recvWindow || 5000),
 		};
 		const { qs, sig } = this._signQuery(p1);
 		const options = {
@@ -204,7 +248,7 @@ export class BinanceClient {
 			const p2 = {
 				...params,
 				timestamp: this.ms(),
-				recvWindow: Number(params.recvWindow || 60000),
+					recvWindow: Number(params.recvWindow || 5000),
 			};
 			const s2 = this._signQuery(p2);
 			return this._request({
@@ -216,7 +260,7 @@ export class BinanceClient {
 			const p3 = {
 				...params,
 				timestamp: this.ms(),
-				recvWindow: Number(params.recvWindow || 60000),
+					recvWindow: Number(params.recvWindow || 5000),
 			};
 			const s3 = this._signQuery(p3);
 			return this._request({
