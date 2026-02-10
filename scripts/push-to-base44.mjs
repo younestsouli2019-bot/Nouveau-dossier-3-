@@ -107,26 +107,14 @@ class Base44Pusher {
 			options.body = JSON.stringify(body);
 		}
 
-<<<<<<< Updated upstream
 		this.log(`${method} ${endpoint}`, "push");
-=======
-      if (!response.ok) {
-        // Fallback for Method Not Allowed (405) - Try POST if PUT/PATCH fails
-        if (response.status === 405 && (method === 'PUT' || method === 'PATCH')) {
-            this.log(`Method ${method} not allowed (405). Retrying with POST...`, 'warning');
-            return this.request(endpoint, 'POST', body);
-        }
-
-        throw new Error(
-          `Base44 API error: ${response.status} - ${JSON.stringify(data)}`
-        );
-      }
->>>>>>> Stashed changes
 
 		try {
 			const response = await fetch(url, options);
 			const text = await response.text();
 			const contentType = response.headers?.get("content-type") || "";
+			const allowHeader =
+				response.headers?.get("allow") || response.headers?.get("Allow") || null;
 
 			let data;
 			try {
@@ -142,7 +130,7 @@ class Base44Pusher {
 					(method === "PUT" || method === "PATCH")
 				) {
 					this.log(
-						`Method ${method} not allowed (405). Retrying with POST...`,
+						`Method ${method} not allowed (405).${allowHeader ? ` Allow: ${allowHeader}.` : ""} Retrying with POST...`,
 						"warning",
 					);
 					return this.request(endpoint, "POST", body);
@@ -156,7 +144,7 @@ class Base44Pusher {
 					);
 				}
 				throw new Error(
-					`Base44 API error: ${response.status} - ${JSON.stringify(data)}`,
+					`Base44 API error: ${response.status}${allowHeader ? ` (Allow: ${allowHeader})` : ""} - ${JSON.stringify(data)}`,
 				);
 			}
 

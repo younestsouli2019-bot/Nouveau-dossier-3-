@@ -30,7 +30,17 @@ function getHttpTimeoutMs() {
 }
 
 function base64BasicAuth(clientId, clientSecret) {
-	const token = Buffer.from(`${clientId}:${clientSecret}`, "utf8").toString(
+	const sanitize = (v) => {
+		if (v == null) return "";
+		let s = String(v);
+		// Trim whitespace and strip surrounding quotes if present
+		s = s.trim().replace(/^"(.*)"$/, "$1").replace(/^'(.*)'$/, "$1");
+		return s;
+	};
+	const token = Buffer.from(
+		`${sanitize(clientId)}:${sanitize(clientSecret)}`,
+		"utf8",
+	).toString(
 		"base64",
 	);
 	return `Basic ${token}`;
@@ -65,6 +75,9 @@ export async function getPayPalAccessToken() {
 			headers: {
 				Authorization: base64BasicAuth(clientId, clientSecret),
 				"Content-Type": "application/x-www-form-urlencoded",
+				Accept: "application/json",
+				"Accept-Language": "en_US",
+				"User-Agent": "OwnerRevenueSystem/2.0",
 			},
 			body: "grant_type=client_credentials",
 			signal: controller.signal,

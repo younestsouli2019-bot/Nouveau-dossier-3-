@@ -16,7 +16,6 @@ function sanitizeDestination(dest) {
 	const account = dest?.account ? String(dest.account).trim() : "";
 	const beneficiary = dest?.beneficiary ? String(dest.beneficiary).trim() : "";
 
-<<<<<<< Updated upstream
 	return {
 		bank: mask(bank, { keepStart: 1, keepEnd: 1 }),
 		swift: mask(swift, { keepStart: 4, keepEnd: 0 }),
@@ -25,14 +24,6 @@ function sanitizeDestination(dest) {
 			? mask(beneficiary, { keepStart: 1, keepEnd: 0 })
 			: "",
 	};
-=======
-  return {
-    bank: mask(bank, { keepStart: 1, keepEnd: 1 }),
-    swift: mask(swift, { keepStart: 4, keepEnd: 0 }),
-    accountMasked: account ? mask(account, { keepStart: 0, keepEnd: 4 }) : "",
-    beneficiaryMasked: beneficiary ? mask(beneficiary, { keepStart: 1, keepEnd: 0 }) : ""
-  };
->>>>>>> Stashed changes
 }
 
 function normalizePayoutRoute(value, fallback = "bank_wire") {
@@ -109,7 +100,6 @@ function buildPayoutPlan({
 }
 
 test("mask function works correctly", () => {
-<<<<<<< Updated upstream
 	assert.equal(mask("1234567890"), "******7890", "keeps last 4 by default");
 	assert.equal(
 		mask("1234567890", { keepStart: 2, keepEnd: 2 }),
@@ -173,43 +163,6 @@ test("destination JSON can be parsed when quotes are backslash-escaped", () => {
 	assert.ok(out.swift.startsWith("EXAM"));
 	assert.notEqual(out.swift, "EXAMPLEX1");
 	assert.equal(out.accountMasked.endsWith("3456"), true);
-=======
-  assert.equal(mask("1234567890"), "******7890", "keeps last 4 by default");
-  assert.equal(mask("1234567890", { keepStart: 2, keepEnd: 2 }), "12******90", "keeps start and end");
-  assert.equal(mask("short", { keepStart: 4, keepEnd: 4 }), "short", "handles short strings");
-  assert.equal(mask(""), "", "handles empty strings");
-  assert.equal(mask(null), "", "handles null");
-});
-
-test("sanitizeDestination masks all sensitive fields", () => {
-  const dest = {
-    bank: "Sensitive Bank Name",
-    swift: "SENSITIVEXX",
-    account: "1234567890123456",
-    beneficiary: "John Doe"
-  };
-  const out = sanitizeDestination(dest);
-  assert.notEqual(out.bank, dest.bank, "Bank name should be masked");
-  assert.notEqual(out.swift, dest.swift, "SWIFT code should be masked");
-  assert.ok(out.accountMasked.endsWith("3456"), "Account number should be masked");
-  assert.ok(out.beneficiaryMasked.startsWith("J"), "Beneficiary should be masked");
-});
-
-test("normalizePayoutRoute handles various inputs", () => {
-  assert.equal(normalizePayoutRoute("bank"), "bank_wire", "alias for bank");
-  assert.equal(normalizePayoutRoute("PAYPAL"), "paypal_payouts_api", "case-insensitivity");
-  assert.equal(normalizePayoutRoute(null, "default"), "default", "fallback to default");
-  assert.equal(normalizePayoutRoute(""), "bank_wire", "default for empty string");
-});
-
-test("destination JSON can be parsed when quotes are backslash-escaped", () => {
-  const raw = '{\\"bank\\":\\"ExampleBank\\",\\"swift\\":\\"EXAMPLEX1\\",\\"account\\":\\"1234567890123456\\",\\"beneficiary\\":\\"Jane Doe\\"}';
-  const parsed = JSON.parse(raw.replace(/\\"/g, '"'));
-  const out = sanitizeDestination(parsed);
-  assert.equal(out.bank, "ExampleBank");
-  assert.equal(out.swift, "EXAMPLEX1");
-  assert.equal(out.accountMasked.endsWith("3456"), true);
->>>>>>> Stashed changes
 });
 
 test("PPP2 route falls back to bank wire for Morocco without approval", () => {

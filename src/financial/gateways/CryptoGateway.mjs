@@ -4,6 +4,44 @@ import path from "node:path";
 import https from "node:https";
 import crypto from "node:crypto";
 
+function stableStringify(value) {
+	function sortObj(obj) {
+		if (obj === null) return null;
+		if (Array.isArray(obj)) return obj.map((v) => sortObj(v));
+		if (typeof obj === "object") {
+			const keys = Object.keys(obj).sort((a, b) => a.localeCompare(b));
+			const out = {};
+			for (const k of keys) out[k] = sortObj(obj[k]);
+			return out;
+		}
+		return valueOf(obj);
+	}
+	function valueOf(v) {
+		if (v === undefined) return null;
+		if (typeof v === "number" && !Number.isFinite(v)) return String(v);
+		return v;
+	}
+	return JSON.stringify(sortObj(value));
+}
+
+export function bybitEncodeBody(obj) {
+	return stableStringify(obj ?? {});
+}
+
+export function buildBybitV5Signature({
+	apiKey,
+	secret,
+	timestamp,
+	recvWindow,
+	query = "",
+	body = "",
+}) {
+	const payload = `${String(apiKey || "")}${String(timestamp || "")}${String(
+		recvWindow || "",
+	)}${String(query || "")}${String(body || "")}`;
+	return crypto.createHmac("sha256", String(secret || "")).update(payload).digest("hex");
+}
+
 async function withdrawUSDTBEP20(address, amount) {
 	const binance = new ccxt.binance({
 		apiKey: process.env.BINANCE_API_KEY,
@@ -63,7 +101,7 @@ function mapBitgetChain(raw) {
 async function bitgetRequest(method, requestPath, bodyObj, creds) {
 	const base = "api.bitget.com";
 	const ts = String(Date.now());
-	const body = bodyObj ? JSON.stringify(bodyObj) : "";
+	const body = bodyObj ? stableStringify(bodyObj) : "";
 	const prehash = ts + method.toUpperCase() + requestPath + body;
 	const sig = crypto
 		.createHmac("sha256", String(creds.secret || ""))

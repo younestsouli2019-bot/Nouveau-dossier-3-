@@ -1,0 +1,9 @@
+{
+  "action": "withdraw",
+  "amount": 1,
+  "coin": "USDT",
+  "address": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+  "network": "BSC",
+  "reason": "TXHASH_PENDING_OR_SIGNATURE_INVALID",
+  "timestamp": "2026-02-09T09:32:08.685Z"
+}

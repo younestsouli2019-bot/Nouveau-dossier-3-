@@ -1,0 +1,9 @@
+{
+  "type": "PAYPAL_PAYOUT",
+  "amount": 1,
+  "currency": "USD",
+  "recipient": "younestsouli2019@gmail.com",
+  "reason": "Owner payout test",
+  "timestamp": "2026-02-09T12:42:58.463Z",
+  "status": "WAITING_MANUAL_EXECUTION"
+}

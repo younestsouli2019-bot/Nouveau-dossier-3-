@@ -55,16 +55,8 @@ async function main() {
 		);
 		return;
 	}
-	if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
-		console.log(
-			JSON.stringify({
-				ok: false,
-				error: "missing_paypal_credentials",
-				hint: "set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET",
-			}),
-		);
-		return;
-	}
+	const hasCreds =
+		!!process.env.PAYPAL_CLIENT_ID && !!process.env.PAYPAL_CLIENT_SECRET;
 
 	if (!email || !(amount > 0)) {
 		console.log(
@@ -90,11 +82,15 @@ async function main() {
 	let batchId = null;
 	let sync = null;
 	try {
-		if (!allowSend) {
+		if (!hasCreds) {
+			const instruction = gw.generateInstruction(amount, currency, email, note);
+			result = { fallback: "no_credentials", instruction };
+		} else if (!allowSend) {
 			const invoice = await gw.createInvoices([
 				{ amount, currency, destination: email },
 			]);
-			result = { fallback: "invoice", data: invoice };
+			const instruction = gw.generateInstruction(amount, currency, email, note);
+			result = { fallback: "invoice", data: invoice, instruction };
 		} else {
 			const res = await gw.executePayout([
 				{ amount, currency, destination: email, reference: note },
@@ -116,7 +112,7 @@ async function main() {
 		}
 	} catch (e) {
 		const msg = e && e.message ? e.message : String(e);
-		if (msg.includes("AUTHORIZATION_ERROR")) {
+		if (msg.includes("AUTHORIZATION_ERROR") || msg.includes("invalid_client")) {
 			const invoice = await gw.createInvoices([
 				{ amount, currency, destination: email },
 			]);

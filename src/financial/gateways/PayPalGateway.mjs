@@ -1,12 +1,6 @@
-<<<<<<< Updated upstream
 import { paypalRequest, getPayPalAccessToken } from "../../paypal-api.mjs";
 import fs from "fs";
 import path from "path";
-=======
-import { paypalRequest, getPayPalAccessToken } from '../../paypal-api.mjs';
-import fs from 'fs';
-import path from 'path';
->>>>>>> Stashed changes
 
 export class PayPalGateway {
 	constructor() {
@@ -16,7 +10,6 @@ export class PayPalGateway {
 		}
 	}
 
-<<<<<<< Updated upstream
 	async createPayout(amount, currency, destination, reason) {
 		const token = await getPayPalAccessToken();
 		const body = {
@@ -38,40 +31,6 @@ export class PayPalGateway {
 				},
 			],
 		};
-=======
-    async createPayout(amount, currency, destination, reason) {
-        const token = await getPayPalAccessToken();
-        const body = {
-            sender_batch_header: {
-                sender_batch_id: `owner_payout_${Date.now()}`,
-                email_subject: reason,
-                email_message: "Here is your payout."
-            },
-            items: [
-                {
-                    recipient_type: "EMAIL",
-                    amount: {
-                        value: String(amount),
-                        currency: currency
-                    },
-                    receiver: destination,
-                    note: reason,
-                    sender_item_id: `item_${Date.now()}`
-                }
-            ]
-        };
-
-        return paypalRequest('/v1/payments/payouts', {
-            method: 'POST',
-            token,
-            body
-        });
-    }
-
-    async executePayout(transactions) {
-        return await this.createInvoices(transactions);
-    }
->>>>>>> Stashed changes
 
 		return paypalRequest("/v1/payments/payouts", {
 			method: "POST",

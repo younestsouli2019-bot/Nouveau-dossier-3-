@@ -9,7 +9,6 @@ function randomToken(len = 48) {
 }
 
 function getSecrets() {
-<<<<<<< Updated upstream
 	const sensitiveKeywords = [
 		"KEY",
 		"SECRET",
@@ -29,20 +28,6 @@ function getSecrets() {
 		}
 	}
 	return out;
-=======
-  const sensitiveKeywords = ["KEY", "SECRET", "TOKEN", "PASSWORD", "PASS", "PRIVATE"];
-  const out = [];
-  for (const k in process.env) {
-    const upperK = k.toUpperCase();
-    if (sensitiveKeywords.some(keyword => upperK.includes(keyword))) {
-      const v = process.env[k];
-      if (v && String(v).trim()) {
-        out.push(String(v).trim());
-      }
-    }
-  }
-  return out;
->>>>>>> Stashed changes
 }
 
 function buildMatchers(values) {

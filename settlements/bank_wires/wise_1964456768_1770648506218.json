@@ -1,0 +1,12 @@
+{
+  "provider": "WISE",
+  "transfer_id": 1964456768,
+  "quote_id": "7bc8ab70-08e3-4138-a36e-3eb246e32fa9",
+  "recipient_id": 1343883186,
+  "recipient_currency": "EUR",
+  "amount": 150,
+  "currency": "USD",
+  "reference": "INV-2026-001",
+  "timestamp": "2026-02-09T14:48:26.218Z",
+  "api_base": "https://api.wise.com"
+}

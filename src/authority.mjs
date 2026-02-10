@@ -184,7 +184,6 @@ export function computeAuthorityChecksum() {
 }
 
 function enforceOwnerOnlyAllowlist({ owner, policy, action }) {
-<<<<<<< Updated upstream
 	// Only enforce PayPal allowlist for PayPal actions
 	if (action && action.toLowerCase().includes("paypal")) {
 		if (policy.paypal.size > 0) {
@@ -201,19 +200,6 @@ function enforceOwnerOnlyAllowlist({ owner, policy, action }) {
 			}
 		}
 	}
-=======
-  // Only enforce PayPal allowlist for PayPal actions
-  if (action && action.toLowerCase().includes('paypal')) {
-    if (policy.paypal.size > 0) {
-      if (!owner.ownerPayPal) throw new Error("LIVE MODE NOT GUARANTEED (missing OWNER_PAYPAL_EMAIL)");
-      for (const email of policy.paypal) {
-        if (email !== owner.ownerPayPal) {
-          throw new Error("LIVE MODE NOT GUARANTEED (paypal allowlist contains non-owner recipient)");
-        }
-      }
-    }
-  }
->>>>>>> Stashed changes
 
 	if (policy.payoneer.size > 0) {
 		if (!owner.ownerPayoneer)
@@ -278,17 +264,10 @@ export function enforceAuthorityProtocol({
 		}
 	}
 
-<<<<<<< Updated upstream
 	if (requireOwnerOnlyAllowlists) {
 		const policy = getAllowedRecipientsPolicyFromEnv();
 		if (policy.configured) enforceOwnerOnlyAllowlist({ owner, policy, action });
 	}
-=======
-  if (requireOwnerOnlyAllowlists) {
-    const policy = getAllowedRecipientsPolicyFromEnv();
-    if (policy.configured) enforceOwnerOnlyAllowlist({ owner, policy, action });
-  }
->>>>>>> Stashed changes
 
 	return {
 		ok: true,

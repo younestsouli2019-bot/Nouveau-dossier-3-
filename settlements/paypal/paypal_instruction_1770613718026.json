@@ -1,0 +1,9 @@
+{
+  "type": "PAYPAL_PAYOUT",
+  "amount": 10,
+  "currency": "USD",
+  "recipient": "younestsouli2019@gmail.com",
+  "reason": "Owner settlement",
+  "timestamp": "2026-02-09T05:08:38.026Z",
+  "status": "WAITING_MANUAL_EXECUTION"
+}

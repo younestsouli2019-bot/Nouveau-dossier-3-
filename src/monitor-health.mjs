@@ -4,6 +4,7 @@ import { buildBase44ServiceClient } from "./base44-client.mjs";
 import { getPayPalAccessToken } from "./paypal-api.mjs";
 import { maybeSendAlert } from "./alerts.mjs";
 import { parseArgs } from "./utils/cli.mjs";
+import { spawnSync } from "node:child_process";
 
 function sleep(ms) {
 	return new Promise((r) => setTimeout(r, ms));
@@ -251,6 +252,36 @@ function coerceObject(value) {
 	}
 	return {};
 }
+
+function parseCommaList(raw) {
+	if (raw == null) return [];
+	const s = String(raw).trim();
+	if (!s) return [];
+	return s
+		.split(",")
+		.map((x) => String(x).trim())
+		.filter((x) => x.length > 0);
+}
+
+function getTargetedPayPalBatchIds() {
+	const json = parseJsonEnv("PAYPAL_SYNC_BATCH_IDS_JSON");
+	if (Array.isArray(json) && json.length > 0) {
+		return json.map((x) => String(x)).filter((x) => x.length > 0);
+	}
+	const list = parseCommaList(process.env.PAYPAL_SYNC_BATCH_IDS);
+	return list;
+}
+
+function runSyncBatchId(batchId) {
+	const res = spawnSync(
+		process.execPath,
+		["src/sync-paypal-payout-batch.mjs", "--batchId", String(batchId)],
+		{ encoding: "utf8" },
+	);
+	return { ok: res.status === 0, out: res.stdout, err: res.stderr };
+}
+
+const processedSyncTargets = new Set();
 
 function getMissionHealthRequirements() {
 	const override = parseJsonEnv("BASE44_MISSION_HEALTH_REQUIREMENTS_JSON");
@@ -938,6 +969,29 @@ async function main() {
 
 		if (enableWrite) {
 			await writeHealth(base44, cfg, payload);
+		}
+
+		if (paypal.ok) {
+			try {
+				if (processedSyncTargets.size === 0) {
+					const targets = getTargetedPayPalBatchIds();
+					for (const bid of targets) {
+						if (processedSyncTargets.has(bid)) continue;
+						const s = runSyncBatchId(bid);
+						if (s.ok) processedSyncTargets.add(bid);
+						const log = { batchId: bid, ok: s.ok };
+						if (s.ok) {
+							process.stdout.write(
+								`${JSON.stringify({ ok: true, sync: log, out: s.out })}\n`,
+							);
+						} else {
+							process.stderr.write(
+								`${JSON.stringify({ ok: false, sync: log, err: s.err })}\n`,
+							);
+						}
+					}
+				}
+			} catch {}
 		}
 
 		process.stdout.write(`${JSON.stringify({ ok: true, health: payload })}\n`);

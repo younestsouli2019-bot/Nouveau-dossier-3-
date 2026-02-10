@@ -13,7 +13,6 @@ function runSync(batchId) {
 }
 
 async function run() {
-<<<<<<< Updated upstream
 	process.env.PAYPAL_MODE = "PAYOUT";
 	const gw = new PayPalGateway();
 	const dest =
@@ -47,7 +46,12 @@ async function run() {
 		}
 	} catch (e) {
 		const msg = e && e.message ? e.message : String(e);
-		if (msg.includes("AUTHORIZATION_ERROR")) {
+		if (
+			msg.includes("AUTHORIZATION_ERROR") ||
+			msg.includes("invalid_client") ||
+			msg.includes("Client Authentication failed") ||
+			msg.includes("401")
+		) {
 			const storage = { load: () => null, save: (_t, _id, r) => r };
 			const audit = { log: () => {} };
 			const executor = { execute: async (_k, fn) => fn() };
@@ -86,26 +90,6 @@ async function run() {
 		console.error("PAYPAL_PAYOUT_FAILED", msg);
 		process.exit(1);
 	}
-=======
-  process.env.PAYPAL_MODE = 'PAYOUT';
-  const gw = new PayPalGateway();
-  const dest = OwnerSettlementEnforcer.getOwnerAccountForType('paypal');
-  const amt = Number(process.env.PAYPAL_PAYOUT_AMOUNT || 25);
-  const cur = process.env.PAYPAL_PAYOUT_CURRENCY || 'USD';
-  const res = await gw.createPayout(amt, cur, dest, 'Owner Hands-Free Live Payout');
-  if (!res || !res.batch_header?.payout_batch_id) {
-    console.log(JSON.stringify({ ok: false, error: 'missing_batch_id', res }, null, 2));
-    return;
-  }
-  const batchId = res.batch_header.payout_batch_id;
-  console.log(JSON.stringify({ ok: true, payout: { ...res, batchId } }, null, 2));
-  const sync = runSync(batchId);
-  console.log(sync.out || '');
-  if (!sync.ok) {
-    console.error(sync.err || 'SYNC_FAILED');
-    process.exit(1);
-  }
->>>>>>> Stashed changes
 }
 
 run().catch((e) => {
