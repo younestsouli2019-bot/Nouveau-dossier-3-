@@ -1,4 +1,6 @@
 import crypto from 'node:crypto'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 
 /**
  * BankWireGateway (LIVE ONLY)
@@ -69,8 +71,33 @@ export class BankWireGateway {
     const { owner } = this.ensureReady()
     const { amount, currency, reference } = this.normalizeTransactions(transactions)
 
-    // LIVE provider integration not implemented here by design.
-    // To enable, implement submit to your bank API and return provider refs.
-    throw new Error('BankWireGateway: LIVE provider integration not implemented. Disable route or integrate real provider.')
+    const instructions = {
+      ok: true,
+      route: 'bank_wire',
+      mode: 'manual',
+      reference,
+      amount,
+      currency,
+      beneficiary: owner,
+      created_at: new Date().toISOString()
+    }
+
+    const shouldWrite =
+      String(process.env.BANK_WIRE_WRITE_INSTRUCTIONS || 'true').toLowerCase() ===
+      'true'
+    let filePath = null
+    if (shouldWrite) {
+      const dir = path.resolve('exports', 'bank_wire')
+      await fs.mkdir(dir, { recursive: true })
+      const safe = reference.replace(/[^a-zA-Z0-9._-]+/g, '_').slice(0, 80)
+      filePath = path.join(dir, `wire_instructions_${safe}.json`)
+      await fs.writeFile(
+        filePath,
+        `${JSON.stringify(instructions, null, 2)}\n`,
+        'utf8'
+      )
+    }
+
+    return { ...instructions, filePath }
   }
 }

@@ -82,7 +82,7 @@ export class OwnerSettlementEnforcer {
       },
       wise: {
         enabled: String(process.env.WISE_ENABLE || "false").toLowerCase() === "true",
-        email: process.env.WISE_EMAIL
+        email: process.env.OWNER_WISE_EMAIL || process.env.WISE_EMAIL
       },
       transfi: {
         enabled: String(process.env.TRANSFI_ENABLE || "false").toLowerCase() === "true",
@@ -131,7 +131,10 @@ export class OwnerSettlementEnforcer {
     }
     if (r === "wise") {
         const c = cfg?.creds?.wise || {};
-        return !c.enabled || !c.email;
+        if (!c.enabled || !c.email) return true;
+        if (isPlaceholder(process.env.WISE_API_KEY)) return true;
+        if (String(process.env.WISE_ENVIRONMENT || "sandbox").toLowerCase() !== "live") return true;
+        return false;
     }
     if (r === "transfi") {
         const c = cfg?.creds?.transfi || {};

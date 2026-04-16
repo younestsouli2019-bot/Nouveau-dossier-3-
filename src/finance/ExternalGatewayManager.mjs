@@ -4,6 +4,7 @@ import { PayPalGateway } from '../financial/gateways/PayPalGateway.mjs';
 import { CryptoGateway } from '../financial/gateways/CryptoGateway.mjs';
 import { BankWireGateway } from '../financial/gateways/BankWireGateway.mjs';
 import { PayoneerGateway } from '../financial/gateways/PayoneerGateway.mjs';
+import { WiseGateway } from '../financial/gateways/WiseGateway.mjs';
 import { StripeGateway } from '../financial/gateways/StripeGateway.mjs';
 import { TronGateway } from '../financial/gateways/TronGateway.mjs';
 import { InstructionGateway } from '../financial/gateways/InstructionGateway.mjs';
@@ -52,6 +53,7 @@ export class ExternalGatewayManager {
     this.cryptoGateway = new CryptoGateway();
     this.bankGateway = new BankWireGateway();
     this.payoneerGateway = new PayoneerGateway();
+    this.wiseGateway = new WiseGateway({ audit: auditLogger });
     this.stripeGateway = new StripeGateway();
     this.tronGateway = new TronGateway();
     this.platformGateway = new InstructionGateway();
@@ -383,6 +385,19 @@ export class ExternalGatewayManager {
           this.audit.log('PAYONEER_TRANSFER_PREPARED', payoutBatchId, null, result, actor, { reassurance: PrivacyMasker.reassurance('payoneer') });
           return { status: 'processing', gateway_response: result, payout_batch_id: payoutBatchId, processed_at: new Date().toISOString(), route_attempted: route };
         }
+        if (route === 'wise') {
+          const tx = enforceOwnerSettlementForRoute(route, baseTx);
+          const total = tx.reduce((s, t) => s + Number(t.amount || 0), 0);
+          const currency = (tx[0]?.currency || 'USD').toUpperCase();
+          result = await withRetry(() => this.wiseGateway.executeTransfer({
+            payoutBatchId,
+            amount: Number(total.toFixed(2)),
+            currency,
+            description: `Owner settlement ${payoutBatchId}`
+          }));
+          this.audit.log('WISE_TRANSFER_EXECUTED', payoutBatchId, null, result, actor);
+          return { status: 'processing', gateway_response: result, payout_batch_id: payoutBatchId, processed_at: new Date().toISOString(), route_attempted: route };
+        }
         if (route === 'payoneer_standard') {
           const tx = enforceOwnerSettlementForRoute('payoneer', baseTx);
           const instr = await withRetry(() => this.platformGateway.generate('payoneer', tx, 'Instruction for Payoneer Standard'));
@@ -391,7 +406,7 @@ export class ExternalGatewayManager {
         }
         
         // Handle new instruction-based routes
-        const instructionRoutes = ['attijari_morocco', 'chimoney', 'xe', 'wise', 'transfi', 'google_pay_remittance', 'chimoney_ilp'];
+        const instructionRoutes = ['attijari_morocco', 'chimoney', 'xe', 'transfi', 'google_pay_remittance', 'chimoney_ilp'];
         if (instructionRoutes.includes(route)) {
             // No specific strict enforcement logic yet for these, but we pass baseTx
             const instr = await withRetry(() => this.platformGateway.generate(route, baseTx, `Instruction for ${route}`));
