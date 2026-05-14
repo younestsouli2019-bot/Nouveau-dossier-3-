@@ -6,6 +6,8 @@ on:
         description: Swarm ref to deploy (branch or tag)
         required: false
         default: master
+  schedule:
+    - cron: "17 */6 * * *"
 permissions:
   contents: read
 concurrency:
