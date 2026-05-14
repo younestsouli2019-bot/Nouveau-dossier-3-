@@ -1,0 +1,76 @@
+name: Site Deploy Runner
+on:
+  workflow_dispatch:
+    inputs:
+      swarm_ref:
+        description: Swarm ref to deploy (branch or tag)
+        required: false
+        default: master
+permissions:
+  contents: read
+concurrency:
+  group: site-deploy-runner
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout swarm repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.SWARM_REPO || 'CoNrAd2525/swarm' }}
+          ref: ${{ inputs.swarm_ref || vars.SWARM_REF || 'master' }}
+          token: ${{ secrets.SWARM_CHECKOUT_TOKEN || github.token }}
+          persist-credentials: false
+          fetch-depth: 0
+          path: swarm
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+      - name: Vercel pull
+        working-directory: swarm
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
+        run: vercel pull --yes --environment=production
+      - name: Prepare prebuilt output
+        working-directory: swarm
+        run: |
+          rm -rf .vercel/output
+          mkdir -p .vercel/output/static
+          cp -r rank/output/. .vercel/output/static/
+          printf '{"version":3,"routes":[{"handle":"filesystem"},{"src":"/api/(.*)","dest":"/api/index.ts"},{"src":"/(.*)","dest":"/index.html"}]}\n' > .vercel/output/config.json
+      - name: Vercel deploy (prebuilt)
+        id: vercel_deploy
+        working-directory: swarm
+        shell: bash
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
+        run: |
+          set -euo pipefail
+          DEPLOY_URL="$(vercel deploy --prebuilt --prod --yes | tail -n1)"
+          echo "deploy_url=${DEPLOY_URL}" >> "$GITHUB_OUTPUT"
+      - name: Smoke check key pages
+        shell: bash
+        env:
+          URL: ${{ steps.vercel_deploy.outputs.deploy_url }}
+        run: |
+          set -euo pipefail
+          echo "URL=$URL"
+          curl -sSfL "$URL/" | head -n 30 >/dev/null
+          curl -sSfL "$URL/checkout.html" | head -n 30 >/dev/null
+          curl -sSfL "$URL/deals.html" | head -n 30 >/dev/null
+          curl -sSfL "$URL/tests.html" | head -n 30 >/dev/null
+          if curl -sSfL "$URL/payments.html" | grep -Eiq 'paypal\\.me|younesdgc@gmail\\.com'; then
+            echo "payments page still leaks identifiers"
+            exit 1
+          fi
+      - name: Output Vercel URL
+        run: echo "Vercel deployment completed: ${{ steps.vercel_deploy.outputs.deploy_url }}"
