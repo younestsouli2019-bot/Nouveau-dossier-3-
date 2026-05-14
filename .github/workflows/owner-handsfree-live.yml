@@ -81,7 +81,7 @@ jobs:
           PLAID_ACCESS_TOKEN: ${{ secrets.PLAID_ACCESS_TOKEN }}
           ENVBOX_KEY: ${{ secrets.ENVBOX_KEY }}
           OWNER_NOTIFY_EMAIL: ${{ secrets.SECONDARY_CONTACT_EMAIL }}
-          OWNER_SETTLEMENT_AUTORUN: ${{ secrets.OWNER_SETTLEMENT_AUTORUN }}
+          OWNER_SETTLEMENT_AUTORUN: ${{ secrets.OWNER_SETTLEMENT_AUTORUN || 'true' }}
           STRICT_PREFLIGHT: "true"
         run: |
           set -euo pipefail
