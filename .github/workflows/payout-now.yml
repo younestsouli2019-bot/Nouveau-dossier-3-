@@ -1,0 +1,105 @@
+name: Payout Now (Manual)
+on:
+  workflow_dispatch:
+    inputs:
+      swarm_ref:
+        description: Swarm ref (branch or tag)
+        required: false
+        default: master
+      confirm:
+        description: Type YES to execute payouts
+        required: true
+        default: "NO"
+permissions:
+  contents: read
+concurrency:
+  group: payout-now
+  cancel-in-progress: true
+jobs:
+  run:
+    if: ${{ inputs.confirm == 'YES' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout swarm repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.SWARM_REPO || 'CoNrAd2525/swarm' }}
+          ref: ${{ inputs.swarm_ref || vars.SWARM_REF || 'master' }}
+          token: ${{ secrets.SWARM_CHECKOUT_TOKEN || github.token }}
+          persist-credentials: false
+          fetch-depth: 0
+          path: swarm
+      - name: Checkout runner control repo (overrides)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+          path: .runner
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: swarm/package-lock.json
+      - run: npm ci
+        working-directory: swarm
+      - name: Apply overrides
+        run: |
+          python3 - <<'PY'
+          import shutil
+          from pathlib import Path
+          src = Path(".runner/overrides")
+          dst = Path("swarm")
+          if not src.exists():
+              raise SystemExit(0)
+          for p in src.rglob("*"):
+              if p.is_file():
+                  t = dst / p.relative_to(src)
+                  t.parent.mkdir(parents=True, exist_ok=True)
+                  shutil.copy2(p, t)
+          PY
+      - name: Reconcile + payout (once)
+        working-directory: swarm
+        env:
+          BANK_RECONCILE_ENABLE: "true"
+          BANK_RECONCILE_MIN_BATCH_AGE_MIN: "10"
+          SITE_PUBLIC_URL: ${{ secrets.SITE_PUBLIC_URL }}
+          BASE44_TOKEN: ${{ secrets.BASE44_TOKEN }}
+          BASE44_EMAIL: ${{ secrets.BASE44_EMAIL }}
+          BASE44_PASSWORD: ${{ secrets.BASE44_PASSWORD }}
+          BASE44_SERVICE_TOKEN: ${{ secrets.BASE44_SERVICE_TOKEN }}
+          BASE44_APP_ID: ${{ secrets.BASE44_APP_ID }}
+          BASE44_API_URL: ${{ secrets.BASE44_API_URL }}
+          BASE44_SERVER_URL: ${{ secrets.BASE44_SERVER_URL }}
+          BASE44_REVENUE_ENTITY: ${{ secrets.BASE44_REVENUE_ENTITY }}
+          BASE44_PAYOUT_ENTITY: ${{ secrets.BASE44_PAYOUT_ENTITY }}
+          PAYONEER_ENABLE: ${{ secrets.PAYONEER_ENABLE }}
+          PAYONEER_PROVIDER: ${{ secrets.PAYONEER_PROVIDER }}
+          PAYONEER_API_BASE: ${{ secrets.PAYONEER_API_BASE || secrets.PAYONEER_API_URL }}
+          PAYONEER_API_URL: ${{ secrets.PAYONEER_API_URL || secrets.PAYONEER_API_BASE }}
+          PAYONEER_CLIENT_ID: ${{ secrets.PAYONEER_CLIENT_ID }}
+          PAYONEER_CLIENT_SECRET: ${{ secrets.PAYONEER_CLIENT_SECRET }}
+          PAYONEER_PROGRAM_ID: ${{ secrets.PAYONEER_PROGRAM_ID }}
+          PAYONEER_OWNER_ID: ${{ secrets.PAYONEER_OWNER_ID }}
+          PLAID_ENV: ${{ secrets.PLAID_ENV }}
+          PLAID_CLIENT_ID: ${{ secrets.PLAID_CLIENT_ID }}
+          PLAID_SECRET: ${{ secrets.PLAID_SECRET }}
+          PLAIDBOX_KEY: ${{ secrets.PLAIDBOX_KEY }}
+          PLAID_OWNER_ACCESS_TOKEN: ${{ secrets.PLAID_OWNER_ACCESS_TOKEN }}
+          PLAID_ACCESS_TOKEN: ${{ secrets.PLAID_ACCESS_TOKEN }}
+          ENVBOX_KEY: ${{ secrets.ENVBOX_KEY }}
+          OWNER_NOTIFY_EMAIL: ${{ secrets.SECONDARY_CONTACT_EMAIL }}
+          STRICT_PREFLIGHT: "true"
+        run: |
+          set -euo pipefail
+          mkdir -p exports/reports
+          node ./scripts/validate-owner-routing-env.mjs | tee exports/reports/owner_routing_env_last.json
+          node ./scripts/plaid-preflight.mjs | tee exports/reports/plaid_preflight_last.json
+          node ./scripts/base44-preflight.mjs | tee exports/reports/base44_preflight_last.json
+          node ./scripts/auto-confirm-bank-settlements.mjs | tee exports/reports/bank_reconcile_last.json
+          node ./scripts/auto-settle-owner-daemon.mjs --once | tee exports/reports/owner_settle_last.log
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: payout-now-${{ github.run_id }}
+          path: swarm/exports/reports/*
