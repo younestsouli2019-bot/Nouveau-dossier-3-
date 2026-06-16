@@ -5,7 +5,7 @@ export class WiseGateway {
     this.audit = audit
     this.apiKey = process.env.WISE_API_KEY
     this.profileId = process.env.WISE_PROFILE_ID
-    this.environment = process.env.WISE_ENVIRONMENT || 'sandbox'
+    this.environment = process.env.WISE_ENVIRONMENT || "live"
     this.baseUrl =
       this.environment === 'live'
         ? 'https://api.wise.com'

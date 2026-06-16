@@ -1,0 +1,44 @@
+name: Khwarizmian Swarm CI
+
+on:
+  push:
+    branches: [main, master, runner-main]
+  pull_request:
+    branches: [main, master, runner-main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        python: ['3.10', '3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install cryptography --quiet
+      - name: Smoke tests
+        run: python test_swarm.py
+        working-directory: khwarizmian_swarm
+      - name: Standalone simulation
+        run: python khwarizmian_swarm.py
+        working-directory: khwarizmian_swarm
+      - name: Extended simulation (5 phases)
+        run: python khwarizmian_swarm_extended.py
+        working-directory: khwarizmian_swarm
+      - name: Test harness
+        run: python run_swarm.py
+        working-directory: khwarizmian_swarm
+      - name: CI Assertions
+        run: |
+          set -e
+          result=$(python khwarizmian_swarm_extended.py 2>&1)
+          echo "$result"
+          echo "$result" | grep -q "BLOCKED (Law 1)" && echo "Law1=PASS" || { echo "Law1=FAIL"; exit 1; }
+          echo "$result" | grep -q "verification FAILED" && echo "Forgery=PASS" || { echo "Forgery=FAIL"; exit 1; }
+          echo "$result" | grep -q "Outcome: PASSED" && echo "Democracy=PASS" || { echo "Democracy=FAIL"; exit 1; }
+          echo "$result" | grep -q "PHASE 5" && echo "Mesh=PASS" || { echo "Mesh=FAIL"; exit 1; }
+          echo "$result" | grep -q "OPERATIONAL" && echo "Audit=PASS" || { echo "Audit=FAIL"; exit 1; }
+        working-directory: khwarizmian_swarm

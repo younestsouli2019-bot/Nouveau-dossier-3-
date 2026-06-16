@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "khwarizmian-swarm"
+version = "1.0.0"
+description = "Open ethical autonomous agentic swarm framework — base44 protocol + hard-coded Khwarizmian Laws"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Khwarizmian Collective", email = "support@realworldcerts.com"}
+]
+keywords = ["swarm", "autonomous-agents", "ethics", "ai-governance", "base44", "cryptography", "liquid-democracy"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.10"
+dependencies = ["cryptography>=41.0.7"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "black>=23.0", "ruff>=0.1.0"]
+
+[project.urls]
+Homepage = "https://github.com/younestsouli2019-bot/Nouveau-dossier-3-"
+Documentation = "https://github.com/younestsouli2019-bot/Nouveau-dossier-3-/tree/runner-main/khwarizmian_swarm"
+Repository = "https://github.com/younestsouli2019-bot/Nouveau-dossier-3-.git"
+Issues = "https://github.com/younestsouli2019-bot/Nouveau-dossier-3-/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["khwarizmian_swarm*"]
+
+[tool.black]
+line-length = 88
+target-version = ["py310", "py311"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
