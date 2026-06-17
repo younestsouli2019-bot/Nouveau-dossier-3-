@@ -1,1 +1,17 @@
-{"lastAlertAt":0,"lastApprovalAlertAt":0,"lastDeadmanAt":0,"consecutiveFailures":179,"freeze":{"active":true,"reason":"ERROR_STORM_PROTECTION"},"exportedPayoneerBatches":{},"updatedAt":"2026-01-27T17:46:55.090Z"}
+{
+  "lastAlertAt": 0,
+  "lastApprovalAlertAt": 0,
+  "lastDeadmanAt": 0,
+  "consecutiveFailures": 0,
+  "freeze": {
+    "active": false,
+    "reason": null,
+    "cleared_at": "2026-06-17T09:34:30.696944+00:00",
+    "previous_state": {
+      "active": true,
+      "reason": "ERROR_STORM_PROTECTION"
+    }
+  },
+  "exportedPayoneerBatches": {},
+  "updatedAt": "2026-06-17T09:34:30.696983+00:00"
+}

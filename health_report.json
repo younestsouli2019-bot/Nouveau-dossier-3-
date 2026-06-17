@@ -1,0 +1,53 @@
+{
+  "generated_at": "2026-06-17T09:35:54.426809+00:00",
+  "repo_dir": "C:\\Users\\Admin\\AppData\\Local\\Temp\\opencode\\khwarizmian-swarm",
+  "autonomous_state": {
+    "frozen": false,
+    "freeze_reason": null,
+    "consecutive_failures": 0,
+    "health": "OK"
+  },
+  "revenue_events": {
+    "total_events": 128,
+    "total_amount_usd": 72271.74,
+    "by_status": {
+      "paid_out": 124,
+      "earned": 4
+    },
+    "by_source_count": 52,
+    "top_sources": {
+      "realworldcerts.com": 12,
+      "Affiliate Network": 6,
+      "Multiple": 4,
+      "Course Sales": 4,
+      "YouTube Referrals": 4,
+      "Direct Sales": 4,
+      "test_revenue_flow": 4,
+      "swarm_commerce_v1": 3,
+      "course_sale": 2,
+      "LinkedIn Traffic": 2
+    },
+    "pct_settled": 96.9
+  },
+  "missions": {
+    "total_missions": 2639,
+    "by_status": {
+      "in_progress": 1086,
+      "open": 1234,
+      "deployed": 196,
+      "pending": 47,
+      "completed": 36,
+      "active": 36,
+      "failed": 1,
+      "paused": 3
+    },
+    "with_agents_assigned": 1286,
+    "without_agents": 1353,
+    "pct_stuck": 0.0
+  },
+  "bank_settlements": {
+    "raw": "\ufeff{\"ok\":true,\"dryRun\":false,\"count\":0,\"total\":0,\"currency\":\"USD\",\"periodStart\":null,\"periodEnd\":null,\"beneficiary\":null,\"status\":\"settled_externally_pending\",\"bankCsv\":true,\"bankDetailsPresent\":true}"
+  },
+  "health_score": 75,
+  "health_rating": "OK"
+}

@@ -1,0 +1,450 @@
+{
+  "main_csv_count": 128,
+  "offline_flush_before": 63,
+  "duplicates_removed": 63,
+  "offline_only_kept": 0,
+  "offline_flush_after": 0,
+  "details": [
+    {
+      "event_id": "68e750acedec97285a166559",
+      "id": "offline_RevenueEvent_1767387333130_5402988",
+      "amount": "580",
+      "source": "New Year Launch",
+      "created_date": "2026-01-02T20:55:33.130Z"
+    },
+    {
+      "event_id": "68e750acedec97285a16655b",
+      "id": "offline_RevenueEvent_1767387333191_155685498",
+      "amount": "750",
+      "source": "January Resolution Sales",
+      "created_date": "2026-01-02T20:55:33.191Z"
+    },
+    {
+      "event_id": "68e750acedec97285a16655a",
+      "id": "offline_RevenueEvent_1767387333231_470779343",
+      "amount": "325.5",
+      "source": "Affiliate Network",
+      "created_date": "2026-01-02T20:55:33.231Z"
+    },
+    {
+      "event_id": "68e750acedec97285a16655d",
+      "id": "offline_RevenueEvent_1767387333272_173515611",
+      "amount": "445",
+      "source": "LinkedIn New Year Posts",
+      "created_date": "2026-01-02T20:55:33.272Z"
+    },
+    {
+      "event_id": "68e750acedec97285a16655f",
+      "id": "offline_RevenueEvent_1767387333321_317364099",
+      "amount": "620",
+      "source": "New Year Special",
+      "created_date": "2026-01-02T20:55:33.321Z"
+    },
+    {
+      "event_id": "68e750acedec97285a16655c",
+      "id": "offline_RevenueEvent_1767387333358_184935727",
+      "amount": "215.75",
+      "source": "Reddit Career Advice",
+      "created_date": "2026-01-02T20:55:33.358Z"
+    },
+    {
+      "event_id": "68e750acedec97285a16655e",
+      "id": "offline_RevenueEvent_1767387333398_935730525",
+      "amount": "890.25",
+      "source": "Course Bundle Sale",
+      "created_date": "2026-01-02T20:55:33.398Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2f2",
+      "id": "offline_RevenueEvent_1767387333445_641237425",
+      "amount": "615",
+      "source": "Instagram Campaign",
+      "created_date": "2026-01-02T20:55:33.445Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2f3",
+      "id": "offline_RevenueEvent_1767387333492_618071893",
+      "amount": "280.25",
+      "source": "TikTok Traffic",
+      "created_date": "2026-01-02T20:55:33.492Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2db",
+      "id": "offline_RevenueEvent_1767387333540_631056142",
+      "amount": "410",
+      "source": "Direct Sales",
+      "created_date": "2026-01-02T20:55:33.540Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2fd",
+      "id": "offline_RevenueEvent_1767387333579_403745454",
+      "amount": "820.75",
+      "source": "Labor Day Sale",
+      "created_date": "2026-01-02T20:55:33.579Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2e0",
+      "id": "offline_RevenueEvent_1767387333622_714120917",
+      "amount": "495",
+      "source": "Medium Articles",
+      "created_date": "2026-01-02T20:55:33.622Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2e3",
+      "id": "offline_RevenueEvent_1767387333665_356148188",
+      "amount": "290.5",
+      "source": "Quora Answers",
+      "created_date": "2026-01-02T20:55:33.665Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2e8",
+      "id": "offline_RevenueEvent_1767387333707_476790379",
+      "amount": "940",
+      "source": "Halloween Special",
+      "created_date": "2026-01-02T20:55:33.707Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2ec",
+      "id": "offline_RevenueEvent_1767387333749_892870279",
+      "amount": "825",
+      "source": "Certification Prep",
+      "created_date": "2026-01-02T20:55:33.749Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2f1",
+      "id": "offline_RevenueEvent_1767387333800_772448939",
+      "amount": "490.75",
+      "source": "Partner Referral",
+      "created_date": "2026-01-02T20:55:33.800Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2fa",
+      "id": "offline_RevenueEvent_1767387333857_890608639",
+      "amount": "430",
+      "source": "Affiliate Network",
+      "created_date": "2026-01-02T20:55:33.857Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2fc",
+      "id": "offline_RevenueEvent_1767387333904_163585789",
+      "amount": "550",
+      "source": "Direct Sales",
+      "created_date": "2026-01-02T20:55:33.904Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2d6",
+      "id": "offline_RevenueEvent_1767387333947_276539868",
+      "amount": "890.25",
+      "source": "Course Sales",
+      "created_date": "2026-01-02T20:55:33.947Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2f6",
+      "id": "offline_RevenueEvent_1767387333988_717643719",
+      "amount": "540",
+      "source": "LinkedIn Networking",
+      "created_date": "2026-01-02T20:55:33.988Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2f8",
+      "id": "offline_RevenueEvent_1767387334029_155242423",
+      "amount": "660",
+      "source": "Corporate Package",
+      "created_date": "2026-01-02T20:55:34.029Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2d4",
+      "id": "offline_RevenueEvent_1767387334078_714042681",
+      "amount": "450.5",
+      "source": "realworldcerts.com",
+      "created_date": "2026-01-02T20:55:34.078Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2e4",
+      "id": "offline_RevenueEvent_1767387334245_120543666",
+      "amount": "560",
+      "source": "LinkedIn Posts",
+      "created_date": "2026-01-02T20:55:34.245Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2ef",
+      "id": "offline_RevenueEvent_1767387334318_511516710",
+      "amount": "360.5",
+      "source": "Discord Community",
+      "created_date": "2026-01-02T20:55:34.318Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2e9",
+      "id": "offline_RevenueEvent_1767387334367_395375367",
+      "amount": "580.5",
+      "source": "Affiliate Sales",
+      "created_date": "2026-01-02T20:55:34.367Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2ea",
+      "id": "offline_RevenueEvent_1767387334410_610440669",
+      "amount": "670",
+      "source": "Corporate Training",
+      "created_date": "2026-01-02T20:55:34.410Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2ee",
+      "id": "offline_RevenueEvent_1767387334458_133930189",
+      "amount": "520",
+      "source": "Email Campaign",
+      "created_date": "2026-01-02T20:55:34.458Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2f5",
+      "id": "offline_RevenueEvent_1767387334508_837229777",
+      "amount": "885.5",
+      "source": "Bulk Course Sales",
+      "created_date": "2026-01-02T20:55:34.508Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2f9",
+      "id": "offline_RevenueEvent_1767387334548_733748830",
+      "amount": "795.25",
+      "source": "Premium Courses",
+      "created_date": "2026-01-02T20:55:34.548Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2d5",
+      "id": "offline_RevenueEvent_1767387334592_905918304",
+      "amount": "275",
+      "source": "Affiliate Network",
+      "created_date": "2026-01-02T20:55:34.592Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2dd",
+      "id": "offline_RevenueEvent_1767387334632_117905170",
+      "amount": "1250.5",
+      "source": "Holiday Campaign",
+      "created_date": "2026-01-02T20:55:34.632Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2e7",
+      "id": "offline_RevenueEvent_1767387334676_226153105",
+      "amount": "310.25",
+      "source": "Reddit Community",
+      "created_date": "2026-01-02T20:55:34.676Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2f7",
+      "id": "offline_RevenueEvent_1767387334719_899198622",
+      "amount": "315.75",
+      "source": "Community Forum",
+      "created_date": "2026-01-02T20:55:34.719Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2fe",
+      "id": "offline_RevenueEvent_1767387334763_930990242",
+      "amount": "485",
+      "source": "SEO Traffic",
+      "created_date": "2026-01-02T20:55:34.763Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2d9",
+      "id": "offline_RevenueEvent_1767387334807_693241563",
+      "amount": "520",
+      "source": "LinkedIn B2B",
+      "created_date": "2026-01-02T20:55:34.807Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2dc",
+      "id": "offline_RevenueEvent_1767387334848_585200165",
+      "amount": "780",
+      "source": "Black Friday Sales",
+      "created_date": "2026-01-02T20:55:34.848Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2d8",
+      "id": "offline_RevenueEvent_1767387334893_303231049",
+      "amount": "150.75",
+      "source": "Reddit Traffic",
+      "created_date": "2026-01-02T20:55:34.893Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2e5",
+      "id": "offline_RevenueEvent_1767387334933_479573563",
+      "amount": "715.75",
+      "source": "YouTube Traffic",
+      "created_date": "2026-01-02T20:55:34.933Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2da",
+      "id": "offline_RevenueEvent_1767387334980_177269590",
+      "amount": "680.5",
+      "source": "YouTube Referrals",
+      "created_date": "2026-01-02T20:55:34.980Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2df",
+      "id": "offline_RevenueEvent_1767387335026_732917776",
+      "amount": "340.75",
+      "source": "Twitter Campaign",
+      "created_date": "2026-01-02T20:55:35.026Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2de",
+      "id": "offline_RevenueEvent_1767387335068_762353579",
+      "amount": "620",
+      "source": "Affiliate Commission",
+      "created_date": "2026-01-02T20:55:35.068Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2d7",
+      "id": "offline_RevenueEvent_1767387335107_74047376",
+      "amount": "325",
+      "source": "realworldcerts.com",
+      "created_date": "2026-01-02T20:55:35.107Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2e1",
+      "id": "offline_RevenueEvent_1767387335147_605044519",
+      "amount": "825.25",
+      "source": "Course Bundle",
+      "created_date": "2026-01-02T20:55:35.147Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2e2",
+      "id": "offline_RevenueEvent_1767387335194_947257456",
+      "amount": "380",
+      "source": "realworldcerts.com",
+      "created_date": "2026-01-02T20:55:35.194Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2eb",
+      "id": "offline_RevenueEvent_1767387335237_198209446",
+      "amount": "395.75",
+      "source": "Facebook Ads",
+      "created_date": "2026-01-02T20:55:35.237Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2ed",
+      "id": "offline_RevenueEvent_1767387335281_788636331",
+      "amount": "445.25",
+      "source": "realworldcerts.com",
+      "created_date": "2026-01-02T20:55:35.281Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2f4",
+      "id": "offline_RevenueEvent_1767387335322_117833005",
+      "amount": "720",
+      "source": "End of Q3 Push",
+      "created_date": "2026-01-02T20:55:35.322Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2e6",
+      "id": "offline_RevenueEvent_1767387335374_463074997",
+      "amount": "425",
+      "source": "Direct Marketing",
+      "created_date": "2026-01-02T20:55:35.374Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2f0",
+      "id": "offline_RevenueEvent_1767387335438_270794293",
+      "amount": "755",
+      "source": "Webinar Sales",
+      "created_date": "2026-01-02T20:55:35.438Z"
+    },
+    {
+      "event_id": "68e7500c4eae3dbaf591e2fb",
+      "id": "offline_RevenueEvent_1767387335499_240297324",
+      "amount": "375.5",
+      "source": "YouTube Sponsors",
+      "created_date": "2026-01-02T20:55:35.499Z"
+    },
+    {
+      "event_id": "68e0f56d5a1c0e13fda4321f",
+      "id": "offline_RevenueEvent_1767387335559_194787417",
+      "amount": "275",
+      "source": "Affiliate Program",
+      "created_date": "2026-01-02T20:55:35.559Z"
+    },
+    {
+      "event_id": "68e0f56d5a1c0e13fda43221",
+      "id": "offline_RevenueEvent_1767387335601_838479024",
+      "amount": "325",
+      "source": "realworldcerts.com",
+      "created_date": "2026-01-02T20:55:35.601Z"
+    },
+    {
+      "event_id": "68e0f56d5a1c0e13fda43222",
+      "id": "offline_RevenueEvent_1767387335644_375105086",
+      "amount": "150.75",
+      "source": "Reddit Conversions",
+      "created_date": "2026-01-02T20:55:35.644Z"
+    },
+    {
+      "event_id": "68e0f56d5a1c0e13fda43224",
+      "id": "offline_RevenueEvent_1767387335686_255296822",
+      "amount": "680.5",
+      "source": "YouTube Referrals",
+      "created_date": "2026-01-02T20:55:35.686Z"
+    },
+    {
+      "event_id": "68e0f56d5a1c0e13fda43220",
+      "id": "offline_RevenueEvent_1767387335726_221984755",
+      "amount": "890.25",
+      "source": "Course Sales",
+      "created_date": "2026-01-02T20:55:35.726Z"
+    },
+    {
+      "event_id": "68e0f56d5a1c0e13fda4321e",
+      "id": "offline_RevenueEvent_1767387335766_985067548",
+      "amount": "450.5",
+      "source": "realworldcerts.com",
+      "created_date": "2026-01-02T20:55:35.766Z"
+    },
+    {
+      "event_id": "68e0f56d5a1c0e13fda43223",
+      "id": "offline_RevenueEvent_1767387335804_455221258",
+      "amount": "520",
+      "source": "LinkedIn Traffic",
+      "created_date": "2026-01-02T20:55:35.804Z"
+    },
+    {
+      "event_id": "68bbde98768731d1ecd410c0",
+      "id": "offline_RevenueEvent_1767387335846_104533978",
+      "amount": "2840",
+      "source": "Multiple",
+      "created_date": "2026-01-02T20:55:35.846Z"
+    },
+    {
+      "event_id": "68bbde98768731d1ecd410c1",
+      "id": "offline_RevenueEvent_1767387335896_434020996",
+      "amount": "1680",
+      "source": "Multiple",
+      "created_date": "2026-01-02T20:55:35.896Z"
+    },
+    {
+      "event_id": "TEST_REV_1767560481225",
+      "id": "offline_RevenueEvent_1767560481692_670146616",
+      "amount": "1",
+      "source": "test_revenue_flow",
+      "created_date": "2026-01-04T21:01:21.692Z"
+    },
+    {
+      "event_id": "TEST_REV_1767560543111",
+      "id": "offline_RevenueEvent_1767560543567_691440341",
+      "amount": "1",
+      "source": "test_revenue_flow",
+      "created_date": "2026-01-04T21:02:23.567Z"
+    },
+    {
+      "event_id": "TEST_REV_1767604681388",
+      "id": "offline_RevenueEvent_1767604681870_372109160",
+      "amount": "1",
+      "source": "test_revenue_flow",
+      "created_date": "2026-01-05T09:18:01.870Z"
+    },
+    {
+      "event_id": "TEST_REV_1767656448678",
+      "id": "offline_RevenueEvent_1767656449142_78222912",
+      "amount": "1",
+      "source": "test_revenue_flow",
+      "created_date": "2026-01-05T23:40:49.142Z"
+    }
+  ]
+}

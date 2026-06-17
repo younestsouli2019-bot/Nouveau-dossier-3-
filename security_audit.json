@@ -1,0 +1,92 @@
+{
+  "scan_timestamp": "2026-06-17T10:35:19.547433",
+  "repo_dir": "C:\\Users\\Admin\\AppData\\Local\\Temp\\opencode\\khwarizmian-swarm",
+  "files_scanned": 17,
+  "findings_count": 12,
+  "findings": [
+    {
+      "type": "paypal_client_id",
+      "file": "C:\\Users\\Admin\\AppData\\Local\\Temp\\opencode\\khwarizmian-swarm\\Mission_export (72).csv",
+      "line": 20,
+      "match": "paypal_client_id:AZYO-dwFY_6SE73Fq1BpC-Zrq0kIFhRDC4nKRQ2yA3B...",
+      "context": "-Delta,Payments-Agent-Sigma],{paypal_client_id:AZYO-dwFY_6SE73Fq1BpC-Zrq0kIFhRDC4nKRQ2yA3BKOVO4f3uFatz9lJkx5rd0r2XDpFDN2"
+    },
+    {
+      "type": "paypal_client_id",
+      "file": "C:\\Users\\Admin\\AppData\\Local\\Temp\\opencode\\khwarizmian-swarm\\Mission_export (72).csv",
+      "line": 21,
+      "match": "paypal_client_id:AZYO-dwFY_6SE73Fq1BpC-Zrq0kIFhRDC4nKRQ2yA3B...",
+      "context": "-Delta,Payments-Agent-Sigma],{paypal_client_id:AZYO-dwFY_6SE73Fq1BpC-Zrq0kIFhRDC4nKRQ2yA3BKOVO4f3uFatz9lJkx5rd0r2XDpFDN2"
+    },
+    {
+      "type": "paypal_client_id",
+      "file": "C:\\Users\\Admin\\AppData\\Local\\Temp\\opencode\\khwarizmian-swarm\\Mission_export (72).csv",
+      "line": 22,
+      "match": "paypal_client_id:AZYO-dwFY_6SE73Fq1BpC-Zrq0kIFhRDC4nKRQ2yA3B...",
+      "context": "-Delta,Payments-Agent-Sigma],{paypal_client_id:AZYO-dwFY_6SE73Fq1BpC-Zrq0kIFhRDC4nKRQ2yA3BKOVO4f3uFatz9lJkx5rd0r2XDpFDN2"
+    },
+    {
+      "type": "paypal_client_id",
+      "file": "C:\\Users\\Admin\\AppData\\Local\\Temp\\opencode\\khwarizmian-swarm\\Mission_export (72).csv",
+      "line": 153,
+      "match": "paypal_client_id:AZYO-dwFY_6SE73Fq1BpC-Zrq0kIFhRDC4nKRQ2yA3B...",
+      "context": "-Delta,Payments-Agent-Sigma],{paypal_client_id:AZYO-dwFY_6SE73Fq1BpC-Zrq0kIFhRDC4nKRQ2yA3BKOVO4f3uFatz9lJkx5rd0r2XDpFDN2"
+    },
+    {
+      "type": "paypal_client_id",
+      "file": "C:\\Users\\Admin\\AppData\\Local\\Temp\\opencode\\khwarizmian-swarm\\Mission_export (72).csv",
+      "line": 154,
+      "match": "paypal_client_id:AZYO-dwFY_6SE73Fq1BpC-Zrq0kIFhRDC4nKRQ2yA3B...",
+      "context": "-Delta,Payments-Agent-Sigma],{paypal_client_id:AZYO-dwFY_6SE73Fq1BpC-Zrq0kIFhRDC4nKRQ2yA3BKOVO4f3uFatz9lJkx5rd0r2XDpFDN2"
+    },
+    {
+      "type": "paypal_client_id",
+      "file": "C:\\Users\\Admin\\AppData\\Local\\Temp\\opencode\\khwarizmian-swarm\\Mission_export (72).csv",
+      "line": 155,
+      "match": "paypal_client_id:AZYO-dwFY_6SE73Fq1BpC-Zrq0kIFhRDC4nKRQ2yA3B...",
+      "context": "-Delta,Payments-Agent-Sigma],{paypal_client_id:AZYO-dwFY_6SE73Fq1BpC-Zrq0kIFhRDC4nKRQ2yA3BKOVO4f3uFatz9lJkx5rd0r2XDpFDN2"
+    },
+    {
+      "type": "paypal_client_secret",
+      "file": "C:\\Users\\Admin\\AppData\\Local\\Temp\\opencode\\khwarizmian-swarm\\Mission_export (72).csv",
+      "line": 20,
+      "match": "paypal_client_secret:EKAFqkcxpzACCO0jasfuNUPFNwOUCfgFAmhSA0t...",
+      "context": "Fatz9lJkx5rd0r2XDpFDN2SyJNChh,paypal_client_secret:EKAFqkcxpzACCO0jasfuNUPFNwOUCfgFAmhSA0tIEk-pD-LtLRmYrut0znU5gqrXw0eU2"
+    },
+    {
+      "type": "paypal_client_secret",
+      "file": "C:\\Users\\Admin\\AppData\\Local\\Temp\\opencode\\khwarizmian-swarm\\Mission_export (72).csv",
+      "line": 21,
+      "match": "paypal_client_secret:EKAFqkcxpzACCO0jasfuNUPFNwOUCfgFAmhSA0t...",
+      "context": "Fatz9lJkx5rd0r2XDpFDN2SyJNChh,paypal_client_secret:EKAFqkcxpzACCO0jasfuNUPFNwOUCfgFAmhSA0tIEk-pD-LtLRmYrut0znU5gqrXw0eU2"
+    },
+    {
+      "type": "paypal_client_secret",
+      "file": "C:\\Users\\Admin\\AppData\\Local\\Temp\\opencode\\khwarizmian-swarm\\Mission_export (72).csv",
+      "line": 22,
+      "match": "paypal_client_secret:EKAFqkcxpzACCO0jasfuNUPFNwOUCfgFAmhSA0t...",
+      "context": "Fatz9lJkx5rd0r2XDpFDN2SyJNChh,paypal_client_secret:EKAFqkcxpzACCO0jasfuNUPFNwOUCfgFAmhSA0tIEk-pD-LtLRmYrut0znU5gqrXw0eU2"
+    },
+    {
+      "type": "paypal_client_secret",
+      "file": "C:\\Users\\Admin\\AppData\\Local\\Temp\\opencode\\khwarizmian-swarm\\Mission_export (72).csv",
+      "line": 153,
+      "match": "paypal_client_secret:EKAFqkcxpzACCO0jasfuNUPFNwOUCfgFAmhSA0t...",
+      "context": "Fatz9lJkx5rd0r2XDpFDN2SyJNChh,paypal_client_secret:EKAFqkcxpzACCO0jasfuNUPFNwOUCfgFAmhSA0tIEk-pD-LtLRmYrut0znU5gqrXw0eU2"
+    },
+    {
+      "type": "paypal_client_secret",
+      "file": "C:\\Users\\Admin\\AppData\\Local\\Temp\\opencode\\khwarizmian-swarm\\Mission_export (72).csv",
+      "line": 154,
+      "match": "paypal_client_secret:EKAFqkcxpzACCO0jasfuNUPFNwOUCfgFAmhSA0t...",
+      "context": "Fatz9lJkx5rd0r2XDpFDN2SyJNChh,paypal_client_secret:EKAFqkcxpzACCO0jasfuNUPFNwOUCfgFAmhSA0tIEk-pD-LtLRmYrut0znU5gqrXw0eU2"
+    },
+    {
+      "type": "paypal_client_secret",
+      "file": "C:\\Users\\Admin\\AppData\\Local\\Temp\\opencode\\khwarizmian-swarm\\Mission_export (72).csv",
+      "line": 155,
+      "match": "paypal_client_secret:EKAFqkcxpzACCO0jasfuNUPFNwOUCfgFAmhSA0t...",
+      "context": "Fatz9lJkx5rd0r2XDpFDN2SyJNChh,paypal_client_secret:EKAFqkcxpzACCO0jasfuNUPFNwOUCfgFAmhSA0tIEk-pD-LtLRmYrut0znU5gqrXw0eU2"
+    }
+  ]
+}
