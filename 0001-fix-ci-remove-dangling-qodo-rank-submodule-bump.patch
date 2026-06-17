@@ -1,0 +1,72 @@
+From 433ea480f6a60ecb06c3dc7b689acc3e0b060dfe Mon Sep 17 00:00:00 2001
+From: autonomous-bot <z@container.local>
+Date: Wed, 17 Jun 2026 09:11:22 +0000
+Subject: [PATCH] fix(ci): remove dangling .qodo/rank submodule + bump
+ checkout/artifact to v5
+
+Run #172 of 'Owner Hands-Free (Live)' failed with git exit code 128 because
+.qodo/rank was recorded as a submodule gitlink (mode 160000) but had no
+corresponding entry in .gitmodules (no URL). The actions/checkout step could
+not resolve it, aborting the run ~20s in before any reconcile/settlement
+script executed.
+
+Fixes:
+- Remove the dangling .qodo/rank gitlink from the tree.
+- Bump actions/checkout@v4 -> @v5 and actions/upload-artifact@v4 -> @v5
+  (Node 20 actions are deprecated and forced to Node 24 from 2026-06-16).
+- Add explicit 'submodules: false' to both checkout steps as a guard.
+
+This unblocks the scheduled '*/10 * * * *' run.
+---
+ .github/workflows/owner-handsfree-live.yml | 8 +++++---
+ .qodo/rank                                 | 1 -
+ 2 files changed, 5 insertions(+), 4 deletions(-)
+ delete mode 160000 .qodo/rank
+
+diff --git a/.github/workflows/owner-handsfree-live.yml b/.github/workflows/owner-handsfree-live.yml
+index 619e252..9d119e3 100644
+--- a/.github/workflows/owner-handsfree-live.yml
++++ b/.github/workflows/owner-handsfree-live.yml
+@@ -13,19 +13,21 @@ jobs:
+     runs-on: ubuntu-latest
+     steps:
+       - name: Checkout swarm repo
+-        uses: actions/checkout@v4
++        uses: actions/checkout@v5
+         with:
+           repository: ${{ vars.SWARM_REPO || 'CoNrAd2525/swarm' }}
+           ref: ${{ vars.SWARM_REF || 'master' }}
+           token: ${{ secrets.SWARM_CHECKOUT_TOKEN || github.token }}
+           persist-credentials: false
+           fetch-depth: 0
++          submodules: false
+           path: swarm
+       - name: Checkout runner control repo (overrides)
+-        uses: actions/checkout@v4
++        uses: actions/checkout@v5
+         with:
+           persist-credentials: false
+           fetch-depth: 1
++          submodules: false
+           path: .runner
+       - uses: actions/setup-node@v4
+         with:
+@@ -102,7 +104,7 @@ jobs:
+           fi
+       - name: Upload reports
+         if: always()
+-        uses: actions/upload-artifact@v4
++        uses: actions/upload-artifact@v5
+         with:
+           name: owner-handsfree-live-${{ github.run_id }}
+           path: swarm/exports/reports/*
+diff --git a/.qodo/rank b/.qodo/rank
+deleted file mode 160000
+index a239ad5..0000000
+--- a/.qodo/rank
++++ /dev/null
+@@ -1 +0,0 @@
+-Subproject commit a239ad56c5b4428578dc611b527f53cb6887102e
+-- 
+2.47.3
+
