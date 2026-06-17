@@ -1,0 +1,34 @@
+{
+  "verified_at": "2026-06-17T09:54:11.835565+00:00",
+  "repo_dir": "C:\\Users\\Admin\\AppData\\Local\\Temp\\opencode\\khwarizmian-swarm",
+  "overall_pass": true,
+  "checks_passed": 5,
+  "checks_total": 5,
+  "results": {
+    "freeze_cleared": {
+      "ok": true,
+      "status": "OK",
+      "detail": "unfrozen (cleared at 2026-06-17T09:54:06.599525+00:00)"
+    },
+    "revenue_settled": {
+      "ok": true,
+      "status": "OK",
+      "detail": "96.9% settled (124/128)"
+    },
+    "missions_dispatched": {
+      "ok": true,
+      "status": "OK",
+      "detail": "0 todo, 1286 with agents (of 2639)"
+    },
+    "dedup_applied": {
+      "ok": true,
+      "status": "OK",
+      "detail": "dedup completed: 63 duplicates removed"
+    },
+    "security_scanned": {
+      "ok": true,
+      "status": "FINDINGS",
+      "detail": "36 credential exposures detected (review security_audit.json)"
+    }
+  }
+}

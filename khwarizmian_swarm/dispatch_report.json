@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-06-17T09:54:08.194735+00:00",
+  "total_missions": 2639,
+  "dispatched": 841,
+  "agent_pool": {
+    "agent-1": "Finance-Agent-Alpha",
+    "agent-2": "Payments-Agent-Sigma",
+    "agent-3": "Revenue-Optimizer-Beta",
+    "agent-4": "Swarm-Coordinator-Gamma",
+    "agent-5": "Compliance-Auditor-Delta"
+  }
+}
