@@ -23,6 +23,10 @@ export function getRoutesStatus() {
 	const bankOpen = bankEnabled;
 	const cryptoWithdrawEnable = val("CRYPTO_WITHDRAW_ENABLE") === "true";
 	const cryptoOpen = cryptoWithdrawEnable && !bunker;
+	const wiseEnabled = val("WISE_ENABLE") === "true";
+	const wiseOpen = wiseEnabled;
+	const googlePayEnabled = val("GOOGLEPAY_ENABLE") === "true";
+	const googlePayOpen = googlePayEnabled;
 	const out = {
 		created_at: new Date().toISOString(),
 		bunker_mode: bunker,
@@ -30,6 +34,8 @@ export function getRoutesStatus() {
 		paypal_open: paypalOpen,
 		bank_open: bankOpen,
 		crypto_open: cryptoOpen,
+		wise_open: wiseOpen,
+		googlepay_open: googlePayOpen,
 	};
 	return out;
 }

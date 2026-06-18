@@ -24,16 +24,18 @@ test("payment routing optimization prefers bank wire when PayPal payouts disable
 	const prevOptimize = process.env.AUTONOMOUS_OPTIMIZE_PAYMENT_ROUTING;
 	const prevApproved = process.env.PAYPAL_PPP2_APPROVED;
 	const prevEnable = process.env.PAYPAL_PPP2_ENABLE_SEND;
+	const prevEarningEntity = process.env.BASE44_EARNING_ENTITY;
 	try {
 		process.env.AUTONOMOUS_OPTIMIZE_PAYMENT_ROUTING = "true";
 		process.env.PAYPAL_PPP2_APPROVED = "false";
 		process.env.PAYPAL_PPP2_ENABLE_SEND = "false";
+		process.env.BASE44_EARNING_ENTITY = "Earning";
 
 		const base44 = {
 			asServiceRole: {
 				entities: {
 					Earning: {
-						list: async () => [
+						list: async (sort, pageSize, offset, fields) => [
 							{
 								id: "1",
 								earning_id: "E1",
@@ -80,19 +82,23 @@ test("payment routing optimization prefers bank wire when PayPal payouts disable
 		else process.env.PAYPAL_PPP2_APPROVED = prevApproved;
 		if (prevEnable == null) delete process.env.PAYPAL_PPP2_ENABLE_SEND;
 		else process.env.PAYPAL_PPP2_ENABLE_SEND = prevEnable;
+		if (prevEarningEntity == null) delete process.env.BASE44_EARNING_ENTITY;
+		else process.env.BASE44_EARNING_ENTITY = prevEarningEntity;
 	}
 });
 
 test("createPayoutBatchesFromEarnings skips paypal batch when recipient not in allowlist", async () => {
 	const prev = process.env.AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS;
+	const prevEarningEntity = process.env.BASE44_EARNING_ENTITY;
 	try {
 		process.env.AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS = "owner@example.com";
+		process.env.BASE44_EARNING_ENTITY = "Earning";
 
 		const base44 = {
 			asServiceRole: {
 				entities: {
 					Earning: {
-						list: async () => [
+						list: async (sort, pageSize, offset, fields) => [
 							{
 								id: "1",
 								earning_id: "E1",
@@ -127,19 +133,23 @@ test("createPayoutBatchesFromEarnings skips paypal batch when recipient not in a
 	} finally {
 		if (prev == null) delete process.env.AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS;
 		else process.env.AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS = prev;
+		if (prevEarningEntity == null) delete process.env.BASE44_EARNING_ENTITY;
+		else process.env.BASE44_EARNING_ENTITY = prevEarningEntity;
 	}
 });
 
 test("createPayoutBatchesFromEarnings allows paypal batch when recipient in allowlist", async () => {
 	const prev = process.env.AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS;
+	const prevEarningEntity = process.env.BASE44_EARNING_ENTITY;
 	try {
 		process.env.AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS = "owner@example.com";
+		process.env.BASE44_EARNING_ENTITY = "Earning";
 
 		const base44 = {
 			asServiceRole: {
 				entities: {
 					Earning: {
-						list: async () => [
+						list: async (sort, pageSize, offset, fields) => [
 							{
 								id: "1",
 								earning_id: "E1",
@@ -174,5 +184,7 @@ test("createPayoutBatchesFromEarnings allows paypal batch when recipient in allo
 	} finally {
 		if (prev == null) delete process.env.AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS;
 		else process.env.AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS = prev;
+		if (prevEarningEntity == null) delete process.env.BASE44_EARNING_ENTITY;
+		else process.env.BASE44_EARNING_ENTITY = prevEarningEntity;
 	}
 });

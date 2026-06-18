@@ -1,10 +1,13 @@
 CREDS.txt
 exports/
 settlements/payoneer/*.csv
+settlements/payoneer/*.xls
 settlements/payoneer/receipts/*.json
 data/swarm/**
 data/notifications/**
+data/base44/**
 reports/historic/**
+rank/swarm
 *.log
 *.tmp
 node_modules/
@@ -12,3 +15,4 @@ node_modules/
  .env.*
  .keys/
  *.pem
+opencode.json

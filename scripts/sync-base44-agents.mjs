@@ -1,3 +1,4 @@
+import "dotenv/config";
 import fs from "node:fs";
 import path from "node:path";
 import { buildBase44ServiceClient } from "../src/base44-client.mjs";

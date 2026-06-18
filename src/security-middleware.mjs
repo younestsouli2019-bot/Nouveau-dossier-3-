@@ -5,7 +5,6 @@ import { URL } from "url";
  * @param {import('http').ServerResponse} res
  */
 export function addSecurityHeaders(res) {
-<<<<<<< Updated upstream
 	res.setHeader(
 		"Content-Security-Policy",
 		"default-src 'self'; script-src 'self'; frame-ancestors 'none';",
@@ -21,17 +20,6 @@ export function addSecurityHeaders(res) {
 	// Additional defense-in-depth
 	res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
 	res.setHeader("Cross-Origin-Resource-Policy", "same-site");
-=======
-  res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self'; frame-ancestors 'none';");
-  res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("X-Frame-Options", "DENY");
-  res.setHeader("X-XSS-Protection", "1; mode=block");
-  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-  res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
-  // Additional defense-in-depth
-  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-  res.setHeader("Cross-Origin-Resource-Policy", "same-site");
->>>>>>> Stashed changes
 }
 
 /**

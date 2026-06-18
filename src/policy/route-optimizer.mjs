@@ -27,9 +27,11 @@ export function getEffectiveRoutes(amount, currency) {
 			"crypto",
 			"cryptobox",
 			"tron",
+			"wise",
 			"bank_transfer",
 			"payoneer",
 			"payoneer_standard",
+			"googlepay",
 			"stripe",
 			"paypal",
 		];
@@ -40,9 +42,11 @@ export function getEffectiveRoutes(amount, currency) {
 	) {
 		const order = [
 			"bank_transfer",
+			"wise",
 			"crypto",
 			"payoneer",
 			"payoneer_standard",
+			"googlepay",
 			"stripe",
 			"paypal",
 		];

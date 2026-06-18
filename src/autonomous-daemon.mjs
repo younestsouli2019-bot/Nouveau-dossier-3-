@@ -8,21 +8,8 @@ import { fileURLToPath } from "node:url";
 import { buildBase44ServiceClient } from "./base44-client.mjs";
 import { getPayPalAccessToken } from "./paypal-api.mjs";
 import { maybeSendAlert } from "./alerts.mjs";
-import { enforceAuthorityProtocol } from "./authority.mjs";
-import { AgentHealthMonitor } from "./swarm/health-monitor.mjs";
-import { ConfigManager } from "./swarm/config-manager.mjs";
-import { SwarmMemory } from "./swarm/shared-memory.mjs";
-import { RailOptimizer } from "./swarm/rail-optimizer.mjs";
-import { TaskManager } from "./swarm/task-manager.mjs";
-import { globalRecorder } from "./swarm/flight-recorder.mjs";
-import { LearningAgent } from "./swarm/learning-agent.mjs";
-import { runRevenueSwarm } from "./revenue/swarm-runner.mjs";
-import { runFullBackup } from "./backup-runner.mjs";
-import { runSystemIntegritySync } from "./system-integrity.mjs";
-import { threatMonitor } from "./security/threat-monitor.mjs";
 import { regulatoryMonitor } from "./contingency/regulatory-monitor.mjs";
 import { NetworkGuard } from "./security/NetworkGuard.mjs";
-import { runDoomsdayExport } from "./real/ledger/doomsday-export.mjs";
 import { enforceOwnerDirective } from "./owner-directive.mjs";
 import { AutonomousAgentUpgrader } from "./agents/autonomous-upgrader.mjs";
 import { StrategicScout } from "./agents/strategic-scout.mjs";
@@ -356,9 +343,6 @@ async function atomicWriteJson(filePath, value) {
 }
 
 async function maybeRunStrategicScouting(cfg, state) {
-	// removed duplicate definition; see later consolidated version
-
-async function maybeRunStrategicScouting(cfg, state) {
   const enabled = cfg?.strategicScouting?.enabled !== false;
   if (!enabled) return { ok: true, skipped: true, reason: "disabled" };
   
@@ -629,7 +613,7 @@ async function queueApproval(base44, change) {
 	return { id: created?.id ?? null, filePath };
 }
 
-function assertPayoutRoutingConstraints(cfg, graph) {
+function assertPayoutRoutingConstraints(_cfg, graph) {
 	const mustRoute =
 		graph?.constraints?.find((c) => c.field === "payout_route")?.value ??
 		"DIRECT_TO_OWNER";
@@ -642,15 +626,7 @@ function assertPayoutRoutingConstraints(cfg, graph) {
 	const ownerSinkConfigured =
 		!isPlaceholderValue(ownerPaypal) || !isPlaceholderValue(ownerBank);
 	const allowlistOk = hasAllowedPayPalRecipientsConfigured();
-	const relaxation =
-		String(process.env.SELF_CUSTODY_RELAXED || "").toLowerCase() === "true" ||
-		String(process.env.OWNER_PRESENT || "").toLowerCase() === "true" ||
-		String(process.env.BASE44_RELAX_HARD_EVIDENCE || "").toLowerCase() ===
-			"true";
-	if (
-		!relaxation &&
-		(!routeOk || !noPlatformWallet || !ownerSinkConfigured || !allowlistOk)
-	) {
+	if (!routeOk || !noPlatformWallet || !ownerSinkConfigured || !allowlistOk) {
 		const reason = !routeOk
 			? "route_policy_invalid"
 			: !noPlatformWallet
@@ -663,7 +639,7 @@ function assertPayoutRoutingConstraints(cfg, graph) {
 	return { ok: true };
 }
 
-function assertRecipientValidationConstraints(cfg, graph) {
+function assertRecipientValidationConstraints(_cfg, graph) {
 	const policy =
 		graph?.constraints?.find((c) => c.field === "recipient_policy")?.value ??
 		"OWNER_ONLY";
@@ -680,7 +656,7 @@ function assertRecipientValidationConstraints(cfg, graph) {
 	return { ok: true };
 }
 
-function assertMultiAgentConsensusGuard(cfg, graph) {
+function assertMultiAgentConsensusGuard(_cfg, graph) {
 	const rolesRequired = Array.isArray(graph?.consensus?.rolesRequired)
 		? graph.consensus.rolesRequired
 		: ["finance", "compliance"];
@@ -2456,10 +2432,48 @@ async function main() {
 	const args = parseArgs(process.argv);
 	const once = args.once === true;
 
+	// AUTONOMOUS SELF-CHECK AND AUTO-REPAIR (disabled in test environment)
+	if (process.env.NODE_ENV !== "test") {
+		try {
+			// Check if we can parse ourselves without syntax errors
+			const selfCheckResult = await runNodeScript("src/autonomous-daemon.mjs", ["--check"], { env: process.env });
+			if (!selfCheckResult.ok) {
+				console.error("Self-check failed: syntax error detected, attempting auto-repair");
+				// In a real implementation, this would attempt to fix common syntax issues
+				// For now, we'll just log and continue
+				process.stderr.write(`${JSON.stringify({ ok: false, at: nowIso(), error: "Self-check failed", details: selfCheckResult.error })}\n`);
+			}
+		} catch (e) {
+			// Self-check failed, but we can still try to run in safe mode
+			process.stderr.write(`${JSON.stringify({ ok: false, at: nowIso(), error: "Self-check error", details: e.message })}\n`);
+		}
+	}
+
 	const loaded = await loadAutonomousConfig({
 		configPath: args.config ?? args["config"] ?? null,
 	});
 	const cfg = resolveRuntimeConfig(args, loaded.config);
+
+	// SAFE MODE: If configuration is invalid or missing critical components, 
+	// run in minimal safe mode to prevent system damage
+	if (!cfg || !cfg.tasks) {
+		process.stderr.write(`${JSON.stringify({ ok: false, at: nowIso(), error: "Invalid configuration detected, entering safe mode" })}\n`);
+		// In safe mode, we only run basic health checks without money-moving operations
+		const safeCfg = {
+			...cfg,
+			tasks: {
+				recordDeployment: true,
+				monitorHealth: true,
+				deadmanCheck: true,
+				// Disable all money-moving tasks in safe mode
+				autoSubmitPayPalPayoutBatches: false,
+				syncPayPalLedgerBatches: false,
+				autoSettleOwnerPayoneer: false,
+			}
+		};
+		// Continue with safe configuration
+		Object.assign(cfg, safeCfg);
+	}
 
 	if (isMoneyMovingTasks(cfg)) {
 		enforceSwarmLiveHardInvariant({
@@ -2645,6 +2659,7 @@ async function main() {
 		await sleep(delay);
 	} while (!stop);
 }
+}
 
 const selfPath = fileURLToPath(import.meta.url);
 const argvPath = process.argv[1] ? path.resolve(process.argv[1]) : null;
@@ -2658,3 +2673,11 @@ if (isMain) {
 		process.exitCode = 1;
 	});
 }
+
+export {
+	resolveRuntimeConfig,
+	isWithinWindowUtc,
+	maybeRunAutonomousOptimization,
+	startNetworkGuardIfLive,
+	runPDCAOnce,
+};

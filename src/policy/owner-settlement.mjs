@@ -21,6 +21,14 @@ export class OwnerSettlementEnforcer {
 			.map((r) => r.trim())
 			.filter(Boolean);
 		const creds = {
+			wise: {
+				enabled: String(process.env.WISE_ENABLE || "false").toLowerCase() === "true",
+				email: process.env.OWNER_WISE_EMAIL,
+			},
+			googlepay: {
+				enabled: String(process.env.GOOGLEPAY_ENABLE || "false").toLowerCase() === "true",
+				email: process.env.OWNER_GOOGLEPAY_EMAIL,
+			},
 			paypal: {
 				clientId: process.env.PAYPAL_CLIENT_ID,
 				clientSecret: process.env.PAYPAL_CLIENT_SECRET,
@@ -152,6 +160,18 @@ export class OwnerSettlementEnforcer {
 			if (!c.enabled) return true;
 			return false;
 		}
+		if (r === "wise") {
+			const c = cfg?.creds?.wise || {};
+			if (!c.enabled) return true;
+			if (!c.email || !c.email.includes("@")) return true;
+			return false;
+		}
+		if (r === "googlepay") {
+			const c = cfg?.creds?.googlepay || {};
+			if (!c.enabled) return true;
+			if (!c.email || !c.email.includes("@")) return true;
+			return false;
+		}
 		return true;
 	}
 	static getOwnerAccountForType(type) {
@@ -183,6 +203,12 @@ export class OwnerSettlementEnforcer {
 		}
 		if (t === "cryptobox") {
 			return process.env.BINANCE_CRYPTOBOX_URL || null;
+		}
+		if (t === "wise") {
+			return normEmail(process.env.OWNER_WISE_EMAIL);
+		}
+		if (t === "googlepay") {
+			return normEmail(process.env.OWNER_GOOGLEPAY_EMAIL);
 		}
 		return null;
 	}

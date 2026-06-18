@@ -1,4 +1,5 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+dotenv.config({ override: true });
 import { OwnerSettlementEnforcer } from "../src/policy/owner-settlement.mjs";
 
 function b(v) {
@@ -86,6 +87,20 @@ function main() {
 		out.checks.push(ok("BINANCE_CRYPTOBOX_URL", has(cx.url)));
 	}
 
+	// Wise
+	if (cfg.settlement_priority.includes("wise")) {
+		const w = cfg.creds.wise;
+		out.checks.push(ok("WISE_ENABLE", w.enabled));
+		out.checks.push(ok("OWNER_WISE_EMAIL", has(w.email)));
+	}
+
+	// Google Pay
+	if (cfg.settlement_priority.includes("googlepay")) {
+		const g = cfg.creds.googlepay;
+		out.checks.push(ok("GOOGLEPAY_ENABLE", g.enabled));
+		out.checks.push(ok("OWNER_GOOGLEPAY_EMAIL", has(g.email)));
+	}
+
 	// Owner accounts for routing
 	out.owner_accounts = {
 		paypal: OwnerSettlementEnforcer.getOwnerAccountForType("paypal"),
@@ -94,6 +109,8 @@ function main() {
 			OwnerSettlementEnforcer.getOwnerAccountForType("bank_transfer"),
 		crypto: OwnerSettlementEnforcer.getOwnerAccountForType("crypto"),
 		cryptobox: OwnerSettlementEnforcer.getOwnerAccountForType("cryptobox"),
+		wise: OwnerSettlementEnforcer.getOwnerAccountForType("wise"),
+		googlepay: OwnerSettlementEnforcer.getOwnerAccountForType("googlepay"),
 	};
 
 	// Summary
