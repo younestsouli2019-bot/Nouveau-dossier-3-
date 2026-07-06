@@ -1,5 +1,5 @@
 # =============================================================================
-# Classificatore di Tier — Caro  (VERSIONE EMBEDDING SEMANTICI)
+# Classificatore di Tier  (VERSIONE EMBEDDING SEMANTICI)
 # Alternativa a train_tier_classifier.py (che usa TF-IDF).
 #
 # Differenza chiave:

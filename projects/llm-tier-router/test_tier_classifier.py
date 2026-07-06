@@ -1,5 +1,5 @@
 # =============================================================================
-# Test del Classificatore di Tier — Caro
+# Test del Classificatore di Tier
 # Carica tier_clf.joblib e classifica frasi (economy vs premium).
 #
 # Uso:

@@ -1,5 +1,5 @@
 # =============================================================================
-# Confronto modelli di Tier — Caro
+# Confronto modelli di Tier
 # Pone ~50 domande DIFFICILI e VARIEGATE a entrambi i classificatori:
 #   - tier_clf.joblib        (TF-IDF, parole)
 #   - tier_clf_embed.joblib  (embedding, significato)

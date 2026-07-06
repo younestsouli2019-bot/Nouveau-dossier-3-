@@ -1,4 +1,4 @@
-# Classificatore di Tier — Caro
+# Classificatore di Tier
 
 Documento di design condiviso. Obiettivo: decidere insieme idea, librerie, struttura e
 **formato dei dati** prima di scrivere codice.
@@ -51,11 +51,11 @@ L'intera pipeline (testo → vettore → 0/1) sta in **un unico `Pipeline` sklea
 
 ---
 
-## 4. Struttura d'insieme (come si innesta in Caro)
+## 4. Struttura d'insieme (come si innesta nel backend)
 
 Il backend ha già un sistema di tier: `ModelTier.ECONOMY | PREMIUM` in
-`backend/src/caro/privacy_router/client.py`. La chat lo usa nel loop ReAct in
-`backend/src/caro/orchestrator/graph.py` (oggi hardcoded a `PREMIUM`).
+`backend/src/app/privacy_router/client.py`. La chat lo usa nel loop ReAct in
+`backend/src/app/orchestrator/graph.py` (oggi hardcoded a `PREMIUM`).
 
 Innesto previsto (dietro un flag, così è spegnibile):
 
@@ -70,7 +70,7 @@ utente → graph.py (react_loop)
 
 Componenti da aggiungere:
 
-1. **`backend/src/caro/privacy_router/tier_classifier.py`** — funzione `classify_tier(text) -> ModelTier`:
+1. **`backend/src/app/privacy_router/tier_classifier.py`** — funzione `classify_tier(text) -> ModelTier`:
    - carica il modello una sola volta (singleton, `functools.lru_cache`);
    - `import joblib` **lazy** (dentro la funzione) così è dipendenza opzionale;
    - predizione in `asyncio.to_thread` (non blocca l'event loop);
@@ -203,7 +203,7 @@ async def classify_tier(text: str) -> ModelTier:
 |---|---|---|
 | `tier_dataset.jsonl` | fuori dal repo (o `backend/data/`) | dataset di training (JSONL) |
 | `tier_clf.joblib` | `backend/models/` | modello addestrato (un file) |
-| `tier_classifier.py` | `backend/src/caro/privacy_router/` | inferenza + fail-safe |
+| `tier_classifier.py` | `backend/src/app/privacy_router/` | inferenza + fail-safe |
 | voci in `config.py` | backend | flag `DYNAMIC_TIER` + path modello |
 | modifica in `graph.py` | backend | usa il tier scelto nel loop ReAct |
 

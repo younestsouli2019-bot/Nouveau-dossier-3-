@@ -1,4 +1,4 @@
-# Classificatore di Tier — Caro
+# Classificatore di Tier
 
 Piccolo **router** che, per ogni messaggio dell'utente, decide se serve il modello
 **premium** (potente, costoso) o basta l'**economy** (leggero, veloce). Obiettivo:
@@ -33,7 +33,7 @@ banale all'indiretto/trabocchetto), etichettate a mano.
 | **Embedding** | **~97,6%** | **~95%** |
 
 L'embedding vince di ~12 punti e generalizza cross-lingua senza inglese dedicato nel
-training. Per Caro è la scelta giusta.
+training. È la scelta giusta per questo caso d'uso.
 
 ## Dataset
 
@@ -67,7 +67,7 @@ Dipendenze: `scikit-learn`, `joblib`, `numpy` (per l'embedding anche
 
 | File | Cosa |
 |---|---|
-| `classificatore-tier-caro.md` | documento di design (idea, librerie, formato dati, innesto nel backend) |
+| `classificatore-tier.md` | documento di design (idea, librerie, formato dati, innesto nel backend) |
 | `tier_dataset.json` | dataset di training (JSON, IT + EN) |
 | `train_tier_classifier.py` / `train_tier_embeddings.py` | training TF-IDF / embedding |
 | `test_tier_classifier.py` / `test_tier_embeddings.py` | prova interattiva |

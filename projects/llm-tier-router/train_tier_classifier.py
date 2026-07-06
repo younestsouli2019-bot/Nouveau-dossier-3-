@@ -1,5 +1,5 @@
 # =============================================================================
-# Classificatore di Tier — Caro
+# Classificatore di Tier
 # Training script per Kaggle (CPU, nessun TensorFlow).
 #
 # Input : tier_dataset.jsonl  -> {"text": "...", "label": 0|1}   (1=premium, 0=economy)

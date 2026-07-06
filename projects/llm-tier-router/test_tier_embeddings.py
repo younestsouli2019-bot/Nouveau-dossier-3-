@@ -1,5 +1,5 @@
 # =============================================================================
-# Test del Classificatore di Tier — Caro  (VERSIONE EMBEDDING)
+# Test del Classificatore di Tier  (VERSIONE EMBEDDING)
 # Carica tier_clf_embed.joblib { "model_name", "clf" }, ricarica l'encoder
 # transformer e classifica frasi (economy vs premium) sul SIGNIFICATO.
 #
