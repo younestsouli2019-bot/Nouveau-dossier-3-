@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+embeddings_cache.npy
+_cases_block.txt
+*.tmp
