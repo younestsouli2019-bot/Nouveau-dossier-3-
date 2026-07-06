@@ -29,8 +29,8 @@ banale all'indiretto/trabocchetto), etichettate a mano.
 
 | modello | successo globale | su generalizzazione |
 |---|---|---|
-| TF-IDF | ~87% | ~83% |
-| **Embedding** | **~99%** | **~99%** |
+| TF-IDF | ~87,2% | ~83% |
+| **Embedding** | **~97,6%** | **~95%** |
 
 L'embedding vince di ~12 punti e generalizza cross-lingua senza inglese dedicato nel
 training. Per Caro è la scelta giusta.
