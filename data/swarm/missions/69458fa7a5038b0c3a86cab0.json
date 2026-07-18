@@ -1,0 +1,36 @@
+{
+  "id": "69458fa7a5038b0c3a86cab0",
+  "title": "Database Migration - Payout Tables",
+  "channel": "operations",
+  "priority": "critical",
+  "status": "active",
+  "data": {
+    "title": "Database Migration - Payout Tables",
+    "type": "operations",
+    "priority": "critical",
+    "status": "pending",
+    "assigned_agent_ids": "[\"69458dbfb189281c56871262\",\"69458dc0b189281c56871263\"]",
+    "mission_parameters": "{\"verification\":\"SELECT status, COUNT(*) FROM payouts GROUP BY status;\",\"sql_commands\":[\"CREATE TABLE IF NOT EXISTS payouts (id UUID PRIMARY KEY, mission_id TEXT NOT NULL, agent_id TEXT NOT NULL, amount NUMERIC(12,2) NOT NULL, currency CHAR(3) DEFAULT 'USD', status TEXT CHECK (status IN ('CALCULATED', 'READY', 'SUBMITTED', 'PAYPAL_PENDING', 'PAYPAL_SUCCESS', 'PAYPAL_FAILED', 'UNCLAIMED')) NOT NULL, sender_batch_id TEXT UNIQUE, paypal_batch_id TEXT, created_at TIMESTAMP DEFAULT NOW(), updated_at TIMESTAMP DEFAULT NOW());\",\"CREATE TABLE IF NOT EXISTS payout_audit (id SERIAL PRIMARY KEY, payout_id UUID, action TEXT, payload JSONB, created_at TIMESTAMP DEFAULT NOW());\",\"INSERT INTO payouts (id, mission_id, agent_id, amount, status) SELECT gen_random_uuid(), m.id, a.id, m.revenue_generated, 'READY' FROM missions m JOIN agents a ON a.id = ANY(m.assigned_agent_ids) WHERE m.revenue_generated > 0 AND m.status IN ('deployed', 'active', 'in_progress') AND NOT EXISTS (SELECT 1 FROM payouts p WHERE p.mission_id = m.id);\"],\"dependent_on\":\"INF-001\"}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "2025-12-19T20:47:08Z",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "69458fa7a5038b0c3a86cab0",
+    "created_date": "2025-12-19T17:47:19.074000",
+    "updated_date": "2025-12-19T17:47:19.074000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-02-24T12:21:21.642Z",
+  "last_executed_at": "2026-03-30T20:50:58.702Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Autonomous operational optimization complete.",
+      "revenue_estimate": 10
+    }
+  ]
+}

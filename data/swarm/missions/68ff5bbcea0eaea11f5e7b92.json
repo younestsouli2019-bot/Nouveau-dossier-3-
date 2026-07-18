@@ -1,0 +1,27 @@
+{
+  "id": "68ff5bbcea0eaea11f5e7b92",
+  "title": "PayPal App and Authentication Verification for Micropayment Protocol",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "PayPal App and Authentication Verification for Micropayment Protocol",
+    "type": "operations",
+    "priority": "critical",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"Verification-Agent-Alpha\"]",
+    "mission_parameters": "{\"authentication_steps\":[\"Generate fresh OAuth token\",\"Validate token expiration (> 1 hour)\",\"Test token with API balance check\",\"Confirm token has transfer permissions\",\"Verify token can access live PayPal environment\"],\"target_paypal_account\":\"younestsouli2019@gmail.com\",\"AUTH_VERIFICATION\":[\"GENERATE fresh OAuth token\",\"VALIDATE token expiration (must be > 1 hour)\",\"TEST token with API balance check\",\"CONFIRM token has transfer permissions\",\"VERIFY token can access live PayPal environment\"],\"APP_VALIDATION\":[\"CONFIRM \\\"learnworlds\\\" app status: Approved/Live\",\"VERIFY Client ID: Ab77NaLjBXZx_NdTDuFD1...\",\"CONFIRM Payouts feature: Enabled\",\"VERIFY Transaction Search: Enabled\",\"CHECK app permissions: Full access for transfers\"],\"revenue_to_verify\":\"$29,366.00\",\"required_app_details\":{\"client_id\":\"Ab77NaLjBXZx_NdTDuFD1...\",\"name\":\"learnworlds\",\"features\":[\"Payouts Enabled\",\"Transaction Search Enabled\"]}}",
+    "progress_data": "",
+    "estimated_duration_hours": "0.1",
+    "actual_duration_hours": "",
+    "deadline": "2025-10-27T01:00:00Z",
+    "completion_notes": "Verify PayPal app configuration and authentication for micropayment protocol.",
+    "revenue_generated": "",
+    "id": "68ff5bbcea0eaea11f5e7b92",
+    "created_date": "2025-10-27T11:47:08.841000",
+    "updated_date": "2025-10-27T14:07:13.949000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:11.999Z"
+}

@@ -1,0 +1,19 @@
+{
+  "id": "MKT-012",
+  "title": "Preemptive opportunity capture - Forecast signals from public sources + internal KPIs",
+  "channel": "market_research",
+  "priority": "high",
+  "status": "active",
+  "data": {
+    "mission_parameters": "{\"task\":\"predictive_signals\",\"dependent_on\":[\"INF-012\",\"MKT-010\"],\"objectives\":[\"select_signal_sources\",\"build_signal_scores\",\"generate_ranked_opportunity_queue\",\"auto_create_followup_missions\"],\"guardrails\":{\"public_sources_only\":true,\"no_tos_violations\":true,\"human_override_required_for_spend\":true},\"deliverables\":[\"data/swarm/signals_sources.json\",\"data/swarm/signals_latest.json\",\"data/swarm/opportunity_queue.json\"]}"
+  },
+  "created_at": "2026-03-20T15:14:31.922Z",
+  "last_executed_at": "2026-03-30T21:00:20.006Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Autonomous operational optimization complete.",
+      "revenue_estimate": 10
+    }
+  ]
+}

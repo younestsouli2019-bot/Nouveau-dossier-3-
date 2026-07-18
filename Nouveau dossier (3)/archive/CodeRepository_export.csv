@@ -1,0 +1,160 @@
+filename,file_uri,file_url,file_type,programming_language,description,access_level,assigned_agents,file_size,tags,is_active,id,created_date,updated_date,created_by_id,created_by,is_sample
+"GOLDmicrotrade.mq5","private/6888ac155ebf84dd9855ea98/b5785efbf_GOLDmicrotrade.mq5","","code","metatrrader5","title,type,priority,status,assigned_agent_id,mission_parameters,progress_data,estimated_duration_hours,actual_duration_hours,deadline,completion_notes,revenue_generated,id,created_date,updated_date,created_by_id,created_by,is_sample
+Improve TrendCatcherGoldBot MT5 EA,code_optimization,high,unassigned,AI-Code-Team-Alpha,""{""""code_language"""":""""MQL5"""",""""platform"""":""""MetaTrader 5"""",""""strategy"""":""""Trend Following, Signal-Based"""",""""instrument"""":""""Gold (XAUUSD)"""",""""risk_management"""":""""Capital allocation, stop loss, take profit"""",""""objective"""":""""Improve profitability, robustness, and maintain clear structure. Focus on probability calculation, error handling, dynamic SL/TP"""",""""improvement_areas"""":""""Dynamic stop loss/take profit, better probability calculation, error handling, code efficiency"""",""""current_version"""":""""1.05""""}"",""{}"",168,,""2025-09-19T17:00:00Z"",""Optimize the TrendCatcherGoldBot EA, focusing on enhanced risk management and profitability."",,code-optimize-009,2025-09-05T18:00:00Z,2025-09-05T18:00:00Z,system-mission,mission-generator,","swarm_internal","[]","7571","[]","true","68bb18febd09b0a23db4c2aa","2025-09-05T17:08:14.304000","2025-09-05T17:08:14.304000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com",""
+"mikro.mq5","private/6888ac155ebf84dd9855ea98/6f992d75d_mikro.mq5","","code","metatrrader5","","swarm_internal","[]","11488","[]","true","68bb191a8df7bb7a81568712","2025-09-05T17:08:42.480000","2025-09-05T17:08:42.480000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com",""
+"Succes.mq5","private/6888ac155ebf84dd9855ea98/b88c125e2_Succes.mq5","","code","metatrrader5","","swarm_internal","[]","5472","[]","true","68bb192c57da3045ba4d7f62","2025-09-05T17:09:00.036000","2025-09-05T17:09:00.036000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com",""
+"New Document texte (6).txt","private/6888ac155ebf84dd9855ea98/fad64af97_NewDocumenttexte6.txt","","code","crypto","play...","swarm_internal","[]","18250","[]","true","68bb1a27eaba9547d2e33eb4","2025-09-05T17:13:11.149000","2025-09-05T17:13:11.149000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com",""
+"puzzle_solver.py","private/6888ac155ebf84dd9855ea98/0da8e4259_puzzle_solver.py","","code","BTC Puzzle challenge","https://btcpuzzle.info/","swarm_internal","[]","7064","[]","true","68bb1ac3163578b5630f78e9","2025-09-05T17:15:47.899000","2025-09-05T17:15:47.899000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com",""
+"liber.py","private/6888ac155ebf84dd9855ea98/40639b9c9_liber.py","","code","python","liber_primus_transliterated","swarm_internal","[]","1093","[]","true","68bb1b43eaba9547d2e3aa24","2025-09-05T17:17:55.754000","2025-09-05T17:17:55.754000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com",""
+"BinanceGet-Release.py","private/6888ac155ebf84dd9855ea98/74fbda0b6_BinanceGet-Release.py","","code","python","https://teletype.in/@ar1hant/binanceget_en","swarm_internal","[]","30458","[]","true","68bb1c7c196a3484804fbfb0","2025-09-05T17:23:08.370000","2025-09-05T17:23:08.370000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com",""
+"CCC_EN_20230409_435c761c97e2_Younes Tsouli.pdf","private/6888ac155ebf84dd9855ea98/ebb4ff337_CCC_EN_20230409_435c761c97e2_YounesTsouli.pdf","","documentation","","CYBERCRIME COMPLAINTTM","swarm_internal","[]","377400","[]","true","68bb1d26746456b977d90f83","2025-09-05T17:25:58.244000","2025-09-05T17:25:58.244000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com",""
+"Complaint has been submitted (1).eml","private/6888ac155ebf84dd9855ea98/c87785a00_Complainthasbeensubmitted1.eml","","documentation","complaint","CYBERCRIME COMPLAINT","swarm_internal","[]","8207","[]","true","68bb1d50796f194d40a3cbde","2025-09-05T17:26:40.614000","2025-09-05T17:26:40.614000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com",""
+"fcda7fba5a9a5c545e9a56de0f98f0730f106347ea4716b5457a35d17bb541ad_en_usd.pdf","private/6888ac155ebf84dd9855ea98/1002087d8_fcda7fba5a9a5c545e9a56de0f98f0730f106347ea4716b5457a35d17bb541ad_en_usd.pdf","","documentation","complaint","","swarm_internal","[]","72424","[]","true","68bb1d7661471234328ac370","2025-09-05T17:27:18.371000","2025-09-05T17:27:18.371000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com",""
+"letter_1757089550410_2291127.pdf","private/6888ac155ebf84dd9855ea98/f87df0663_letter_1757089550410_2291127.pdf","","documentation","","Reply from CA Attorney General; PIU #1491221","swarm_internal","[]","101699","[]","true","68bb1db248d7252f10f97b39","2025-09-05T17:28:18.070000","2025-09-05T17:28:18.070000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com",""
+"pinetwork.pdf","private/6888ac155ebf84dd9855ea98/cdee79529_pinetwork.pdf","","documentation","","Dear Pi Network Support Team,
+
+I am writing to report an unauthorized transaction involving my Pi Wallet and request your immediate assistance in investigating and revoking any lingering bridge or dApp permissions.
+
+Transaction Details:
+
+Transaction Hash: f016fa2b9268b27bc8ee1a3d7fe9f5ba6ed3779880dc6a811e3731a26c69601d
+
+Transaction Time: 
+
+ 
+
+21 hours ago
+
+Recipient Address: GD5HGPHVL73EBDUD2Z4K2VDRLUBC4FFN7GOBLKPK6OPPXH6TED4TRK73
+
+My Pi Wallet Address: GBEEQFR2MHO6WMSVAPNNF6TD5X7J7VNTBJWQJNGQOF2MSG6YHID3RVSW
+
+I did not authorize this transaction manually and suspect it may have occurred via a connected bridge or dApp that had persistent access to my wallet. I have already taken steps to disconnect services within the Pi Browser and clear session data.
+
+Kindly assist me with the following:
+
+Confirm whether any external app (e.g., MEXC or a bridge service) had access to my wallet.
+
+Revoke or reset all dApp authorizations associated with my Pi Wallet.
+
+Provide guidance on securing my wallet against any future unauthorized actions.
+
+Your support in resolving this matter is highly appreciated, as the Pi coins in question were important to me and potentially lost without my explicit consent.
+
+Looking forward to your prompt response.
+
+Best regards,
+
+
+Automatic response
+28/Jul/25 3:24 AM
+Your request status has changed to Waiting for support.","swarm_internal","[]","1054790","[]","true","68bb1ef39aa4aa80ec8f59a3","2025-09-05T17:33:39.252000","2025-09-05T17:33:39.252000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com",""
+"dontforget.txt","private/6888ac155ebf84dd9855ea98/a6306188a_dontforget.txt","","documentation","detailed khoumous islamic percentage calculation ghanima and zakat","detailed khoumous islamic percentage calculation ghanima and zakat","swarm_internal","[]","","[]","true","68bb212a12960b269e3b4f2a","2025-09-05T17:43:06.458000","2025-09-05T17:43:06.458000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com",""
+"main.bat","private/6888ac155ebf84dd9855ea98/83e04a081_main.bat","","code","common issues to solve","https://www.youtube.com/watch?v=uHhrsaOXsjA
+https://www.youtube.com/watch?v=kg4Fd0FyhAk
+https://www.dailymotion.com/video/x9oxaw4
+https://www.youtube.com/watch?v=VuoAvaDsouU
+
+ another common issue : Here's a comprehensive Bash script for Windows 11 (WSL) to troubleshoot and fix the multiple keyboard input issue, combining registry tweaks, driver operations, and system diagnostics:
+
+```bash
+#!/bin/bash
+
+# Keyboard Input Fix Script for Windows 11
+# Requires WSL and PowerShell admin privileges
+
+# Initialize log file
+LOG_FILE=""keyboard_fix.log""
+echo ""Keyboard Fix Log - $(date)"" > ""$LOG_FILE""
+echo ""-----------------------------------"" >> ""$LOG_FILE""
+
+# Function to run PowerShell commands from Bash
+exec_powershell() {
+    echo ""Executing: $1"" >> ""$LOG_FILE""
+    result=$(powershell.exe -Command ""$1"" 2>&1)
+    echo ""$result"" | tee -a ""$LOG_FILE""
+    echo ""-----------------------------------"" >> ""$LOG_FILE""
+}
+
+# 1. Disable keyboard filters (Sticky/Filter/Toggle Keys)
+echo ""Disabling accessibility keyboard features..."" | tee -a ""$LOG_FILE""
+exec_powershell ""\
+Set-ItemProperty -Path 'Registry::HKEY_CURRENT_USER\Control Panel\Accessibility\StickyKeys' -Name 'Flags' -Value '506';\
+Set-ItemProperty -Path 'Registry::HKEY_CURRENT_USER\Control Panel\Accessibility\Keyboard Response' -Name 'Flags' -Value '122';""
+
+# 2. Reset keyboard repeat rates
+echo ""Resetting keyboard repeat rates..."" | tee -a ""$LOG_FILE""
+exec_powershell ""\
+Set-ItemProperty -Path 'Registry::HKEY_CURRENT_USER\Control Panel\Keyboard' -Name 'KeyboardDelay' -Value 1;\
+Set-ItemProperty -Path 'Registry::HKEY_CURRENT_USER\Control Panel\Keyboard' -Name 'KeyboardSpeed' -Value 31;""
+
+# 3. Reinstall keyboard drivers
+echo ""Reinstalling keyboard drivers..."" | tee -a ""$LOG_FILE""
+exec_powershell ""\
+\$device = Get-PnpDevice | Where-Object {\$_.Class -eq 'Keyboard'} | Select-Object -First 1 -ExpandProperty InstanceID;\
+If (\$device) { pnputil /remove-device \$device };""
+
+# 4. Reset keyboard layouts
+echo ""Resetting keyboard layouts..."" | tee -a ""$LOG_FILE""
+exec_powershell ""\
+\$lang = Get-WinUserLanguageList;\
+Set-WinUserLanguageList \$lang -Force;""
+
+# 5. Check for physical keyboard issues
+echo ""Running hardware diagnostics..."" | tee -a ""$LOG_FILE""
+exec_powershell ""Get-WinEvent -LogName 'System' -MaxEvents 20 | Where-Object {\$_.Id -eq 27 -or \$_.Id -eq 17} | Format-List""
+
+# 6. Final recommendations
+echo -e ""\n\033[1;36mTroubleshooting steps completed:\033[0m"" | tee -a ""$LOG_FILE""
+echo ""1. Accessibility features disabled"" | tee -a ""$LOG_FILE""
+echo ""2. Keyboard repeat rates reset"" | tee -a ""$LOG_FILE""
+echo ""3. Keyboard drivers reinstalled"" | tee -a ""$LOG_FILE""
+echo ""4. Input layouts refreshed"" | tee -a ""$LOG_FILE""
+echo -e ""\n\033[1;33mNext steps:\033[0m"" | tee -a ""$LOG_FILE""
+echo ""- Check different keyboard/mouse"" | tee -a ""$LOG_FILE""
+echo ""- Try different USB port"" | tee -a ""$LOG_FILE""
+echo ""- Update BIOS/UEFI firmware"" | tee -a ""$LOG_FILE""
+echo -e ""\nLog saved to: $LOG_FILE""
+echo -e ""\033[1;32mReboot your computer to apply all changes!\033[0m""
+```
+
+**Key Features:**
+1. Registry Fixes:
+   - Disables Sticky/Filter/Toggle Keys
+   - Resets keyboard repeat delay/speed
+2. Driver Operations:
+   - Reinstalls first detected keyboard driver
+3. System Diagnostics:
+   - Checks hardware event logs
+   - Resets keyboard layouts
+4. Safety Measures:
+   - Comprehensive logging
+   - Non-destructive operations
+5. User Guidance:
+   - Clear next-step recommendations
+   - Color-coded output
+
+**Usage:**
+1. Save as `keyboardfix.sh`
+2. Run in WSL:
+   ```bash
+   chmod +x keyboardfix.sh
+   ./keyboardfix.sh
+   ```
+3. **Reboot Windows** after execution
+
+**What It Does:**
+- Fixes registry settings causing key repeating
+- Resets accessibility features interfering with input
+- Reinstalls keyboard drivers without full removal
+- Maintains user language preferences
+- Provides hardware diagnostics
+- Gives actionable next steps
+
+**Note:** Requires administrative privileges. For Bluetooth keyboards, additional troubleshooting may be needed for connection stability. Check event logs in the output for hardware-related issues.
+
+This script addresses both software and potential hardware causes while maintaining system safety through targeted registry modifications and driver operations.","swarm_internal","[]","806","[]","true","68bb39b9d7f9f31c7ce1c948","2025-09-05T19:27:53.973000","2025-09-05T19:27:53.973000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com",""
+"Gmail export.csv","private/6888ac155ebf84dd9855ea98/7910a7652_Gmailexport.csv","","data","gmail export udemy takedown","gmail export udemy takedown","swarm_internal","[]","34598875","[]","true","68bd5618f6aa947bdc0a6823","2025-09-07T09:53:28.502000","2025-09-07T09:53:28.502000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com",""
+"Udemy_Reviews_Export_2025-08-15_12-21-58.csv","private/6888ac155ebf84dd9855ea98/d3b9b31ec_Udemy_Reviews_Export_2025-08-15_12-21-58.csv","","data","udemy reviews","udemy reviews","swarm_internal","[]","5784","[]","true","68bd574eafdc7691ad06b48e","2025-09-07T09:58:38.743000","2025-09-07T09:58:38.743000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com",""
+"c2_command_dashboard.zip","private/6888ac155ebf84dd9855ea98/d38512cd1_c2_command_dashboard.zip","","code","command dashboard","command dashboard","swarm_internal","[]","216456","[]","true","68bd5de333bcea6c882a135b","2025-09-07T10:26:43.016000","2025-09-07T10:26:43.016000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com",""
+"paypal_payouts_module.py","","","code","Python","Python module for executing one-time PayPal Payouts. Includes functions for obtaining access tokens and sending payouts via the PayPal Payouts API. Designed for integration with SwarmOS agents.","swarm_internal","[""68be8a6bbff7c1c21aca96fe"",""68be89d464fa377a8a97c0a0"",""68be8b31ebe9848748741399""]","","[""paypal"",""payouts"",""api-integration"",""financial"",""payment""]","true","68be8ee43be992a25ba7a575","2025-09-08T08:08:04.241000","2025-09-08T08:08:04.241000","6888ac155ebf84dd9855ea99","younesdgc@gmail.com",""

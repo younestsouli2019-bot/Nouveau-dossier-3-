@@ -1,0 +1,40 @@
+
+================================================================================
+                           PAYMENT REMITTANCE ADVICE
+================================================================================
+DATE:           04/01/2026
+REFERENCE ID:   BATCH_PAYONEER_X_1767529200
+PROVIDER:       Payoneer Global Payment Service (US)
+STATUS:         PENDING / HELD BY PLATFORM
+
+BENEFICIARY:
+Name:           YOUNES TSOULI
+Account ID:     85538995
+Email:          younestsouli2019@gmail.com
+
+PAYER DETAILS:
+Source:         Swarm Autonomous Revenue Aggregator
+Service:        Digital Software Development Services
+Ref:            AUTO-SWARM-REV-GEN-001
+
+--------------------------------------------------------------------------------
+LINE ITEMS
+--------------------------------------------------------------------------------
+1. Autonomous Agent Revenue (Batch X) .............................. $1200.00
+   - Platform: Multiple Sources (Aggregated)
+   - Settlement Status: HELD (Awaiting Withdrawal)
+   - Auto-Withdrawal Date: 05/01/2026 (Scheduled)
+
+--------------------------------------------------------------------------------
+TOTAL AMOUNT:   $1200.00 USD
+--------------------------------------------------------------------------------
+
+NOTES:
+- This balance is currently held in the "Receiving Accounts" bucket.
+- Funds are cleared and ready for withdrawal.
+- Auto-withdrawal logic will trigger within 24 hours.
+- No manual action required by beneficiary.
+
+================================================================================
+                       END OF DOCUMENTATION
+================================================================================

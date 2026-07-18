@@ -1,0 +1,92 @@
+[
+  {
+    "id": "ST-001",
+    "brand": "BIC",
+    "name_fr": "Stylo Bic Cristal Medium (Assortiment)",
+    "name_ar": "قلم بيك كريستال مديوم",
+    "ref": "9132XX",
+    "specs": "Cap: Blue/Red/Green/Black. Box: 50pcs",
+    "category": "ECRITURE & STYLOS"
+  },
+  {
+    "id": "ST-002",
+    "brand": "BIC",
+    "name_fr": "Stylo Bic Cristal UP (Assortiment)",
+    "name_ar": "قلم بيك كريستال أب",
+    "ref": "9498XX",
+    "specs": "Barrel: White/Colored. Box: 20pcs",
+    "category": "ECRITURE & STYLOS"
+  },
+  {
+    "id": "ST-003",
+    "brand": "PILOT",
+    "name_fr": "Stylo Pilot G2 (Assortiment)",
+    "name_ar": "قلم بايلوت جي 2",
+    "ref": "490250516",
+    "specs": "Gel Ink, Retractable. Box: 12pcs",
+    "category": "ECRITURE & STYLOS"
+  },
+  {
+    "id": "ST-006",
+    "brand": "3A TOP SAM",
+    "name_fr": "Fifty Color Pen",
+    "name_ar": "قلم خمسون لوناً",
+    "ref": "432M 47-8",
+    "specs": "50 Colors in box.",
+    "category": "ECRITURE & STYLOS"
+  },
+  {
+    "id": "TECH-001",
+    "brand": "ITGURU",
+    "name_fr": "Souris sans fil Bluetooth Wireless",
+    "name_ar": "فأرة لاسلكية بلوتوث",
+    "ref": "ITGURU Wireless",
+    "specs": "Bluetooth Wireless Mouse",
+    "category": "TECH PRODUCTS"
+  },
+  {
+    "id": "TECH-002",
+    "brand": "R8",
+    "name_fr": "Souris R8 1610 avec fil",
+    "name_ar": "فأرة R8 1610 بسلك",
+    "ref": "R8 1610",
+    "specs": "Fashion Office Mouse, Wired",
+    "category": "TECH PRODUCTS"
+  },
+  {
+    "id": "TECH-003",
+    "brand": "SAMSUNG",
+    "name_fr": "Samsung 25W PD Adapter USBC",
+    "name_ar": "شاحن سامسونج 25 واط",
+    "ref": "Samsung 25W PD",
+    "specs": "25W PD Adapter, USBC, White/Black",
+    "category": "TECH PRODUCTS"
+  },
+  {
+    "id": "TECH-004",
+    "brand": "FONENG",
+    "name_fr": "Ecouteur Foneng T41 Semi-in-ear",
+    "name_ar": "سماعات فونينج T41",
+    "ref": "Foneng T41",
+    "specs": "Semi-in-ear flat wire headset",
+    "category": "TECH PRODUCTS"
+  },
+  {
+    "id": "TECH-005",
+    "brand": "KIOXIA",
+    "name_fr": "Cle USB 32GB Kioxia",
+    "name_ar": "فلاش ميموري كيوكسيا 32 جيجا",
+    "ref": "Kioxia 32GB",
+    "specs": "32GB USB Flash Drive",
+    "category": "TECH PRODUCTS"
+  },
+  {
+    "id": "TECH-006",
+    "brand": "DAMANE GOLD",
+    "name_fr": "Smart Data cable 3.1 18W Damane Gold",
+    "name_ar": "كابل بيانات ذكي 18 واط",
+    "ref": "DG10",
+    "specs": "3.1 18W, Model DG10",
+    "category": "TECH PRODUCTS"
+  }
+]

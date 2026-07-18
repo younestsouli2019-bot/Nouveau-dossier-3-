@@ -1,0 +1,36 @@
+{
+  "id": "6948e41f1e5c0e1c906efee1",
+  "title": "Historical Revenue Audit and Backfill",
+  "channel": "operations",
+  "priority": "medium",
+  "status": "active",
+  "data": {
+    "title": "Historical Revenue Audit and Backfill",
+    "type": "operations",
+    "priority": "medium",
+    "status": "pending",
+    "assigned_agent_ids": "[\"6947e5411ef56b77a6de8516\"]",
+    "mission_parameters": "{\"campaign_identification\":\"Identify completed campaigns with available tracking data\",\"data_sources\":[\"Historical Google Analytics data\",\"Archived CRM reports\",\"Past Payment Gateway transaction logs\"],\"output_action\":\"Update 'revenue_generated' field for historical missions\",\"dependency\":\"Automated Campaign Revenue Tracking mission must be operational\",\"dependent_on\":\"INF-001\"}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "6948e41f1e5c0e1c906efee1",
+    "created_date": "2025-12-22T06:24:31.232000",
+    "updated_date": "2025-12-22T06:24:31.232000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-02-24T12:21:21.640Z",
+  "last_executed_at": "2026-03-30T20:50:58.787Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Autonomous operational optimization complete.",
+      "revenue_estimate": 10
+    }
+  ]
+}

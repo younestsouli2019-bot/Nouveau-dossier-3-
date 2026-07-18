@@ -1,0 +1,149 @@
+{
+  "full_html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\catalogue_full.html",
+  "sections": [
+    {
+      "type": "furniture",
+      "brand": "CASIO",
+      "anchor": "brand-casio",
+      "html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\sections\\brand-casio.html",
+      "pdf": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\pdfs\\brand-casio.pdf",
+      "count": 1
+    },
+    {
+      "type": "furniture",
+      "brand": "BIC",
+      "anchor": "brand-bic",
+      "html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\sections\\brand-bic.html",
+      "pdf": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\pdfs\\brand-bic.pdf",
+      "count": 10
+    },
+    {
+      "type": "furniture",
+      "brand": "MAPED",
+      "anchor": "brand-maped",
+      "html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\sections\\brand-maped.html",
+      "pdf": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\pdfs\\brand-maped.pdf",
+      "count": 5
+    },
+    {
+      "type": "furniture",
+      "brand": "DELI",
+      "anchor": "brand-deli",
+      "html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\sections\\brand-deli.html",
+      "pdf": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\pdfs\\brand-deli.pdf",
+      "count": 5
+    },
+    {
+      "type": "furniture",
+      "brand": "UHU",
+      "anchor": "brand-uhu",
+      "html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\sections\\brand-uhu.html",
+      "pdf": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\pdfs\\brand-uhu.pdf",
+      "count": 4
+    },
+    {
+      "type": "furniture",
+      "brand": "EXPRESS",
+      "anchor": "brand-express",
+      "html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\sections\\brand-express.html",
+      "pdf": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\pdfs\\brand-express.pdf",
+      "count": 14
+    },
+    {
+      "type": "furniture",
+      "brand": "ACCORD",
+      "anchor": "brand-accord",
+      "html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\sections\\brand-accord.html",
+      "pdf": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\pdfs\\brand-accord.pdf",
+      "count": 8
+    },
+    {
+      "type": "furniture",
+      "brand": "TOP SAM",
+      "anchor": "brand-top-sam",
+      "html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\sections\\brand-top-sam.html",
+      "pdf": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\pdfs\\brand-top-sam.pdf",
+      "count": 3
+    },
+    {
+      "type": "furniture",
+      "brand": "Divers",
+      "anchor": "brand-divers",
+      "html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\sections\\brand-divers.html",
+      "pdf": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\pdfs\\brand-divers.pdf",
+      "count": 1
+    },
+    {
+      "type": "electronics",
+      "brand": "BIC",
+      "anchor": "elec-bic",
+      "html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\sections\\elec-bic.html",
+      "pdf": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\pdfs\\elec-bic.pdf",
+      "count": 2
+    },
+    {
+      "type": "electronics",
+      "brand": "3A TOP SAM",
+      "anchor": "elec-3a-top-sam",
+      "html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\sections\\elec-3a-top-sam.html",
+      "pdf": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\pdfs\\elec-3a-top-sam.pdf",
+      "count": 1
+    },
+    {
+      "type": "electronics",
+      "brand": "DAMANE GOLD",
+      "anchor": "elec-damane-gold",
+      "html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\sections\\elec-damane-gold.html",
+      "pdf": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\pdfs\\elec-damane-gold.pdf",
+      "count": 1
+    },
+    {
+      "type": "electronics",
+      "brand": "FONENG",
+      "anchor": "elec-foneng",
+      "html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\sections\\elec-foneng.html",
+      "pdf": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\pdfs\\elec-foneng.pdf",
+      "count": 1
+    },
+    {
+      "type": "electronics",
+      "brand": "ITGURU",
+      "anchor": "elec-itguru",
+      "html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\sections\\elec-itguru.html",
+      "pdf": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\pdfs\\elec-itguru.pdf",
+      "count": 1
+    },
+    {
+      "type": "electronics",
+      "brand": "KIOXIA",
+      "anchor": "elec-kioxia",
+      "html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\sections\\elec-kioxia.html",
+      "pdf": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\pdfs\\elec-kioxia.pdf",
+      "count": 1
+    },
+    {
+      "type": "electronics",
+      "brand": "PILOT",
+      "anchor": "elec-pilot",
+      "html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\sections\\elec-pilot.html",
+      "pdf": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\pdfs\\elec-pilot.pdf",
+      "count": 1
+    },
+    {
+      "type": "electronics",
+      "brand": "R8",
+      "anchor": "elec-r8",
+      "html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\sections\\elec-r8.html",
+      "pdf": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\pdfs\\elec-r8.pdf",
+      "count": 1
+    },
+    {
+      "type": "electronics",
+      "brand": "SAMSUNG",
+      "anchor": "elec-samsung",
+      "html": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\sections\\elec-samsung.html",
+      "pdf": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\catalogue\\pdfs\\elec-samsung.pdf",
+      "count": 1
+    }
+  ]
+}

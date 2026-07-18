@@ -1,0 +1,8 @@
+{
+  "at": "2026-02-04T10:35:00Z",
+  "type": "account_switch",
+  "from": "organization",
+  "to": "user",
+  "user": "younestsouli2019-bot",
+  "message": "Switching from organization to user account. Keep all repositories; workflows and deployments should target the user-owned repos."
+}

@@ -1,0 +1,9 @@
+{
+  "id": "68e750acedec97285a16655c",
+  "amount": 0,
+  "currency": "215.75",
+  "status": "COMPLETED",
+  "source": "csv_migration",
+  "raw": "68e750acedec97285a16655c,21ed616b1418d44315c4dff39375e29cdd7f6fe88c3c7e03000e5ed76ff4d8b8,Reddit Career Advice,,215.75,USD,earned,,,,,\"{\"\"agent_id\"\":\"\"agent-4\"\",\"\"legacy_file\"\":\"\"Analytics_export (1).csv\"\",\"\"ingested_at\"\":\"\"2026-01-02T21:26:34.980Z\"\"}\",69583769f77e47fb16099c1e,2026-01-02T21:23:53.826000,2026-01-02T21:23:53.826000,anonymous,anonymous,false",
+  "created_at": "2026-02-01T23:10:29.640Z"
+}

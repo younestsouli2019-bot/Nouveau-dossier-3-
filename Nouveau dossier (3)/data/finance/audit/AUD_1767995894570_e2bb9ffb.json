@@ -1,0 +1,35 @@
+{
+  "id": "AUD_1767995894570_e2bb9ffb",
+  "timestamp": "2026-01-09T21:58:14.570Z",
+  "action": "CRYPTO_TRANSFER_PREPARED",
+  "entity_id": "BATCH_LIVE_1767528254631_CRYPTO_DIRECT",
+  "actor": "OwnerDirectCryptoRelease",
+  "changes": {
+    "before": null,
+    "after": {
+      "status": "prepared",
+      "provider": "binance",
+      "network": "BEP20",
+      "prepared_at": "2026-01-09T21:58:14.570Z",
+      "transactions": [
+        {
+          "amount": 850,
+          "currency": "USDT",
+          "destination": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+          "reference": "BATCH_LIVE_1767528254631 - Direct Crypto Release to Owner Trust Wallet"
+        }
+      ]
+    }
+  },
+  "context": {
+    "masked_recipients": [
+      {
+        "amount": 850,
+        "currency": "USDT",
+        "masked_destination": "0xA462****9fEfe7"
+      }
+    ],
+    "reassurance": "Discreet privacy enforced for crypto; secure payment guaranteed via OWNER settlement rules"
+  },
+  "updated_at": "2026-01-09T21:58:14.570Z"
+}

@@ -1,0 +1,27 @@
+{
+  "id": "692ef2e85bd624e4228e9f03",
+  "title": "Critical PayPal API Outage Resolution",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Critical PayPal API Outage Resolution",
+    "type": "operations",
+    "priority": "critical",
+    "status": "deployed",
+    "assigned_agent_ids": "[]",
+    "mission_parameters": "{\"business_impact_assessment\":[{\"immediate_action\":\"Restore service immediately\",\"impact_area\":\"Revenue Distribution\",\"severity\":\"CRITICAL\"},{\"impact_area\":\"Customer Payments\",\"severity\":\"HIGH\",\"immediate_action\":\"Notify stakeholders of delay\"},{\"severity\":\"HIGH\",\"impact_area\":\"System Reliability\",\"immediate_action\":\"Implement monitoring\"},{\"immediate_action\":\"Address root causes\",\"severity\":\"MEDIUM\",\"impact_area\":\"Technical Debt\"}],\"root_cause_analysis\":{\"server_service_disruption\":{\"evidence\":\"Complete cessation of API calls after November 22\",\"most_likely_cause\":\"Your PayPal Payouts server or service has stopped running\",\"impact\":\"No payouts are being processed, revenue distribution is halted\"},\"manual_intervention\":{\"evidence\":\"No new calls after our troubleshooting discussions\",\"risk\":\"System may not have been restarted after fixes\",\"possible_cause\":\"System was manually paused/stopped during troubleshooting\"},\"automated_system_failure\":{\"secondary_cause\":\"The automated payout system has encountered a critical failure\",\"evidence\":\"Multiple 403 errors preceded the stoppage\",\"pattern\":\"System likely entered a failure state and stopped retrying\"}},\"next_steps\":[\"Execute server status check immediately\",\"Restore service using recovery procedures\",\"Implement monitoring to prevent recurrence\",\"Conduct post-mortem analysis\"],\"escalation_path\":[\"Immediate (Now): Verify server status and restart if necessary\",\"1 Hour: If service doesn't restart, escalate to infrastructure team\",\"2 Hours: If still unresolved, activate manual payout procedures\",\"4 Hours: Executive notification of service disruption\"],\"immediate_action_plan\":{\"step_4_test_manual_api_call\":\"curl -v -X POST https://api.paypal.com/v1/oauth2/token -u \\\"YOUR_CLIENT_ID:YOUR_SECRET\\\" -d \\\"grant_type=client_credentials\\\"\",\"step_3_verify_scheduled_tasks\":\"crontab -l; systemctl list-timers --all; systemctl status paypal-payouts-timer (Look for payout scheduler status)\",\"step_1_verify_server_status\":\"curl -I https://your-domain.com/health; ssh your-server systemctl status paypal-payouts docker ps | grep paypal\",\"step_2_check_application_logs\":\"tail -n 100 /var/log/paypal-payouts/app.log (Look for: Application crashes, Memory errors, Configuration issues, Manual shutdown messages)\"},\"recovery_procedures\":{\"scenario_4_manual_intervention\":\"grep -r \\\"disabled\\\\|paused\\\" /etc/paypal-payouts/; Edit configuration file and set enabled=true; systemctl reload paypal-payouts\",\"scenario_2_application_crashed\":\"journalctl -u paypal-payouts -n 50; systemctl restart paypal-payouts; tail -f /var/log/paypal-payouts/app.log\",\"scenario_1_server_is_down\":\"systemctl start paypal-payouts; docker start paypal-payouts-container; curl https://your-domain.com/health\",\"scenario_3_scheduler_stopped\":\"systemctl restart cron; systemctl enable paypal-payouts-timer; systemctl start paypal-payouts-timer\"},\"problem_identification\":\"Your PayPal API logs show zero activity since November 22, 2025 - this is a critical issue that requires immediate attention. The last recorded call was at 04:29 with debug ID 8730ed5341f26.\",\"prevention_measures\":{\"add_auto_restart_policy\":\"In docker-compose.yml: deploy: restart_policy: condition: on-failure delay: 5s max_attempts: 3 window: 120s\",\"create_dead_man_switch\":\"Add to crontab: */5 * * * * /usr/local/bin/check-paypal-service.sh (check-paypal-service.sh: #!/bin/bash if ! curl -f https://your-domain.com/health > /dev/null 2>&1; then systemctl restart paypal-payouts echo \\\"PayPal service restarted at $(date)\\\" | mail -s \\\"PayPal Service Alert\\\" admin@yourdomain.com fi)\",\"implement_service_monitoring\":\"Add to docker-compose.yml: healthcheck: test: ['CMD', 'curl', '-f', 'http://localhost:3000/health'] interval: 30s timeout: 10s retries: 3 start_period: 40s\"}}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "692ef2e85bd624e4228e9f03",
+    "created_date": "2025-12-02T14:08:40.938000",
+    "updated_date": "2025-12-02T14:08:43.126000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:11.996Z"
+}

@@ -1,0 +1,36 @@
+{
+  "id": "STO-001",
+  "title": "Store Setup - DropMagic Autonomous Build",
+  "channel": "store_setup",
+  "priority": "high",
+  "status": "active",
+  "data": {
+    "title": "Store Setup - DropMagic Autonomous Build",
+    "type": "store_setup",
+    "priority": "high",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"web_scraping_agent\",\"content_creation_agent\"]",
+    "mission_parameters": "{\"task\":\"build_store\",\"platform\":\"https://dropmagic.ai/\",\"store_type\":\"general\",\"automation_level\":\"full\",\"product_uploading\":\"auto\",\"seo_optimization\":\"auto\",\"theme\":\"modern_conversion\",\"backend_integration\":\"api_v1\",\"dependent_on\":[\"INF-001\",\"MKT-001\"]}",
+    "progress_data": "{\"step\":\"awaiting_api_credentials\",\"store_url\":\"\"}",
+    "estimated_duration_hours": "72",
+    "actual_duration_hours": "",
+    "deadline": "2026-03-03T23:15:44.298Z",
+    "completion_notes": "",
+    "revenue_generated": "0",
+    "id": "STO-001",
+    "created_date": "2026-02-22T23:15:44.296Z",
+    "updated_date": "2026-02-22T23:15:44.296Z",
+    "created_by_id": "",
+    "created_by": "$ENV:SWARM_OWNER_EMAIL",
+    "is_sample": ""
+  },
+  "created_at": "2026-02-24T12:21:21.665Z",
+  "last_executed_at": "2026-03-30T21:00:20.256Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Autonomous operational optimization complete.",
+      "revenue_estimate": 10
+    }
+  ]
+}

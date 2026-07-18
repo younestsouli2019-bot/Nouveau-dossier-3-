@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.local
+.env.production
+logs/*.log
+data/*.json
+!data/.gitkeep
+.DS_Store
+*.swp
+*.swo
+coverage/
+.nyc_output/

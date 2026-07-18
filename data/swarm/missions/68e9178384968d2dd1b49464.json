@@ -1,0 +1,27 @@
+{
+  "id": "68e9178384968d2dd1b49464",
+  "title": "Activate Revenue Acceleration System",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Activate Revenue Acceleration System",
+    "type": "operations",
+    "priority": "critical",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"68e9177884968d2dd1b49432\"]",
+    "mission_parameters": "",
+    "progress_data": "",
+    "estimated_duration_hours": "1",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "68e9178384968d2dd1b49464",
+    "created_date": "2025-10-10T14:26:11.020000",
+    "updated_date": "2025-10-10T14:26:11.020000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:12.000Z"
+}

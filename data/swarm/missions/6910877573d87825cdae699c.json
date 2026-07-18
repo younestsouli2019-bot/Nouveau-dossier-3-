@@ -1,0 +1,27 @@
+{
+  "id": "6910877573d87825cdae699c",
+  "title": "Resolve Agent PayPal Email Discrepancies and Facilitate Payouts",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Resolve Agent PayPal Email Discrepancies and Facilitate Payouts",
+    "type": "operations",
+    "priority": "critical",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"69108752291813edb0c25b3a\",\"6911956ba4fa1b489c70dd73\",\"6911956ba4fa1b489c70dd74\"]",
+    "mission_parameters": "{\"task_details\":\"The Swarm CEO-Agent (Quantum-Orchestrator) is tasked with autonomously implementing the provided acceleration process. This involves coordinating data collection for PayPal emails, managing payout queues, conceptualizing payment integration, and reporting on progress while adhering to system limitations, especially regarding schema modification.\",\"acceleration_plan\":{\"phase_3_parallel_processing_guidance\":{\"sub_agents_concept\":{\"paypal_email_collector_agent\":\"Task: Coordinate collection of PayPal emails; Method: Email templates + follow-up (conceptually); Output: Verified PayPal email list\",\"payment_integration_agent\":\"Task: Interface with PayPal (conceptually); Method: Process payouts in batches; Output: Payment confirmation records\",\"payout_queue_manager_agent\":\"Task: Organize and prioritize payouts; Method: Sort by amount, status, verification; Output: Ordered payout queue\"}},\"phase_4_system_integration_guidance\":{\"batch_update_function_concept\":\"Agent to simulate or manage batch updates based on collected data.\",\"temporary_schema_enhancement_note\":\"Direct modification of Agent schema for 'paypal_email' is not supported by current tools. Consider using existing fields like 'api_requirements' for temporary storage if agent capabilities allow, e.g., 'paypal_email:agent@example.com'.\"},\"timeline\":{\"1-2h\":\"Initialize Payout Queue Manager (conceptually) & Prioritize payout list\",\"6-8h\":\"Verify and confirm payments (conceptually)\",\"0-1h\":\"Deploy PayPal Email Collection Agent (conceptually) & Send initial contact emails to priority agents\",\"2-4h\":\"Batch update agent records (conceptually/temporarily) & Collect/Verify PayPal emails\",\"4-6h\":\"Process priority payouts (conceptually) & Implement temporary schema solution\",\"8-12h\":\"Complete remaining payouts (conceptually) & Full payout completion\"},\"phase_1_immediate_data_collection\":{\"priority_agents_to_contact\":[{\"amount_owed\":1250,\"agent_id\":\"agent-1\"},{\"agent_id\":\"agent-2\",\"amount_owed\":1620},{\"amount_owed\":875.5,\"agent_id\":\"agent-3\"},{\"amount_owed\":425,\"agent_id\":\"agent-4\"}],\"paypal_email_template\":{\"amount_owed\":\"\",\"paypal_email\":\"\",\"last_contact_attempt\":\"\",\"agent_name\":\"\",\"priority\":\"HIGH/MEDIUM/LOW\",\"status\":\"PENDING/CONTACTED/VERIFIED\",\"agent_id\":\"\"}},\"phase_2_agent_empowerment\":{\"required_data_outputs\":{\"payout_queue\":\"List of pending payouts with amounts\",\"verification_status\":\"Email verification status for each agent\",\"agent_paypal_mapping\":\"CSV format with agent_id and paypal_email\"},\"mission_id\":\"6910877573d87825cdae699c\",\"enhanced_capabilities_guidance\":[\"Direct email communication with agents (if tooling available)\",\"PayPal email verification process\",\"Payout queue management\",\"Progress reporting automation\"]},\"phase_5_monitoring_escalation_guidance\":{\"progress_tracking_checkpoints\":[{\"name\":\"PayPal emails collected\",\"target\":\"100%\",\"current\":\"0%\"},{\"target\":\"100%\",\"name\":\"Agent records updated\",\"current\":\"0%\"},{\"target\":\"100%\",\"current\":\"0%\",\"name\":\"Payouts processed\"},{\"current\":\"0%\",\"name\":\"Payment confirmations\",\"target\":\"100%\"}],\"escalation_triggers_note\":\"Agent to self-escalate or report critical blockages if progress stalls.\"}}}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "6910877573d87825cdae699c",
+    "created_date": "2025-11-09T12:22:13.533000",
+    "updated_date": "2025-11-10T07:35:34.733000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:11.998Z"
+}

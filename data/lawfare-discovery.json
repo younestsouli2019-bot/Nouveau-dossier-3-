@@ -1,0 +1,520 @@
+{
+  "cases": {
+    "case-rico-shadow-01": {
+      "id": "case-rico-shadow-01",
+      "enterpriseNodes": [
+        {
+          "name": "Shadow NGO #1",
+          "role": "Primary Facilitator",
+          "connectionType": "direct"
+        },
+        {
+          "name": "Offshore Bank X",
+          "role": "Money Laundering",
+          "connectionType": "secondary"
+        },
+        {
+          "name": "Private Jet Charter Y",
+          "role": "Logistics",
+          "connectionType": "tertiary"
+        },
+        {
+          "name": "Shadow NGO #1",
+          "role": "Primary Facilitator",
+          "connectionType": "direct"
+        },
+        {
+          "name": "Offshore Bank X",
+          "role": "Money Laundering",
+          "connectionType": "secondary"
+        },
+        {
+          "name": "Private Jet Charter Y",
+          "role": "Logistics",
+          "connectionType": "tertiary"
+        },
+        {
+          "name": "Shadow NGO #1",
+          "role": "Primary Facilitator",
+          "connectionType": "direct"
+        },
+        {
+          "name": "Offshore Bank X",
+          "role": "Money Laundering",
+          "connectionType": "secondary"
+        },
+        {
+          "name": "Private Jet Charter Y",
+          "role": "Logistics",
+          "connectionType": "tertiary"
+        },
+        {
+          "name": "Shadow NGO #1",
+          "role": "Primary Facilitator",
+          "connectionType": "direct"
+        },
+        {
+          "name": "Offshore Bank X",
+          "role": "Money Laundering",
+          "connectionType": "secondary"
+        },
+        {
+          "name": "Private Jet Charter Y",
+          "role": "Logistics",
+          "connectionType": "tertiary"
+        }
+      ]
+    }
+  },
+  "subpoenas": [
+    {
+      "id": "subp-fd1b3bf4",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Shadow NGO #1",
+      "categories": [
+        "Emails",
+        "Flight Logs",
+        "Financial Records",
+        "Blackmail Files"
+      ],
+      "status": "drafted",
+      "timestamp": 1774840392705
+    },
+    {
+      "id": "subp-747cc19a",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774840392725
+    },
+    {
+      "id": "subp-be7a0fb4",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Shadow NGO #1",
+      "categories": [
+        "Emails",
+        "Flight Logs",
+        "Financial Records",
+        "Blackmail Files"
+      ],
+      "status": "drafted",
+      "timestamp": 1774903156844
+    },
+    {
+      "id": "subp-fbfb36d8",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774903158037
+    },
+    {
+      "id": "subp-55ad658f",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Shadow NGO #1",
+      "categories": [
+        "Emails",
+        "Flight Logs",
+        "Financial Records",
+        "Blackmail Files"
+      ],
+      "status": "drafted",
+      "timestamp": 1774904495485
+    },
+    {
+      "id": "subp-c41ea4b6",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774904495517
+    },
+    {
+      "id": "subp-f4a3a427",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Shadow NGO #1",
+      "categories": [
+        "Emails",
+        "Flight Logs",
+        "Financial Records",
+        "Blackmail Files"
+      ],
+      "status": "drafted",
+      "timestamp": 1774905771893
+    },
+    {
+      "id": "subp-6b6a0e77",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774905771928
+    },
+    {
+      "id": "subp-1bbe00c1",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774906758120
+    },
+    {
+      "id": "subp-a48547e0",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774908095568
+    },
+    {
+      "id": "subp-eb5e815d",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774909371963
+    },
+    {
+      "id": "subp-9f7b1175",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774910358113
+    },
+    {
+      "id": "subp-0c387fca",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774911695591
+    },
+    {
+      "id": "subp-ffa00de6",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774912971984
+    },
+    {
+      "id": "subp-54b22351",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774913958151
+    },
+    {
+      "id": "subp-8e7f34bc",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774915295576
+    },
+    {
+      "id": "subp-f2ec4c0f",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774916571970
+    },
+    {
+      "id": "subp-a2f7e598",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774917558130
+    },
+    {
+      "id": "subp-e9baef47",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774918895583
+    },
+    {
+      "id": "subp-dd4e631b",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774920171963
+    },
+    {
+      "id": "subp-4fb967e7",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774921158147
+    },
+    {
+      "id": "subp-f42adfb2",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774922495619
+    },
+    {
+      "id": "subp-240abbf9",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774923771990
+    },
+    {
+      "id": "subp-7e3f79f6",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774924758191
+    },
+    {
+      "id": "subp-0fd9bdf9",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774926095617
+    },
+    {
+      "id": "subp-4ee7624d",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774927372029
+    },
+    {
+      "id": "subp-32c85af3",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774928358186
+    },
+    {
+      "id": "subp-eb914461",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774929695622
+    },
+    {
+      "id": "subp-5412a6ed",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774930972006
+    },
+    {
+      "id": "subp-be184126",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774931958228
+    },
+    {
+      "id": "subp-d2bbe4d2",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774933295654
+    },
+    {
+      "id": "subp-3c132df2",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774934572041
+    },
+    {
+      "id": "subp-9bba2afb",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774935558208
+    },
+    {
+      "id": "subp-1838d926",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774936895656
+    },
+    {
+      "id": "subp-7e9adf13",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774938871976
+    },
+    {
+      "id": "subp-ab133271",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774939158236
+    },
+    {
+      "id": "subp-68847626",
+      "caseId": "case-rico-shadow-01",
+      "targetEntity": "Global Youth Foundation (NGO)",
+      "categories": [
+        "Financial Ledger",
+        "Flight Manifests",
+        "Private Server Communications"
+      ],
+      "status": "drafted",
+      "timestamp": 1774940495686
+    }
+  ],
+  "discoveryRequests": []
+}

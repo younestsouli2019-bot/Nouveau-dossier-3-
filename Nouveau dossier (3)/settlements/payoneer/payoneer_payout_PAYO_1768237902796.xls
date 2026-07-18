@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:o="urn:schemas-microsoft-com:office:office"
+  xmlns:x="urn:schemas-microsoft-com:office:excel"
+  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+  <Worksheet ss:Name="Payoneer">
+    <Table>
+      <Row><Cell><Data ss:Type="String">recipient</Data></Cell><Cell><Data ss:Type="String">recipient_email</Data></Cell><Cell><Data ss:Type="String">recipient_name</Data></Cell><Cell><Data ss:Type="String">amount</Data></Cell><Cell><Data ss:Type="String">currency</Data></Cell><Cell><Data ss:Type="String">batch_id</Data></Cell><Cell><Data ss:Type="String">item_id</Data></Cell><Cell><Data ss:Type="String">note</Data></Cell><Cell><Data ss:Type="String">payer_name</Data></Cell><Cell><Data ss:Type="String">payer_email</Data></Cell><Cell><Data ss:Type="String">payer_company</Data></Cell><Cell><Data ss:Type="String">purpose</Data></Cell><Cell><Data ss:Type="String">reference</Data></Cell><Cell><Data ss:Type="String">prq_link</Data></Cell></Row>
+      <Row><Cell><Data ss:Type="String">test@client.com</Data></Cell><Cell><Data ss:Type="String">test@client.com</Data></Cell><Cell><Data ss:Type="String">Test Client</Data></Cell><Cell><Data ss:Type="String">1</Data></Cell><Cell><Data ss:Type="String">USD</Data></Cell><Cell><Data ss:Type="String">PAYO_1768237902796</Data></Cell><Cell><Data ss:Type="String">PAYO_1768237902796-ITEM-1</Data></Cell><Cell><Data ss:Type="String">Settlement per invoice INV-2026-001</Data></Cell><Cell><Data ss:Type="String">Client Co</Data></Cell><Cell><Data ss:Type="String">client@example.com</Data></Cell><Cell><Data ss:Type="String">Client Co</Data></Cell><Cell><Data ss:Type="String">Service</Data></Cell><Cell><Data ss:Type="String">REQ-TEST-1</Data></Cell><Cell><Data ss:Type="String">https://link.payoneer.com/Token?t=325EF6267B78444D86BF8286069806BE&src=prqLink</Data></Cell></Row>
+    </Table>
+  </Worksheet>
+</Workbook>

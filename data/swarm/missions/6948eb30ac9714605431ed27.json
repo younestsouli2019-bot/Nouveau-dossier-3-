@@ -1,0 +1,27 @@
+{
+  "id": "6948eb30ac9714605431ed27",
+  "title": "Niche AI Prompt Pack Creation & Sales",
+  "channel": "content_creation",
+  "priority": "high",
+  "data": {
+    "title": "Niche AI Prompt Pack Creation & Sales",
+    "type": "content_creation",
+    "priority": "critical",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"6943cd51c9e45015b88512e6\",\"6943cd51c9e45015b88512e7\",\"6943cd51c9e45015b88512e8\",\"6943cd51c9e45015b88512e9\"]",
+    "mission_parameters": "{\"product_focus\":\"Specialized AI Prompt Packs\",\"marketing_platforms\":[\"Gumroad\",\"Etsy\",\"Dedicated Landing Page\"],\"sales_strategy\":\"Leverage content agents for diverse prompt creation\",\"revenue_potential\":\"Fast digital product sales\"}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "6948eb30ac9714605431ed27",
+    "created_date": "2025-12-22T06:54:40.860000",
+    "updated_date": "2025-12-22T06:54:42.954000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:11.994Z"
+}

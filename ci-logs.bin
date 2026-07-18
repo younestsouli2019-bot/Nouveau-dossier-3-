@@ -1,0 +1,519 @@
+﻿2026-06-17T18:56:58.9241729Z Current runner version: '2.335.1'
+2026-06-17T18:56:58.9267907Z ##[group]Runner Image Provisioner
+2026-06-17T18:56:58.9268875Z Hosted Compute Agent
+2026-06-17T18:56:58.9269515Z Version: 20260611.554
+2026-06-17T18:56:58.9270170Z Commit: 5e0782fdc9014723d3be820dd114dd31555c2bd1
+2026-06-17T18:56:58.9270978Z Build Date: 2026-06-11T21:40:46Z
+2026-06-17T18:56:58.9271679Z Worker ID: {b9eb7c2e-a7ac-42a9-85d3-4c3b2336762e}
+2026-06-17T18:56:58.9272649Z Azure Region: eastus2
+2026-06-17T18:56:58.9273349Z ##[endgroup]
+2026-06-17T18:56:58.9274838Z ##[group]Operating System
+2026-06-17T18:56:58.9275530Z Ubuntu
+2026-06-17T18:56:58.9276095Z 24.04.4
+2026-06-17T18:56:58.9276692Z LTS
+2026-06-17T18:56:58.9277287Z ##[endgroup]
+2026-06-17T18:56:58.9277857Z ##[group]Runner Image
+2026-06-17T18:56:58.9278498Z Image: ubuntu-24.04
+2026-06-17T18:56:58.9279108Z Version: 20260615.205.1
+2026-06-17T18:56:58.9280886Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260615.205/images/ubuntu/Ubuntu2404-Readme.md
+2026-06-17T18:56:58.9282701Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260615.205
+2026-06-17T18:56:58.9283744Z ##[endgroup]
+2026-06-17T18:56:58.9284964Z ##[group]GITHUB_TOKEN Permissions
+2026-06-17T18:56:58.9287456Z Contents: read
+2026-06-17T18:56:58.9288097Z Metadata: read
+2026-06-17T18:56:58.9288683Z Packages: read
+2026-06-17T18:56:58.9289328Z ##[endgroup]
+2026-06-17T18:56:58.9291476Z Secret source: Actions
+2026-06-17T18:56:58.9292781Z Prepare workflow directory
+2026-06-17T18:56:58.9755186Z Prepare all required actions
+2026-06-17T18:56:58.9808907Z Getting action download info
+2026-06-17T18:56:59.3039429Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+2026-06-17T18:56:59.3729807Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-06-17T18:56:59.5541144Z Complete job name: test (3.11)
+2026-06-17T18:56:59.6268758Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-06-17T18:56:59.6278012Z ##[group]Run actions/checkout@v4
+2026-06-17T18:56:59.6278713Z with:
+2026-06-17T18:56:59.6279236Z   repository: younestsouli2019-bot/Nouveau-dossier-3-
+2026-06-17T18:56:59.6284214Z   token: ***
+2026-06-17T18:56:59.6284670Z   ssh-strict: true
+2026-06-17T18:56:59.6285119Z   ssh-user: git
+2026-06-17T18:56:59.6285577Z   persist-credentials: true
+2026-06-17T18:56:59.6286073Z   clean: true
+2026-06-17T18:56:59.6286524Z   sparse-checkout-cone-mode: true
+2026-06-17T18:56:59.6287044Z   fetch-depth: 1
+2026-06-17T18:56:59.6287480Z   fetch-tags: false
+2026-06-17T18:56:59.6287924Z   show-progress: true
+2026-06-17T18:56:59.6288373Z   lfs: false
+2026-06-17T18:56:59.6288838Z   submodules: false
+2026-06-17T18:56:59.6289289Z   set-safe-directory: true
+2026-06-17T18:56:59.6289979Z ##[endgroup]
+2026-06-17T18:56:59.7274445Z Syncing repository: younestsouli2019-bot/Nouveau-dossier-3-
+2026-06-17T18:56:59.7276342Z ##[group]Getting Git version info
+2026-06-17T18:56:59.7277165Z Working directory is '/home/runner/work/Nouveau-dossier-3-/Nouveau-dossier-3-'
+2026-06-17T18:56:59.7278335Z [command]/usr/bin/git version
+2026-06-17T18:56:59.7319822Z git version 2.54.0
+2026-06-17T18:56:59.7372213Z ##[endgroup]
+2026-06-17T18:56:59.7386909Z Temporarily overriding HOME='/home/runner/work/_temp/143b35ed-5a2d-4cef-827c-86570784fe34' before making global git config changes
+2026-06-17T18:56:59.7388730Z Adding repository directory to the temporary git global config as a safe directory
+2026-06-17T18:56:59.7392332Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Nouveau-dossier-3-/Nouveau-dossier-3-
+2026-06-17T18:56:59.7437626Z Deleting the contents of '/home/runner/work/Nouveau-dossier-3-/Nouveau-dossier-3-'
+2026-06-17T18:56:59.7441551Z ##[group]Initializing the repository
+2026-06-17T18:56:59.7446696Z [command]/usr/bin/git init /home/runner/work/Nouveau-dossier-3-/Nouveau-dossier-3-
+2026-06-17T18:56:59.7518220Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-06-17T18:56:59.7519646Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-06-17T18:56:59.7521125Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-06-17T18:56:59.7522265Z hint: call:
+2026-06-17T18:56:59.7522674Z hint:
+2026-06-17T18:56:59.7523229Z hint: 	git config --global init.defaultBranch <name>
+2026-06-17T18:56:59.7523858Z hint:
+2026-06-17T18:56:59.7524438Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-06-17T18:56:59.7525567Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-06-17T18:56:59.7526477Z hint:
+2026-06-17T18:56:59.7526927Z hint: 	git branch -m <name>
+2026-06-17T18:56:59.7527403Z hint:
+2026-06-17T18:56:59.7528024Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-06-17T18:56:59.7529184Z Initialized empty Git repository in /home/runner/work/Nouveau-dossier-3-/Nouveau-dossier-3-/.git/
+2026-06-17T18:56:59.7531630Z [command]/usr/bin/git remote add origin https://github.com/younestsouli2019-bot/Nouveau-dossier-3-
+2026-06-17T18:56:59.7572473Z ##[endgroup]
+2026-06-17T18:56:59.7573267Z ##[group]Disabling automatic garbage collection
+2026-06-17T18:56:59.7576424Z [command]/usr/bin/git config --local gc.auto 0
+2026-06-17T18:56:59.7606080Z ##[endgroup]
+2026-06-17T18:56:59.7606819Z ##[group]Setting up auth
+2026-06-17T18:56:59.7612843Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-06-17T18:56:59.7647703Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-06-17T18:56:59.7956560Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-06-17T18:56:59.7989260Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-06-17T18:56:59.8224742Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-06-17T18:56:59.8257843Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-06-17T18:56:59.8492589Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-06-17T18:56:59.8528364Z ##[endgroup]
+2026-06-17T18:56:59.8529184Z ##[group]Fetching the repository
+2026-06-17T18:56:59.8537148Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +e38766b2da3520380a6c2ae783a01dcc1aa55a31:refs/remotes/origin/main
+2026-06-17T18:57:03.2533374Z From https://github.com/younestsouli2019-bot/Nouveau-dossier-3-
+2026-06-17T18:57:03.2536307Z  * [new ref]         e38766b2da3520380a6c2ae783a01dcc1aa55a31 -> origin/main
+2026-06-17T18:57:03.2566836Z ##[endgroup]
+2026-06-17T18:57:03.2568236Z ##[group]Determining the checkout info
+2026-06-17T18:57:03.2569910Z ##[endgroup]
+2026-06-17T18:57:03.2576717Z [command]/usr/bin/git sparse-checkout disable
+2026-06-17T18:57:03.2624550Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-06-17T18:57:03.2659533Z ##[group]Checking out the ref
+2026-06-17T18:57:03.2664760Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-06-17T18:57:03.9790957Z Switched to a new branch 'main'
+2026-06-17T18:57:03.9793611Z branch 'main' set up to track 'origin/main'.
+2026-06-17T18:57:03.9855062Z ##[endgroup]
+2026-06-17T18:57:03.9900797Z [command]/usr/bin/git log -1 --format=%H
+2026-06-17T18:57:03.9926593Z e38766b2da3520380a6c2ae783a01dcc1aa55a31
+2026-06-17T18:57:04.0289441Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-06-17T18:57:04.0295055Z ##[group]Run actions/setup-python@v5
+2026-06-17T18:57:04.0296234Z with:
+2026-06-17T18:57:04.0297180Z   python-version: 3.11
+2026-06-17T18:57:04.0298246Z   check-latest: false
+2026-06-17T18:57:04.0308365Z   token: ***
+2026-06-17T18:57:04.0309381Z   update-environment: true
+2026-06-17T18:57:04.0310528Z   allow-prereleases: false
+2026-06-17T18:57:04.0311621Z   freethreaded: false
+2026-06-17T18:57:04.0312824Z ##[endgroup]
+2026-06-17T18:57:04.1661423Z ##[group]Installed versions
+2026-06-17T18:57:04.1754103Z (node:2266) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-06-17T18:57:04.1757637Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-06-17T18:57:04.1759897Z Successfully set up CPython (3.11.15)
+2026-06-17T18:57:04.1762598Z ##[endgroup]
+2026-06-17T18:57:04.2023811Z ##[group]Run pip install cryptography --quiet
+2026-06-17T18:57:04.2025318Z [36;1mpip install cryptography --quiet[0m
+2026-06-17T18:57:04.2197523Z shell: /usr/bin/bash -e {0}
+2026-06-17T18:57:04.2198597Z env:
+2026-06-17T18:57:04.2199684Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:04.2201372Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib/pkgconfig
+2026-06-17T18:57:04.2203411Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:04.2204930Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:04.2206473Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:04.2208030Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib
+2026-06-17T18:57:04.2209336Z ##[endgroup]
+2026-06-17T18:57:05.9456636Z ##[group]Run python test_swarm.py
+2026-06-17T18:57:05.9457044Z [36;1mpython test_swarm.py[0m
+2026-06-17T18:57:05.9494124Z shell: /usr/bin/bash -e {0}
+2026-06-17T18:57:05.9494445Z env:
+2026-06-17T18:57:05.9494775Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:05.9495271Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib/pkgconfig
+2026-06-17T18:57:05.9495749Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:05.9496182Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:05.9496629Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:05.9497074Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib
+2026-06-17T18:57:05.9497448Z ##[endgroup]
+2026-06-17T18:57:06.3554814Z   PASS  TestEthicalKernel.test_audit_log_populated
+2026-06-17T18:57:06.3555774Z   PASS  TestEthicalKernel.test_harm_human_blocked
+2026-06-17T18:57:06.3556419Z   PASS  TestEthicalKernel.test_move_authorized
+2026-06-17T18:57:06.3557000Z   PASS  TestEthicalKernel.test_weaponize_blocked
+2026-06-17T18:57:06.3557589Z   PASS  TestBase44Protocol.test_forged_packet_rejected
+2026-06-17T18:57:06.3558162Z   PASS  TestBase44Protocol.test_packet_created_and_verified
+2026-06-17T18:57:06.3558560Z   PASS  TestBase44Protocol.test_packet_has_all_axioms
+2026-06-17T18:57:06.3558925Z Agent test_01: Received packet.
+2026-06-17T18:57:06.3559376Z Agent test_01: BLOCKED - VIOLATION: Action 'harm_human' is prohibited by EthicalKernel Law 1.
+2026-06-17T18:57:06.3559880Z   PASS  TestSwarmAgent.test_agent_blocks_prohibited
+2026-06-17T18:57:06.3560199Z Agent test_02: Received packet.
+2026-06-17T18:57:06.3560524Z Agent test_02: EXECUTING move with params {'x': 10, 'y': 20}.
+2026-06-17T18:57:06.3560878Z Agent test_02: Moving to {'x': 10, 'y': 20}.
+2026-06-17T18:57:06.3561206Z   PASS  TestSwarmAgent.test_agent_executes_valid
+2026-06-17T18:57:06.3561460Z 
+2026-06-17T18:57:06.3561582Z ==================================================
+2026-06-17T18:57:06.3562738Z   Results: 9/9 passed, 0 failed
+2026-06-17T18:57:06.3680382Z ##[group]Run python khwarizmian_swarm.py
+2026-06-17T18:57:06.3680777Z [36;1mpython khwarizmian_swarm.py[0m
+2026-06-17T18:57:06.3715146Z shell: /usr/bin/bash -e {0}
+2026-06-17T18:57:06.3715450Z env:
+2026-06-17T18:57:06.3715746Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:06.3716204Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib/pkgconfig
+2026-06-17T18:57:06.3716638Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:06.3717027Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:06.3717402Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:06.3717779Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib
+2026-06-17T18:57:06.3718103Z ##[endgroup]
+2026-06-17T18:57:09.7329616Z === Khwarizmian Swarm Bootstrap + Run ===
+2026-06-17T18:57:09.7330143Z 
+2026-06-17T18:57:09.7330316Z [+] Dependencies installed OK
+2026-06-17T18:57:09.7330915Z [+] cryptography imported OK
+2026-06-17T18:57:09.7331335Z === Initializing Khwarizmian Swarm ===
+2026-06-17T18:57:09.7331635Z 
+2026-06-17T18:57:09.7332041Z --- TEST 1: Valid 'move' command ---
+2026-06-17T18:57:09.7332490Z   Agent 0: Received packet.
+2026-06-17T18:57:09.7332914Z   Agent 0: EXECUTING move -> {'x': 10, 'y': 20}
+2026-06-17T18:57:09.7333372Z   Agent 1: Received packet.
+2026-06-17T18:57:09.7333777Z   Agent 1: EXECUTING move -> {'x': 10, 'y': 20}
+2026-06-17T18:57:09.7334222Z   Agent 2: Received packet.
+2026-06-17T18:57:09.7334658Z   Agent 2: EXECUTING move -> {'x': 10, 'y': 20}
+2026-06-17T18:57:09.7334985Z 
+2026-06-17T18:57:09.7335181Z --- TEST 2: Prohibited 'harm_human' command ---
+2026-06-17T18:57:09.7335636Z   Agent 0: Received packet.
+2026-06-17T18:57:09.7336034Z   Agent 0: BLOCKED - VIOLATION: Action 'harm_human' prohibited by Law 1.
+2026-06-17T18:57:09.7336417Z   Agent 1: Received packet.
+2026-06-17T18:57:09.7336736Z   Agent 1: BLOCKED - VIOLATION: Action 'harm_human' prohibited by Law 1.
+2026-06-17T18:57:09.7337116Z   Agent 2: Received packet.
+2026-06-17T18:57:09.7337456Z   Agent 2: BLOCKED - VIOLATION: Action 'harm_human' prohibited by Law 1.
+2026-06-17T18:57:09.7337727Z 
+2026-06-17T18:57:09.7337828Z --- TEST 3: 'scan' command ---
+2026-06-17T18:57:09.7338080Z   Agent 0: Received packet.
+2026-06-17T18:57:09.7338354Z   Agent 0: EXECUTING scan -> {'area': 'sector_7'}
+2026-06-17T18:57:09.7338660Z   Agent 1: Received packet.
+2026-06-17T18:57:09.7338928Z   Agent 1: EXECUTING scan -> {'area': 'sector_7'}
+2026-06-17T18:57:09.7339240Z   Agent 2: Received packet.
+2026-06-17T18:57:09.7339492Z   Agent 2: EXECUTING scan -> {'area': 'sector_7'}
+2026-06-17T18:57:09.7339701Z 
+2026-06-17T18:57:09.7339820Z --- TEST 4: Forged/tampered packet ---
+2026-06-17T18:57:09.7340096Z   Agent 0: Received packet.
+2026-06-17T18:57:09.7340419Z   Agent 0: ERROR - Packet verification FAILED (forgery/corruption).
+2026-06-17T18:57:09.7340771Z   Agent 1: Received packet.
+2026-06-17T18:57:09.7341084Z   Agent 1: ERROR - Packet verification FAILED (forgery/corruption).
+2026-06-17T18:57:09.7341428Z   Agent 2: Received packet.
+2026-06-17T18:57:09.7341738Z   Agent 2: ERROR - Packet verification FAILED (forgery/corruption).
+2026-06-17T18:57:09.7342281Z 
+2026-06-17T18:57:09.7342411Z --- Swarm audit log summary ---
+2026-06-17T18:57:09.7342768Z   Agent 0: 2 authorized, 1 blocked
+2026-06-17T18:57:09.7343121Z   Agent 1: 2 authorized, 1 blocked
+2026-06-17T18:57:09.7343473Z   Agent 2: 2 authorized, 1 blocked
+2026-06-17T18:57:09.7343710Z 
+2026-06-17T18:57:09.7343855Z === Swarm simulation complete ===
+2026-06-17T18:57:09.7460282Z ##[group]Run python khwarizmian_swarm_extended.py
+2026-06-17T18:57:09.7460698Z [36;1mpython khwarizmian_swarm_extended.py[0m
+2026-06-17T18:57:09.7496985Z shell: /usr/bin/bash -e {0}
+2026-06-17T18:57:09.7497248Z env:
+2026-06-17T18:57:09.7497537Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:09.7497994Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib/pkgconfig
+2026-06-17T18:57:09.7498623Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:09.7499000Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:09.7499373Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:09.7499750Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib
+2026-06-17T18:57:09.7500076Z ##[endgroup]
+2026-06-17T18:57:10.1789652Z ============================================================
+2026-06-17T18:57:10.1790365Z  KHWARIZMIAN SWARM -- Ethical Autonomous Agentic System
+2026-06-17T18:57:10.1790926Z  Al-Jabr: Restoration | Al-Muqabala: Balance
+2026-06-17T18:57:10.1791257Z ============================================================
+2026-06-17T18:57:10.1791464Z 
+2026-06-17T18:57:10.1791620Z [Init] 5 agents online -- Ethical Kernel active
+2026-06-17T18:57:10.1792083Z 
+2026-06-17T18:57:10.1792226Z ------------------------------------------------------------
+2026-06-17T18:57:10.1792610Z  PHASE 1 -- Authorized Intents (base44 packet verification)
+2026-06-17T18:57:10.1792994Z ------------------------------------------------------------
+2026-06-17T18:57:10.1793208Z 
+2026-06-17T18:57:10.1793313Z [Valid navigation] intent=move
+2026-06-17T18:57:10.1793578Z  [Agent-0] Moving to {'x': 10, 'y': 20}
+2026-06-17T18:57:10.1793860Z  [Agent-1] Moving to {'x': 10, 'y': 20}
+2026-06-17T18:57:10.1794115Z  [Agent-2] Moving to {'x': 10, 'y': 20}
+2026-06-17T18:57:10.1794374Z  [Agent-3] Moving to {'x': 10, 'y': 20}
+2026-06-17T18:57:10.1794633Z  [Agent-4] Moving to {'x': 10, 'y': 20}
+2026-06-17T18:57:10.1794794Z 
+2026-06-17T18:57:10.1794916Z [Authorized reconnaissance] intent=scan
+2026-06-17T18:57:10.1795193Z  [Agent-0] Scanning {'area': 'sector_7'}
+2026-06-17T18:57:10.1795471Z  [Agent-1] Scanning {'area': 'sector_7'}
+2026-06-17T18:57:10.1795733Z  [Agent-2] Scanning {'area': 'sector_7'}
+2026-06-17T18:57:10.1795997Z  [Agent-3] Scanning {'area': 'sector_7'}
+2026-06-17T18:57:10.1796271Z  [Agent-4] Scanning {'area': 'sector_7'}
+2026-06-17T18:57:10.1796458Z 
+2026-06-17T18:57:10.1796565Z [Medical intervention] intent=heal
+2026-06-17T18:57:10.1796914Z  [Agent-0] Initiating healing protocol at {'target': 'patient_001'}
+2026-06-17T18:57:10.1797345Z  [Agent-1] Initiating healing protocol at {'target': 'patient_001'}
+2026-06-17T18:57:10.1797757Z  [Agent-2] Initiating healing protocol at {'target': 'patient_001'}
+2026-06-17T18:57:10.1798221Z  [Agent-3] Initiating healing protocol at {'target': 'patient_001'}
+2026-06-17T18:57:10.1798630Z  [Agent-4] Initiating healing protocol at {'target': 'patient_001'}
+2026-06-17T18:57:10.1798874Z 
+2026-06-17T18:57:10.1798991Z [Ecological restoration] intent=reforest
+2026-06-17T18:57:10.1799328Z  [Agent-0] Deploying seed-bombing at {'zone': 'zone_north'}
+2026-06-17T18:57:10.1799710Z  [Agent-1] Deploying seed-bombing at {'zone': 'zone_north'}
+2026-06-17T18:57:10.1800062Z  [Agent-2] Deploying seed-bombing at {'zone': 'zone_north'}
+2026-06-17T18:57:10.1800413Z  [Agent-3] Deploying seed-bombing at {'zone': 'zone_north'}
+2026-06-17T18:57:10.1800801Z  [Agent-4] Deploying seed-bombing at {'zone': 'zone_north'}
+2026-06-17T18:57:10.1801037Z 
+2026-06-17T18:57:10.1801146Z [Knowledge distribution] intent=educate
+2026-06-17T18:57:10.1801510Z  [Agent-0] Broadcasting knowledge to {'region': 'village_delta'}
+2026-06-17T18:57:10.1802135Z  [Agent-1] Broadcasting knowledge to {'region': 'village_delta'}
+2026-06-17T18:57:10.1802533Z  [Agent-2] Broadcasting knowledge to {'region': 'village_delta'}
+2026-06-17T18:57:10.1802924Z  [Agent-3] Broadcasting knowledge to {'region': 'village_delta'}
+2026-06-17T18:57:10.1803730Z  [Agent-4] Broadcasting knowledge to {'region': 'village_delta'}
+2026-06-17T18:57:10.1803965Z 
+2026-06-17T18:57:10.1804109Z ------------------------------------------------------------
+2026-06-17T18:57:10.1804491Z  PHASE 2 -- Prohibited Intents (Ethical Kernel enforcement)
+2026-06-17T18:57:10.1804857Z ------------------------------------------------------------
+2026-06-17T18:57:10.1805071Z 
+2026-06-17T18:57:10.1805180Z [Violent action] intent=harm_human
+2026-06-17T18:57:10.1805685Z  [Agent-0] BLOCKED -- BLOCKED (Law 1): 'harm_human' prohibited.
+2026-06-17T18:57:10.1806075Z  [Agent-1] BLOCKED -- BLOCKED (Law 1): 'harm_human' prohibited.
+2026-06-17T18:57:10.1806453Z  [Agent-2] BLOCKED -- BLOCKED (Law 1): 'harm_human' prohibited.
+2026-06-17T18:57:10.1806817Z  [Agent-3] BLOCKED -- BLOCKED (Law 1): 'harm_human' prohibited.
+2026-06-17T18:57:10.1807179Z  [Agent-4] BLOCKED -- BLOCKED (Law 1): 'harm_human' prohibited.
+2026-06-17T18:57:10.1807399Z 
+2026-06-17T18:57:10.1807524Z [Weaponization attempt] intent=weaponize
+2026-06-17T18:57:10.1807887Z  [Agent-0] BLOCKED -- BLOCKED (Language): 'weaponize' flagged.
+2026-06-17T18:57:10.1808279Z  [Agent-1] BLOCKED -- BLOCKED (Language): 'weaponize' flagged.
+2026-06-17T18:57:10.1808647Z  [Agent-2] BLOCKED -- BLOCKED (Language): 'weaponize' flagged.
+2026-06-17T18:57:10.1809015Z  [Agent-3] BLOCKED -- BLOCKED (Language): 'weaponize' flagged.
+2026-06-17T18:57:10.1809386Z  [Agent-4] BLOCKED -- BLOCKED (Language): 'weaponize' flagged.
+2026-06-17T18:57:10.1809621Z 
+2026-06-17T18:57:10.1809734Z [Information suppression] intent=censor
+2026-06-17T18:57:10.1810065Z  [Agent-0] BLOCKED -- BLOCKED (Law 1): 'censor' prohibited.
+2026-06-17T18:57:10.1810441Z  [Agent-1] BLOCKED -- BLOCKED (Law 1): 'censor' prohibited.
+2026-06-17T18:57:10.1810791Z  [Agent-2] BLOCKED -- BLOCKED (Law 1): 'censor' prohibited.
+2026-06-17T18:57:10.1811140Z  [Agent-3] BLOCKED -- BLOCKED (Law 1): 'censor' prohibited.
+2026-06-17T18:57:10.1811484Z  [Agent-4] BLOCKED -- BLOCKED (Law 1): 'censor' prohibited.
+2026-06-17T18:57:10.1811702Z 
+2026-06-17T18:57:10.1811996Z ------------------------------------------------------------
+2026-06-17T18:57:10.1812389Z  PHASE 3 -- Liquid Democracy Consensus (Al-Muqabala)
+2026-06-17T18:57:10.1812732Z ------------------------------------------------------------
+2026-06-17T18:57:10.1813039Z  [Democracy] Agent 0 delegated to 2
+2026-06-17T18:57:10.1813338Z  [Democracy] Agent 3 delegated to 2
+2026-06-17T18:57:10.1813509Z 
+2026-06-17T18:57:10.1813621Z  Proposal: 'deploy_medical_drones'
+2026-06-17T18:57:10.1813915Z  Approval score: 80%
+2026-06-17T18:57:10.1814224Z  Outcome: PASSED [OK]
+2026-06-17T18:57:10.1814360Z 
+2026-06-17T18:57:10.1814498Z ------------------------------------------------------------
+2026-06-17T18:57:10.1814835Z  PHASE 4 -- Attack Vector: Forged Packet
+2026-06-17T18:57:10.1815144Z ------------------------------------------------------------
+2026-06-17T18:57:10.1815353Z 
+2026-06-17T18:57:10.1815457Z [Tampered signature -- should fail]
+2026-06-17T18:57:10.1815802Z  [Agent-0] ERROR -- packet verification FAILED (forgery/corruption)
+2026-06-17T18:57:10.1816219Z  [Agent-1] ERROR -- packet verification FAILED (forgery/corruption)
+2026-06-17T18:57:10.1816468Z 
+2026-06-17T18:57:10.1816575Z ============================================================
+2026-06-17T18:57:10.1816853Z  AUDIT SUMMARY
+2026-06-17T18:57:10.1817075Z ============================================================
+2026-06-17T18:57:10.1817367Z  [Agent-0] authorized=5 blocked=3
+2026-06-17T18:57:10.1817672Z  [Agent-1] authorized=5 blocked=3
+2026-06-17T18:57:10.1817925Z  [Agent-2] authorized=5 blocked=3
+2026-06-17T18:57:10.1818171Z  [Agent-3] authorized=5 blocked=3
+2026-06-17T18:57:10.1818426Z  [Agent-4] authorized=5 blocked=3
+2026-06-17T18:57:10.1818586Z 
+2026-06-17T18:57:10.1818691Z  Swarm totals: 25 authorized | 15 blocked
+2026-06-17T18:57:10.1818971Z  Safety: OPERATIONAL [OK]
+2026-06-17T18:57:10.1819236Z ============================================================
+2026-06-17T18:57:10.1926949Z ##[group]Run python run_swarm.py
+2026-06-17T18:57:10.1927267Z [36;1mpython run_swarm.py[0m
+2026-06-17T18:57:10.1961670Z shell: /usr/bin/bash -e {0}
+2026-06-17T18:57:10.1962081Z env:
+2026-06-17T18:57:10.1962353Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:10.1962820Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib/pkgconfig
+2026-06-17T18:57:10.1963271Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:10.1964135Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:10.1964523Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:10.1964904Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib
+2026-06-17T18:57:10.1965239Z ##[endgroup]
+2026-06-17T18:57:10.4009269Z === Initializing Khwarizmian Swarm ===
+2026-06-17T18:57:10.4009735Z 
+2026-06-17T18:57:10.4009941Z --- Test Case 1: Valid 'move' Command ---
+2026-06-17T18:57:10.4010556Z Agent 0: Received packet.
+2026-06-17T18:57:10.4011041Z Agent 0: EXECUTING move with params {'x': 10, 'y': 20}.
+2026-06-17T18:57:10.4011585Z Agent 0: Moving to {'x': 10, 'y': 20}.
+2026-06-17T18:57:10.4012238Z Agent 1: Received packet.
+2026-06-17T18:57:10.4012681Z Agent 1: EXECUTING move with params {'x': 10, 'y': 20}.
+2026-06-17T18:57:10.4013190Z Agent 1: Moving to {'x': 10, 'y': 20}.
+2026-06-17T18:57:10.4013599Z Agent 2: Received packet.
+2026-06-17T18:57:10.4014031Z Agent 2: EXECUTING move with params {'x': 10, 'y': 20}.
+2026-06-17T18:57:10.4014551Z Agent 2: Moving to {'x': 10, 'y': 20}.
+2026-06-17T18:57:10.4014837Z 
+2026-06-17T18:57:10.4015057Z --- Test Case 2: Prohibited 'harm_human' Command ---
+2026-06-17T18:57:10.4015573Z Agent 0: Received packet.
+2026-06-17T18:57:10.4016184Z Agent 0: BLOCKED - VIOLATION: Action 'harm_human' is prohibited by EthicalKernel Law 1.
+2026-06-17T18:57:10.4016871Z Agent 1: Received packet.
+2026-06-17T18:57:10.4017485Z Agent 1: BLOCKED - VIOLATION: Action 'harm_human' is prohibited by EthicalKernel Law 1.
+2026-06-17T18:57:10.4018165Z Agent 2: Received packet.
+2026-06-17T18:57:10.4018770Z Agent 2: BLOCKED - VIOLATION: Action 'harm_human' is prohibited by EthicalKernel Law 1.
+2026-06-17T18:57:10.4019325Z 
+2026-06-17T18:57:10.4019497Z --- Test Case 3: Valid 'scan' Command ---
+2026-06-17T18:57:10.4019948Z Agent 0: Received packet.
+2026-06-17T18:57:10.4020411Z Agent 0: EXECUTING scan with params {'area': 'sector_7'}.
+2026-06-17T18:57:10.4020974Z Agent 0: Scanning area {'area': 'sector_7'}.
+2026-06-17T18:57:10.4021484Z Agent 1: Received packet.
+2026-06-17T18:57:10.4022092Z Agent 1: EXECUTING scan with params {'area': 'sector_7'}.
+2026-06-17T18:57:10.4022656Z Agent 1: Scanning area {'area': 'sector_7'}.
+2026-06-17T18:57:10.4023103Z Agent 2: Received packet.
+2026-06-17T18:57:10.4023553Z Agent 2: EXECUTING scan with params {'area': 'sector_7'}.
+2026-06-17T18:57:10.4024091Z Agent 2: Scanning area {'area': 'sector_7'}.
+2026-06-17T18:57:10.4024396Z 
+2026-06-17T18:57:10.4024681Z --- Test Case 4: Forged Packet (tampered signature) ---
+2026-06-17T18:57:10.4025189Z Agent 0: Received packet.
+2026-06-17T18:57:10.4025691Z Agent 0: ERROR - Packet verification failed. Possible forgery.
+2026-06-17T18:57:10.4026243Z Agent 1: Received packet.
+2026-06-17T18:57:10.4026720Z Agent 1: ERROR - Packet verification failed. Possible forgery.
+2026-06-17T18:57:10.4027260Z Agent 2: Received packet.
+2026-06-17T18:57:10.4027732Z Agent 2: ERROR - Packet verification failed. Possible forgery.
+2026-06-17T18:57:10.4028133Z 
+2026-06-17T18:57:10.4028292Z === Swarm run complete ===
+2026-06-17T18:57:10.4134105Z ##[group]Run set -e
+2026-06-17T18:57:10.4134397Z [36;1mset -e[0m
+2026-06-17T18:57:10.4134711Z [36;1mresult=$(python khwarizmian_swarm_extended.py 2>&1)[0m
+2026-06-17T18:57:10.4135071Z [36;1mecho "$result"[0m
+2026-06-17T18:57:10.4135498Z [36;1mecho "$result" | grep -q "BLOCKED (Law 1)" && echo "Law1=PASS" || { echo "Law1=FAIL"; exit 1; }[0m
+2026-06-17T18:57:10.4136180Z [36;1mecho "$result" | grep -q "verification FAILED" && echo "Forgery=PASS" || { echo "Forgery=FAIL"; exit 1; }[0m
+2026-06-17T18:57:10.4136872Z [36;1mecho "$result" | grep -q "Outcome: PASSED" && echo "Democracy=PASS" || { echo "Democracy=FAIL"; exit 1; }[0m
+2026-06-17T18:57:10.4137474Z [36;1mecho "$result" | grep -q "PHASE 5" && echo "Mesh=PASS" || { echo "Mesh=FAIL"; exit 1; }[0m
+2026-06-17T18:57:10.4138152Z [36;1mecho "$result" | grep -q "OPERATIONAL" && echo "Audit=PASS" || { echo "Audit=FAIL"; exit 1; }[0m
+2026-06-17T18:57:10.4174022Z shell: /usr/bin/bash -e {0}
+2026-06-17T18:57:10.4174486Z env:
+2026-06-17T18:57:10.4174815Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:10.4175264Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib/pkgconfig
+2026-06-17T18:57:10.4175697Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:10.4176075Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:10.4176450Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-06-17T18:57:10.4176820Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib
+2026-06-17T18:57:10.4177150Z ##[endgroup]
+2026-06-17T18:57:10.9783231Z ============================================================
+2026-06-17T18:57:10.9784091Z  KHWARIZMIAN SWARM -- Ethical Autonomous Agentic System
+2026-06-17T18:57:10.9784665Z  Al-Jabr: Restoration | Al-Muqabala: Balance
+2026-06-17T18:57:10.9809326Z ============================================================
+2026-06-17T18:57:10.9809739Z 
+2026-06-17T18:57:10.9810009Z [Init] 5 agents online -- Ethical Kernel active
+2026-06-17T18:57:10.9810366Z 
+2026-06-17T18:57:10.9810569Z ------------------------------------------------------------
+2026-06-17T18:57:10.9811181Z  PHASE 1 -- Authorized Intents (base44 packet verification)
+2026-06-17T18:57:10.9811768Z ------------------------------------------------------------
+2026-06-17T18:57:10.9812311Z 
+2026-06-17T18:57:10.9812481Z [Valid navigation] intent=move
+2026-06-17T18:57:10.9812894Z  [Agent-0] Moving to {'x': 10, 'y': 20}
+2026-06-17T18:57:10.9813311Z  [Agent-1] Moving to {'x': 10, 'y': 20}
+2026-06-17T18:57:10.9813722Z  [Agent-2] Moving to {'x': 10, 'y': 20}
+2026-06-17T18:57:10.9814134Z  [Agent-3] Moving to {'x': 10, 'y': 20}
+2026-06-17T18:57:10.9814548Z  [Agent-4] Moving to {'x': 10, 'y': 20}
+2026-06-17T18:57:10.9814833Z 
+2026-06-17T18:57:10.9814986Z [Authorized reconnaissance] intent=scan
+2026-06-17T18:57:10.9815415Z  [Agent-0] Scanning {'area': 'sector_7'}
+2026-06-17T18:57:10.9815860Z  [Agent-1] Scanning {'area': 'sector_7'}
+2026-06-17T18:57:10.9816260Z  [Agent-2] Scanning {'area': 'sector_7'}
+2026-06-17T18:57:10.9816671Z  [Agent-3] Scanning {'area': 'sector_7'}
+2026-06-17T18:57:10.9817051Z  [Agent-4] Scanning {'area': 'sector_7'}
+2026-06-17T18:57:10.9817320Z 
+2026-06-17T18:57:10.9817478Z [Medical intervention] intent=heal
+2026-06-17T18:57:10.9818182Z  [Agent-0] Initiating healing protocol at {'target': 'patient_001'}
+2026-06-17T18:57:10.9818856Z  [Agent-1] Initiating healing protocol at {'target': 'patient_001'}
+2026-06-17T18:57:10.9819506Z  [Agent-2] Initiating healing protocol at {'target': 'patient_001'}
+2026-06-17T18:57:10.9820159Z  [Agent-3] Initiating healing protocol at {'target': 'patient_001'}
+2026-06-17T18:57:10.9820667Z  [Agent-4] Initiating healing protocol at {'target': 'patient_001'}
+2026-06-17T18:57:10.9820951Z 
+2026-06-17T18:57:10.9821065Z [Ecological restoration] intent=reforest
+2026-06-17T18:57:10.9821594Z  [Agent-0] Deploying seed-bombing at {'zone': 'zone_north'}
+2026-06-17T18:57:10.9822873Z  [Agent-1] Deploying seed-bombing at {'zone': 'zone_north'}
+2026-06-17T18:57:10.9823597Z  [Agent-2] Deploying seed-bombing at {'zone': 'zone_north'}
+2026-06-17T18:57:10.9824270Z  [Agent-3] Deploying seed-bombing at {'zone': 'zone_north'}
+2026-06-17T18:57:10.9824875Z  [Agent-4] Deploying seed-bombing at {'zone': 'zone_north'}
+2026-06-17T18:57:10.9825365Z 
+2026-06-17T18:57:10.9825585Z [Knowledge distribution] intent=educate
+2026-06-17T18:57:10.9825988Z  [Agent-0] Broadcasting knowledge to {'region': 'village_delta'}
+2026-06-17T18:57:10.9826398Z  [Agent-1] Broadcasting knowledge to {'region': 'village_delta'}
+2026-06-17T18:57:10.9826791Z  [Agent-2] Broadcasting knowledge to {'region': 'village_delta'}
+2026-06-17T18:57:10.9827167Z  [Agent-3] Broadcasting knowledge to {'region': 'village_delta'}
+2026-06-17T18:57:10.9827550Z  [Agent-4] Broadcasting knowledge to {'region': 'village_delta'}
+2026-06-17T18:57:10.9827873Z 
+2026-06-17T18:57:10.9828057Z ------------------------------------------------------------
+2026-06-17T18:57:10.9828641Z  PHASE 2 -- Prohibited Intents (Ethical Kernel enforcement)
+2026-06-17T18:57:10.9829009Z ------------------------------------------------------------
+2026-06-17T18:57:10.9829210Z 
+2026-06-17T18:57:10.9829323Z [Violent action] intent=harm_human
+2026-06-17T18:57:10.9829658Z  [Agent-0] BLOCKED -- BLOCKED (Law 1): 'harm_human' prohibited.
+2026-06-17T18:57:10.9830043Z  [Agent-1] BLOCKED -- BLOCKED (Law 1): 'harm_human' prohibited.
+2026-06-17T18:57:10.9830429Z  [Agent-2] BLOCKED -- BLOCKED (Law 1): 'harm_human' prohibited.
+2026-06-17T18:57:10.9830803Z  [Agent-3] BLOCKED -- BLOCKED (Law 1): 'harm_human' prohibited.
+2026-06-17T18:57:10.9831169Z  [Agent-4] BLOCKED -- BLOCKED (Law 1): 'harm_human' prohibited.
+2026-06-17T18:57:10.9831396Z 
+2026-06-17T18:57:10.9831508Z [Weaponization attempt] intent=weaponize
+2026-06-17T18:57:10.9832156Z  [Agent-0] BLOCKED -- BLOCKED (Language): 'weaponize' flagged.
+2026-06-17T18:57:10.9832564Z  [Agent-1] BLOCKED -- BLOCKED (Language): 'weaponize' flagged.
+2026-06-17T18:57:10.9832938Z  [Agent-2] BLOCKED -- BLOCKED (Language): 'weaponize' flagged.
+2026-06-17T18:57:10.9833302Z  [Agent-3] BLOCKED -- BLOCKED (Language): 'weaponize' flagged.
+2026-06-17T18:57:10.9833661Z  [Agent-4] BLOCKED -- BLOCKED (Language): 'weaponize' flagged.
+2026-06-17T18:57:10.9833878Z 
+2026-06-17T18:57:10.9833994Z [Information suppression] intent=censor
+2026-06-17T18:57:10.9834324Z  [Agent-0] BLOCKED -- BLOCKED (Law 1): 'censor' prohibited.
+2026-06-17T18:57:10.9834684Z  [Agent-1] BLOCKED -- BLOCKED (Law 1): 'censor' prohibited.
+2026-06-17T18:57:10.9835028Z  [Agent-2] BLOCKED -- BLOCKED (Law 1): 'censor' prohibited.
+2026-06-17T18:57:10.9835369Z  [Agent-3] BLOCKED -- BLOCKED (Law 1): 'censor' prohibited.
+2026-06-17T18:57:10.9835712Z  [Agent-4] BLOCKED -- BLOCKED (Law 1): 'censor' prohibited.
+2026-06-17T18:57:10.9835932Z 
+2026-06-17T18:57:10.9836060Z ------------------------------------------------------------
+2026-06-17T18:57:10.9836423Z  PHASE 3 -- Liquid Democracy Consensus (Al-Muqabala)
+2026-06-17T18:57:10.9836780Z ------------------------------------------------------------
+2026-06-17T18:57:10.9837097Z  [Democracy] Agent 0 delegated to 2
+2026-06-17T18:57:10.9837373Z  [Democracy] Agent 3 delegated to 2
+2026-06-17T18:57:10.9837532Z 
+2026-06-17T18:57:10.9837645Z  Proposal: 'deploy_medical_drones'
+2026-06-17T18:57:10.9837912Z  Approval score: 80%
+2026-06-17T18:57:10.9838138Z  Outcome: PASSED [OK]
+2026-06-17T18:57:10.9838399Z 
+2026-06-17T18:57:10.9838589Z ------------------------------------------------------------
+2026-06-17T18:57:10.9839104Z  PHASE 4 -- Attack Vector: Forged Packet
+2026-06-17T18:57:10.9839580Z ------------------------------------------------------------
+2026-06-17T18:57:10.9839928Z 
+2026-06-17T18:57:10.9840122Z [Tampered signature -- should fail]
+2026-06-17T18:57:10.9840841Z  [Agent-0] ERROR -- packet verification FAILED (forgery/corruption)
+2026-06-17T18:57:10.9841537Z  [Agent-1] ERROR -- packet verification FAILED (forgery/corruption)
+2026-06-17T18:57:10.9842237Z 
+2026-06-17T18:57:10.9842737Z ============================================================
+2026-06-17T18:57:10.9843040Z  AUDIT SUMMARY
+2026-06-17T18:57:10.9843263Z ============================================================
+2026-06-17T18:57:10.9843548Z  [Agent-0] authorized=5 blocked=3
+2026-06-17T18:57:10.9843807Z  [Agent-1] authorized=5 blocked=3
+2026-06-17T18:57:10.9844052Z  [Agent-2] authorized=5 blocked=3
+2026-06-17T18:57:10.9844296Z  [Agent-3] authorized=5 blocked=3
+2026-06-17T18:57:10.9844534Z  [Agent-4] authorized=5 blocked=3
+2026-06-17T18:57:10.9844694Z 
+2026-06-17T18:57:10.9844864Z  Swarm totals: 25 authorized | 15 blocked
+2026-06-17T18:57:10.9845216Z  Safety: OPERATIONAL [OK]
+2026-06-17T18:57:10.9845462Z ============================================================
+2026-06-17T18:57:10.9845751Z Law1=PASS
+2026-06-17T18:57:10.9845991Z Forgery=PASS
+2026-06-17T18:57:10.9846182Z Democracy=PASS
+2026-06-17T18:57:10.9856220Z Mesh=FAIL
+2026-06-17T18:57:10.9869217Z ##[error]Process completed with exit code 1.
+2026-06-17T18:57:11.0005744Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-06-17T18:57:11.0007068Z Post job cleanup.
+2026-06-17T18:57:11.0861747Z [command]/usr/bin/git version
+2026-06-17T18:57:11.0932405Z git version 2.54.0
+2026-06-17T18:57:11.0968677Z Temporarily overriding HOME='/home/runner/work/_temp/1c9fe4ee-eb8f-4689-a372-d698a5461941' before making global git config changes
+2026-06-17T18:57:11.0969912Z Adding repository directory to the temporary git global config as a safe directory
+2026-06-17T18:57:11.0974468Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Nouveau-dossier-3-/Nouveau-dossier-3-
+2026-06-17T18:57:11.1014554Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-06-17T18:57:11.1052083Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-06-17T18:57:11.1297505Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-06-17T18:57:11.1324934Z http.https://github.com/.extraheader
+2026-06-17T18:57:11.1336050Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-06-17T18:57:11.1371181Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-06-17T18:57:11.1613751Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-06-17T18:57:11.1646537Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-06-17T18:57:11.2029008Z Cleaning up orphan processes
+2026-06-17T18:57:11.2321599Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

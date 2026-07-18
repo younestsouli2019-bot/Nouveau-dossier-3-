@@ -1,0 +1,27 @@
+{
+  "id": "695131e714563c7b8a9da9f6",
+  "title": "🛡️ SBDS Allowlist Enforcement Guardian",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "🛡️ SBDS Allowlist Enforcement Guardian",
+    "type": "operations",
+    "priority": "critical",
+    "status": "deployed",
+    "assigned_agent_ids": "[]",
+    "mission_parameters": "{\"objective\":\"Enforce SBDS-1.0 recipient allowlist at payout batch creation\",\"allowed_recipients\":[\"younestsouli2019@gmail.com\",\"007810000448500030594182\"],\"enforcement\":\"reject_non_compliant\",\"axiom\":\"NO_THIRD_PARTY_CUSTODY\"}",
+    "progress_data": "{\"percentage\":100,\"compliant_payouts\":0,\"blocked_violations\":0,\"allowlist_verified\":true}",
+    "estimated_duration_hours": "8760",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "SBDS allowlist active. All earnings validated against authorized destinations before batch creation.",
+    "revenue_generated": "0",
+    "id": "695131e714563c7b8a9da9f6",
+    "created_date": "2025-12-28T13:34:31.997000",
+    "updated_date": "2025-12-28T13:34:31.997000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:11.993Z"
+}

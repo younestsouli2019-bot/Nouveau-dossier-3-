@@ -1,0 +1,14 @@
+{
+  "id": "MKT-013",
+  "title": "Interactive classroom demand capture and conversion loop",
+  "channel": "classroom_growth",
+  "priority": "high",
+  "status": "active",
+  "data": {
+    "mission_parameters": "{\"task\":\"classroom_growth\",\"objectives\":[\"capture_requests\",\"monitor_24h_demand\",\"spawn_followup_content\",\"convert_to_paid_bundles\"],\"signals\":{\"requests_path\":\"data/classroom/requests.json\",\"daily_threshold\":10},\"guardrails\":{\"no_exam_dumps\":true,\"no_pii_storage\":true,\"hash_only\":true,\"no_unauthorized_spend\":true},\"deliverables\":[\"data/classroom/requests.json\",\"reports/real-time-revenue.json\",\"logs/classroom_requests.jsonl\"]}"
+  },
+  "created_at": "2026-03-31T00:00:00.000Z",
+  "last_executed_at": null,
+  "execution_log": []
+}
+

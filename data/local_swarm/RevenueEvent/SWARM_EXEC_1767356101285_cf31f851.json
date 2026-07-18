@@ -1,0 +1,9 @@
+{
+  "id": "SWARM_EXEC_1767356101285_cf31f851",
+  "amount": 0,
+  "currency": "158.57",
+  "status": "COMPLETED",
+  "source": "csv_migration",
+  "raw": "SWARM_EXEC_1767356101285_cf31f851,ffa12e58f4b0dbbf3d0942359e7ae66132d0668eadbf9be25d9bfacc6eaec8a6,swarm_commerce_v1,,158.57,USD,earned,,,,,\"{\"\"product_name\"\":\"\"FNTCASE iPhone 17 Case\"\",\"\"market_score\"\":0.6092764398383355,\"\"execution_mode\"\":\"\"WET_RUN_REALITY\"\",\"\"notes\"\":\"\"Autonomous revenue generation executed by SwarmRunner.\"\"}\",6957b624d8a0cb165d7ef0c1,2026-01-02T12:12:20.470000,2026-01-02T12:12:20.470000,anonymous,anonymous,false",
+  "created_at": "2026-02-01T23:10:29.643Z"
+}

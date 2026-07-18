@@ -1,0 +1,27 @@
+{
+  "id": "694c4f63c14f824a6886d02f",
+  "title": "Verify PayPal Webhooks and Schedule API Sync",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Verify PayPal Webhooks and Schedule API Sync",
+    "type": "operations",
+    "priority": "critical",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"694ad305849b265e5b241555\",\"694ad305849b265e5b241558\",\"694ad305849b265e5b241553\"]",
+    "mission_parameters": "{\"description\":\"Ensure PayPal webhooks are correctly configured and verified. Confirm src/paypal-webhook-server.mjs is running. Implement and regularly run src/sync-paypal-payout-batch.mjs for reconciliation.\",\"scripts_involved\":[\"src/paypal-webhook-server.mjs\",\"src/sync-paypal-payout-batch.mjs\"],\"verification_steps\":[\"webhook_configuration_check\",\"script_runtime_check\",\"sync_scheduling\"]}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "694c4f63c14f824a6886d02f",
+    "created_date": "2025-12-24T20:38:59.697000",
+    "updated_date": "2025-12-26T17:15:28.979000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:11.994Z"
+}

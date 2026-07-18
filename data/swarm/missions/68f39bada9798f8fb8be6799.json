@@ -1,0 +1,36 @@
+{
+  "id": "68f39bada9798f8fb8be6799",
+  "title": "Payment Method Verification Unblocker",
+  "channel": "operations",
+  "priority": "high",
+  "status": "active",
+  "data": {
+    "title": "Payment Method Verification Unblocker",
+    "type": "operations",
+    "priority": "high",
+    "status": "pending",
+    "assigned_agent_ids": "[\"68b7f02bd9defbb9a2ceb7b5\"]",
+    "mission_parameters": "{\"parent_mission_id\":\"68c81afa28ab2f53993d6159\",\"dependent_on\":\"INF-001\"}",
+    "progress_data": "",
+    "estimated_duration_hours": "24",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "Focus exclusively on resolving Payment Method Verification blockage",
+    "revenue_generated": "",
+    "id": "68f39bada9798f8fb8be6799",
+    "created_date": "2025-10-18T13:52:45.560000",
+    "updated_date": "2025-10-18T13:52:45.560000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-02-24T12:21:21.653Z",
+  "last_executed_at": "2026-03-30T20:50:58.429Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Autonomous operational optimization complete.",
+      "revenue_estimate": 10
+    }
+  ]
+}

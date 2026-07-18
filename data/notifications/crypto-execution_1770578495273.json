@@ -1,0 +1,10 @@
+{
+  "created_at": "2026-02-08T19:21:35.272Z",
+  "kind": "crypto_withdraw_attempt",
+  "file": "c:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\out\\crypto\\binance_withdraw_err_1770574229624.json",
+  "ok": false,
+  "summary": "connect ETIMEDOUT 18.245.250.230:443",
+  "network": "ETH",
+  "amount": 3.7,
+  "address": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7"
+}

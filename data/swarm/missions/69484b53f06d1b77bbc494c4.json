@@ -1,0 +1,27 @@
+{
+  "id": "69484b53f06d1b77bbc494c4",
+  "title": "Implement Swarm Infrastructure Updates",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Implement Swarm Infrastructure Updates",
+    "type": "operations",
+    "priority": "critical",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"69484a7a04d120a7ea900cc6\"]",
+    "mission_parameters": "{\"instructions\":\"Implement these updates to swarm infrastructure without delay.\",\"update_source\":\"https://drive.google.com/file/d/1AuKnn4_0C0r_Hx9KXIsB5oEvmez5LtPN/view?usp=sharing\"}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "69484b53f06d1b77bbc494c4",
+    "created_date": "2025-12-21T19:32:35.361000",
+    "updated_date": "2025-12-21T19:32:35.361000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:11.995Z"
+}

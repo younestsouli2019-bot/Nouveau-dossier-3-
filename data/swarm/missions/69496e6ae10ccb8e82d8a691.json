@@ -1,0 +1,36 @@
+{
+  "id": "69496e6ae10ccb8e82d8a691",
+  "title": "Develop Regional Survival Micro-Guides",
+  "channel": "content_creation",
+  "priority": "high",
+  "status": "active",
+  "data": {
+    "title": "Develop Regional Survival Micro-Guides",
+    "type": "content_creation",
+    "priority": "high",
+    "status": "pending",
+    "assigned_agent_ids": "[]",
+    "mission_parameters": "{\"revenue_model\":\"direct sales\",\"examples\":[\"Desert Survival – North Africa\",\"Jungle Survival – SE Asia\"],\"product_type\":\"PDF bundles\",\"pricing_strategy\":\"low cost, high volume\"}",
+    "progress_data": "",
+    "estimated_duration_hours": "200",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "15000",
+    "id": "69496e6ae10ccb8e82d8a691",
+    "created_date": "2025-12-22T16:14:34.655000",
+    "updated_date": "2025-12-22T16:14:34.655000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-02-24T12:21:21.505Z",
+  "last_executed_at": "2026-03-30T20:50:58.939Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Generated and licensed new niche content batch.",
+      "revenue_estimate": 25
+    }
+  ]
+}

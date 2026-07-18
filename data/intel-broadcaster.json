@@ -1,0 +1,53 @@
+{
+  "broadcasts": [],
+  "targets": [
+    {
+      "id": "intel-1774804398595",
+      "name": "John Doe",
+      "type": "NGO_Head",
+      "organization": "Shadow Children Fund",
+      "evidenceCount": 0,
+      "status": "monitoring"
+    },
+    {
+      "id": "intel-1774804489023",
+      "name": "John Doe",
+      "type": "NGO_Head",
+      "organization": "Shadow Children Fund",
+      "evidenceCount": 0,
+      "status": "monitoring"
+    },
+    {
+      "id": "intel-1774840392723",
+      "name": "John Doe",
+      "type": "NGO_Head",
+      "organization": "Shadow Children Fund",
+      "evidenceCount": 0,
+      "status": "monitoring"
+    },
+    {
+      "id": "intel-1774903156863",
+      "name": "John Doe",
+      "type": "NGO_Head",
+      "organization": "Shadow Children Fund",
+      "evidenceCount": 0,
+      "status": "monitoring"
+    },
+    {
+      "id": "intel-1774904495504",
+      "name": "John Doe",
+      "type": "NGO_Head",
+      "organization": "Shadow Children Fund",
+      "evidenceCount": 0,
+      "status": "monitoring"
+    },
+    {
+      "id": "intel-1774905771916",
+      "name": "John Doe",
+      "type": "NGO_Head",
+      "organization": "Shadow Children Fund",
+      "evidenceCount": 0,
+      "status": "monitoring"
+    }
+  ]
+}

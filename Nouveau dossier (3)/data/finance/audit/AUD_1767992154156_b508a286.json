@@ -1,0 +1,36 @@
+{
+  "id": "AUD_1767992154156_b508a286",
+  "timestamp": "2026-01-09T20:55:54.156Z",
+  "action": "INITIATE_AUTO_SETTLEMENT",
+  "entity_id": "a40064e6-685c-43cd-b9f3-31c2d3d90df7",
+  "actor": "OwnerDirectCryptoRelease",
+  "changes": {
+    "before": null,
+    "after": {
+      "status": "processing",
+      "gateway_response": {
+        "status": "prepared",
+        "network": "BANK_WIRE",
+        "prepared_at": "2026-01-09T20:55:54.154Z",
+        "transactions": [
+          {
+            "amount": 850,
+            "currency": "USDT",
+            "destination": "007810000448500030594182",
+            "reference": "BATCH_LIVE_1767528254631 - Direct Crypto Release to Owner Trust Wallet"
+          }
+        ]
+      },
+      "payout_batch_id": "BATCH_LIVE_1767528254631_CRYPTO",
+      "processed_at": "2026-01-09T20:55:54.156Z",
+      "route_attempted": "bank_transfer"
+    }
+  },
+  "context": {
+    "action": "INITIATE_AUTO_SETTLEMENT",
+    "actor": "OwnerDirectCryptoRelease",
+    "payoutBatchId": "BATCH_LIVE_1767528254631_CRYPTO",
+    "status": "success"
+  },
+  "updated_at": "2026-01-09T20:55:54.156Z"
+}

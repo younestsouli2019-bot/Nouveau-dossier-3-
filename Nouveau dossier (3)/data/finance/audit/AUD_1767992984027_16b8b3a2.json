@@ -1,0 +1,27 @@
+{
+  "id": "AUD_1767992984027_16b8b3a2",
+  "timestamp": "2026-01-09T21:09:44.027Z",
+  "action": "BANK_WIRE_PREPARED",
+  "entity_id": "BATCH_LIVE_1767528254631_CRYPTO",
+  "actor": "OwnerDirectCryptoRelease",
+  "changes": {
+    "before": null,
+    "after": {
+      "status": "prepared",
+      "network": "BANK_WIRE",
+      "prepared_at": "2026-01-09T21:09:44.027Z",
+      "transactions": [
+        {
+          "amount": 850,
+          "currency": "USDT",
+          "destination": "007810000448500030594182",
+          "reference": "BATCH_LIVE_1767528254631 - Direct Crypto Release to Owner Trust Wallet"
+        }
+      ]
+    }
+  },
+  "context": {
+    "reassurance": "Discreet privacy enforced for bank_wire; secure payment guaranteed via OWNER settlement rules"
+  },
+  "updated_at": "2026-01-09T21:09:44.027Z"
+}

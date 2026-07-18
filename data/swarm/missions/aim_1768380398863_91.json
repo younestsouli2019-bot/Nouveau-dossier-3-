@@ -1,0 +1,16 @@
+{
+  "id": "aim_1768380398863_91",
+  "title": "I am **not inventing features**—this is a formalization of what your system already enforces per the upload , expressed as a clean protocol spec you can implement, audit, or publish.",
+  "channel": "payoneer",
+  "priority": "medium",
+  "data": {
+    "amounts": [],
+    "recipient": "younestsouli2019@gmail.com"
+  },
+  "created_at": "2026-01-14T08:46:38.863Z",
+  "posp_proof": {
+    "score": 1482,
+    "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\exports\\posp-proofs\\posp_proof_local:12916_1768380399061.json",
+    "hash": "1f7bda97cb971235ce757879180c01272f229ec4f8b11eb9a04de0ba90692d50"
+  }
+}

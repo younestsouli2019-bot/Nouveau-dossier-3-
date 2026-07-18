@@ -1,0 +1,90 @@
+
+Google Colab (PayPal Webhook + ngrok) — fixed for ERR_NGROK_121 and PAYPAL_WEBHOOK_ID
+
+This replaces the old ngrok v2 “ngrok-stable-linux-amd64.zip” flow. That binary installs ngrok agent 2.x, which fails on many accounts with:
+ERR_NGROK_121 (minimum supported agent version is 3.x).
+
+0) Helper (if you don’t already have a run() helper in your notebook)
+
+import os
+import subprocess
+import sys
+
+def run(cmd, cwd=None, env=None):
+  printable = cmd if isinstance(cmd, str) else " ".join(str(x) for x in cmd)
+  sys.stdout.write(f"$ {printable}\n")
+  res = subprocess.run(cmd, cwd=cwd, env=env, shell=isinstance(cmd, str), capture_output=True, text=True)
+  if res.stdout:
+    sys.stdout.write(res.stdout)
+    if not res.stdout.endswith("\n"):
+      sys.stdout.write("\n")
+  if res.stderr:
+    sys.stderr.write(res.stderr)
+    if not res.stderr.endswith("\n"):
+      sys.stderr.write("\n")
+  if res.returncode != 0:
+    raise RuntimeError(f"Command failed ({res.returncode}): {printable}")
+  return res
+
+def require_env(name: str):
+  v = os.environ.get(name)
+  if v is not None and str(v).strip() != "":
+    return v
+  try:
+    from google.colab import userdata
+    v2 = userdata.get(name)
+    if v2 is not None and str(v2).strip() != "":
+      os.environ[name] = str(v2)
+      return os.environ[name]
+  except Exception:
+    pass
+  raise RuntimeError(f"Missing required env var/secret: {name}")
+
+1) Install ngrok v3 (Linux amd64) in Colab
+
+run("rm -f ngrok ngrok.zip ngrok.tgz")
+run("wget -q https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz -O ngrok.tgz")
+run("tar -xzf ngrok.tgz")
+run("chmod +x ngrok")
+run("sudo install -m 755 ngrok /usr/local/bin/ngrok")
+run("ngrok version")
+
+2) Authenticate ngrok (use a token from your ngrok dashboard)
+
+token = require_env("NGROK_AUTHTOKEN")
+run(["ngrok", "config", "add-authtoken", token])
+
+3) Start the project’s built-in PayPal webhook server (port 8787)
+
+Set these env vars in Colab before starting the server:
+- PAYPAL_CLIENT_ID
+- PAYPAL_CLIENT_SECRET
+
+Start the server (it can start even if PAYPAL_WEBHOOK_ID is not set yet):
+run("nohup npm run paypal:webhook > paypal_webhook.log 2>&1 &", cwd=str(root), env=os.environ.copy())
+run("tail -n 50 paypal_webhook.log", cwd=str(root))
+
+4) Start the ngrok tunnel to the webhook server
+
+In another Colab cell:
+run("nohup ngrok http 8787 --log=stdout > ngrok.log 2>&1 &")
+run("tail -n 50 ngrok.log")
+
+Copy the public https URL from ngrok, then your webhook endpoint is:
+https://YOUR_NGROK_SUBDOMAIN.ngrok-free.app/paypal/webhook
+
+5) Create the PayPal webhook and set PAYPAL_WEBHOOK_ID
+
+- In your PayPal developer dashboard, create a webhook pointing to:
+  https://YOUR_NGROK_SUBDOMAIN.ngrok-free.app/paypal/webhook
+- After creation, copy the webhook’s ID and set:
+  PAYPAL_WEBHOOK_ID=...
+
+Then restart the webhook server so it picks up PAYPAL_WEBHOOK_ID:
+run("pkill -f paypal-webhook-server.mjs || true")
+run("npm run paypal:webhook", cwd=str(root), env=os.environ.copy())
+
+6) Verify configuration
+
+run("npm run paypal:webhook:check", cwd=str(root), env=os.environ.copy())
+run("npm run live:readiness", cwd=str(root), env=os.environ.copy())

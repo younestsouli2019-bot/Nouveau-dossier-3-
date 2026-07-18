@@ -1,0 +1,27 @@
+{
+  "id": "68cd8ea805bcf0aec68df2a1",
+  "title": "Develop Promotional Videos for RealWorldCerts.com using Tencent Hunyuan AI Video",
+  "channel": "content_creation",
+  "priority": "high",
+  "data": {
+    "title": "Develop Promotional Videos for RealWorldCerts.com using Tencent Hunyuan AI Video",
+    "type": "content_creation",
+    "priority": "high",
+    "status": "deployed",
+    "assigned_agent_ids": "[]",
+    "mission_parameters": "{\"usage_suggestions_and_best_practices\":[\"Iterative Generation: Use the same prompt multiple times or fine-tune adjectives to get the best results due to AI video generation's inherent randomness.\",\"Combine Usage: Splice together multiple short video clips (e.g., an exciting opening + a feature display + a story ending) using video editing software to create a complete, high-quality ad.\",\"Tag Utilization: Make full use of the platform's 'common tags' and 'inspiration prompts', such as adding '<科技>', '<教育>', '<励志>' tags to further guide the AI.\",\"Clarity Selection: Choose 'Standard', 'High Quality', or '2K' based on the publishing platform. For formal ad campaigns, the highest available clarity is recommended.\",\"Sound Effect Supplement: Generated videos usually do not come with perfect sound effects or narration. Plan to add background music, sound effects, and voice-overs in post-production, which will greatly enhance the video's quality.\"],\"feature_showcase_prompts\":[{\"style_suggestions\":[\"动态\",\"信息图风格\"],\"name\":\"Practical Learning Showcase\",\"prompt_chinese\":\"动态多屏分割画面。左侧屏幕：一位学员在RealWorldCerts的交互式界面上进行学习。中间屏幕：知识点（如一行代码、一个网络命令）从左侧屏幕“飞”出。右侧屏幕：该知识点立即被应用在一个真实的、可视化服务器机房环境中，成功解决了问题。三个画面同步进行，节奏明快，配有动态的连接线和光效过渡。\",\"aspect_ratio\":\"9:16\"},{\"name\":\"Certification Value Showcase\",\"prompt_chinese\":\"特写镜头：一本RealWorldCerts的证书被郑重地放在桌面上。证书散发出淡淡的金色光芒。下一秒，光芒化作几条金色的线，分别连接到一个“薪资上涨”的图表、一个“升职总监”的头衔卡牌、以及一个“全球远程工作”的地图图标。这些元素围绕着证书微微浮动旋转。镜头最后拉回，展现一位自信的专业人士微笑着看着这一切。\",\"style_suggestions\":[\"高品质\",\"象征性\"],\"aspect_ratio\":\"1:1\"}],\"cinematic_opening_prompt\":{\"core_message\":\"Directly establish a visual link between 'current dilemma' and 'solution', with clear brand exposure.\",\"prompt_chinese\":\"电影感开场，镜头聚焦在一张略显枯燥的办公桌上，一位年轻的IT专业人士看着电脑屏幕上的招聘信息，表情有些迷茫和焦虑。镜头缓缓推近他的眼睛，在他的虹膜倒影中，开始浮现出代码、云服务器和网络安全盾牌的动态影像。紧接着，一个清晰的网址 www.realworldcerts.com 如同 hologram（全息投影）一样优雅地旋转出现。色调从开始的灰冷色，随着倒影的出现逐渐变为充满科技感的蓝色和充满希望的亮色调。运镜平稳，具有未来感。\",\"style_suggestions\":[\"电影感\",\"科技感\",\"高质量\"],\"aspect_ratio\":\"16:9\"},\"core_strategy_idea\":\"The core narrative revolves around the 'career transformation journey' through dynamic video storytelling, emphasizing RealWorldCerts.com's role.\",\"narrative_story_prompts\":[{\"style_suggestions\":[\"电影叙事\",\"标准\"],\"prompt_chinese\":\"【镜头一】中景：一个程序员在混乱的办公室里加班，挠头看着复杂的bug，时钟显示凌晨2点。（色调偏冷、昏暗）\\n【镜头二】转场：他打开了realworldcerts.com的网站，界面明亮友好。他选择了一门课程，开始学习。屏幕上代码飞速滚动，伴有积极的学习数据可视化图表。\\n【镜头三】匹配剪辑转场：他学习的动作（敲击键盘）匹配剪辑到他正在一个现代化的数据中心， confidently 部署一个解决方案。镜头拉远，显示他和团队一起庆祝项目成功。他的穿着、气质、环境都变得专业和成功。（色调温暖、明亮）\\n【结尾】他看向镜头，自信地微笑。画面右侧淡入文字：“改写你的职业故事。RealWorldCerts.com”。\",\"aspect_ratio\":\"9:16 或 16:9\",\"name\":\"Career Transformation Story\"}],\"testimonial_prompt\":{\"style_suggestions\":[\"高品质\"],\"aspect_ratio\":\"9:16\",\"name\":\"User Testimonial Lip-sync\",\"feature_usage\":\"对口型\",\"prompt_chinese\":\"（此提示需先上传一张友好的、具有说服力的真人或AI生成的人物头像）一位30岁左右的IT专业人士，穿着职业装，背景是干净的现代办公室或家居环境。他/她正在 confidently 对着镜头说话，表情真诚且充满喜悦。口型同步以下信息（需提前生成或录制音频）：“从传统运维到云架构专家，RealWorldCerts的实战课程给了我需要的全部技能和认证。现在，我拿到了心仪的Offer。你的未来，同样值得投资。”\"}}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "68cd8ea805bcf0aec68df2a1",
+    "created_date": "2025-09-19T17:11:04.005000",
+    "updated_date": "2025-10-04T13:24:37.526000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:12.001Z"
+}

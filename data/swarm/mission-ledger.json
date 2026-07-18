@@ -1,0 +1,3588 @@
+{
+  "missions": [
+    {
+      "missionId": "mission_INF-001-1771971743518-0",
+      "proposalId": "INF-001-1771971743518-0",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:23.519Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:23.633Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:23.745Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:23.859Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:23.859Z"
+    },
+    {
+      "missionId": "mission_MKT-001-1771971743518-1",
+      "proposalId": "MKT-001-1771971743518-1",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:23.860Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:23.973Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:24.087Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:24.197Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:24.197Z"
+    },
+    {
+      "missionId": "mission_MKT-002-1771971743518-2",
+      "proposalId": "MKT-002-1771971743518-2",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:24.198Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:24.309Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:24.419Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:24.532Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:24.532Z"
+    },
+    {
+      "missionId": "mission_PAY-001-1771971743518-3",
+      "proposalId": "PAY-001-1771971743518-3",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:24.532Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:24.643Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:24.752Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:24.864Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:24.864Z"
+    },
+    {
+      "missionId": "mission_STO-001-1771971743518-4",
+      "proposalId": "STO-001-1771971743518-4",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:24.865Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:24.978Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:25.092Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:25.205Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:25.205Z"
+    },
+    {
+      "missionId": "mission_68c73bbe3efa5daf0a6709aa-1771971743518-5",
+      "proposalId": "68c73bbe3efa5daf0a6709aa-1771971743518-5",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:25.206Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:25.317Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:25.430Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:25.543Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:25.543Z"
+    },
+    {
+      "missionId": "mission_6948efedb395307e371a4804-1771971743518-6",
+      "proposalId": "6948efedb395307e371a4804-1771971743518-6",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:25.543Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:25.656Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:25.771Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:25.886Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:25.886Z"
+    },
+    {
+      "missionId": "mission_6949298e487b2732b7dd45be-1771971743518-7",
+      "proposalId": "6949298e487b2732b7dd45be-1771971743518-7",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:25.886Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:25.998Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:26.112Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:26.226Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:26.226Z"
+    },
+    {
+      "missionId": "mission_6949467151f90bf73859f7fe-1771971743518-8",
+      "proposalId": "6949467151f90bf73859f7fe-1771971743518-8",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:26.227Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:26.337Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:26.450Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:26.562Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:26.562Z"
+    },
+    {
+      "missionId": "mission_68c7e0f1fe47320743671675-1771971743518-9",
+      "proposalId": "68c7e0f1fe47320743671675-1771971743518-9",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:26.563Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:26.674Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:26.786Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:26.900Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:26.900Z"
+    },
+    {
+      "missionId": "mission_68e764bad3991759502b86a0-1771971743518-10",
+      "proposalId": "68e764bad3991759502b86a0-1771971743518-10",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:26.901Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:27.014Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:27.122Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:27.235Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:27.235Z"
+    },
+    {
+      "missionId": "mission_69495d85c95b207cb70e1f7f-1771971743518-11",
+      "proposalId": "69495d85c95b207cb70e1f7f-1771971743518-11",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:27.235Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:27.347Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:27.462Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:27.576Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:27.576Z"
+    },
+    {
+      "missionId": "mission_69496d6139b52c6b1d7cf3a7-1771971743518-12",
+      "proposalId": "69496d6139b52c6b1d7cf3a7-1771971743518-12",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:27.576Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:27.688Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:27.802Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:27.913Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:27.913Z"
+    },
+    {
+      "missionId": "mission_69496d6139b52c6b1d7cf3a9-1771971743518-13",
+      "proposalId": "69496d6139b52c6b1d7cf3a9-1771971743518-13",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:27.914Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:28.026Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:28.140Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:28.254Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:28.254Z"
+    },
+    {
+      "missionId": "mission_69496e6ae10ccb8e82d8a692-1771971743518-14",
+      "proposalId": "69496e6ae10ccb8e82d8a692-1771971743518-14",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:28.255Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:28.366Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:28.481Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:28.594Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:28.594Z"
+    },
+    {
+      "missionId": "mission_68bc5353ef800d98b63c95f9-1771971743518-15",
+      "proposalId": "68bc5353ef800d98b63c95f9-1771971743518-15",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:28.595Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:28.708Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:28.821Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:28.935Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:28.935Z"
+    },
+    {
+      "missionId": "mission_69496e6ae10ccb8e82d8a693-1771971743518-16",
+      "proposalId": "69496e6ae10ccb8e82d8a693-1771971743518-16",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:28.936Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:29.047Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:29.159Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:29.272Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:29.272Z"
+    },
+    {
+      "missionId": "mission_OPS-001-1771971743518-17",
+      "proposalId": "OPS-001-1771971743518-17",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:29.273Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:29.384Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:29.497Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:29.611Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:29.611Z"
+    },
+    {
+      "missionId": "mission_68ffb8342c6ea1e8006871eb-1771971743518-18",
+      "proposalId": "68ffb8342c6ea1e8006871eb-1771971743518-18",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:29.612Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:29.721Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:29.833Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:29.947Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:29.947Z"
+    },
+    {
+      "missionId": "mission_6900754e70a785ae53017535-1771971743518-19",
+      "proposalId": "6900754e70a785ae53017535-1771971743518-19",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:29.948Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:30.060Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:30.174Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:30.288Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:30.288Z"
+    },
+    {
+      "missionId": "mission_691c3b2feb5f5e4ad96ef56b-1771971743518-20",
+      "proposalId": "691c3b2feb5f5e4ad96ef56b-1771971743518-20",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:30.289Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:30.401Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:30.516Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:30.630Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:30.630Z"
+    },
+    {
+      "missionId": "mission_69457a6ff075efc26fd877fb-1771971743518-21",
+      "proposalId": "69457a6ff075efc26fd877fb-1771971743518-21",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:30.631Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:30.744Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:30.855Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:30.966Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:30.966Z"
+    },
+    {
+      "missionId": "mission_69457a6ff075efc26fd877fc-1771971743518-22",
+      "proposalId": "69457a6ff075efc26fd877fc-1771971743518-22",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:30.967Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:31.078Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:31.190Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:31.304Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:31.304Z"
+    },
+    {
+      "missionId": "mission_69457a6ff075efc26fd877fd-1771971743518-23",
+      "proposalId": "69457a6ff075efc26fd877fd-1771971743518-23",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:31.305Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:31.418Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:31.532Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:31.633Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:31.633Z"
+    },
+    {
+      "missionId": "mission_69457a6ff075efc26fd877ff-1771971743518-24",
+      "proposalId": "69457a6ff075efc26fd877ff-1771971743518-24",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:31.633Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:31.741Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:31.852Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:31.966Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:31.966Z"
+    },
+    {
+      "missionId": "mission_69458483eff7ba65805bf301-1771971743518-25",
+      "proposalId": "69458483eff7ba65805bf301-1771971743518-25",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:31.967Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:32.077Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:32.189Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:32.303Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:32.303Z"
+    },
+    {
+      "missionId": "mission_69458f9ba5038b0c3a86caa1-1771971743518-26",
+      "proposalId": "69458f9ba5038b0c3a86caa1-1771971743518-26",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:32.303Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:32.416Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:32.527Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:32.640Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:32.640Z"
+    },
+    {
+      "missionId": "mission_69458f9ba5038b0c3a86caa2-1771971743518-27",
+      "proposalId": "69458f9ba5038b0c3a86caa2-1771971743518-27",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:32.640Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:32.752Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:32.864Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:32.977Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:32.977Z"
+    },
+    {
+      "missionId": "mission_69458f9ba5038b0c3a86caa6-1771971743518-28",
+      "proposalId": "69458f9ba5038b0c3a86caa6-1771971743518-28",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:32.977Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:33.087Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:33.198Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:33.308Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:33.308Z"
+    },
+    {
+      "missionId": "mission_69458f9ba5038b0c3a86caa7-1771971743518-29",
+      "proposalId": "69458f9ba5038b0c3a86caa7-1771971743518-29",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:33.308Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:33.419Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:33.531Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:33.642Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:33.642Z"
+    },
+    {
+      "missionId": "mission_69458fa7a5038b0c3a86cab0-1771971743518-30",
+      "proposalId": "69458fa7a5038b0c3a86cab0-1771971743518-30",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:33.642Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:33.750Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:33.861Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:33.973Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:33.973Z"
+    },
+    {
+      "missionId": "mission_69458fa7a5038b0c3a86cab1-1771971743518-31",
+      "proposalId": "69458fa7a5038b0c3a86cab1-1771971743518-31",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:33.973Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:34.083Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:34.193Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:34.304Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:34.304Z"
+    },
+    {
+      "missionId": "mission_69458fa7a5038b0c3a86cab5-1771971743518-32",
+      "proposalId": "69458fa7a5038b0c3a86cab5-1771971743518-32",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:34.305Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:34.413Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:34.524Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:34.637Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:34.637Z"
+    },
+    {
+      "missionId": "mission_69458fa7a5038b0c3a86cab6-1771971743518-33",
+      "proposalId": "69458fa7a5038b0c3a86cab6-1771971743518-33",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:34.637Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:34.747Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:34.860Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:34.972Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:34.972Z"
+    },
+    {
+      "missionId": "mission_694687c7df112f68e3ee01d7-1771971743518-34",
+      "proposalId": "694687c7df112f68e3ee01d7-1771971743518-34",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:34.972Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:35.083Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:35.192Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:35.302Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:35.302Z"
+    },
+    {
+      "missionId": "mission_68f39bada9798f8fb8be6799-1771971743518-35",
+      "proposalId": "68f39bada9798f8fb8be6799-1771971743518-35",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:35.302Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:35.415Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:35.524Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:35.636Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:35.636Z"
+    },
+    {
+      "missionId": "mission_68f39bb0a9798f8fb8be67b3-1771971743518-36",
+      "proposalId": "68f39bb0a9798f8fb8be67b3-1771971743518-36",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:35.637Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:35.746Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:35.857Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:35.967Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:35.967Z"
+    },
+    {
+      "missionId": "mission_68f39da2e5e54dee055a4c91-1771971743518-37",
+      "proposalId": "68f39da2e5e54dee055a4c91-1771971743518-37",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:35.967Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:36.075Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:36.187Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:36.299Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:36.299Z"
+    },
+    {
+      "missionId": "mission_68f39da4e5e54dee055a4ca0-1771971743518-38",
+      "proposalId": "68f39da4e5e54dee055a4ca0-1771971743518-38",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:36.299Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:36.409Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:36.521Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:36.629Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:36.629Z"
+    },
+    {
+      "missionId": "mission_68f39da7e5e54dee055a4cab-1771971743518-39",
+      "proposalId": "68f39da7e5e54dee055a4cab-1771971743518-39",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:36.630Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:36.742Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:36.853Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:36.966Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:36.966Z"
+    },
+    {
+      "missionId": "mission_68f39dade5e54dee055a4cd5-1771971743518-40",
+      "proposalId": "68f39dade5e54dee055a4cd5-1771971743518-40",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:36.966Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:37.076Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:37.185Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:37.296Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:37.296Z"
+    },
+    {
+      "missionId": "mission_691c3b8e1f0b9ad1d61895bb-1771971743518-41",
+      "proposalId": "691c3b8e1f0b9ad1d61895bb-1771971743518-41",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:37.296Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:37.407Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:37.516Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:37.627Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:37.627Z"
+    },
+    {
+      "missionId": "mission_691c3b8e1f0b9ad1d61895bc-1771971743518-42",
+      "proposalId": "691c3b8e1f0b9ad1d61895bc-1771971743518-42",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:37.627Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:37.736Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:37.846Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:37.957Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:37.957Z"
+    },
+    {
+      "missionId": "mission_6945788e536ff7b26a9b9417-1771971743518-43",
+      "proposalId": "6945788e536ff7b26a9b9417-1771971743518-43",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:37.958Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:38.064Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:38.177Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:38.292Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:38.292Z"
+    },
+    {
+      "missionId": "mission_69457a6ff075efc26fd877fe-1771971743518-44",
+      "proposalId": "69457a6ff075efc26fd877fe-1771971743518-44",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:38.293Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:38.402Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:38.511Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:38.621Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:38.621Z"
+    },
+    {
+      "missionId": "mission_69458f9ba5038b0c3a86caa3-1771971743518-45",
+      "proposalId": "69458f9ba5038b0c3a86caa3-1771971743518-45",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:38.621Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:38.731Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:38.841Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:38.953Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:38.953Z"
+    },
+    {
+      "missionId": "mission_69458f9ba5038b0c3a86caa4-1771971743518-46",
+      "proposalId": "69458f9ba5038b0c3a86caa4-1771971743518-46",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:38.953Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:39.061Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:39.172Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:39.283Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:39.283Z"
+    },
+    {
+      "missionId": "mission_69458f9ba5038b0c3a86caa5-1771971743518-47",
+      "proposalId": "69458f9ba5038b0c3a86caa5-1771971743518-47",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:39.283Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:39.393Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:39.505Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:39.616Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:39.616Z"
+    },
+    {
+      "missionId": "mission_69458fa7a5038b0c3a86cab2-1771971743518-48",
+      "proposalId": "69458fa7a5038b0c3a86cab2-1771971743518-48",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:39.617Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:39.725Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:39.837Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:39.949Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:39.949Z"
+    },
+    {
+      "missionId": "mission_69458fa7a5038b0c3a86cab3-1771971743518-49",
+      "proposalId": "69458fa7a5038b0c3a86cab3-1771971743518-49",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:39.949Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:40.059Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:40.170Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:40.282Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:40.282Z"
+    },
+    {
+      "missionId": "mission_69458fa7a5038b0c3a86cab4-1771971743518-50",
+      "proposalId": "69458fa7a5038b0c3a86cab4-1771971743518-50",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:40.282Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:40.392Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:40.504Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:40.616Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:40.617Z"
+    },
+    {
+      "missionId": "mission_6948f0be416a963369692fe0-1771971743518-51",
+      "proposalId": "6948f0be416a963369692fe0-1771971743518-51",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:40.617Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:40.728Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:40.840Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:40.953Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:40.953Z"
+    },
+    {
+      "missionId": "mission_b44_upgrade_premium-1771971743518-52",
+      "proposalId": "b44_upgrade_premium-1771971743518-52",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:40.953Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:41.064Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:41.177Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:41.289Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:41.289Z"
+    },
+    {
+      "missionId": "mission_68ffa4810a30d54c629c26b7-1771971743518-53",
+      "proposalId": "68ffa4810a30d54c629c26b7-1771971743518-53",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:41.290Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:41.400Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:41.511Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:41.624Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:41.624Z"
+    },
+    {
+      "missionId": "mission_691c3b8e1f0b9ad1d61895bd-1771971743518-54",
+      "proposalId": "691c3b8e1f0b9ad1d61895bd-1771971743518-54",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:41.624Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:41.735Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:41.848Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:41.960Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:41.960Z"
+    },
+    {
+      "missionId": "mission_6948e41f1e5c0e1c906efee1-1771971743518-55",
+      "proposalId": "6948e41f1e5c0e1c906efee1-1771971743518-55",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:41.961Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:42.074Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:42.207Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:42.325Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:42.325Z"
+    },
+    {
+      "missionId": "mission_6948eff3b395307e371a4806-1771971743518-56",
+      "proposalId": "6948eff3b395307e371a4806-1771971743518-56",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:42.325Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:42.438Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:42.550Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:42.663Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:42.663Z"
+    },
+    {
+      "missionId": "mission_6948eff3b395307e371a4807-1771971743518-57",
+      "proposalId": "6948eff3b395307e371a4807-1771971743518-57",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:42.663Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:42.774Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:42.885Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:42.996Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:42.996Z"
+    },
+    {
+      "missionId": "mission_6948eff3b395307e371a4808-1771971743518-58",
+      "proposalId": "6948eff3b395307e371a4808-1771971743518-58",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:42.997Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:43.107Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:43.219Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:43.331Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:43.331Z"
+    },
+    {
+      "missionId": "mission_69495d36282e49098ee4a887-1771971743518-59",
+      "proposalId": "69495d36282e49098ee4a887-1771971743518-59",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:43.331Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:43.439Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:43.550Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:43.663Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:43.663Z"
+    },
+    {
+      "missionId": "mission_69496e6ae10ccb8e82d8a690-1771971743518-60",
+      "proposalId": "69496e6ae10ccb8e82d8a690-1771971743518-60",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:43.663Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:43.774Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:43.885Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:43.994Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:43.994Z"
+    },
+    {
+      "missionId": "mission_69492fdf37681e7f2603ec25-1771971743518-61",
+      "proposalId": "69492fdf37681e7f2603ec25-1771971743518-61",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:43.994Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:44.105Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:44.215Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:44.326Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:44.326Z"
+    },
+    {
+      "missionId": "mission_69496e6ae10ccb8e82d8a691-1771971743518-62",
+      "proposalId": "69496e6ae10ccb8e82d8a691-1771971743518-62",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:44.326Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:44.436Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:44.547Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:44.661Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:44.661Z"
+    },
+    {
+      "missionId": "mission_website_feedback_collect_2026-02-06-1771971743518-63",
+      "proposalId": "website_feedback_collect_2026-02-06-1771971743518-63",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T22:22:44.661Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:44.771Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:44.882Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T22:22:44.994Z"
+        }
+      ],
+      "completed_at": "2026-02-24T22:22:44.994Z"
+    },
+    {
+      "missionId": "mission_INF-001-1771976470698-0",
+      "proposalId": "INF-001-1771976470698-0",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:10.700Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:10.820Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:10.930Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:11.044Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:11.044Z"
+    },
+    {
+      "missionId": "mission_MKT-001-1771976470698-1",
+      "proposalId": "MKT-001-1771976470698-1",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:11.044Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:11.156Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:11.269Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:11.383Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:11.383Z"
+    },
+    {
+      "missionId": "mission_MKT-002-1771976470698-2",
+      "proposalId": "MKT-002-1771976470698-2",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:11.384Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:11.505Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:11.665Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:11.776Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:11.776Z"
+    },
+    {
+      "missionId": "mission_PAY-001-1771976470698-3",
+      "proposalId": "PAY-001-1771976470698-3",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:11.776Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:11.887Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:11.997Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:12.107Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:12.107Z"
+    },
+    {
+      "missionId": "mission_STO-001-1771976470698-4",
+      "proposalId": "STO-001-1771976470698-4",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:12.108Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:12.219Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:12.331Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:12.445Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:12.445Z"
+    },
+    {
+      "missionId": "mission_68c73bbe3efa5daf0a6709aa-1771976470698-5",
+      "proposalId": "68c73bbe3efa5daf0a6709aa-1771976470698-5",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:12.445Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:12.556Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:12.669Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:12.782Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:12.782Z"
+    },
+    {
+      "missionId": "mission_6948efedb395307e371a4804-1771976470698-6",
+      "proposalId": "6948efedb395307e371a4804-1771976470698-6",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:12.782Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:12.893Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:13.005Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:13.117Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:13.117Z"
+    },
+    {
+      "missionId": "mission_6949298e487b2732b7dd45be-1771976470698-7",
+      "proposalId": "6949298e487b2732b7dd45be-1771976470698-7",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:13.118Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:13.228Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:13.340Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:13.453Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:13.453Z"
+    },
+    {
+      "missionId": "mission_6949467151f90bf73859f7fe-1771976470698-8",
+      "proposalId": "6949467151f90bf73859f7fe-1771976470698-8",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:13.454Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:13.563Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:13.676Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:13.789Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:13.789Z"
+    },
+    {
+      "missionId": "mission_68c7e0f1fe47320743671675-1771976470698-9",
+      "proposalId": "68c7e0f1fe47320743671675-1771976470698-9",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:13.789Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:13.901Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:14.016Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:14.128Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:14.128Z"
+    },
+    {
+      "missionId": "mission_68e764bad3991759502b86a0-1771976470698-10",
+      "proposalId": "68e764bad3991759502b86a0-1771976470698-10",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:14.129Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:14.241Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:14.355Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:14.468Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:14.468Z"
+    },
+    {
+      "missionId": "mission_69495d85c95b207cb70e1f7f-1771976470698-11",
+      "proposalId": "69495d85c95b207cb70e1f7f-1771976470698-11",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:14.469Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:14.580Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:14.692Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:14.804Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:14.804Z"
+    },
+    {
+      "missionId": "mission_69496d6139b52c6b1d7cf3a7-1771976470698-12",
+      "proposalId": "69496d6139b52c6b1d7cf3a7-1771976470698-12",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:14.804Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:14.916Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:15.028Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:15.139Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:15.139Z"
+    },
+    {
+      "missionId": "mission_69496d6139b52c6b1d7cf3a9-1771976470698-13",
+      "proposalId": "69496d6139b52c6b1d7cf3a9-1771976470698-13",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:15.139Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:15.252Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:15.365Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:15.477Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:15.477Z"
+    },
+    {
+      "missionId": "mission_69496e6ae10ccb8e82d8a692-1771976470698-14",
+      "proposalId": "69496e6ae10ccb8e82d8a692-1771976470698-14",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:15.478Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:15.588Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:15.701Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:15.814Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:15.815Z"
+    },
+    {
+      "missionId": "mission_68bc5353ef800d98b63c95f9-1771976470698-15",
+      "proposalId": "68bc5353ef800d98b63c95f9-1771976470698-15",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:15.815Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:15.926Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:16.039Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:16.150Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:16.150Z"
+    },
+    {
+      "missionId": "mission_69496e6ae10ccb8e82d8a693-1771976470698-16",
+      "proposalId": "69496e6ae10ccb8e82d8a693-1771976470698-16",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:16.151Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:16.261Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:16.376Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:16.489Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:16.489Z"
+    },
+    {
+      "missionId": "mission_OPS-001-1771976470698-17",
+      "proposalId": "OPS-001-1771976470698-17",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:16.489Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:16.601Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:16.713Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:16.826Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:16.826Z"
+    },
+    {
+      "missionId": "mission_68ffb8342c6ea1e8006871eb-1771976470698-18",
+      "proposalId": "68ffb8342c6ea1e8006871eb-1771976470698-18",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:16.827Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:16.938Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:17.051Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:17.162Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:17.162Z"
+    },
+    {
+      "missionId": "mission_6900754e70a785ae53017535-1771976470698-19",
+      "proposalId": "6900754e70a785ae53017535-1771976470698-19",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:17.163Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:17.275Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:17.389Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:17.502Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:17.502Z"
+    },
+    {
+      "missionId": "mission_691c3b2feb5f5e4ad96ef56b-1771976470698-20",
+      "proposalId": "691c3b2feb5f5e4ad96ef56b-1771976470698-20",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:17.503Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:17.615Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:17.728Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:17.841Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:17.841Z"
+    },
+    {
+      "missionId": "mission_69457a6ff075efc26fd877fb-1771976470698-21",
+      "proposalId": "69457a6ff075efc26fd877fb-1771976470698-21",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:17.841Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:17.954Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:18.064Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:18.178Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:18.178Z"
+    },
+    {
+      "missionId": "mission_69457a6ff075efc26fd877fc-1771976470698-22",
+      "proposalId": "69457a6ff075efc26fd877fc-1771976470698-22",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:18.179Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:18.290Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:18.403Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:18.516Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:18.516Z"
+    },
+    {
+      "missionId": "mission_69457a6ff075efc26fd877fd-1771976470698-23",
+      "proposalId": "69457a6ff075efc26fd877fd-1771976470698-23",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:18.516Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:18.628Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:18.741Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:18.852Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:18.852Z"
+    },
+    {
+      "missionId": "mission_69457a6ff075efc26fd877ff-1771976470698-24",
+      "proposalId": "69457a6ff075efc26fd877ff-1771976470698-24",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:18.852Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:18.963Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:19.075Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:19.188Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:19.188Z"
+    },
+    {
+      "missionId": "mission_69458483eff7ba65805bf301-1771976470698-25",
+      "proposalId": "69458483eff7ba65805bf301-1771976470698-25",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:19.188Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:19.300Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:19.412Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:19.525Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:19.525Z"
+    },
+    {
+      "missionId": "mission_69458f9ba5038b0c3a86caa1-1771976470698-26",
+      "proposalId": "69458f9ba5038b0c3a86caa1-1771976470698-26",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:19.526Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:19.637Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:19.748Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:19.861Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:19.861Z"
+    },
+    {
+      "missionId": "mission_69458f9ba5038b0c3a86caa2-1771976470698-27",
+      "proposalId": "69458f9ba5038b0c3a86caa2-1771976470698-27",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:19.862Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:19.974Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:20.086Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:20.197Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:20.197Z"
+    },
+    {
+      "missionId": "mission_69458f9ba5038b0c3a86caa6-1771976470698-28",
+      "proposalId": "69458f9ba5038b0c3a86caa6-1771976470698-28",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:20.198Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:20.309Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:20.420Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:20.533Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:20.533Z"
+    },
+    {
+      "missionId": "mission_69458f9ba5038b0c3a86caa7-1771976470698-29",
+      "proposalId": "69458f9ba5038b0c3a86caa7-1771976470698-29",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:20.534Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:20.644Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:20.756Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:20.868Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:20.868Z"
+    },
+    {
+      "missionId": "mission_69458fa7a5038b0c3a86cab0-1771976470698-30",
+      "proposalId": "69458fa7a5038b0c3a86cab0-1771976470698-30",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:20.868Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:20.980Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:21.093Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:21.205Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:21.205Z"
+    },
+    {
+      "missionId": "mission_69458fa7a5038b0c3a86cab1-1771976470698-31",
+      "proposalId": "69458fa7a5038b0c3a86cab1-1771976470698-31",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:21.206Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:21.317Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:21.430Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:21.543Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:21.543Z"
+    },
+    {
+      "missionId": "mission_69458fa7a5038b0c3a86cab5-1771976470698-32",
+      "proposalId": "69458fa7a5038b0c3a86cab5-1771976470698-32",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:21.543Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:21.656Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:21.768Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:21.879Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:21.879Z"
+    },
+    {
+      "missionId": "mission_69458fa7a5038b0c3a86cab6-1771976470698-33",
+      "proposalId": "69458fa7a5038b0c3a86cab6-1771976470698-33",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:21.880Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:21.991Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:22.104Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:22.218Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:22.218Z"
+    },
+    {
+      "missionId": "mission_694687c7df112f68e3ee01d7-1771976470698-34",
+      "proposalId": "694687c7df112f68e3ee01d7-1771976470698-34",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:22.218Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:22.332Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:22.445Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:22.554Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:22.554Z"
+    },
+    {
+      "missionId": "mission_68f39bada9798f8fb8be6799-1771976470698-35",
+      "proposalId": "68f39bada9798f8fb8be6799-1771976470698-35",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:22.554Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:22.667Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:22.777Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:22.889Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:22.889Z"
+    },
+    {
+      "missionId": "mission_68f39bb0a9798f8fb8be67b3-1771976470698-36",
+      "proposalId": "68f39bb0a9798f8fb8be67b3-1771976470698-36",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:22.890Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:23.001Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:23.112Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:23.225Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:23.225Z"
+    },
+    {
+      "missionId": "mission_68f39da2e5e54dee055a4c91-1771976470698-37",
+      "proposalId": "68f39da2e5e54dee055a4c91-1771976470698-37",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:23.226Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:23.337Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:23.450Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:23.560Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:23.560Z"
+    },
+    {
+      "missionId": "mission_68f39da4e5e54dee055a4ca0-1771976470698-38",
+      "proposalId": "68f39da4e5e54dee055a4ca0-1771976470698-38",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:23.561Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:23.672Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:23.783Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:23.892Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:23.892Z"
+    },
+    {
+      "missionId": "mission_68f39da7e5e54dee055a4cab-1771976470698-39",
+      "proposalId": "68f39da7e5e54dee055a4cab-1771976470698-39",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:23.892Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:24.006Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:24.116Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:24.226Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:24.226Z"
+    },
+    {
+      "missionId": "mission_68f39dade5e54dee055a4cd5-1771976470698-40",
+      "proposalId": "68f39dade5e54dee055a4cd5-1771976470698-40",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:24.227Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:24.339Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:24.450Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:24.563Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:24.564Z"
+    },
+    {
+      "missionId": "mission_691c3b8e1f0b9ad1d61895bb-1771976470698-41",
+      "proposalId": "691c3b8e1f0b9ad1d61895bb-1771976470698-41",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:24.564Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:24.677Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:24.791Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:24.903Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:24.903Z"
+    },
+    {
+      "missionId": "mission_691c3b8e1f0b9ad1d61895bc-1771976470698-42",
+      "proposalId": "691c3b8e1f0b9ad1d61895bc-1771976470698-42",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:24.904Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:25.012Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:25.123Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:25.235Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:25.235Z"
+    },
+    {
+      "missionId": "mission_6945788e536ff7b26a9b9417-1771976470698-43",
+      "proposalId": "6945788e536ff7b26a9b9417-1771976470698-43",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:25.236Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:25.349Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:25.462Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:25.574Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:25.574Z"
+    },
+    {
+      "missionId": "mission_69457a6ff075efc26fd877fe-1771976470698-44",
+      "proposalId": "69457a6ff075efc26fd877fe-1771976470698-44",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:25.575Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:25.687Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:25.802Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:25.913Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:25.913Z"
+    },
+    {
+      "missionId": "mission_69458f9ba5038b0c3a86caa3-1771976470698-45",
+      "proposalId": "69458f9ba5038b0c3a86caa3-1771976470698-45",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:25.913Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:26.025Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:26.137Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:26.250Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:26.251Z"
+    },
+    {
+      "missionId": "mission_69458f9ba5038b0c3a86caa4-1771976470698-46",
+      "proposalId": "69458f9ba5038b0c3a86caa4-1771976470698-46",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:26.251Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:26.385Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:26.502Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:26.612Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:26.612Z"
+    },
+    {
+      "missionId": "mission_69458f9ba5038b0c3a86caa5-1771976470698-47",
+      "proposalId": "69458f9ba5038b0c3a86caa5-1771976470698-47",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:26.613Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:26.724Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:26.836Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:26.950Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:26.950Z"
+    },
+    {
+      "missionId": "mission_69458fa7a5038b0c3a86cab2-1771976470698-48",
+      "proposalId": "69458fa7a5038b0c3a86cab2-1771976470698-48",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:26.951Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:27.062Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:27.175Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:27.286Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:27.286Z"
+    },
+    {
+      "missionId": "mission_69458fa7a5038b0c3a86cab3-1771976470698-49",
+      "proposalId": "69458fa7a5038b0c3a86cab3-1771976470698-49",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:27.286Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:27.399Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:27.513Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:27.626Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:27.626Z"
+    },
+    {
+      "missionId": "mission_69458fa7a5038b0c3a86cab4-1771976470698-50",
+      "proposalId": "69458fa7a5038b0c3a86cab4-1771976470698-50",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:27.626Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:27.737Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:27.849Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:27.962Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:27.962Z"
+    },
+    {
+      "missionId": "mission_6948f0be416a963369692fe0-1771976470698-51",
+      "proposalId": "6948f0be416a963369692fe0-1771976470698-51",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:27.963Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:28.072Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:28.186Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:28.299Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:28.299Z"
+    },
+    {
+      "missionId": "mission_b44_upgrade_premium-1771976470698-52",
+      "proposalId": "b44_upgrade_premium-1771976470698-52",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:28.300Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:28.412Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:28.524Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:28.638Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:28.638Z"
+    },
+    {
+      "missionId": "mission_68ffa4810a30d54c629c26b7-1771976470698-53",
+      "proposalId": "68ffa4810a30d54c629c26b7-1771976470698-53",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:28.638Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:28.749Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:28.860Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:28.973Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:28.973Z"
+    },
+    {
+      "missionId": "mission_691c3b8e1f0b9ad1d61895bd-1771976470698-54",
+      "proposalId": "691c3b8e1f0b9ad1d61895bd-1771976470698-54",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:28.973Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:29.084Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:29.197Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:29.310Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:29.310Z"
+    },
+    {
+      "missionId": "mission_6948e41f1e5c0e1c906efee1-1771976470698-55",
+      "proposalId": "6948e41f1e5c0e1c906efee1-1771976470698-55",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:29.310Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:29.422Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:29.535Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:29.646Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:29.646Z"
+    },
+    {
+      "missionId": "mission_6948eff3b395307e371a4806-1771976470698-56",
+      "proposalId": "6948eff3b395307e371a4806-1771976470698-56",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:29.646Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:29.756Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:29.869Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:29.980Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:29.980Z"
+    },
+    {
+      "missionId": "mission_6948eff3b395307e371a4807-1771976470698-57",
+      "proposalId": "6948eff3b395307e371a4807-1771976470698-57",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:29.981Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:30.091Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:30.202Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:30.314Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:30.314Z"
+    },
+    {
+      "missionId": "mission_6948eff3b395307e371a4808-1771976470698-58",
+      "proposalId": "6948eff3b395307e371a4808-1771976470698-58",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:30.315Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:30.426Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:30.539Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:30.653Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:30.653Z"
+    },
+    {
+      "missionId": "mission_69495d36282e49098ee4a887-1771976470698-59",
+      "proposalId": "69495d36282e49098ee4a887-1771976470698-59",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:30.654Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:30.765Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:30.878Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:30.991Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:30.991Z"
+    },
+    {
+      "missionId": "mission_69496e6ae10ccb8e82d8a690-1771976470698-60",
+      "proposalId": "69496e6ae10ccb8e82d8a690-1771976470698-60",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:30.991Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:31.103Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:31.215Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:31.328Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:31.328Z"
+    },
+    {
+      "missionId": "mission_69492fdf37681e7f2603ec25-1771976470698-61",
+      "proposalId": "69492fdf37681e7f2603ec25-1771976470698-61",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:31.329Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:31.440Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:31.550Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:31.663Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:31.663Z"
+    },
+    {
+      "missionId": "mission_69496e6ae10ccb8e82d8a691-1771976470698-62",
+      "proposalId": "69496e6ae10ccb8e82d8a691-1771976470698-62",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:31.664Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:31.775Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:31.889Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:31.997Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:31.998Z"
+    },
+    {
+      "missionId": "mission_website_feedback_collect_2026-02-06-1771976470698-63",
+      "proposalId": "website_feedback_collect_2026-02-06-1771976470698-63",
+      "status": "completed",
+      "payer_email": null,
+      "created_at": "2026-02-24T23:41:31.998Z",
+      "tasks": [
+        {
+          "id": "t1",
+          "action": "verify_revenue_stability",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:32.109Z"
+        },
+        {
+          "id": "t2",
+          "action": "simulate_batch_impact",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:32.221Z"
+        },
+        {
+          "id": "t3",
+          "action": "notify_owner_optimization",
+          "status": "completed",
+          "completed_at": "2026-02-24T23:41:32.335Z"
+        }
+      ],
+      "completed_at": "2026-02-24T23:41:32.335Z"
+    }
+  ]
+}

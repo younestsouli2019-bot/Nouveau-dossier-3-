@@ -1,0 +1,7 @@
+{
+  "id": "idem-crypto-1767993714157",
+  "status": "failed",
+  "error": "Binance Error -1021: Timestamp for this request was 1000ms ahead of the server's time.",
+  "failed_at": "2026-01-09T21:22:20.183Z",
+  "updated_at": "2026-01-09T21:22:20.183Z"
+}

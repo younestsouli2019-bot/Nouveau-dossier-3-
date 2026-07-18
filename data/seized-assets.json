@@ -1,0 +1,53 @@
+{
+  "targets": [
+    {
+      "id": "target-1774804398591",
+      "entityName": "Corrupt Adoption NGO #1",
+      "entityType": "NGO",
+      "estimatedValue": 2500000,
+      "status": "monitoring",
+      "evidenceCount": 0
+    },
+    {
+      "id": "target-1774804489020",
+      "entityName": "Corrupt Adoption NGO #1",
+      "entityType": "NGO",
+      "estimatedValue": 2500000,
+      "status": "monitoring",
+      "evidenceCount": 0
+    },
+    {
+      "id": "target-1774840392717",
+      "entityName": "Corrupt Adoption NGO #1",
+      "entityType": "NGO",
+      "estimatedValue": 2500000,
+      "status": "monitoring",
+      "evidenceCount": 0
+    },
+    {
+      "id": "target-1774903156856",
+      "entityName": "Corrupt Adoption NGO #1",
+      "entityType": "NGO",
+      "estimatedValue": 2500000,
+      "status": "monitoring",
+      "evidenceCount": 0
+    },
+    {
+      "id": "target-1774904495498",
+      "entityName": "Corrupt Adoption NGO #1",
+      "entityType": "NGO",
+      "estimatedValue": 2500000,
+      "status": "monitoring",
+      "evidenceCount": 0
+    },
+    {
+      "id": "target-1774905771909",
+      "entityName": "Corrupt Adoption NGO #1",
+      "entityType": "NGO",
+      "estimatedValue": 2500000,
+      "status": "monitoring",
+      "evidenceCount": 0
+    }
+  ],
+  "seizures": []
+}

@@ -1,0 +1,36 @@
+{
+  "id": "MKT-001",
+  "title": "Market Research - Winning Products (TikTok/Temu)",
+  "channel": "market_research",
+  "priority": "high",
+  "status": "active",
+  "data": {
+    "title": "Market Research - Winning Products (TikTok/Temu)",
+    "type": "market_research",
+    "priority": "high",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"market_research_agent\",\"trend_analyst_agent\"]",
+    "mission_parameters": "{\"task\":\"source_products\",\"platforms\":[\"temu\",\"tiktok\"],\"criteria\":{\"min_engagement_rate\":0.05,\"niche\":\"profitable_dropshipping\",\"min_supply_margin\":2.5},\"output_format\":\"json\",\"target_keywords\":[\"viral gadgets\",\"home organizers\",\"car accessories\"],\"dropmagic_api_integration\":true,\"max_products_to_research\":50,\"dependent_on\":\"INF-001\"}",
+    "progress_data": "{\"step\":\"analyzing_social_signals\",\"products_found\":0}",
+    "estimated_duration_hours": "48",
+    "actual_duration_hours": "",
+    "deadline": "2026-03-01T23:15:44.298Z",
+    "completion_notes": "",
+    "revenue_generated": "0",
+    "id": "MKT-001",
+    "created_date": "2026-02-22T23:15:44.296Z",
+    "updated_date": "2026-02-22T23:15:44.296Z",
+    "created_by_id": "",
+    "created_by": "$ENV:SWARM_OWNER_EMAIL",
+    "is_sample": ""
+  },
+  "created_at": "2026-02-24T12:21:21.665Z",
+  "last_executed_at": "2026-03-30T21:00:19.985Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Autonomous operational optimization complete.",
+      "revenue_estimate": 10
+    }
+  ]
+}

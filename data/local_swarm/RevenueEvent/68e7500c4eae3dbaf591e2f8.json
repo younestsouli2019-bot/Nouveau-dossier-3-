@@ -1,0 +1,9 @@
+{
+  "id": "68e7500c4eae3dbaf591e2f8",
+  "amount": 0,
+  "currency": "660",
+  "status": "COMPLETED",
+  "source": "csv_migration",
+  "raw": "68e7500c4eae3dbaf591e2f8,59e6e4716a2804f8ffa539a40c9989ddc434bf6374eb5cd788ffb300de0e98e9,Corporate Package,,660,USD,earned,,,,,\"{\"\"agent_id\"\":\"\"agent-1\"\",\"\"legacy_file\"\":\"\"Analytics_export (1).csv\"\",\"\"ingested_at\"\":\"\"2026-01-02T21:26:48.934Z\"\"}\",69583777021bc68764984788,2026-01-02T21:24:07.264000,2026-01-02T21:24:07.264000,anonymous,anonymous,false",
+  "created_at": "2026-02-01T23:10:29.632Z"
+}

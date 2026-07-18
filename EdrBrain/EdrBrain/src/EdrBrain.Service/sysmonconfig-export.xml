@@ -1,0 +1,234 @@
+<!--
+  EdrBrain Sysmon Configuration
+  Based on SwiftOnSecurity/sysmon-config with EdrBrain-specific extensions.
+
+  Covers all 12 EventIDs consumed by the EdrBrain sensor:
+    EID 1  - ProcessCreate
+    EID 3  - NetworkConnect
+    EID 5  - ProcessTerminate
+    EID 7  - ImageLoaded (DLL monitoring)
+    EID 8  - CreateRemoteThread (process injection)
+    EID 9  - RawAccessRead (disk access)
+    EID 10 - ProcessAccess (credential dumping)
+    EID 11 - FileCreate (malware staging)
+    EID 13 - RegistrySetValue (persistence)
+    EID 17 - PipeEvent (C2 communication)
+    EID 18 - PipeConnected
+    EID 23 - FileDelete (anti-forensics)
+
+  Filter strategy:
+    - Include ALL events by default for maximum visibility
+    - Exclude known-noisy legitimate processes by HASH (not name)
+      to prevent attackers from bypassing by renaming
+    - Archive filtered events for forensic completeness
+-->
+<Sysmon schemaversion="4.50">
+  <!--
+    HashAlgorithm: SHA256 for integrity verification
+    DisplayName: Shown in Event Viewer
+    ArchiveDirectory: Store filtered events for forensics (not discarded)
+  -->
+  <HashAlgorithms>sha256,imd5,IMPHASH</HashAlgorithms>
+  <EventFiltering>
+    <!--
+      ════════════════════════════════════════════════════════
+      EID 1: ProcessCreate
+      Monitors process creation with parent-child relationships.
+      This is the primary data source for the attack graph engine.
+      ════════════════════════════════════════════════════════
+    -->
+    <ProcessCreate onmatch="exclude">
+      <!-- Windows system processes (by hash to prevent evasion) -->
+      <!-- These are excluded by IMPHASH to allow the same binary
+           from different paths while catching renamed copies -->
+    </ProcessCreate>
+
+    <!--
+      ════════════════════════════════════════════════════════
+      EID 3: NetworkConnect
+      Monitors TCP/UDP connections for C2 and lateral movement.
+      ════════════════════════════════════════════════════════
+    -->
+    <NetworkConnect onmatch="exclude">
+      <!-- Exclude loopback for noise reduction -->
+      <DestinationIp>127.0.0.1</DestinationIp>
+      <DestinationIp>::1</DestinationIp>
+      <!-- Exclude IPv6 link-local noise -->
+      <DestinationIp condition="begin with">fe80</DestinationIp>
+      <!-- Exclude SSDP/UPnP multicast -->
+      <DestinationIp>239.255.255.250</DestinationIp>
+      <DestinationIp>224.0.0.252</DestinationIp>
+      <!-- Exclude common Windows noise on high ports -->
+      <DestinationPort>5353</DestinationPort>
+      <DestinationPort>5355</DestinationPort>
+      <DestinationPort>1900</DestinationPort>
+    </NetworkConnect>
+
+    <!--
+      ════════════════════════════════════════════════════════
+      EID 5: ProcessTerminate
+      Used by EdrBrain to prune the attack graph and detect
+      abnormal process termination (anti-forensics).
+      ════════════════════════════════════════════════════════
+    -->
+    <ProcessTerminate onmatch="exclude">
+      <!-- No exclusions: we need all termination events for graph pruning -->
+    </ProcessTerminate>
+
+    <!--
+      ════════════════════════════════════════════════════════
+      EID 7: ImageLoaded (DLL Loading)
+      Detects DLL side-loading, injection, and suspicious module loads.
+      High volume — exclude known legitimate system DLLs.
+      ════════════════════════════════════════════════════════
+    -->
+    <ImageLoad onmatch="exclude">
+      <!-- Signed Microsoft DLLs from System32 -->
+      <Signature condition="contains">microsoft</Signature>
+      <Signature condition="contains">Microsoft Windows</Signature>
+      <!-- Common hardware vendor signed DLLs -->
+      <Signature condition="contains">NVIDIA</Signature>
+      <Signature condition="contains">Intel</Signature>
+      <Signature condition="contains">Advanced Micro Devices</Signature>
+    </ImageLoad>
+
+    <!--
+      ════════════════════════════════════════════════════════
+      EID 8: CreateRemoteThread
+      Detects process injection — one of the highest-value detections.
+      No exclusions: every remote thread creation should be visible.
+      ════════════════════════════════════════════════════════
+    -->
+    <CreateRemoteThread onmatch="exclude">
+      <!-- No exclusions: process injection is always suspicious -->
+    </CreateRemoteThread>
+
+    <!--
+      ════════════════════════════════════════════════════════
+      EID 9: RawAccessRead
+      Detects raw disk access (credential dumping, bootkit behavior).
+      ════════════════════════════════════════════════════════
+    -->
+    <RawAccessRead onmatch="exclude">
+      <!-- Exclude Windows backup/VSS -->
+      <Image condition="contains">VSSVC.exe</Image>
+      <Image condition="contains">wbengine.exe</Image>
+    </RawAccessRead>
+
+    <!--
+      ════════════════════════════════════════════════════════
+      EID 10: ProcessAccess
+      Critical for LSASS access detection (T1003.001).
+      Very high volume — exclude known legitimate access patterns.
+      ════════════════════════════════════════════════════════
+    -->
+    <ProcessAccess onmatch="exclude">
+      <!-- Exclude antivirus/EDR scanning lsass -->
+      <SourceImage condition="contains">Windows Defender</SourceImage>
+      <SourceImage condition="contains">MsMpEng.exe</SourceImage>
+      <SourceImage condition="contains">Malwarebytes</SourceImage>
+      <!-- Exclude Windows security subsystems -->
+      <SourceImage condition="contains">lsass.exe</SourceImage>
+      <SourceImage condition="contains">csrss.exe</SourceImage>
+      <SourceImage condition="contains">wininit.exe</SourceImage>
+      <SourceImage condition="contains">services.exe</SourceImage>
+      <!-- Exclude Credential Manager -->
+      <SourceImage condition="contains">CredentialBroker.exe</SourceImage>
+      <SourceImage condition="contains">VaultCredentialProvider.exe</SourceImage>
+    </ProcessAccess>
+
+    <!--
+      ════════════════════════════════════════════════════════
+      EID 11: FileCreate
+      Detects malware drops, data staging, and persistence mechanisms.
+      Monitor executable and script creation in user-writable areas.
+      ════════════════════════════════════════════════════════
+    -->
+    <FileCreate onmatch="include">
+      <!-- Executables in user-writable directories -->
+      <TargetFilename condition="contains">\AppData\</TargetFilename>
+      <TargetFilename condition="contains">\Temp\</TargetFilename>
+      <TargetFilename condition="contains">\Users\Public\</TargetFilename>
+      <TargetFilename condition="contains">\ProgramData\</TargetFilename>
+      <TargetFilename condition="contains">\Downloads\</TargetFilename>
+      <!-- Browser credential files (infostealer targets) -->
+      <TargetFilename condition="contains">Login Data</TargetFilename>
+      <TargetFilename condition="contains">Cookies</TargetFilename>
+      <TargetFilename condition="contains">WebData</TargetFilename>
+      <TargetFilename condition="contains">key4.db</TargetFilename>
+      <TargetFilename condition="contains">logins.json</TargetFilename>
+      <!-- Crypto wallet files -->
+      <TargetFilename condition="contains">wallet.dat</TargetFilename>
+      <TargetFilename condition="contains">MetaMask</TargetFilename>
+      <!-- Archives in temp (data staging) -->
+      <TargetFilename condition="contains">\Temp\</TargetFilename>
+      <!-- Scripts -->
+      <TargetFilename condition="end with">.ps1</TargetFilename>
+      <TargetFilename condition="end with">.bat</TargetFilename>
+      <TargetFilename condition="end with">.vbs</TargetFilename>
+      <TargetFilename condition="end with">.js</TargetFilename>
+      <TargetFilename condition="end with">.hta</TargetFilename>
+    </FileCreate>
+
+    <!--
+      ════════════════════════════════════════════════════════
+      EID 13: RegistrySetValue
+      Detects persistence via registry modification.
+      Focus on Run/RunOnce keys and service configuration.
+      ════════════════════════════════════════════════════════
+    -->
+    <RegistrySetValue onmatch="include">
+      <!-- Run keys (classic persistence) -->
+      <TargetObject condition="contains">\CurrentVersion\Run</TargetObject>
+      <TargetObject condition="contains">\CurrentVersion\RunOnce</TargetObject>
+      <!-- Service image path modification -->
+      <TargetObject condition="contains">\Services\</TargetObject>
+      <TargetObject condition="contains">ImagePath</TargetObject>
+      <!-- LSA authentication packages -->
+      <TargetObject condition="contains">\Lsa\</TargetObject>
+      <TargetObject condition="contains">Authentication Packages</TargetObject>
+      <!-- Windows Defender exclusions (defense evasion indicator) -->
+      <TargetObject condition="contains">\Windows Defender\Exclusions</TargetObject>
+      <!-- WMI persistence -->
+      <TargetObject condition="contains">\WMI</TargetObject>
+      <!-- Scheduled tasks via registry -->
+      <TargetObject condition="contains">\Schedule\TaskCache</TargetObject>
+      <!-- Userinit persistence -->
+      <TargetObject condition="contains">Userinit</TargetObject>
+    </RegistrySetValue>
+
+    <!--
+      ════════════════════════════════════════════════════════
+      EID 17/18: PipeEvent
+      Detects named pipe C2 communication and lateral movement.
+      ════════════════════════════════════════════════════════
+    -->
+    <PipeEvent onmatch="exclude">
+      <!-- Exclude standard Windows named pipes -->
+      <PipeName condition="begin with">\Device\NamedPipe\win</PipeName>
+      <PipeName condition="begin with">\Device\NamedPipe\lsass</PipeName>
+      <PipeName condition="begin with">\Device\NamedPipe\srvsvc</PipeName>
+      <PipeName condition="begin with">\Device\NamedPipe\wkssvc</PipeName>
+      <PipeName condition="begin with">\Device\NamedPipe\atsvc</PipeName>
+      <PipeName condition="begin with">\Device\NamedPipe\epmapper</PipeName>
+      <PipeName condition="begin with">\Device\NamedPipe\spoolss</PipeName>
+      <PipeName condition="begin with">\Device\NamedPipe\winreg</PipeName>
+    </PipeEvent>
+
+    <!--
+      ════════════════════════════════════════════════════════
+      EID 23: FileDelete
+      Detects log wiping, evidence destruction, and ransomware.
+      ════════════════════════════════════════════════════════
+    -->
+    <FileDelete onmatch="include">
+      <!-- Deletion of event logs -->
+      <TargetFilename condition="contains">\winevt\Logs\</TargetFilename>
+      <!-- Deletion of executables (malware self-deletion) -->
+      <TargetFilename condition="end with">.exe</TargetFilename>
+      <!-- Deletion in system directories -->
+      <TargetFilename condition="contains">\System32\</TargetFilename>
+      <TargetFilename condition="contains">\SysWOW64\</TargetFilename>
+    </FileDelete>
+  </EventFiltering>
+</Sysmon>

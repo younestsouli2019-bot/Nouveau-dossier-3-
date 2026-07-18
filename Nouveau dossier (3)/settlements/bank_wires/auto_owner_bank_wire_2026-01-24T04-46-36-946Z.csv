@@ -1,0 +1,2 @@
+earning_id,amount,currency,beneficiary,reference,bank_beneficiary_name,bank_name,bank_iban,bank_rib,bank_swift,bank_account,bank_country,bank_city,occurred_at,status,settlement_id
+{"ok":true,"dryRun":false,"count":0,"total":0,"currency":"USD","periodStart":null,"periodEnd":null,"beneficiary":null,"status":"settled_externally_pending","bankCsv":true,"bankDetailsPresent":false}

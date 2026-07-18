@@ -1,0 +1,27 @@
+{
+  "id": "68beddf551088dc2206bd7f0",
+  "title": "Scale-Up Strategy",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Scale-Up Strategy",
+    "type": "operations",
+    "priority": "critical",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"Product Owner\"]",
+    "mission_parameters": "{\"description\":\"Plan phased scale-up of proven revenue model across multiple platforms.\",\"data_sources\":\"Evaluation report\",\"deliverables\":\"Scale-up strategy doc\",\"dependencies\":\"M019\",\"automation\":\"No\",\"tools\":\"Docs\"}",
+    "progress_data": "{\"source_status\":\"Not Started\"}",
+    "estimated_duration_hours": "28",
+    "actual_duration_hours": "",
+    "deadline": "2026-01-06T00:00:00",
+    "completion_notes": "Plan phased scale-up of proven revenue model across multiple platforms.",
+    "revenue_generated": "",
+    "id": "68beddf551088dc2206bd7f0",
+    "created_date": "2025-09-08T13:45:25.914000",
+    "updated_date": "2025-09-12T16:31:52.665000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:12.004Z"
+}

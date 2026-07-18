@@ -1,0 +1,175 @@
+{
+  "idempotency": {
+    "4058b3c6-25c8-4d33-9e8b-5b38634165ba": {
+      "key": "4058b3c6-25c8-4d33-9e8b-5b38634165ba",
+      "status": "ok",
+      "result": {
+        "status": "processing",
+        "gateway_response": {
+          "status": "INSTRUCTIONS_READY",
+          "provider": "bitget",
+          "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bitget_instruction_1773070241322.json",
+          "network": "BEP20",
+          "prepared_at": "2026-03-09T15:30:38.420Z",
+          "creds_present": true
+        },
+        "payout_batch_id": "BATCH_LIVE_1767528254631_CRYPTO",
+        "processed_at": "2026-03-09T15:31:24.600Z",
+        "route_attempted": "crypto"
+      },
+      "created_at": "2026-03-09T15:31:24.600Z"
+    },
+    "af7b27a9-6fbd-4d2e-8708-a4479e3a44d1": {
+      "key": "af7b27a9-6fbd-4d2e-8708-a4479e3a44d1",
+      "status": "ok",
+      "result": {
+        "status": "processing",
+        "gateway_response": {
+          "status": "INSTRUCTIONS_READY",
+          "provider": "bitget",
+          "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bitget_instruction_1773084520060.json",
+          "network": "BEP20",
+          "prepared_at": "2026-03-09T19:28:36.945Z",
+          "creds_present": true
+        },
+        "payout_batch_id": "BATCH_LIVE_1767528254631_CRYPTO",
+        "processed_at": "2026-03-09T19:29:02.932Z",
+        "route_attempted": "crypto"
+      },
+      "created_at": "2026-03-09T19:29:02.932Z"
+    },
+    "821f773b-5c24-44c6-8ddb-27c15dd9693d": {
+      "key": "821f773b-5c24-44c6-8ddb-27c15dd9693d",
+      "status": "ok",
+      "result": {
+        "status": "processing",
+        "gateway_response": {
+          "status": "INSTRUCTIONS_READY",
+          "provider": "bitget",
+          "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bitget_instruction_1773085018436.json",
+          "network": "BEP20",
+          "prepared_at": "2026-03-09T19:36:55.300Z",
+          "creds_present": true
+        },
+        "payout_batch_id": "PAYO_1768332356274_CRYPTO",
+        "processed_at": "2026-03-09T19:37:01.288Z",
+        "route_attempted": "crypto"
+      },
+      "created_at": "2026-03-09T19:37:01.288Z"
+    },
+    "70c6f5ea-f4e4-440d-bd06-7bceee1187b1": {
+      "key": "70c6f5ea-f4e4-440d-bd06-7bceee1187b1",
+      "status": "ok",
+      "result": {
+        "status": "processing",
+        "gateway_response": {
+          "status": "INSTRUCTIONS_READY",
+          "provider": "bitget",
+          "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bitget_instruction_1773085046811.json",
+          "network": "BEP20",
+          "prepared_at": "2026-03-09T19:37:23.771Z",
+          "creds_present": true
+        },
+        "payout_batch_id": "PAYO_1768332305884_CRYPTO",
+        "processed_at": "2026-03-09T19:37:28.529Z",
+        "route_attempted": "crypto"
+      },
+      "created_at": "2026-03-09T19:37:28.529Z"
+    },
+    "9c75ba78-1dd5-4c59-848d-0d2ce70fbddf": {
+      "key": "9c75ba78-1dd5-4c59-848d-0d2ce70fbddf",
+      "status": "ok",
+      "result": {
+        "status": "processing",
+        "gateway_response": {
+          "status": "INSTRUCTIONS_READY",
+          "provider": "bitget",
+          "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bitget_instruction_1773085768740.json",
+          "network": "BEP20",
+          "prepared_at": "2026-03-09T19:49:26.022Z",
+          "creds_present": true
+        },
+        "payout_batch_id": "EARNED_USD_AGG_20260309_P1",
+        "processed_at": "2026-03-09T19:49:30.798Z",
+        "route_attempted": "crypto"
+      },
+      "created_at": "2026-03-09T19:49:30.798Z"
+    },
+    "9ccd97b9-ec9a-4490-b362-63eb35f576db": {
+      "key": "9ccd97b9-ec9a-4490-b362-63eb35f576db",
+      "status": "ok",
+      "result": {
+        "status": "processing",
+        "gateway_response": {
+          "status": "INSTRUCTIONS_READY",
+          "provider": "bitget",
+          "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bitget_instruction_1773085772923.json",
+          "network": "BEP20",
+          "prepared_at": "2026-03-09T19:49:30.804Z",
+          "creds_present": true
+        },
+        "payout_batch_id": "EARNED_USD_AGG_20260309_P2",
+        "processed_at": "2026-03-09T19:49:34.365Z",
+        "route_attempted": "crypto"
+      },
+      "created_at": "2026-03-09T19:49:34.365Z"
+    },
+    "ffa58029-5f41-4b44-bd92-6974c036621d": {
+      "key": "ffa58029-5f41-4b44-bd92-6974c036621d",
+      "status": "ok",
+      "result": {
+        "status": "processing",
+        "gateway_response": {
+          "status": "INSTRUCTIONS_READY",
+          "provider": "bitget",
+          "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bitget_instruction_1773085776491.json",
+          "network": "BEP20",
+          "prepared_at": "2026-03-09T19:49:34.370Z",
+          "creds_present": true
+        },
+        "payout_batch_id": "EARNED_USD_AGG_20260309_P3",
+        "processed_at": "2026-03-09T19:49:37.927Z",
+        "route_attempted": "crypto"
+      },
+      "created_at": "2026-03-09T19:49:37.927Z"
+    },
+    "17c4e7a1-2db9-48ff-9848-4176019b778f": {
+      "key": "17c4e7a1-2db9-48ff-9848-4176019b778f",
+      "status": "ok",
+      "result": {
+        "status": "processing",
+        "gateway_response": {
+          "status": "INSTRUCTIONS_READY",
+          "provider": "bitget",
+          "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bitget_instruction_1773085780300.json",
+          "network": "BEP20",
+          "prepared_at": "2026-03-09T19:49:37.933Z",
+          "creds_present": true
+        },
+        "payout_batch_id": "EARNED_USD_AGG_20260309_P4",
+        "processed_at": "2026-03-09T19:49:41.713Z",
+        "route_attempted": "crypto"
+      },
+      "created_at": "2026-03-09T19:49:41.713Z"
+    },
+    "66f96e18-53ad-4ac5-a94f-084a985105b6": {
+      "key": "66f96e18-53ad-4ac5-a94f-084a985105b6",
+      "status": "ok",
+      "result": {
+        "status": "processing",
+        "gateway_response": {
+          "status": "INSTRUCTIONS_READY",
+          "provider": "bitget",
+          "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bitget_instruction_1773149360130.json",
+          "network": "BEP20",
+          "prepared_at": "2026-03-10T13:29:17.416Z",
+          "creds_present": true
+        },
+        "payout_batch_id": "OWNER_MULTI_1773109231617_CRYPTO",
+        "processed_at": "2026-03-10T13:29:25.557Z",
+        "route_attempted": "crypto"
+      },
+      "created_at": "2026-03-10T13:29:25.557Z"
+    }
+  }
+}

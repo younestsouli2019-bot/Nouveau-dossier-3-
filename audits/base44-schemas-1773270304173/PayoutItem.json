@@ -1,0 +1,87 @@
+{
+  "name": "PayoutItem",
+  "description": "Individual items within payout batches",
+  "fields": [
+    {
+      "name": "item_id",
+      "type": "text",
+      "required": true,
+      "unique": true
+    },
+    {
+      "name": "batch_id",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "amount",
+      "type": "number",
+      "required": true
+    },
+    {
+      "name": "currency",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "recipient",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "recipient_type",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "created_at",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "processed_at",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "revenue_event_id",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "earning_id",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "transaction_id",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "paypal_status",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "paypal_transaction_id",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "paypal_item_id",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "error_message",
+      "type": "text",
+      "required": false
+    }
+  ]
+}

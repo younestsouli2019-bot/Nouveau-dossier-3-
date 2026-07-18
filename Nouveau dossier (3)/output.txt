@@ -1,0 +1,237 @@
+Using zip: /content/Ensuring Deployment Success Before Free Tier Limit (3) (1).zip
+Merged nested project_deployment.zip
+Project root: /content/swarm_project
+$ node -v
+v20.19.0
+$ npm -v
+10.8.2
+$ npm install
+
+up to date, audited 35 packages in 665ms
+
+7 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+$ npm test
+
+> test
+> node --test
+
+TAP version 13
+# Subtest: mandatePayloadHash is stable across key order
+ok 1 - mandatePayloadHash is stable across key order
+  ---
+  duration_ms: 2.454075
+  ...
+# Subtest: signMandatePayload and verifyMandateEnvelope succeed with Ed25519 keypair
+ok 2 - signMandatePayload and verifyMandateEnvelope succeed with Ed25519 keypair
+  ---
+  duration_ms: 3.000461
+  ...
+# Subtest: verifyMandateEnvelope fails on signature mismatch
+ok 3 - verifyMandateEnvelope fails on signature mismatch
+  ---
+  duration_ms: 0.994268
+  ...
+# Subtest: resolveRuntimeConfig enables create payout batches from CLI flag
+ok 4 - resolveRuntimeConfig enables create payout batches from CLI flag
+  ---
+  duration_ms: 3.640985
+  ...
+# Subtest: resolveRuntimeConfig enables auto approve batches when auto approve payouts enabled
+ok 5 - resolveRuntimeConfig enables auto approve batches when auto approve payouts enabled
+  ---
+  duration_ms: 1.749675
+  ...
+# Subtest: resolveRuntimeConfig enables auto submit PayPal from env
+ok 6 - resolveRuntimeConfig enables auto submit PayPal from env
+  ---
+  duration_ms: 0.538865
+  ...
+# Subtest: resolveRuntimeConfig enables auto export Payoneer from env
+ok 7 - resolveRuntimeConfig enables auto export Payoneer from env
+  ---
+  duration_ms: 0.477946
+  ...
+# Subtest: resolveRuntimeConfig reads Payoneer out dir from env
+ok 8 - resolveRuntimeConfig reads Payoneer out dir from env
+  ---
+  duration_ms: 0.67166
+  ...
+# Subtest: createBase44EarningIdempotent dedupes by earning_id
+ok 9 - createBase44EarningIdempotent dedupes by earning_id
+  ---
+  duration_ms: 5.801398
+  ...
+# Subtest: createBase44ExternalSettlementIdempotent creates when enabled
+ok 10 - createBase44ExternalSettlementIdempotent creates when enabled
+  ---
+  duration_ms: 3.334099
+  ...
+# Subtest: writeBase44MandateIdempotent dedupes by mandate_id
+ok 11 - writeBase44MandateIdempotent dedupes by mandate_id
+  ---
+  duration_ms: 4.982512
+  ...
+# Subtest: writeBase44MandateIdempotent creates when missing
+ok 12 - writeBase44MandateIdempotent creates when missing
+  ---
+  duration_ms: 0.712795
+  ...
+# Subtest: createBase44PayoutRequestIdempotent dedupes by external_id
+ok 13 - createBase44PayoutRequestIdempotent dedupes by external_id
+  ---
+  duration_ms: 4.044488
+  ...
+# Subtest: createBase44RevenueEventIdempotent returns existing id when found
+ok 14 - createBase44RevenueEventIdempotent returns existing id when found
+  ---
+  duration_ms: 3.966
+  ...
+# Subtest: createBase44RevenueEventIdempotent creates when no existing record
+ok 15 - createBase44RevenueEventIdempotent creates when no existing record
+  ---
+  duration_ms: 0.52615
+  ...
+# Subtest: createBase44RevenueEventIdempotent re-checks on create error and dedupes
+ok 16 - createBase44RevenueEventIdempotent re-checks on create error and dedupes
+  ---
+  duration_ms: 0.921969
+  ...
+# Subtest: acquireWorkLease creates lease when missing
+ok 17 - acquireWorkLease creates lease when missing
+  ---
+  duration_ms: 3.304125
+  ...
+# Subtest: acquireWorkLease denies when lease is active and held by another
+ok 18 - acquireWorkLease denies when lease is active and held by another
+  ---
+  duration_ms: 0.585076
+  ...
+# Subtest: acquireWorkLease updates when expired
+ok 19 - acquireWorkLease updates when expired
+  ---
+  duration_ms: 0.678027
+  ...
+# Subtest: parseCsvLine handles quoted commas and escaped quotes
+ok 20 - parseCsvLine handles quoted commas and escaped quotes
+  ---
+  duration_ms: 3.672976
+  ...
+# Subtest: Mission_export CSV header parses as expected
+ok 21 - Mission_export CSV header parses as expected
+  ---
+  duration_ms: 0.436632
+  ...
+# Subtest: dedupe store persists and reloads within ttl
+ok 22 - dedupe store persists and reloads within ttl
+  ---
+  duration_ms: 16.608346
+  ...
+# Subtest: dedupe store enforces max entries and keeps newest
+ok 23 - dedupe store enforces max entries and keeps newest
+  ---
+  duration_ms: 6.631053
+  ...
+# Subtest: verifyPayPalWebhookSignature uses webhookEvent without parsing rawBody
+ok 24 - verifyPayPalWebhookSignature uses webhookEvent without parsing rawBody
+  ---
+  duration_ms: 5.949383
+  ...
+# Subtest: verifyPayPalWebhookSignature throws on invalid JSON when webhookEvent missing
+ok 25 - verifyPayPalWebhookSignature throws on invalid JSON when webhookEvent missing
+  ---
+  duration_ms: 1.384582
+  ...
+# Subtest: maps PAYMENT.CAPTURE.COMPLETED to a revenue event
+ok 26 - maps PAYMENT.CAPTURE.COMPLETED to a revenue event
+  ---
+  duration_ms: 2.757064
+  ...
+# Subtest: returns null for non-capture events
+ok 27 - returns null for non-capture events
+  ---
+  duration_ms: 0.276762
+  ...
+# Subtest: extractPayPalWebhookHeaders reads lower-case header keys
+ok 28 - extractPayPalWebhookHeaders reads lower-case header keys
+  ---
+  duration_ms: 3.425918
+  ...
+# Subtest: extractPayPalWebhookHeaders reads mixed-case header keys
+ok 29 - extractPayPalWebhookHeaders reads mixed-case header keys
+  ---
+  duration_ms: 0.398155
+  ...
+# Subtest: parseCommaList trims, dedupes, and drops empties
+ok 30 - parseCommaList trims, dedupes, and drops empties
+  ---
+  duration_ms: 3.508761
+  ...
+# Subtest: resolveMissionFilters returns null sets when no filters provided
+ok 31 - resolveMissionFilters returns null sets when no filters provided
+  ---
+  duration_ms: 0.472193
+  ...
+# Subtest: missionMatchesFilters matches by id
+ok 32 - missionMatchesFilters matches by id
+  ---
+  duration_ms: 0.39883
+  ...
+# Subtest: missionMatchesFilters matches by title (case-insensitive)
+ok 33 - missionMatchesFilters matches by title (case-insensitive)
+  ---
+  duration_ms: 0.347949
+  ...
+# Subtest: resolveRecipientAddress resolves payoneer recipient from payoneer_id
+ok 34 - resolveRecipientAddress resolves payoneer recipient from payoneer_id
+  ---
+  duration_ms: 2.750799
+  ...
+# Subtest: resolveRecipientAddress returns null when payoneer recipient missing
+ok 35 - resolveRecipientAddress returns null when payoneer recipient missing
+  ---
+  duration_ms: 0.394201
+  ...
+# Subtest: mask keeps last 4 by default
+ok 36 - mask keeps last 4 by default
+  ---
+  duration_ms: 2.831101
+  ...
+# Subtest: sanitizeDestination never outputs raw account number
+ok 37 - sanitizeDestination never outputs raw account number
+  ---
+  duration_ms: 0.517276
+  ...
+# Subtest: destination JSON can be parsed when quotes are backslash-escaped
+ok 38 - destination JSON can be parsed when quotes are backslash-escaped
+  ---
+  duration_ms: 0.408782
+  ...
+# Subtest: PPP2 route falls back to bank wire for Morocco without approval
+ok 39 - PPP2 route falls back to bank wire for Morocco without approval
+  ---
+  duration_ms: 0.572661
+  ...
+# Subtest: PPP2 route stays enabled when explicitly approved and enabled
+ok 40 - PPP2 route stays enabled when explicitly approved and enabled
+  ---
+  duration_ms: 0.38917
+  ...
+1..40
+# tests 40
+# suites 0
+# pass 40
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3051.041827
+Running readiness check (safe; does not move money)..
+$ npm run live:readiness
+
+> live:readiness
+> node ./src/monitor-health.mjs --readiness
+
+{"ok":true,"readiness":{"ok":false,"live":true,"base44Configured":true,"base44Error":null,"paypalConfigured":true,"webhookConfigured":false,"paypalMode":"live","paypalApiBaseUrl":"(default)","flags":{"BASE44_ENABLE_PAYPAL_WEBHOOK_WRITE":false,"BASE44_ENABLE_REVENUE_FROM_PAYPAL":true,"BASE44_ENABLE_PAYPAL_PAYOUT_STATUS_WRITE":false,"BASE44_ENABLE_PAYOUT_LEDGER_WRITE":false,"BASE44_ENABLE_PAYPAL_METRICS":false},"warnings":[],"nextSteps":["Set PAYPAL_WEBHOOK_ID"],"missing":["PAYPAL_WEBHOOK_ID"]}}

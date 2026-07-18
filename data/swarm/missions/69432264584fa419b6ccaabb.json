@@ -1,0 +1,27 @@
+{
+  "id": "69432264584fa419b6ccaabb",
+  "title": "Autonomous Incident Response: Data-Layer Compromise",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Autonomous Incident Response: Data-Layer Compromise",
+    "type": "operations",
+    "priority": "critical",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"6943211159f4d1cd0a96b0e9\"]",
+    "mission_parameters": "{\"orchestrator\":{\"execution_strategy\":{\"human_gates\":[\"credential_rotation\",\"prod_deployment\"],\"parallelism\":\"investigation_parallel\",\"phase\":\"containment_first\"},\"mission\":\"Autonomous containment and remediation of data-layer compromise\",\"output_requirements\":[\"executive_summary: \\\"one_paragraph\\\"\",\"technical_report: \\\"detailed_with_evidence\\\"\",\"compliance_documentation: \\\"ready_for_audit\\\"\",\"preventive_measures: \\\"implemented_and_tested\\\"\"],\"decision_framework\":[{\"if\":\"cloud_metadata_accessed\",\"confidence_threshold\":0.6,\"then\":\"emergency_credential_rotation\"},{\"if\":\"insider_threat_confidence > 0.7\",\"then\":\"restrict_access_and_notify_legal\"},{\"if\":\"automation_abuse_detected\",\"then\":[\"deploy_rate_limits\",\"enable_bot_protection\"]}],\"version\":\"2.1\",\"constraints\":[\"legal_compliance: [\\\"GDPR\\\", \\\"CCPA\\\", \\\"HIPAA\\\"]\",\"operational_safety: [\\\"no_data_loss\\\", \\\"rollback_capable\\\"]\",\"resource_limits: [\\\"max_cost: $500\\\", \\\"timeout: 4h\\\"]\"],\"agents\":[{\"forensics\":{\"output\":[\"chain_of_custody.log\",\"timeline.json\"],\"priority\":1}},{\"payload_analysis\":{\"priority\":1,\"rulesets\":[\"OWASP\",\"MITRE\",\"custom_yara\"]}},{\"iam_audit\":{\"checks\":[\"impossible_travel\",\"token_abuse\",\"privilege_escalation\"],\"priority\":2}}]}}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "69432264584fa419b6ccaabb",
+    "created_date": "2025-12-17T21:36:36.589000",
+    "updated_date": "2025-12-19T11:24:23.194000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:11.996Z"
+}

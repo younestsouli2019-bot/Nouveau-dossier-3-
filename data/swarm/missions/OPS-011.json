@@ -1,0 +1,19 @@
+{
+  "id": "OPS-011",
+  "title": "Guardrails - Compliance, unit economics, and execution kill-switches for new streams",
+  "channel": "operations",
+  "priority": "critical",
+  "status": "active",
+  "data": {
+    "mission_parameters": "{\"task\":\"guardrails\",\"objectives\":[\"unit_economics_enforcement\",\"legal_and_tax_checks\",\"tos_compliance\",\"manual_approval_for_non_owner_destinations\"],\"deliverables\":[\"data/swarm/guardrails_policy.json\"]}"
+  },
+  "created_at": "2026-03-20T01:30:15.334Z",
+  "last_executed_at": "2026-03-30T21:00:20.131Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Autonomous operational optimization complete.",
+      "revenue_estimate": 10
+    }
+  ]
+}

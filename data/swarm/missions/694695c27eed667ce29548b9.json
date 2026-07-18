@@ -1,0 +1,27 @@
+{
+  "id": "694695c27eed667ce29548b9",
+  "title": "Deploy Payment Gateways (Attijariwafa Bank, PayPal, Base44)",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Deploy Payment Gateways (Attijariwafa Bank, PayPal, Base44)",
+    "type": "operations",
+    "priority": "medium",
+    "status": "deployed",
+    "assigned_agent_ids": "[]",
+    "mission_parameters": "{\"Attijariwafa Bank\":{\"Status\":\"LIVE\",\"Transaction Rules\":\"MAD 50-100,000 • Daily limit: MAD 500,000\",\"Routing\":\"Domestic transactions ≥ MAD 5,000\",\"Account\":\"YOUNES TSOULI • RIB: 230780211161400002318873\"},\"Advanced Features\":{\"Intelligent Routing System\":{\"Real-time gateway health monitoring\":true,\"Priority-based routing\":\"automatic failover\",\"Automatic switching on failure\":true,\"Weighted load balancing\":\"60%/30%/10%\"},\"Monitoring & Alerting\":{\"Real-time performance metrics\":true,\"Performance targets\":\"≥99.9% success rate, ≤5s processing time\",\"Multi-channel alerts\":[\"email\",\"SMS\",\"Slack\"],\"Automated alert rules\":\"gateway failures\"},\"Automated Safeguards\":{\"Automatic rollback\":true,\"Transaction validation\":[\"fraud screening\",\"duplicate detection\"],\"Retry mechanisms\":\"exponential backoff\",\"Fallback cascade\":true},\"Security & Compliance\":{\"Audit Logging\":\"comprehensive\",\"API Key Rotation\":\"quarterly\",\"Encryption\":\"AES-256-GCM\",\"Compliance\":[\"PCI DSS\",\"GDPR\"],\"Rate Limiting\":\"100 requests/minute\",\"MFA\":\"enabled\",\"Key Rotation\":\"90-day\"}},\"PayPal\":{\"Account\":\"younestsouli2019@gmail.com • Business Verified\",\"Transaction Rules\":\"$1-50,000 • Daily limit: $200,000\",\"Status\":\"LIVE\",\"Routing\":\"International transactions < $5,000\"},\"Base44\":{\"Transaction Rules\":\"MAD/USD/EUR 10-50,000 • Daily limit: 100,000\",\"Status\":\"CONFIGURING\",\"Routing\":\"Fallback on failure\",\"API Key\":\"2020d875179f45eaa44cf1aa4529b962\"}}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "694695c27eed667ce29548b9",
+    "created_date": "2025-12-20T12:25:38.850000",
+    "updated_date": "2025-12-20T12:25:38.850000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:11.995Z"
+}

@@ -1,0 +1,19 @@
+{
+  "id": "INF-010",
+  "title": "Continuity - Encrypted cloud mirror + restore drill",
+  "channel": "infrastructure",
+  "priority": "critical",
+  "status": "active",
+  "data": {
+    "mission_parameters": "{\"task\":\"continuity\",\"objectives\":[\"encrypted_cloud_mirror\",\"restore_drill\",\"key_separation\"],\"dependent_on\":[\"INF-001\"],\"guardrails\":{\"no_secrets_in_repo\":true,\"require_restore_proof\":true},\"deliverables\":[\"data/swarm/mission-plan.json includes continuity mission ready state\",\"restore proof stored under data/swarm/continuity\"]}"
+  },
+  "created_at": "2026-03-20T01:30:15.303Z",
+  "last_executed_at": "2026-03-30T21:00:19.965Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Autonomous operational optimization complete.",
+      "revenue_estimate": 10
+    }
+  ]
+}

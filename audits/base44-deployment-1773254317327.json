@@ -1,0 +1,3247 @@
+[
+  {
+    "timestamp": "2026-03-11T18:32:21.678Z",
+    "type": "info",
+    "message": "Base URL candidates:\n  - https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98\n  - https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98\n  - https://api.base44.app/v1\n  - https://api.base44.app/apps/6888ac155ebf84dd9855ea98\n  - https://api.base44.app/app/6888ac155ebf84dd9855ea98\n  - https://api.base44.app\n  - https://base44.app/v1/apps/6888ac155ebf84dd9855ea98\n  - https://base44.app/v1/app/6888ac155ebf84dd9855ea98\n  - https://base44.app/apps/6888ac155ebf84dd9855ea98\n  - https://base44.app/app/6888ac155ebf84dd9855ea98\n  - https://base44.app\n  - https://base44.app/v1"
+  },
+  {
+    "timestamp": "2026-03-11T18:32:21.680Z",
+    "type": "info",
+    "message": "Processing: RevenueEvent"
+  },
+  {
+    "timestamp": "2026-03-11T18:32:21.681Z",
+    "type": "push",
+    "message": "GET /entities/RevenueEvent (attempt 1/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:32:22.310Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:22.580Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:26.012Z",
+    "type": "warning",
+    "message": "Transient Base44 error (status=520) at https://api.base44.app/v1/entities/RevenueEvent. Retrying in 732ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:26.746Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 1. Waiting 668ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:27.424Z",
+    "type": "push",
+    "message": "GET /entities/RevenueEvent (attempt 2/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:32:29.806Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:30.194Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:30.465Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:31.003Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:31.649Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:32.123Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:33.073Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:33.352Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:33.631Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:33.911Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:34.210Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:34.540Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:34.541Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 2. Waiting 1014ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:35.560Z",
+    "type": "push",
+    "message": "GET /entities/RevenueEvent (attempt 3/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:32:35.835Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:36.103Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:36.374Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:37.985Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:38.304Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:38.803Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:39.318Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:39.593Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:39.888Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:40.263Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:40.569Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:40.905Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:40.906Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 3. Waiting 2117ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:43.028Z",
+    "type": "push",
+    "message": "GET /entities/RevenueEvent (attempt 4/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:32:44.234Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:44.529Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:44.793Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:45.073Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:45.332Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:45.607Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:46.116Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:46.449Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:46.755Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:47.031Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:47.328Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:47.597Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:47.597Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 4. Waiting 4216ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:51.816Z",
+    "type": "push",
+    "message": "GET /entities/RevenueEvent (attempt 5/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:32:52.695Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:53.000Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:53.321Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:53.628Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:53.897Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:54.229Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:54.711Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:55.060Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:55.415Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:55.706Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:55.987Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:56.327Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:32:56.328Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 5. Waiting 8173ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:04.508Z",
+    "type": "error",
+    "message": "Request failed: unknown_error"
+  },
+  {
+    "timestamp": "2026-03-11T18:33:04.509Z",
+    "type": "error",
+    "message": "Failed: Base44 request failed"
+  },
+  {
+    "timestamp": "2026-03-11T18:33:04.509Z",
+    "type": "info",
+    "message": "Processing: Earning"
+  },
+  {
+    "timestamp": "2026-03-11T18:33:04.509Z",
+    "type": "push",
+    "message": "GET /entities/Earning (attempt 1/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:33:05.048Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:05.327Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:06.419Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:07.146Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:07.452Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:07.753Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:08.277Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:08.631Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:08.926Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:09.214Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:09.523Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:09.860Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:09.860Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 1. Waiting 684ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:10.560Z",
+    "type": "push",
+    "message": "GET /entities/Earning (attempt 2/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:33:10.990Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:11.272Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:11.638Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:12.237Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:12.542Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:12.858Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:13.159Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:13.445Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:13.960Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:14.256Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:14.555Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:14.868Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:14.868Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 2. Waiting 1092ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:15.973Z",
+    "type": "push",
+    "message": "GET /entities/Earning (attempt 3/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:33:16.327Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:16.683Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:17.102Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:17.586Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:17.973Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:18.359Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:18.702Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:19.060Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:19.420Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:19.768Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:20.110Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:20.481Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:20.482Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 3. Waiting 2045ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:22.539Z",
+    "type": "push",
+    "message": "GET /entities/Earning (attempt 4/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:33:23.883Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:24.702Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:25.055Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:25.568Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:26.091Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:26.611Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:28.102Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:28.465Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:28.861Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:29.240Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:29.623Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:29.972Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:29.973Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 4. Waiting 4185ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:34.165Z",
+    "type": "push",
+    "message": "GET /entities/Earning (attempt 5/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:33:35.332Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:36.198Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:36.558Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:36.932Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:37.321Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:37.687Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:38.936Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:39.309Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:39.686Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:40.099Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:40.474Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:41.224Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:41.224Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 5. Waiting 8203ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:49.439Z",
+    "type": "error",
+    "message": "Request failed: unknown_error"
+  },
+  {
+    "timestamp": "2026-03-11T18:33:49.439Z",
+    "type": "error",
+    "message": "Failed: Base44 request failed"
+  },
+  {
+    "timestamp": "2026-03-11T18:33:49.439Z",
+    "type": "info",
+    "message": "Processing: PayoutBatch"
+  },
+  {
+    "timestamp": "2026-03-11T18:33:49.440Z",
+    "type": "push",
+    "message": "GET /entities/PayoutBatch (attempt 1/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:33:50.863Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:51.217Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:51.992Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:52.394Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:52.760Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:53.476Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:54.676Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:55.051Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:55.413Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:55.782Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:56.197Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:56.622Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:56.623Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 1. Waiting 636ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:57.272Z",
+    "type": "push",
+    "message": "GET /entities/PayoutBatch (attempt 2/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:33:57.653Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:58.030Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:58.703Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:59.093Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:59.496Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:33:59.879Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:00.568Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:00.962Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:01.321Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:01.822Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:02.206Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:02.583Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:02.583Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 2. Waiting 1157ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:03.745Z",
+    "type": "push",
+    "message": "GET /entities/PayoutBatch (attempt 3/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:34:04.173Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:04.561Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:05.283Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:05.633Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:05.983Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:06.333Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:06.732Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:07.103Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:07.651Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:08.014Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:08.421Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:08.826Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:08.826Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 3. Waiting 2025ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:10.865Z",
+    "type": "push",
+    "message": "GET /entities/PayoutBatch (attempt 4/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:34:11.553Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:12.387Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:12.799Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:13.170Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:13.901Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:14.253Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:15.252Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:15.527Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:15.808Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:16.198Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:16.502Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:16.890Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:16.890Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 4. Waiting 4110ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:21.009Z",
+    "type": "push",
+    "message": "GET /entities/PayoutBatch (attempt 5/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:34:21.681Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:21.994Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:22.496Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:23.019Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:23.332Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:23.618Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:24.093Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:24.362Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:24.624Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:24.891Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:25.196Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:25.471Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:25.471Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 5. Waiting 8136ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:33.618Z",
+    "type": "error",
+    "message": "Request failed: unknown_error"
+  },
+  {
+    "timestamp": "2026-03-11T18:34:33.619Z",
+    "type": "error",
+    "message": "Failed: Base44 request failed"
+  },
+  {
+    "timestamp": "2026-03-11T18:34:33.620Z",
+    "type": "info",
+    "message": "Processing: PayoutItem"
+  },
+  {
+    "timestamp": "2026-03-11T18:34:33.620Z",
+    "type": "push",
+    "message": "GET /entities/PayoutItem (attempt 1/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:34:34.099Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:34.382Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:34.715Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:35.005Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:35.302Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:35.635Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:36.119Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:36.399Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:36.695Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:36.981Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:37.251Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:37.546Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:37.546Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 1. Waiting 627ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:38.185Z",
+    "type": "push",
+    "message": "GET /entities/PayoutItem (attempt 2/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:34:38.461Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:38.743Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:39.081Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:39.368Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:39.637Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:39.896Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:40.179Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:40.479Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:40.766Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:41.068Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:41.332Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:41.616Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:41.616Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 2. Waiting 1031ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:42.658Z",
+    "type": "push",
+    "message": "GET /entities/PayoutItem (attempt 3/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:34:42.942Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:43.214Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:43.489Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:43.928Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:44.200Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:44.498Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:44.782Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:45.046Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:45.323Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:45.624Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:45.944Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:46.211Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:46.212Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 3. Waiting 2002ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:48.224Z",
+    "type": "push",
+    "message": "GET /entities/PayoutItem (attempt 4/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:34:48.488Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:48.755Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:49.032Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:50.252Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:50.517Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:50.789Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:51.347Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:51.695Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:51.985Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:52.270Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:52.568Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:52.900Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:52.900Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 4. Waiting 4058ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:56.973Z",
+    "type": "push",
+    "message": "GET /entities/PayoutItem (attempt 5/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:34:58.111Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:58.386Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:58.793Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:59.208Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:59.626Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:34:59.922Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:02.131Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:02.417Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:02.718Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:03.070Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:03.381Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:03.666Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:03.666Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 5. Waiting 8134ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:11.814Z",
+    "type": "error",
+    "message": "Request failed: unknown_error"
+  },
+  {
+    "timestamp": "2026-03-11T18:35:11.815Z",
+    "type": "error",
+    "message": "Failed: Base44 request failed"
+  },
+  {
+    "timestamp": "2026-03-11T18:35:11.816Z",
+    "type": "info",
+    "message": "Processing: TransactionLog"
+  },
+  {
+    "timestamp": "2026-03-11T18:35:11.816Z",
+    "type": "push",
+    "message": "GET /entities/TransactionLog (attempt 1/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:35:12.327Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:12.631Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:13.864Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:14.149Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:14.422Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:14.930Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:15.372Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:15.701Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:15.986Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:16.341Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:16.669Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:17.012Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:17.012Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 1. Waiting 628ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:17.646Z",
+    "type": "push",
+    "message": "GET /entities/TransactionLog (attempt 2/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:35:17.999Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:18.336Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:18.875Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:19.777Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:20.127Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:20.472Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:21.180Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:21.547Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:21.953Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:22.319Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:22.687Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:23.441Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:23.441Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 2. Waiting 1045ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:24.496Z",
+    "type": "push",
+    "message": "GET /entities/TransactionLog (attempt 3/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:35:25.852Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:26.211Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:27.017Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:27.828Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:28.196Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:28.722Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:29.474Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:29.835Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:30.222Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:30.600Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:31.069Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:31.459Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:31.460Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 3. Waiting 2195ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:33.661Z",
+    "type": "push",
+    "message": "GET /entities/TransactionLog (attempt 4/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:35:34.452Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:34.871Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:35.272Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:35.681Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:36.573Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:36.982Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:38.571Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:39.525Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:40.426Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:41.821Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:42.291Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:42.675Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:42.675Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 4. Waiting 4154ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:46.832Z",
+    "type": "push",
+    "message": "GET /entities/TransactionLog (attempt 5/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:35:48.027Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:48.397Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:48.768Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:49.186Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:49.546Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:49.902Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:51.071Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:52.303Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:53.100Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:53.487Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:53.862Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:54.282Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:35:54.283Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 5. Waiting 8058ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:02.355Z",
+    "type": "error",
+    "message": "Request failed: unknown_error"
+  },
+  {
+    "timestamp": "2026-03-11T18:36:02.355Z",
+    "type": "error",
+    "message": "Failed: Base44 request failed"
+  },
+  {
+    "timestamp": "2026-03-11T18:36:02.356Z",
+    "type": "info",
+    "message": "Processing: AgentFeedback"
+  },
+  {
+    "timestamp": "2026-03-11T18:36:02.356Z",
+    "type": "push",
+    "message": "GET /entities/AgentFeedback (attempt 1/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:36:03.115Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:03.475Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:03.907Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:04.293Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:05.352Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:05.708Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:14.766Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:15.137Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:15.476Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:15.823Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:16.127Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:16.439Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:16.439Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 1. Waiting 635ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:17.084Z",
+    "type": "push",
+    "message": "GET /entities/AgentFeedback (attempt 2/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:36:17.562Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:17.873Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:18.562Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:18.832Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:19.107Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:19.451Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:19.752Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:20.060Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:20.336Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:20.623Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:20.918Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:21.200Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:21.200Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 2. Waiting 1076ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:22.279Z",
+    "type": "push",
+    "message": "GET /entities/AgentFeedback (attempt 3/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:36:22.553Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:22.900Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:23.194Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:23.471Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:23.766Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:24.038Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:24.324Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:24.606Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:24.939Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:25.233Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:25.523Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:25.857Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:25.858Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 3. Waiting 2154ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:28.021Z",
+    "type": "push",
+    "message": "GET /entities/AgentFeedback (attempt 4/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:36:28.293Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:28.602Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:28.880Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:29.164Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:29.466Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:29.739Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:30.052Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:30.412Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:30.812Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:31.102Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:31.481Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:31.796Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:31.796Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 4. Waiting 4072ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:35.872Z",
+    "type": "push",
+    "message": "GET /entities/AgentFeedback (attempt 5/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:36:36.326Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:36.649Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:36.915Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:37.391Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:37.655Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:38.009Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:38.482Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:38.761Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:39.046Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:39.326Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:39.648Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:39.917Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:39.917Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 5. Waiting 8073ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:48.006Z",
+    "type": "error",
+    "message": "Request failed: unknown_error"
+  },
+  {
+    "timestamp": "2026-03-11T18:36:48.006Z",
+    "type": "error",
+    "message": "Failed: Base44 request failed"
+  },
+  {
+    "timestamp": "2026-03-11T18:36:48.008Z",
+    "type": "info",
+    "message": "Validating: Earnings have owner beneficiaries..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:48.009Z",
+    "type": "push",
+    "message": "GET /entities/Earning/records? (attempt 1/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:36:48.817Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:49.089Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:49.405Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:49.688Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:49.991Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:50.270Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:50.771Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:51.041Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:51.330Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:51.743Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:52.046Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:52.321Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:52.321Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 1. Waiting 716ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:53.053Z",
+    "type": "push",
+    "message": "GET /entities/Earning/records? (attempt 2/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:36:53.331Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:53.606Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:53.871Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:54.247Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:54.519Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:54.780Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:55.075Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:55.374Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:55.671Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:55.945Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:56.222Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:56.490Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:56.490Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 2. Waiting 1064ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:57.555Z",
+    "type": "push",
+    "message": "GET /entities/Earning/records? (attempt 3/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:36:57.843Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:58.127Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:58.392Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:58.658Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:58.948Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:59.219Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:59.491Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:36:59.773Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:00.057Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:00.377Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:00.666Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:00.958Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:00.959Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 3. Waiting 2206ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:03.174Z",
+    "type": "push",
+    "message": "GET /entities/Earning/records? (attempt 4/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:37:03.472Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:03.748Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:04.042Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:04.337Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:04.657Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:04.955Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:05.225Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:05.532Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:05.819Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:06.132Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:06.460Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:06.717Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:06.718Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 4. Waiting 4207ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:10.936Z",
+    "type": "push",
+    "message": "GET /entities/Earning/records? (attempt 5/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:37:11.951Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:12.224Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:12.486Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:12.766Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:13.033Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:13.295Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:13.772Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:14.057Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:14.581Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:14.905Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:15.181Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:15.456Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:15.456Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 5. Waiting 8073ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:23.530Z",
+    "type": "error",
+    "message": "Request failed: unknown_error"
+  },
+  {
+    "timestamp": "2026-03-11T18:37:23.531Z",
+    "type": "error",
+    "message": "Validation error: Base44 request failed"
+  },
+  {
+    "timestamp": "2026-03-11T18:37:23.531Z",
+    "type": "info",
+    "message": "Validating: PayoutBatches have owner recipients..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:23.532Z",
+    "type": "push",
+    "message": "GET /entities/PayoutBatch/records? (attempt 1/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:37:24.001Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:24.262Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:24.541Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:24.815Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:25.132Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:25.434Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:25.921Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:26.216Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:26.541Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:26.832Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:27.150Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:27.483Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:27.483Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 1. Waiting 547ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:28.036Z",
+    "type": "push",
+    "message": "GET /entities/PayoutBatch/records? (attempt 2/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:37:28.329Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:28.627Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:28.927Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:29.278Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:29.586Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:29.912Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:30.299Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:30.586Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:30.935Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:31.424Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:31.709Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:32.004Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:32.004Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 2. Waiting 1246ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:33.264Z",
+    "type": "push",
+    "message": "GET /entities/PayoutBatch/records? (attempt 3/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:37:33.668Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:33.963Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:34.316Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:34.589Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:35.000Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:35.278Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:35.589Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:35.861Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:36.203Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:36.599Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:36.925Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:37.226Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:37.226Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 3. Waiting 2179ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:39.418Z",
+    "type": "push",
+    "message": "GET /entities/PayoutBatch/records? (attempt 4/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:37:39.864Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:40.478Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:40.742Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:42.582Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:42.860Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:43.121Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:43.612Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:43.967Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:44.241Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:44.738Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:45.044Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:45.317Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:45.317Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 4. Waiting 4062ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:49.387Z",
+    "type": "push",
+    "message": "GET /entities/PayoutBatch/records? (attempt 5/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:37:50.218Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:50.516Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:50.829Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:51.420Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:51.703Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:51.988Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:52.471Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:52.762Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:53.257Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:53.560Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:53.951Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:54.239Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:37:54.239Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 5. Waiting 8095ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:02.342Z",
+    "type": "error",
+    "message": "Request failed: unknown_error"
+  },
+  {
+    "timestamp": "2026-03-11T18:38:02.343Z",
+    "type": "error",
+    "message": "Validation error: Base44 request failed"
+  },
+  {
+    "timestamp": "2026-03-11T18:38:02.343Z",
+    "type": "info",
+    "message": "Validating: PayoutItems have owner recipients..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:02.343Z",
+    "type": "push",
+    "message": "GET /entities/PayoutItem/records? (attempt 1/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:38:03.215Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:03.483Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:03.743Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:04.016Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:04.322Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:04.628Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:05.085Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:05.356Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:05.622Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:05.894Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:06.188Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:06.452Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:06.452Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 1. Waiting 670ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:07.136Z",
+    "type": "push",
+    "message": "GET /entities/PayoutItem/records? (attempt 2/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:38:07.401Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:07.709Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:07.985Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:08.268Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:08.555Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:08.862Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:09.197Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:09.474Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:09.744Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:10.081Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:10.350Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:10.611Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:10.612Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 2. Waiting 1084ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:11.710Z",
+    "type": "push",
+    "message": "GET /entities/PayoutItem/records? (attempt 3/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:38:11.989Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:12.301Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:12.602Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:12.879Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:13.231Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:13.514Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:13.790Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:14.092Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:14.405Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:14.693Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:15.000Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:15.276Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:15.276Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 3. Waiting 2006ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:17.293Z",
+    "type": "push",
+    "message": "GET /entities/PayoutItem/records? (attempt 4/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:38:17.591Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:17.877Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:18.182Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:18.512Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:18.774Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:19.090Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:19.380Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:19.673Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:19.969Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:20.232Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:20.499Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:20.774Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:20.774Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 4. Waiting 4170ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:24.955Z",
+    "type": "push",
+    "message": "GET /entities/PayoutItem/records? (attempt 5/5)"
+  },
+  {
+    "timestamp": "2026-03-11T18:38:25.382Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:25.654Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:26.261Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:26.531Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:26.811Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:27.116Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:27.582Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:27.875Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:28.170Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:28.501Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:28.814Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:29.088Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:29.088Z",
+    "type": "warning",
+    "message": "All base URLs failed for attempt 5. Waiting 8228ms..."
+  },
+  {
+    "timestamp": "2026-03-11T18:38:37.319Z",
+    "type": "error",
+    "message": "Request failed: unknown_error"
+  },
+  {
+    "timestamp": "2026-03-11T18:38:37.320Z",
+    "type": "error",
+    "message": "Validation error: Base44 request failed"
+  }
+]

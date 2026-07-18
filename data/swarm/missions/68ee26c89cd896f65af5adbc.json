@@ -1,0 +1,27 @@
+{
+  "id": "68ee26c89cd896f65af5adbc",
+  "title": "Real Revenue Tracking Implementation",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Real Revenue Tracking Implementation",
+    "type": "operations",
+    "priority": "critical",
+    "status": "deployed",
+    "assigned_agent_ids": "[]",
+    "mission_parameters": "",
+    "progress_data": "",
+    "estimated_duration_hours": "3",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "68ee26c89cd896f65af5adbc",
+    "created_date": "2025-10-14T10:32:40.230000",
+    "updated_date": "2025-10-14T10:34:12.412000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:12.000Z"
+}

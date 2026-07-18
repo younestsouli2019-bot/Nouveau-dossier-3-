@@ -1,0 +1,16 @@
+{
+  "id": "aim_1768369219622_90",
+  "title": "Below is a **rewritten, hardened protocol specification template**, explicitly **aligned with the uploaded changelog** and the realities of your current swarm stack: **LIVE-only finance gates, multi-route failover, forensic auditability, strict env guards, and zero simulation ambiguity**.",
+  "channel": "payoneer",
+  "priority": "medium",
+  "data": {
+    "amounts": [],
+    "recipient": "younestsouli2019@gmail.com"
+  },
+  "created_at": "2026-01-14T05:40:19.623Z",
+  "posp_proof": {
+    "score": 1482,
+    "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\exports\\posp-proofs\\posp_proof_local:17748_1768369219922.json",
+    "hash": "1f930f2f846fbc396e969b05ffeb443744edd641364501542e149f759b77a826"
+  }
+}

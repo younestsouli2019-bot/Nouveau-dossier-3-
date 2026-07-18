@@ -1,0 +1,27 @@
+{
+  "id": "68beddf551088dc2206bd7f1",
+  "title": "Automation Refinement",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Automation Refinement",
+    "type": "operations",
+    "priority": "medium",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"AI Engineer\"]",
+    "mission_parameters": "{\"description\":\"Improve agentic orchestration and monitoring based on pilot learnings.\",\"data_sources\":\"Pilot feedback,framework logs\",\"deliverables\":\"Refined automation agents\",\"dependencies\":\"M018;M019\",\"automation\":\"Yes\",\"tools\":\"LangChain/AutoGen\"}",
+    "progress_data": "{\"source_status\":\"Not Started\"}",
+    "estimated_duration_hours": "20",
+    "actual_duration_hours": "",
+    "deadline": "2026-01-10T00:00:00",
+    "completion_notes": "Improve agentic orchestration and monitoring based on pilot learnings.",
+    "revenue_generated": "",
+    "id": "68beddf551088dc2206bd7f1",
+    "created_date": "2025-09-08T13:45:25.919000",
+    "updated_date": "2025-09-12T16:31:53.812000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:12.004Z"
+}

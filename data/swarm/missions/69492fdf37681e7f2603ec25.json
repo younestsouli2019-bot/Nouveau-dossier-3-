@@ -1,0 +1,36 @@
+{
+  "id": "69492fdf37681e7f2603ec25",
+  "title": "Deliver Starter Pack Services for SME Client",
+  "channel": "content_creation",
+  "priority": "high",
+  "status": "active",
+  "data": {
+    "title": "Deliver Starter Pack Services for SME Client",
+    "type": "content_creation",
+    "priority": "high",
+    "status": "pending",
+    "assigned_agent_ids": "[\"69492fd637681e7f2603ec21\"]",
+    "mission_parameters": "{\"service_tier\":\"Starter Pack\",\"deliverables\":[\"Brand DNA Profile\",\"12 Ready-to-Post Social Media Creatives\",\"1 Campaign Idea Brief\"],\"target_sme_info\":\"To be provided upon client engagement\"}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "69492fdf37681e7f2603ec25",
+    "created_date": "2025-12-22T11:47:43.601000",
+    "updated_date": "2025-12-22T11:47:43.601000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-02-24T12:21:21.639Z",
+  "last_executed_at": "2026-03-30T20:50:58.860Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Generated and licensed new niche content batch.",
+      "revenue_estimate": 25
+    }
+  ]
+}

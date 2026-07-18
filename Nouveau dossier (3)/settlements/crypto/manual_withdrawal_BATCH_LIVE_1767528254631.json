@@ -1,0 +1,9 @@
+{
+  "action": "withdraw",
+  "amount": 3.7,
+  "coin": "USDT",
+  "address": "uqdirljp7nmv-5mief8enb0b0sygo0l62vu7ogx49uxtqldq",
+  "network": "TON",
+  "reason": "ALL_API_PROVIDERS_FAILED",
+  "timestamp": "2026-01-12T13:11:07.423Z"
+}

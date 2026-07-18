@@ -1,0 +1,36 @@
+{
+  "id": "694687c7df112f68e3ee01d7",
+  "title": "Post-Deployment Verification",
+  "channel": "operations",
+  "priority": "critical",
+  "status": "active",
+  "data": {
+    "title": "Post-Deployment Verification",
+    "type": "operations",
+    "priority": "critical",
+    "status": "pending",
+    "assigned_agent_ids": "[\"6946874cc168140ba86ca7b3\",\"6946874cc168140ba86ca7ad\"]",
+    "mission_parameters": "{\"verification_checks\":[\"SELECT status, COUNT(*) FROM payouts GROUP BY status;\",\"Check PayPal batches appear instantly\",\"Verify webhooks fire\",\"Confirm money moves\"],\"reporting\":\"Generate deployment report\",\"dependent_on\":\"INF-001\"}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "2025-12-21T10:00:00Z",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "694687c7df112f68e3ee01d7",
+    "created_date": "2025-12-20T11:25:59.065000",
+    "updated_date": "2025-12-20T11:25:59.065000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-02-24T12:21:21.642Z",
+  "last_executed_at": "2026-03-30T20:50:58.746Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Autonomous operational optimization complete.",
+      "revenue_estimate": 10
+    }
+  ]
+}

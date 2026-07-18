@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "routes": [
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/site-data/(.*)",
+      "dest": "/site-data/$1"
+    },
+    {
+      "src": "/videos/(.*)",
+      "dest": "/videos/$1"
+    }
+  ],
+  "name": "realworldcerts-site",
+  "alias": "www.realworldcerts.com"
+}

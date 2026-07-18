@@ -1,0 +1,9 @@
+{
+  "id": "68e7500c4eae3dbaf591e2fa",
+  "amount": 0,
+  "currency": "430",
+  "status": "COMPLETED",
+  "source": "csv_migration",
+  "raw": "68e7500c4eae3dbaf591e2fa,1a9431e2b934479a335803cc158025712fdc121661f734d9a40750211c70a12f,Affiliate Network,,430,USD,earned,,,,,\"{\"\"agent_id\"\":\"\"agent-2\"\",\"\"legacy_file\"\":\"\"Analytics_export (1).csv\"\",\"\"ingested_at\"\":\"\"2026-01-02T21:26:44.217Z\"\"}\",695837728c48c526dbb49c65,2026-01-02T21:24:02.751000,2026-01-02T21:24:02.751000,anonymous,anonymous,false",
+  "created_at": "2026-02-01T23:10:29.635Z"
+}

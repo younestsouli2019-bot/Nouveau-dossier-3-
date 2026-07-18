@@ -1,0 +1,9 @@
+{
+  "id": "68e7500c4eae3dbaf591e2e4",
+  "amount": 0,
+  "currency": "560",
+  "status": "COMPLETED",
+  "source": "csv_migration",
+  "raw": "68e7500c4eae3dbaf591e2e4,74c26a427cde4e36c80ace3f749c412519e6e4dd9ac2e9dde81b7b35d3b872ad,LinkedIn Posts,,560,USD,earned,,,,,\"{\"\"agent_id\"\":\"\"agent-2\"\",\"\"legacy_file\"\":\"\"Analytics_export (1).csv\"\",\"\"ingested_at\"\":\"\"2026-01-02T21:26:51.363Z\"\"}\",6958377dce1ca5a5e0671d2e,2026-01-02T21:24:13.736000,2026-01-02T21:24:13.736000,anonymous,anonymous,false",
+  "created_at": "2026-02-01T23:10:29.631Z"
+}

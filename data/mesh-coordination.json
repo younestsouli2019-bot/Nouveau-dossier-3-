@@ -1,0 +1,93 @@
+{
+  "communities": [
+    {
+      "id": "mesh-1774714320847",
+      "name": "Deep Rural Sanctuary #1",
+      "location": "Idaho",
+      "defenseLevel": 10,
+      "meshActive": true,
+      "armedDefense": true
+    },
+    {
+      "id": "mesh-1774714523012",
+      "name": "Deep Rural Sanctuary #1",
+      "location": "Idaho",
+      "defenseLevel": 10,
+      "meshActive": true,
+      "armedDefense": true
+    },
+    {
+      "id": "mesh-1774717119154",
+      "name": "Deep Rural Sanctuary #1",
+      "location": "Idaho",
+      "defenseLevel": 10,
+      "meshActive": true,
+      "armedDefense": true
+    },
+    {
+      "id": "mesh-1774746125447",
+      "name": "Deep Rural Sanctuary #1",
+      "location": "Idaho",
+      "defenseLevel": 10,
+      "meshActive": true,
+      "armedDefense": true
+    },
+    {
+      "id": "mesh-1774774075487",
+      "name": "Deep Rural Sanctuary #1",
+      "location": "Idaho",
+      "defenseLevel": 10,
+      "meshActive": true,
+      "armedDefense": true
+    },
+    {
+      "id": "mesh-1774804398594",
+      "name": "Deep Rural Sanctuary #1",
+      "location": "Idaho",
+      "defenseLevel": 10,
+      "meshActive": true,
+      "armedDefense": true
+    },
+    {
+      "id": "mesh-1774804489021",
+      "name": "Deep Rural Sanctuary #1",
+      "location": "Idaho",
+      "defenseLevel": 10,
+      "meshActive": true,
+      "armedDefense": true
+    },
+    {
+      "id": "mesh-1774840392720",
+      "name": "Deep Rural Sanctuary #1",
+      "location": "Idaho",
+      "defenseLevel": 10,
+      "meshActive": true,
+      "armedDefense": true
+    },
+    {
+      "id": "mesh-1774903156859",
+      "name": "Deep Rural Sanctuary #1",
+      "location": "Idaho",
+      "defenseLevel": 10,
+      "meshActive": true,
+      "armedDefense": true
+    },
+    {
+      "id": "mesh-1774904495501",
+      "name": "Deep Rural Sanctuary #1",
+      "location": "Idaho",
+      "defenseLevel": 10,
+      "meshActive": true,
+      "armedDefense": true
+    },
+    {
+      "id": "mesh-1774905771912",
+      "name": "Deep Rural Sanctuary #1",
+      "location": "Idaho",
+      "defenseLevel": 10,
+      "meshActive": true,
+      "armedDefense": true
+    }
+  ],
+  "alerts": []
+}

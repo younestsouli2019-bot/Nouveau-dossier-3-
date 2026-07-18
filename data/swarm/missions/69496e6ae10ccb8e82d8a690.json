@@ -1,0 +1,36 @@
+{
+  "id": "69496e6ae10ccb8e82d8a690",
+  "title": "De-Anglicize & Localize Survival Content",
+  "channel": "content_creation",
+  "priority": "critical",
+  "status": "active",
+  "data": {
+    "title": "De-Anglicize & Localize Survival Content",
+    "type": "content_creation",
+    "priority": "critical",
+    "status": "pending",
+    "assigned_agent_ids": "[]",
+    "mission_parameters": "{\"language_pods\":[\"Arabic (MSA + Darija)\",\"French (Africa + Europe)\",\"Spanish (LatAm focus)\",\"Portuguese (Brazil)\",\"Hindi / Urdu\",\"Bahasa Indonesia\",\"Swahili\"],\"example_adaptation\":\"pine resin fire starter -> date palm fiber + local tree sap (North Africa)\",\"localization_rules\":[\"replace flora/fauna\",\"adapt shelters to climate\",\"respect cultural tool availability\",\"avoid military/prepper paranoia framing\"]}",
+    "progress_data": "",
+    "estimated_duration_hours": "600",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "0",
+    "id": "69496e6ae10ccb8e82d8a690",
+    "created_date": "2025-12-22T16:14:34.652000",
+    "updated_date": "2025-12-22T16:14:34.652000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-02-24T12:21:21.505Z",
+  "last_executed_at": "2026-03-30T20:50:58.932Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Generated and licensed new niche content batch.",
+      "revenue_estimate": 25
+    }
+  ]
+}

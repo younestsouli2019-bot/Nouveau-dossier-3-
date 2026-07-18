@@ -1,0 +1,66 @@
+{
+  "timestamp": "2026-02-04T12:49:33Z",
+  "event": "outreach_execute",
+  "owner_hands_free": true,
+  "reference": "INV-2026-001",
+  "deadline_hours": 24,
+  "followup_schedule_hours": [2, 6, 24],
+  "rails": {
+    "paypal_links": [
+      {
+        "amount_usd": 150,
+        "url": "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=younestsouli2019@gmail.com&item_name=Services%20rendered%20%E2%80%93%20Q1%202026%20consulting&amount=150&currency_code=USD&no_note=1&bn=PP-BuyNowBF:btn_buynowCC_LG.gif:NonHostedGuest&custom=INV-2026-001"
+      },
+      {
+        "amount_usd": 500,
+        "url": "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=younestsouli2019@gmail.com&item_name=Services%20rendered%20%E2%80%93%20Q1%202026%20consulting&amount=500&currency_code=USD&no_note=1&bn=PP-BuyNowBF:btn_buynowCC_LG.gif:NonHostedGuest&custom=INV-2026-001"
+      },
+      {
+        "amount_usd": 1500,
+        "url": "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=younestsouli2019@gmail.com&item_name=Services%20rendered%20%E2%80%93%20Q1%202026%20consulting&amount=1500&currency_code=USD&no_note=1&bn=PP-BuyNowBF:btn_buynowCC_LG.gif:NonHostedGuest&custom=INV-2026-001"
+      },
+      {
+        "amount_usd": 2500,
+        "url": "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=younestsouli2019@gmail.com&item_name=Services%20rendered%20%E2%80%93%20Q1%202026%20consulting&amount=2500&currency_code=USD&no_note=1&bn=PP-BuyNowBF:btn_buynowCC_LG.gif:NonHostedGuest&custom=INV-2026-001"
+      },
+      {
+        "amount_usd": 5000,
+        "url": "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=younestsouli2019@gmail.com&item_name=Services%20rendered%20%E2%80%93%20Q1%202026%20consulting&amount=5000&currency_code=USD&no_note=1&bn=PP-BuyNowBF:btn_buynowCC_LG.gif:NonHostedGuest&custom=INV-2026-001"
+      },
+      {
+        "amount_usd": 10000,
+        "url": "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=younestsouli2019@gmail.com&item_name=Services%20rendered%20%E2%80%93%20Q1%202026%20consulting&amount=10000&currency_code=USD&no_note=1&bn=PP-BuyNowBF:btn_buynowCC_LG.gif:NonHostedGuest&custom=INV-2026-001"
+      }
+    ],
+    "crypto_usdt": {
+      "erc20_address": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+      "ton_address": "UQDIrlJp7NmV-5mief8eNB0b0sYGO0L62Vu7oGX49UXtqlDQ",
+      "instruction": "Send USDT and reply with tx hash; include reference INV-2026-001"
+    },
+    "bank_wire": {
+      "eur": {
+        "iban": "LU774080000041265646",
+        "bic": "BCIRLULL",
+        "beneficiary": "Younes Tsouli",
+        "reference": "INV-2026-001"
+      },
+      "usd": {
+        "account_number": "70581950001361949",
+        "routing_number": "031100209",
+        "type": "CHECKING",
+        "beneficiary": "Younes Tsouli",
+        "reference": "INV-2026-001"
+      }
+    }
+  },
+  "selection_rules": [
+    "If amount <= 2000 USD: use PayPal first; if delay >2h, switch to Crypto or Bank",
+    "If amount > 2000 USD: use Bank or Crypto first; PayPal optional",
+    "Always include reference INV-2026-001 in the payment",
+    "After payment: collect capture ID/tx hash/wire receipt and mark settled"
+  ],
+  "outreach_message_template": {
+    "subject": "Immediate Payment – INV-2026-001",
+    "body": "Please settle today via one option: PayPal (links provided), Crypto USDT (addresses above), or Bank Wire (details above). Deadline: 24h. Reply with payment proof (capture ID/tx hash/wire receipt). If PayPal stalls, switch to Crypto or Bank immediately."
+  }
+}

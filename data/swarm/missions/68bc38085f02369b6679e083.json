@@ -1,0 +1,27 @@
+{
+  "id": "68bc38085f02369b6679e083",
+  "title": "Execute One-Time PayPal Transfer",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Execute One-Time PayPal Transfer",
+    "type": "operations",
+    "priority": "critical",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"Finance-Agent-Delta\",\"Payments-Agent-Sigma\",\"PaymentGateway-Agent-PayPal\",\"IntelReport-Generator-Nu\"]",
+    "mission_parameters": "{\"Currency\":\"USD\",\"Gateway\":\"PaymentGateway-Agent-PayPal\",\"Amount\":1500,\"Recipient\":\"younestsouli2019@gmail.com\",\"Execution\":\"Payments-Agent-Sigma\",\"Authorization\":\"Finance-Agent-Delta\"}",
+    "progress_data": "{\"phases\":[{\"responsible_agent\":\"Finance-Agent-Delta\",\"status\":\"completed\",\"name\":\"Authorization\",\"validation_check\":\"Transfer authorized\"},{\"validation_check\":\"PayPal API call initiated\",\"responsible_agent\":\"Payments-Agent-Sigma\",\"name\":\"Execution\",\"status\":\"in_progress\"}]}",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "Finance-Agent-Delta authorizes → Payments-Agent-Sigma executes → PaymentGateway-Agent-PayPal processes",
+    "revenue_generated": "-1500",
+    "id": "68bc38085f02369b6679e083",
+    "created_date": "2025-09-06T13:32:56.944000",
+    "updated_date": "2025-11-30T17:48:41.222000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:12.005Z"
+}

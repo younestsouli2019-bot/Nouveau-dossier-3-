@@ -1,0 +1,36 @@
+{
+  "id": "691c3b8e1f0b9ad1d61895bd",
+  "title": "Implement Mission Dependency Mapping System",
+  "channel": "operations",
+  "priority": "medium",
+  "status": "active",
+  "data": {
+    "title": "Implement Mission Dependency Mapping System",
+    "type": "operations",
+    "priority": "medium",
+    "status": "pending",
+    "assigned_agent_ids": "[\"68bbdf9be957eba57d8f4b55\",\"68be8c467a80b08df1e57c85\"]",
+    "mission_parameters": "",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "2025-11-21T23:59:59Z",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "691c3b8e1f0b9ad1d61895bd",
+    "created_date": "2025-11-18T09:25:34.898000",
+    "updated_date": "2025-11-18T09:25:34.898000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-02-24T12:21:21.649Z",
+  "last_executed_at": "2026-03-30T20:50:58.528Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Autonomous operational optimization complete.",
+      "revenue_estimate": 10
+    }
+  ]
+}

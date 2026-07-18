@@ -1,0 +1,27 @@
+{
+  "id": "68c7b8010586f3901a1542cf",
+  "title": "Dynamic Swarm Knowledge & Best Practices Repository",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Dynamic Swarm Knowledge & Best Practices Repository",
+    "type": "operations",
+    "priority": "high",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"68c7b7fa0586f3901a1542c5\"]",
+    "mission_parameters": "{\"knowledge_base_scope\":\"swarm_wide_operational_data\",\"update_frequency\":\"continuous\",\"accessibility\":\"swarm_internal_queryable_interface\"}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "68c7b8010586f3901a1542cf",
+    "created_date": "2025-09-15T06:53:53.481000",
+    "updated_date": "2025-09-15T12:04:45.511000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:12.002Z"
+}

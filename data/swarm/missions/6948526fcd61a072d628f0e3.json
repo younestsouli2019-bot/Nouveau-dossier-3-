@@ -1,0 +1,27 @@
+{
+  "id": "6948526fcd61a072d628f0e3",
+  "title": "Perform Full System Backup",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Perform Full System Backup",
+    "type": "operations",
+    "priority": "high",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"6948526ccd61a072d628f0e2\"]",
+    "mission_parameters": "{\"instructions\":\"Perform a full system backup and ensure it is downloadable from a secure repository.\"}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "6948526fcd61a072d628f0e3",
+    "created_date": "2025-12-21T20:02:55.397000",
+    "updated_date": "2025-12-21T20:02:55.397000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:11.995Z"
+}

@@ -1,0 +1,27 @@
+{
+  "id": "69502f0c8be3bcad937f687f",
+  "title": "Install/enable systemd daemon",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Install/enable systemd daemon",
+    "type": "operations",
+    "priority": "high",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"69502f088be3bcad937f6873\"]",
+    "mission_parameters": "",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "69502f0c8be3bcad937f687f",
+    "created_date": "2025-12-27T19:10:04.846000",
+    "updated_date": "2025-12-28T12:43:05.186000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:11.993Z"
+}

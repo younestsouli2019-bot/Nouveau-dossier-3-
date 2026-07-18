@@ -1,0 +1,27 @@
+{
+  "goals": [
+    {
+      "id": "debt_clearance",
+      "name": "Shop Front & Renovation Debt",
+      "target": 25414,
+      "priority": 0,
+      "breakdown": "docs/OWNER_DEBT_LEDGER.md"
+    },
+    {
+      "id": "pc_upgrade",
+      "name": "High-Performance Workstation",
+      "target": 2500,
+      "priority": 1
+    },
+    {
+      "id": "flat_ownership",
+      "name": "Apartment Downpayment",
+      "target": 20000,
+      "priority": 2
+    }
+  ],
+  "salary": {
+    "monthly_target": 3000,
+    "description": "Essential Cashflow for Peace of Mind"
+  }
+}

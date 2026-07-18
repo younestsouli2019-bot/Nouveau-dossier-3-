@@ -1,0 +1,27 @@
+{
+  "id": "69234780da367735d648dee6",
+  "title": "Revise PayPal Payouts API Request Implementation",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Revise PayPal Payouts API Request Implementation",
+    "type": "operations",
+    "priority": "critical",
+    "status": "deployed",
+    "assigned_agent_ids": "[]",
+    "mission_parameters": "{\"code_modifications\":[\"Modify all API requests as per provided example\"],\"requirements\":[\"Include fresh access token\",\"Proper User-Agent header (minimum 6 characters)\",\"Correct content-type headers\",\"Complete error handling with debug ID logging\"]}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "Modify all PayPal API requests to include fresh access tokens, proper User-Agent headers, correct content-type, and comprehensive error handling with debug ID logging.",
+    "revenue_generated": "",
+    "id": "69234780da367735d648dee6",
+    "created_date": "2025-11-23T17:42:24.433000",
+    "updated_date": "2025-11-23T17:42:59.851000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:11.997Z"
+}

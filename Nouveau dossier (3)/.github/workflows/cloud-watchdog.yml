@@ -1,0 +1,124 @@
+name: Cloud Watchdog
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install
+        run: npm install
+      - name: Readiness Check (Base44 + PayPal)
+        env:
+          SWARM_LIVE: "true"
+          PAYPAL_MODE: "live"
+          BASE44_ENABLE_REVENUE_FROM_PAYPAL: "true"
+          BASE44_ENABLE_PAYOUT_LEDGER_WRITE: "true"
+          AUTONOMOUS_SYNC_PAYPAL_LEDGER: "true"
+          AUTONOMOUS_PAYOUT_LIVE: "true"
+          AUTONOMOUS_MISSION_HEALTH: "true"
+          BASE44_ENABLE_MISSION_HEALTH_WRITE: "true"
+          BASE44_ENABLE_HEALTH_WRITE: "true"
+          BANK_WIRE_ENABLE: "true"
+          BANK_WIRE_PROVIDER: "LIVE"
+          BANK_INTEGRATION_ENABLED: "true"
+          PAYONEER_ENABLE_STANDARD: "true"
+          CRYPTO_WITHDRAW_ENABLE: "true"
+          GOOGLEPAY_ENABLE: "true"
+          PAYPAL_CLIENT_ID: ${{ secrets.PAYPAL_CLIENT_ID }}
+          PAYPAL_CLIENT_SECRET: ${{ secrets.PAYPAL_CLIENT_SECRET }}
+          PAYPAL_WEBHOOK_ID: ${{ secrets.PAYPAL_WEBHOOK_ID }}
+          BASE44_APP_ID: ${{ secrets.BASE44_APP_ID }}
+          BASE44_SERVICE_TOKEN: ${{ secrets.BASE44_SERVICE_TOKEN }}
+          OWNER_PAYPAL_EMAIL: ${{ secrets.OWNER_PAYPAL_EMAIL }}
+          OWNER_PAYONEER_EMAIL: ${{ secrets.OWNER_PAYONEER_EMAIL }}
+          OWNER_BENEFICIARY_NAME: ${{ secrets.OWNER_BENEFICIARY_NAME }}
+          OWNER_IBAN: ${{ secrets.OWNER_IBAN }}
+          OWNER_SWIFT: ${{ secrets.OWNER_SWIFT }}
+          TRUST_WALLET_ADDRESS: ${{ secrets.TRUST_WALLET_ADDRESS }}
+          GOOGLEPAY_ACCOUNT_EMAIL: ${{ secrets.GOOGLEPAY_ACCOUNT_EMAIL }}
+        run: npm run live:readiness:ping | tee readiness.json
+      - name: Capture Readiness Result
+        id: readiness
+        run: |
+          echo "ok=$(jq -r '.readiness.ok' readiness.json)" >> $GITHUB_OUTPUT
+      - name: Validate Owner Routing
+        env:
+          SWARM_LIVE: "true"
+          PAYPAL_MODE: "live"
+          PAYPAL_CLIENT_ID: ${{ secrets.PAYPAL_CLIENT_ID }}
+          PAYPAL_CLIENT_SECRET: ${{ secrets.PAYPAL_CLIENT_SECRET }}
+          BASE44_APP_ID: ${{ secrets.BASE44_APP_ID }}
+          BASE44_SERVICE_TOKEN: ${{ secrets.BASE44_SERVICE_TOKEN }}
+          OWNER_PAYPAL_EMAIL: ${{ secrets.OWNER_PAYPAL_EMAIL }}
+          OWNER_PAYONEER_EMAIL: ${{ secrets.OWNER_PAYONEER_EMAIL }}
+          OWNER_BENEFICIARY_NAME: ${{ secrets.OWNER_BENEFICIARY_NAME }}
+          OWNER_IBAN: ${{ secrets.OWNER_IBAN }}
+          OWNER_SWIFT: ${{ secrets.OWNER_SWIFT }}
+          BANK_WIRE_ENABLE: "true"
+          BANK_WIRE_PROVIDER: "LIVE"
+          PAYONEER_ENABLE_STANDARD: "true"
+          CRYPTO_WITHDRAW_ENABLE: "true"
+          TRUST_WALLET_ADDRESS: ${{ secrets.TRUST_WALLET_ADDRESS }}
+          GOOGLEPAY_ENABLE: "true"
+          GOOGLEPAY_ACCOUNT_EMAIL: ${{ secrets.GOOGLEPAY_ACCOUNT_EMAIL }}
+        run: npm run env:validate:owner-routing | tee owner_routing.json
+      - name: Capture Routing Result
+        id: routing
+        run: |
+          echo "ok=$(jq -r '.ok' owner_routing.json)" >> $GITHUB_OUTPUT
+      - name: Upload Watchdog Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: watchdog-report
+          path: |
+            data/notifications/routes-status.json
+            .autonomous-state.json
+            readiness.json
+            owner_routing.json
+      - name: Notify Slack
+        if: ${{ (steps.readiness.outputs.ok != 'true' || steps.routing.outputs.ok != 'true') && secrets.ORG_SLACK_WEBHOOK_URL != '' }}
+        run: |
+          jq -n --arg ro "${{ steps.readiness.outputs.ok }}" --arg rr "${{ steps.routing.outputs.ok }}" '{text: ("Watchdog alert: readiness_ok=" + $ro + " routing_ok=" + $rr)}' > slack.json
+          curl -X POST -H 'Content-type: application/json' --data @slack.json "${{ secrets.ORG_SLACK_WEBHOOK_URL }}"
+      - name: Notify Teams
+        if: ${{ (steps.readiness.outputs.ok != 'true' || steps.routing.outputs.ok != 'true') && secrets.ORG_TEAMS_WEBHOOK_URL != '' }}
+        run: |
+          jq -n --arg ro "${{ steps.readiness.outputs.ok }}" --arg rr "${{ steps.routing.outputs.ok }}" '{text: ("Watchdog alert: readiness_ok=" + $ro + " routing_ok=" + $rr)}' > teams.json
+          curl -X POST -H 'Content-type: application/json' --data @teams.json "${{ secrets.ORG_TEAMS_WEBHOOK_URL }}"
+      - name: Create Issue
+        if: ${{ steps.readiness.outputs.ok != 'true' || steps.routing.outputs.ok != 'true' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const r = fs.existsSync('readiness.json') ? JSON.parse(fs.readFileSync('readiness.json','utf8')) : {};
+            const o = fs.existsSync('owner_routing.json') ? JSON.parse(fs.readFileSync('owner_routing.json','utf8')) : {};
+            const title = `Cloud Watchdog alert: readiness_ok=${(r.readiness && r.readiness.ok) ? 'true':'false'} routing_ok=${o.ok===true?'true':'false'}`;
+            const body = [
+              'Readiness JSON:',
+              '```json',
+              JSON.stringify(r,null,2),
+              '```',
+              'Owner Routing JSON:',
+              '```json',
+              JSON.stringify(o,null,2),
+              '```'
+            ].join('\n');
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              assignees: (process.env.ORG_ISSUE_ASSIGNEE || '').split(',').map(s=>s.trim()).filter(Boolean)
+            });

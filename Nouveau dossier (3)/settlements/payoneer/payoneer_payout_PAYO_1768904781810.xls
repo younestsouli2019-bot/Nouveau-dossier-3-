@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <DocumentProperties xmlns="urn:schemas-microsoft-com:office:office">
+  <Version>16.00</Version>
+ </DocumentProperties>
+ <OfficeDocumentSettings xmlns="urn:schemas-microsoft-com:office:office">
+  <AllowPNG/>
+ </OfficeDocumentSettings>
+ <ExcelWorkbook xmlns="urn:schemas-microsoft-com:office:excel">
+  <WindowHeight>10284</WindowHeight>
+  <WindowWidth>23040</WindowWidth>
+  <WindowTopX>32767</WindowTopX>
+  <WindowTopY>32767</WindowTopY>
+  <ProtectStructure>False</ProtectStructure>
+  <ProtectWindows>False</ProtectWindows>
+ </ExcelWorkbook>
+ <Styles>
+  <Style ss:ID="Default" ss:Name="Normal">
+   <Alignment ss:Vertical="Bottom"/>
+   <Borders/>
+   <Font ss:FontName="Calibri" x:Family="Swiss" ss:Size="11" ss:Color="#000000"/>
+   <Interior/>
+   <NumberFormat/>
+   <Protection/>
+  </Style>
+ </Styles>
+ <Worksheet ss:Name="Payoneer">
+  <Table ss:ExpandedColumnCount="14" ss:ExpandedRowCount="4" x:FullColumns="1"
+   x:FullRows="1" ss:DefaultRowHeight="14.4">
+   <Column ss:Index="11" ss:AutoFitWidth="0" ss:Width="102"/>
+   <Row>
+    <Cell><Data ss:Type="String">recipient</Data></Cell>
+    <Cell><Data ss:Type="String">recipient_email</Data></Cell>
+    <Cell><Data ss:Type="String">recipient_name</Data></Cell>
+    <Cell><Data ss:Type="String">amount</Data></Cell>
+    <Cell><Data ss:Type="String">currency</Data></Cell>
+    <Cell><Data ss:Type="String">batch_id</Data></Cell>
+    <Cell><Data ss:Type="String">item_id</Data></Cell>
+    <Cell><Data ss:Type="String">note</Data></Cell>
+    <Cell><Data ss:Type="String">payer_name</Data></Cell>
+    <Cell><Data ss:Type="String">payer_email</Data></Cell>
+    <Cell><Data ss:Type="String">payer_company</Data></Cell>
+    <Cell><Data ss:Type="String">purpose</Data></Cell>
+    <Cell><Data ss:Type="String">reference</Data></Cell>
+    <Cell><Data ss:Type="String">prq_link</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">younestsouli2019@gmail.com</Data></Cell>
+    <Cell><Data ss:Type="String">younestsouli2019@gmail.com</Data></Cell>
+    <Cell><Data ss:Type="String">Younes Tsouli</Data></Cell>
+    <Cell><Data ss:Type="String">25</Data></Cell>
+    <Cell><Data ss:Type="String">USD</Data></Cell>
+    <Cell><Data ss:Type="String">PAYO_1768904781810</Data></Cell>
+    <Cell><Data ss:Type="String">PAYO_1768904781810-REV_1768225534247</Data></Cell>
+    <Cell><Data ss:Type="String">Settlement per invoice INV-2026-001</Data></Cell>
+    <Cell><Data ss:Type="String">Younes Tsouli</Data></Cell>
+    <Cell><Data ss:Type="String">younestsouli2019@gmail.com</Data></Cell>
+    <Cell><Data ss:Type="String">Private</Data></Cell>
+    <Cell><Data ss:Type="String">Services rendered – Q1 2026 consulting</Data></Cell>
+    <Cell><Data ss:Type="String">INV-2026-001</Data></Cell>
+    <Cell><Data ss:Type="String">https://link.payoneer.com/Token?t=325EF6267B78444D86BF8286069806BE&amp;src=prqLink</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">younestsouli2019@gmail.com</Data></Cell>
+    <Cell><Data ss:Type="String">younestsouli2019@gmail.com</Data></Cell>
+    <Cell><Data ss:Type="String">Younes Tsouli</Data></Cell>
+    <Cell><Data ss:Type="String">40</Data></Cell>
+    <Cell><Data ss:Type="String">USD</Data></Cell>
+    <Cell><Data ss:Type="String">PAYO_1768904781810</Data></Cell>
+    <Cell><Data ss:Type="String">PAYO_1768904781810-REV_1768225564250</Data></Cell>
+    <Cell><Data ss:Type="String">Settlement per invoice INV-2026-001</Data></Cell>
+    <Cell><Data ss:Type="String">Younes Tsouli</Data></Cell>
+    <Cell><Data ss:Type="String">younestsouli2019@gmail.com</Data></Cell>
+    <Cell><Data ss:Type="String">Private</Data></Cell>
+    <Cell><Data ss:Type="String">Services rendered – Q1 2026 consulting</Data></Cell>
+    <Cell><Data ss:Type="String">INV-2026-001</Data></Cell>
+    <Cell><Data ss:Type="String">https://link.payoneer.com/Token?t=325EF6267B78444D86BF8286069806BE&amp;src=prqLink</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">younestsouli2019@gmail.com</Data></Cell>
+    <Cell><Data ss:Type="String">younestsouli2019@gmail.com</Data></Cell>
+    <Cell><Data ss:Type="String">Younes Tsouli</Data></Cell>
+    <Cell><Data ss:Type="String">85</Data></Cell>
+    <Cell><Data ss:Type="String">USD</Data></Cell>
+    <Cell><Data ss:Type="String">PAYO_1768904781810</Data></Cell>
+    <Cell><Data ss:Type="String">PAYO_1768904781810-REV_1768225594250</Data></Cell>
+    <Cell><Data ss:Type="String">Settlement per invoice INV-2026-001</Data></Cell>
+    <Cell><Data ss:Type="String">Younes Tsouli</Data></Cell>
+    <Cell><Data ss:Type="String">younestsouli2019@gmail.com</Data></Cell>
+    <Cell><Data ss:Type="String">Private</Data></Cell>
+    <Cell><Data ss:Type="String">Services rendered – Q1 2026 consulting</Data></Cell>
+    <Cell><Data ss:Type="String">INV-2026-001</Data></Cell>
+    <Cell><Data ss:Type="String">https://link.payoneer.com/Token?t=325EF6267B78444D86BF8286069806BE&amp;src=prqLink</Data></Cell>
+   </Row>
+  </Table>
+  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
+   <Selected/>
+   <ProtectObjects>False</ProtectObjects>
+   <ProtectScenarios>False</ProtectScenarios>
+  </WorksheetOptions>
+ </Worksheet>
+</Workbook>

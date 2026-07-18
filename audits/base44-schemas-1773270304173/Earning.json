@@ -1,0 +1,72 @@
+{
+  "name": "Earning",
+  "description": "Owner revenue allocations - OWNER ONLY",
+  "fields": [
+    {
+      "name": "earning_id",
+      "type": "text",
+      "required": true,
+      "unique": true
+    },
+    {
+      "name": "amount",
+      "type": "number",
+      "required": true
+    },
+    {
+      "name": "currency",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "occurred_at",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "source",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "beneficiary",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "settlement_id",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "metadata",
+      "type": "json",
+      "required": false
+    },
+    {
+      "name": "revenue_event_id",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "payout_batch_id",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "created_at",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "settled_at",
+      "type": "text",
+      "required": false
+    }
+  ]
+}

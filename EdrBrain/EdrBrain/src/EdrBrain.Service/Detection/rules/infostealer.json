@@ -1,0 +1,71 @@
+[
+  {
+    "Id": "a1b2c3d4-0004-4000-8000-000000000001",
+    "Title": "Crypto Wallet Enumeration",
+    "Description": "Detects non-wallet processes accessing cryptocurrency wallet directories, a primary target of infostealer malware such as RedLine, Raccoon, and LummaC2.",
+    "Author": "EdrBrain",
+    "Date": "2026-06-12",
+    "Status": "test",
+    "Level": "high",
+    "Tags": ["attack.credential_access", "attack.t1555"],
+    "FalsePositives": ["Rare in enterprise environments; wallet backup tools"],
+    "Detection": {
+      "Selection": {
+        "action": "FileCreate",
+        "target": "*wallet.dat*|*MetaMask*|*keystore*|*ethereum*|*bitcoin*"
+      }
+    }
+  },
+  {
+    "Id": "a1b2c3d4-0004-4000-8000-000000000002",
+    "Title": "Scheduled Task Creation via Command Line",
+    "Description": "Detects creation of scheduled tasks via schtasks.exe, a common persistence mechanism. While legitimate administrators create scheduled tasks, this rule identifies the execution pattern for correlation.",
+    "Author": "EdrBrain",
+    "Date": "2026-06-12",
+    "Status": "test",
+    "Level": "medium",
+    "Tags": ["attack.persistence", "attack.t1053.005"],
+    "FalsePositives": ["Enterprise software installers", "SCCM task scheduling", "IT automation scripts"],
+    "Detection": {
+      "Selection": {
+        "action": "ProcessCreate",
+        "cmdline": "*schtasks*/create*"
+      }
+    }
+  },
+  {
+    "Id": "a1b2c3d4-0004-4000-8000-000000000003",
+    "Title": "DLL Loaded from Non-Standard Path",
+    "Description": "Detects DLLs loaded from user-writable directories instead of System32, which may indicate DLL side-loading or search order hijacking attacks used by loaders and persisters.",
+    "Author": "EdrBrain",
+    "Date": "2026-06-12",
+    "Status": "experimental",
+    "Level": "medium",
+    "Tags": ["attack.persistence", "attack.t1574.002", "attack.defense_evasion"],
+    "FalsePositives": ["Application-specific DLLs in application directories", "Development environments"],
+    "Detection": {
+      "Selection": {
+        "action": "ImageLoaded",
+        "target": "*appdata*dll*|*temp*dll*|*users*public* dll*|*programdata* dll*"
+      }
+    }
+  },
+  {
+    "Id": "a1b2c3d4-0004-4000-8000-000000000004",
+    "Title": "File Deletion by Unusual Process",
+    "Description": "Detects file deletion events that may indicate anti-forensic activity, log wiping, or ransomware cleanup operations. Unusual processes deleting files in system directories are high-confidence indicators.",
+    "Author": "EdrBrain",
+    "Date": "2026-06-12",
+    "Status": "experimental",
+    "Level": "medium",
+    "Tags": ["attack.defense_evasion", "attack.t1070.004"],
+    "FalsePositives": ["Software uninstallers", "Temp file cleanup by system processes"],
+    "Detection": {
+      "Selection": {
+        "action": "FileDelete",
+        "proc_name": "*temp*|*appdata*|*users*public*",
+        "target": "*windows*|*program files*|*system32*"
+      }
+    }
+  }
+]

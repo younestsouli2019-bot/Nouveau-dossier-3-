@@ -1,0 +1,9 @@
+{
+  "id": "68e7500c4eae3dbaf591e2dc",
+  "amount": 0,
+  "currency": "780",
+  "status": "COMPLETED",
+  "source": "csv_migration",
+  "raw": "68e7500c4eae3dbaf591e2dc,d6214b88b2165ded97e22466e4a288c03035f94b6099d9fdf9bc90a0215a994c,Black Friday Sales,,780,USD,earned,,,,,\"{\"\"agent_id\"\":\"\"agent-2\"\",\"\"legacy_file\"\":\"\"Analytics_export (1).csv\"\",\"\"ingested_at\"\":\"\"2026-01-02T21:27:09.329Z\"\"}\",6958378b3b0016cac1f47bdd,2026-01-02T21:24:27.664000,2026-01-02T21:24:27.664000,anonymous,anonymous,false",
+  "created_at": "2026-02-01T23:10:29.622Z"
+}

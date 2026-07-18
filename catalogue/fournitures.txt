@@ -1,0 +1,177 @@
+
+
+
+
+### **PHASE 1: MASTER PRODUCT NORMALIZATION (FR + AR)**
+*Internal database used for catalogue generation. All prices normalized to unit price where applicable, grouped by SKU logic.*
+
+| ID_CAT | Brand | Product Name (FR) | Product Name (AR) | Ref | Specs |
+| :--- | :--- | :--- | :--- | :---: | :--- |
+| **ST-001** | **BIC** | Stylo Bic Cristal Medium (Assortiment) | قلم بيك كريستال مديوم | 9132XX | Cap: Blue/Red/Green/Black. Box: 50pcs |
+| **ST-002** | **BIC** | Stylo Bic Cristal UP (Assortiment) | قلم بيك كريستال أب | 9498XX | Barrel: White/Colored. Box: 20pcs |
+| **ST-003** | **PILOT** | Stylo Pilot G2 (Assortiment) | قلم بايلوت جي 2 | 490250516.. | Gel Ink, Retractable. Box: 12pcs |
+| **ST-004** | **BIC** | Stylo Bic Orange Fin (Assortiment) | قلم بيك أورنج فين | 1199110.. | Fine point, Barrel: Orange. Box: 20pcs |
+| **ST-005** | **CLARO** | Pochette de 10 Stylos Couleurs | حقيبة 10 أقلام ألوان | CL-3637 | Vinyl/Plastic Pouch. 10pcs |
+| **ST-006** | **3A TOP SAM** | Fifty Color Pen | قلم خمسون لوناً | 432M 47-8 | 50 Colors in box. |
+| **ST-007** | **KINGGIFFT** | Crayons Couleur 12 (Court/Long) | أقلام رصاص ملونة (12) | XO-KGCP.. | Box: 12pcs. Short or Long |
+| **ST-008** | **MASH MALOW** | Crayons Couleur Long 12 PCS | أقلام رصاص ملونة طويلة | KR971273 | Box: 12pcs |
+| **ST-009** | **EXPRESS** | Encreur Bleu | وسادة حبر أزرق | 503011 | Ink pad / Stamp pad |
+| **OF-010** | **MAPED** | Règle 20cm | مسطرة 20 سم | 146108 | Blue Plastic. Box: 20pcs |
+| **OF-011** | **MASH MALOW** | Règle 20cm | مسطرة 20 سم | KR971172 | Plastic. Box: 24pcs |
+| **OF-012** | **EXPRESS** | Règle 20cm (Normale) | مسطرة 20 سم (عادية) | XJ-2988 | Standard plastic ruler |
+| **OF-013** | **MAPED** | Équerre 15cm | زاوية قائمة 15 سم | 146120 | Blue Plastic. Box: 20pcs |
+| **OF-014** | **MAPED** | Rapporteur | منقلة | 146134 | Semi-circle. Box: 20pcs |
+| **OF-015** | **GENERIC** | Équerre Normale | زاوية قائمة عادية | 00000529.. | Standard |
+| **OF-016** | **GENERIC** | Rapporteur Normal | منقلة عادية | 00005297.. | Standard |
+| **OF-017** | **M-SCHOOL** | Compas V90 | بوصلة V90 | 00008723 | Precision compass |
+| **OF-018** | **MAPED** | Compas 199111 | بوصلة مابيد | 199111 | Metal/Solid. Box: 20pcs |
+| **OF-019** | **BAUHINIA** | Ciseaux Écolier | مقص مدرسي | 1-1 | Colorful handles. Box: 24pcs |
+| **OF-020** | **ECOLO** | Taille Crayon (Usage Unique) | براية قلم رصاص (استعمال واحد) | TCR1334 | Box: 36pcs |
+| **OF-021** | **ECOLO** | Taille Crayon (Usage Unique) | براية قلم رصاص (استعمال واحد) | TCR1008 | Box: 24pcs |
+| **OF-022** | **KEYROAD** | Taille Crayon Keyroad | براية كيرواد | KR971748 | Bulk sharpeners |
+| **OF-023** | **EXPRESS** | Gomme Savoir / GM | ممحاة سافوار | 3442/3459 | White block eraser |
+| **OF-024** | **MAPED** | Gomme Party | ممحاة مابيد بarty | 011300 | Eraser box 36pcs |
+| **AD-025** | **DELI** | Colle Bâton 21g | صمغ علكة 21g | 7102 | Twist-up. Box: 12pcs |
+| **AD-026** | **DELI** | Colle Bâton 9g | صمغ علكة 9g | E 7101 | Small twist-up. Box: 12pcs |
+| **AD-027** | **UHU** | Colle Stick Original (21g/8.2g) | صمغ يو إتش يو أصلي | 37376 / .. | Blue/White striped. Box: 12/24pcs |
+| **AD-028** | **UHU** | Colle Tube (N10 / N13) | صمغ أنبوبي | 6111033.. | Yellow/Red tube. Box: 18/30pcs |
+| **AD-029** | **EXPRESS** | Colle Éponge | صمغ إسفنجي | XJ-2971 | Paste in pot. Box: 24pcs |
+| **AD-030** | **GENERIC** | Correcteur Stylo | قلم تصحيح | XO-0069 | Correction fluid pen. Box: 24pcs |
+| **AD-031** | **EXPRESS** | Agrafeuse 24/6 Pince | دباسة 24/6 (مقبض) | XO-755 | Plier stapler |
+| **AD-032** | **ACCORD** | Agrafeuse N10 Métal | دباسة N10 معدنية | AG0010 | Metal stapler |
+| **AD-033** | **ACCORD** | Punaises (Couleur/Argent) | دبابيس تثبيت | SPM1049.. | Push pins box of 20 |
+| **AD-034** | **EXPRESS** | Agrafes 24/6 | دبابيس دباسة 24/6 | 3343 | Staples box |
+| **AD-035** | **DELI** | Porte Scotch (Dévidoir) | موزع شريط لاصق | E8156 | Tape dispenser |
+| **AD-036** | **3M** | Scotch Décoratif | شريط لاصق مزخرف | SPM0671 | Decorative tape/Washi |
+| **AD-037** | **GENERIC** | Scotch Scolaire / Emballage | شريط لاصق شفاف | 793655.. | Clear packing tape |
+| **AD-038** | **GENERIC** | Serre-Feuille | مشبك ورق | 084456 | Binder clips |
+| **AR-039** | **VARIOUS** | Peinture 16 WC / Aquarelle | ألوان مائية / ألوان | SPM0583.. | Paint sets |
+| **AR-040** | **ACCORD** | Pâte à Modeler (6/12 Couleurs) | صلصال ألوان | PAT06CPM.. | Modeling clay |
+| **PA-041** | **MONDI** | Ramette A4 80g | رزمة ورق A4 80g | R11 | 500 Sheets |
+| **PA-042** | **GENERIC** | Copie Double A4 / 17/22 | ورق تصوير | 6111250.. | Reams or Packs |
+| **PA-043** | **GENERIC** | Carnet 48p / 96p | كراس 48/96 صفحة | 250022 / .. | Stapled notebooks |
+| **PA-044** | **GENERIC** | Cahier de Notes (Registre) | سجل ملاحظات | 7275 | 5 Subjects |
+| **PA-045** | **GENERIC** | Calque A4 / Millimétré | ورق كالق / رسم هندسي | XO-4944 / .. | Technical paper |
+| **PA-046** | **CHRONO** | Chemise Cartonnée | ملف كرتوني | 3700746.. | Cardboard folder |
+| **PA-047** | **ACCORD** | Chemise à Rabat | ملف بكاب | 44-9 | Plastic wallet |
+| **PA-048** | **GENERIC** | Enveloppes (90 / 81 / DL) | ظروف بريدية | EN90 / .. | Window envelopes |
+| **PA-049** | **GENERIC** | Facture / Bon Pour | فاتورة / سند قبض | FCTN / BNP | Administrative forms |
+| **EQ-050** | **CASIO** | Calculatrice FX-82ES PLUS | آلة حاسبة كاسيو علمية | 4549526.. | Scientific |
+| **EQ-051** | **GATES / DELI** | Calculatrice de Bureau | آلة حاسبة مكتبية | DC-210N / .. | Desktop calculator |
+| **EQ-052** | **SIGMAFLO** | Marqueur Tableau (Effaçable) | ماركر سبورة ممحى | 7344841.. | Liquid ink markers |
+| **EQ-053** | **EXPRESS** | Marqueur Tableau Normal | ماركر سبورة عادي | XO-8379.. | Standard whiteboard marker |
+| **EQ-054** | **ACCORD** | Brosse Tableau | ممحاة سبورة مغناطيسية | BR0003 | Felt eraser |
+| **EQ-055** | **ALIF / ECOLO** | Ardoise (Blanche/Double Face) | سبورة (بيضاء/وجهين) | 19-27B / .. | Mini slate |
+| **LI-056** | **DAR AL MAARIFA** | Saint Coran (Warsh) | مصحف ورش | 2019201 | Various sizes |
+| **LI-057** | **DAR AL MAARIFA** | Juz Amma / Qad Sami'a | جزء عم / قد سمع | 97899334.. | Tajweed books |
+| **LI-058** | **MINISTRY** | Livret Santé (Enfant/Femme) | دفتر الصحي | 97899203.. | Health record book |
+
+---
+
+### **PHASE 2 & 3: CATALOGUE DESIGN (FULL BUILD)**
+
+# 🏢 ATLAS FOURNITURES
+## CATALOGUE GÉNÉRAL 2026 | الدليل العام 2026
+
+---
+
+### **SECTION 1: ECRITURE & STYLOS | الكتابة والأقلام**
+
+| [IMAGE: Product Photo] | **PRODUCT CARD** | |
+| :--- | :--- | :--- |
+| | **ID:** ST-001 <br> **BRAND:** BIC <br> **REF:** 9132XX | |
+| | **FR:** Stylo Bic Cristal Medium (Boîte 50/20) <br> **AR:** قلم بيك كريستال مديوم (علبة 50/20 قطعة) <br> **SPEC:** Hexagonal barrel, Cap color indicates ink (Blue/Red/Black/Green). | **PRIX:** <br> ___________ |
+| | | |
+| | **ID:** ST-002 <br> **BRAND:** BIC <br> **REF:** 9498XX | |
+| | **FR:** Stylo Bic Cristal UP (Boîte 20) <br> **AR:** قلم بيك كريستال أب (علبة 20 قطعة) <br> **SPEC:** White barrel with colored rubber grip. Wide tip. | **PRIX:** <br> ___________ |
+| | | |
+| | **ID:** ST-003 <br> **BRAND:** PILOT <br> **REF:** 4902505.. | |
+| | **FR:** Stylo Pilot G2 (Boîte 12) <br> **AR:** قلم بايلوت جي 2 (علبة 12 قطعة) <br> **SPEC:** Retractable gel ink, stainless steel tip. Blue/Black. | **PRIX:** <br> ___________ |
+| | | |
+| | **ID:** ST-006 <br> **BRAND:** 3A TOP SAM <br> **REF:** 432M 47-8 | |
+| | **FR:** Fifty Color Pen (Assortiment 50) <br> **AR:** قلم خمسون لوناً (تنوع 50) <br> **SPEC:** Multicolor pen in single body. | **PRIX:** <br> ___________ |
+
+---
+
+### **SECTION 2: FOURNITURES SCOLAIRES & BUREAU | اللوازم المدرسية والمكتبية**
+
+| [IMAGE: Product Photo] | **PRODUCT CARD** | |
+| :--- | :--- | :--- |
+| | **ID:** OF-010 <br> **BRAND:** MAPED <br> **REF:** 146108 | |
+| | **FR:** Règle 20cm (Boîte 20) <br> **AR:** مسطرة 20 سم (علبة 20 قطعة) <br> **SPEC:** Blue plastic, shatter-resistant. | **PRIX:** <br> ___________ |
+| | | |
+| | **ID:** OF-017 <br> **BRAND:** M-SCHOOL <br> **REF:** 00008723 | |
+| | **FR:** Compas V90 <br> **AR:** بوصلة V90 <br> **SPEC:** Precision compass for school. | **PRIX:** <br> ___________ |
+| | | |
+| | **ID:** OF-019 <br> **BRAND:** BAUHINIA <br> **REF:** 1-1 | |
+| | **FR:** Ciseaux Écolier (Boîte 24) <br> **AR:** مقص مدرسي (علبة 24 قطعة) <br> **SPEC:** Stainless steel blades, ergonomic handles. | **PRIX:** <br> ___________ |
+| | | |
+| | **ID:** OF-023 <br> **BRAND:** EXPRESS <br> **REF:** 3442 | |
+| | **FR:** Gomme Blanche (Boîte 30/20) <br> **AR:** ممحاة بيضاء (علبة 30/20 قطعة) <br> **SPEC:** PVC-free eraser, minimal crumbs. | **PRIX:** <br> ___________ |
+
+---
+
+### **SECTION 3: ADHÉSIFS & COLLAGE | اللاصقات واللصق**
+
+| [IMAGE: Product Photo] | **PRODUCT CARD** | |
+| :--- | :--- | :--- |
+| | **ID:** AD-027 <br> **BRAND:** UHU <br> **REF:** 37376 | |
+| | **FR:** Colle Stick Original 21g/8.2g <br> **AR:** صمغ علكة أصلي 21g/8.2g <br> **SPEC:** The classic blue/white twist-up glue stick. High adhesion. | **PRIX:** <br> ___________ |
+| | | |
+| | **ID:** AD-030 <br> **BRAND:** EXPRESS <br> **REF:** XO-0069 | |
+| | **FR:** Correcteur Stylo (Boîte 24) <br> **AR:** قلم تصحيح (علبة 24 قطعة) <br> **SPEC:** Quick-drying correction fluid pen. | **PRIX:** <br> ___________ |
+| | | |
+| | **ID:** AD-035 <br> **BRAND:** DELI <br> **REF:** E8156 | |
+| | **FR:** Porte-Scotch (Dévidoir) <br> **AR:** موزع شريط لاصق <br> **SPEC:** Heavy duty tape dispenser for desktop. | **PRIX:** <br> ___________ |
+
+---
+
+### **SECTION 4: PAPIER & CAHIERS | الورق والكراس**
+
+| [IMAGE: Product Photo] | **PRODUCT CARD** | |
+| :--- | :--- | :--- |
+| | **ID:** PA-041 <br> **BRAND:** MONDI <br> **REF:** R11 | |
+| | **FR:** Ramette Papier A4 80g (Mondi Copyrex) <br> **AR:** رزمة ورق A4 80g (موندي) <br> **SPEC:** 500 Sheets, high whiteness, suitable for laser/inkjet. | **PRIX:** <br> ___________ |
+| | | |
+| | **ID:** PA-043 <br> **BRAND:** ESSENTIEL <br> **REF:** 250022 | |
+| | **FR:** Cahier 96 Pages (17x22cm) <br> **AR:** كراس 96 صفحة (17x22سم) <br> **SPEC:** Soft cover, stitched binding. | **PRIX:** <br> ___________ |
+| | | |
+| | **ID:** PA-046 <br> **BRAND:** CHRONO <br> **REF:** 3700746.. | |
+| | **FR:** Chemise Cartonnée Sup-180g <br> **AR:** ملف كرتوني سميك 180g <br> **SPEC:** Reinforced cardboard folder, assorted colors. | **PRIX:** <br> ___________ |
+| | | |
+| | **ID:** PA-048 <br> **BRAND:** GENERIC <br> **REF:** EN90 / EN81 | |
+| | **FR:** Enveloppes à Fenêtre (Boîte 50) <br> **AR:** ظروف بريدية بالنافذة (علبة 50 قطعة) <br> **SPEC:** Standard window envelopes (Size 90 or 81). | **PRIX:** <br> ___________ |
+
+---
+
+### **SECTION 5: ÉQUIPEMENT DE BUREAU | معدات المكتب**
+
+| [IMAGE: Product Photo] | **PRODUCT CARD** | |
+| :--- | :--- | :--- |
+| | **ID:** EQ-050 <br> **BRAND:** CASIO <br> **REF:** FX-82ES PLUS | |
+| | **FR:** Calculatrice Scientifique FX-82ES PLUS <br> **AR:** آلة حاسبة علمية FX-82ES PLUS <br> **SPEC:** Natural textbook display, 252 functions. | **PRIX:** <br> ___________ |
+| | | |
+| | **ID:** EQ-052 <br> **BRAND:** SIGMAFLO <br> **REF:** 7344841.. | |
+| | **FR:** Marqueur Tableau Liquide (Assortiment) <br> **AR:** ماركر سبورة سائل (ألوان متعددة) <br> **SPEC:** Low odor, chisel tip, refillable. Blue/Black/Red/Green. | **PRIX:** <br> ___________ |
+| | | |
+| | **ID:** EQ-055 <br> **BRAND:** ECOLO <br> **REF:** ARE9615 | |
+| | **FR:** Ardoise Double Face 20x30cm <br> **AR:** سبورة وجهين 20x30سم <br> **SPEC:** Mini whiteboard, double sided. | **PRIX:** <br> ___________ |
+
+---
+
+### **SECTION 6: LIVRES & ISLAMIQUE | الكتب وال伊斯兰ية**
+
+| [IMAGE: Product Photo] | **PRODUCT CARD** | |
+| :--- | :--- | :--- |
+| | **ID:** LI-056 <br> **BRAND:** DAR AL MAARIFA <br> **REF:** 2019201 | |
+| | **FR:** Saint Coran (Warsh) Taille Chamois <br> **AR:** مصحف ورش بحجم شموا <br> **SPEC:** Medium size Quran, Warsh narration. | **PRIX:** <br> ___________ |
+| | | |
+| | **ID:** LI-057 <br> **BRAND:** DAR AL MAARIFA <br> **REF:** 97899334.. | |
+| | **FR:** Juz Amma (Tajweed) <br> **AR:** جزء عم (تجويد) <br> **SPEC:** Color coded tajweed rules. | **PRIX:** <br> ___________ |
+| | | |
+| | **ID:** LI-058 <br> **BRAND:** MINISTRY OF HEALTH <br> **REF:** 97899203.. | |
+| | **FR:** Livret Santé (Enfant / Femme) <br> **AR:** دفتر الصحي (طفل / امرأة) <br> **SPEC:** Official health record booklet. | **PRIX:** <br> ___________ |
+
+---
+
+*Note to Designer: Please insert high-resolution manufacturer photos in the brackets [IMAGE]. Ensure Arabic text is Right-to-Left (RTL) aligned and French is Left-to-Right (LTR).*

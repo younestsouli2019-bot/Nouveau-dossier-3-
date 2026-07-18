@@ -1,0 +1,33 @@
+{
+  "at": "2026-01-24T06:31:38.352Z",
+  "hosts": [
+    "github.io",
+    "github.com",
+    "api.binance.com"
+  ],
+  "ok": true,
+  "results": [
+    {
+      "ok": true,
+      "host": "github.io",
+      "cn": "*.github.io",
+      "san": "DNS:*.github.io, DNS:*.github.com, DNS:*.githubusercontent.com, DNS:github.com, DNS:github.io, DNS:githubusercontent.com, DNS:www.github.com",
+      "sanOk": true
+    },
+    {
+      "ok": true,
+      "host": "github.com",
+      "cn": "github.com",
+      "san": "DNS:github.com, DNS:www.github.com",
+      "sanOk": true
+    },
+    {
+      "ok": true,
+      "host": "api.binance.com",
+      "cn": "*.binance.com",
+      "san": "DNS:*.binance.com, DNS:binance.com",
+      "sanOk": true
+    }
+  ],
+  "failures": []
+}

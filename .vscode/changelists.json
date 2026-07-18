@@ -1,0 +1,16 @@
+{
+  "changelists": [
+    {
+      "name": "Default",
+      "files": [
+        "nd3-clone",
+        "rwrld-bot",
+        "fullgd/",
+        ".qodo/rank.bak/",
+        "Nouveau-dossier-3-/",
+        "rank_mirror/"
+      ]
+    }
+  ],
+  "active": "Default"
+}

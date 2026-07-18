@@ -1,0 +1,19 @@
+{
+  "id": "INF-012",
+  "title": "Autonomous intelligence - Unified metrics pipeline (performance, ops, revenue) + alerting",
+  "channel": "infrastructure",
+  "priority": "high",
+  "status": "active",
+  "data": {
+    "mission_parameters": "{\"task\":\"metrics_pipeline\",\"dependent_on\":[\"INF-001\",\"OPS-010\"],\"objectives\":[\"define_kpis\",\"standardize_event_schema\",\"store_metrics_snapshots\",\"alert_on_regressions\"],\"guardrails\":{\"no_sensitive_logging\":true,\"no_secrets_in_repo\":true},\"deliverables\":[\"data/swarm/metrics_schema.json\",\"data/swarm/metrics_latest.json\",\"data/swarm/alerts_latest.json\"]}"
+  },
+  "created_at": "2026-03-20T15:14:31.919Z",
+  "last_executed_at": "2026-03-30T21:00:19.979Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Autonomous operational optimization complete.",
+      "revenue_estimate": 10
+    }
+  ]
+}

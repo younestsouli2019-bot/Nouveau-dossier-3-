@@ -1,0 +1,21 @@
+{
+  "at": "2026-02-06T16:26:54.238Z",
+  "files": [
+    "rank\\.env.realworldcerts",
+    "data\\payers\\registry.json",
+    "data\\financial\\settlement_ledger.json",
+    "dist_rwc\\index.html",
+    "dist_rwc\\vercel.json",
+    "dist_rwc\\courses_index.html"
+  ],
+  "dirs": [
+    {
+      "dir": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\dist_rwc\\courses",
+      "items": 2028
+    },
+    {
+      "dir": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\dist_rwc\\videos",
+      "items": 2028
+    }
+  ]
+}

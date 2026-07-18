@@ -1,0 +1,27 @@
+{
+  "id": "68ceb0ce5a0fa8bdc6d18bda",
+  "title": "Deploy Backup Coordinator Agent",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Deploy Backup Coordinator Agent",
+    "type": "operations",
+    "priority": "high",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"68ca6910dc1beb1c06fb08f8\"]",
+    "mission_parameters": "{\"redundancy_requirements\":{\"failover_time_threshold\":30,\"load_balancing\":true,\"synchronization_mode\":\"real_time\",\"backup_agent_type\":\"coordinator\"},\"objectives\":[\"Create and deploy backup coordinator agent\",\"Establish failover mechanisms\",\"Test redundancy protocols\",\"Ensure seamless transition during failures\"]}",
+    "progress_data": "",
+    "estimated_duration_hours": "3",
+    "actual_duration_hours": "",
+    "deadline": "2025-06-18T23:59:59Z",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "68ceb0ce5a0fa8bdc6d18bda",
+    "created_date": "2025-09-20T13:49:02.221000",
+    "updated_date": "2025-10-04T13:24:38.340000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:12.001Z"
+}

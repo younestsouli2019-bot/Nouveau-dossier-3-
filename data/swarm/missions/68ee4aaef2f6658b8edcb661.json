@@ -1,0 +1,27 @@
+{
+  "id": "68ee4aaef2f6658b8edcb661",
+  "title": "Create Decentralized Payment Ecosystem",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Create Decentralized Payment Ecosystem",
+    "type": "operations",
+    "priority": "critical",
+    "status": "deployed",
+    "assigned_agent_ids": "[]",
+    "mission_parameters": "",
+    "progress_data": "",
+    "estimated_duration_hours": "10",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "68ee4aaef2f6658b8edcb661",
+    "created_date": "2025-10-14T13:05:50.373000",
+    "updated_date": "2025-10-14T13:08:52.022000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:11.999Z"
+}

@@ -1,0 +1,24 @@
+{
+  "mirrors": [
+    {
+      "id": "mirror-01",
+      "url": "https://mirror1.realworldcerts.com",
+      "status": "active",
+      "last_sync": null,
+      "regions": [
+        "US-East",
+        "EU-West"
+      ]
+    },
+    {
+      "id": "mirror-02",
+      "url": "https://mirror2.realworldcerts.com",
+      "status": "active",
+      "last_sync": null,
+      "regions": [
+        "APAC",
+        "Middle-East"
+      ]
+    }
+  ]
+}

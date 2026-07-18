@@ -1,0 +1,19 @@
+{
+  "id": "MKT-010",
+  "title": "Strategic positioning - Influence map (people, platforms, APIs, flows) + access plan",
+  "channel": "market_research",
+  "priority": "high",
+  "status": "active",
+  "data": {
+    "mission_parameters": "{\"task\":\"influence_map\",\"objectives\":[\"map_nodes\",\"identify_amplifiers\",\"define_access_steps\"],\"guardrails\":{\"no_tos_violations\":true,\"no_impersonation\":true},\"deliverables\":[\"data/swarm/influence_map.json\"]}"
+  },
+  "created_at": "2026-03-20T01:30:15.321Z",
+  "last_executed_at": "2026-03-30T21:00:19.994Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Autonomous operational optimization complete.",
+      "revenue_estimate": 10
+    }
+  ]
+}

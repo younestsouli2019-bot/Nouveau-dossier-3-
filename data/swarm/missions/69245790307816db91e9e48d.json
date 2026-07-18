@@ -1,0 +1,27 @@
+{
+  "id": "69245790307816db91e9e48d",
+  "title": "Implement Comprehensive Service Monitoring",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Implement Comprehensive Service Monitoring",
+    "type": "operations",
+    "priority": "medium",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"ServiceOutageDetector\"]",
+    "mission_parameters": "{\"silence_threshold\":3600,\"alert_escalation_path\":[\"Technical Lead\",\"Operations Manager\",\"CTO\"],\"monitoring_interval\":300,\"notification_channels\":[\"Email\",\"SMS\",\"Slack\"]}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "69245790307816db91e9e48d",
+    "created_date": "2025-11-24T13:03:12.992000",
+    "updated_date": "2025-11-24T13:12:38.919000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:11.996Z"
+}

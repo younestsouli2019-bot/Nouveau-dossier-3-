@@ -1,0 +1,13 @@
+rank/output/
+rank/site.zip
+rank/__pycache__/
+CREDS.txt
+exports/
+settlements/payoneer/*.csv
+settlements/payoneer/receipts/*.json
+data/swarm/**
+data/notifications/**
+reports/historic/**
+*.log
+*.tmp
+node_modules/

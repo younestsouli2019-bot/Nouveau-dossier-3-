@@ -1,0 +1,91 @@
+[
+  {
+    "Id": "a1b2c3d4-0001-4000-8000-000000000001",
+    "Title": "Encoded PowerShell Command Execution",
+    "Description": "Detects PowerShell executing with encoded commands, a common defense evasion technique used by malware and penetration testing tools.",
+    "Author": "EdrBrain",
+    "Date": "2026-06-12",
+    "Status": "stable",
+    "Level": "high",
+    "Tags": ["attack.execution", "attack.t1059.001", "attack.defense_evasion", "attack.t1027"],
+    "FalsePositives": ["Enterprise automation tools using encoded commands for script transport"],
+    "Detection": {
+      "Selection": {
+        "action": "ProcessCreate",
+        "proc_name": "*powershell*",
+        "cmdline": "*-enc*"
+      }
+    }
+  },
+  {
+    "Id": "a1b2c3d4-0001-4000-8000-000000000002",
+    "Title": "MSHTA Executing Remote or Local Script",
+    "Description": "Detects mshta.exe executing HTA files, a common LOLBin technique for initial access and defense evasion. Legitimate mshta usage is extremely rare in enterprise environments.",
+    "Author": "EdrBrain",
+    "Date": "2026-06-12",
+    "Status": "stable",
+    "Level": "high",
+    "Tags": ["attack.defense_evasion", "attack.t1218.005", "attack.execution"],
+    "FalsePositives": ["Very rare legitimate HTA application usage"],
+    "Detection": {
+      "Selection": {
+        "action": "ProcessCreate",
+        "proc_name": "*mshta*"
+      }
+    }
+  },
+  {
+    "Id": "a1b2c3d4-0001-4000-8000-000000000003",
+    "Title": "Certutil Used for File Download",
+    "Description": "Detects certutil.exe with download-related flags, commonly abused by malware to download payloads while blending in with legitimate certificate utility usage.",
+    "Author": "EdrBrain",
+    "Date": "2026-06-12",
+    "Status": "stable",
+    "Level": "high",
+    "Tags": ["attack.defense_evasion", "attack.t1218.009", "attack.command_and_control", "attack.t1105"],
+    "FalsePositives": ["Enterprise certificate management automation"],
+    "Detection": {
+      "Selection": {
+        "action": "ProcessCreate",
+        "proc_name": "*certutil*",
+        "cmdline": "*-urlcache*|-f*|-verifyctl*"
+      }
+    }
+  },
+  {
+    "Id": "a1b2c3d4-0001-4000-8000-000000000004",
+    "Title": "Rundll32 Loading Suspicious DLL",
+    "Description": "Detects rundll32.exe loading DLLs from user-writable or temporary directories, a common pattern for DLL side-loading and execution of malicious payloads.",
+    "Author": "EdrBrain",
+    "Date": "2026-06-12",
+    "Status": "test",
+    "Level": "medium",
+    "Tags": ["attack.defense_evasion", "attack.t1218.011", "attack.execution"],
+    "FalsePositives": ["Legitimate software installers using rundll32 for DLL registration"],
+    "Detection": {
+      "Selection": {
+        "action": "ProcessCreate",
+        "proc_name": "*rundll32*",
+        "cmdline": "*appdata*|temp*|users*public*|programdata*"
+      }
+    }
+  },
+  {
+    "Id": "a1b2c3d4-0001-4000-8000-000000000005",
+    "Title": "BITS Job Abuse for Download",
+    "Description": "Detects bitsadmin.exe used to transfer files, a technique abused by malware to download payloads using a legitimate Windows service that bypasses some network monitoring.",
+    "Author": "EdrBrain",
+    "Date": "2026-06-12",
+    "Status": "stable",
+    "Level": "high",
+    "Tags": ["attack.defense_evasion", "attack.t1197", "attack.command_and_control"],
+    "FalsePositives": ["SCCM and Windows Update using BITS for legitimate transfers"],
+    "Detection": {
+      "Selection": {
+        "action": "ProcessCreate",
+        "proc_name": "*bitsadmin*",
+        "cmdline": "*/transfer*"
+      }
+    }
+  }
+]

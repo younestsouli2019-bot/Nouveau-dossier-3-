@@ -1,0 +1,13 @@
+{
+  "status": "processing",
+  "gateway_response": {
+    "status": "INSTRUCTIONS_READY",
+    "provider": "binance_cryptobox",
+    "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\binance_cryptobox_instruction_1773253571501.json",
+    "network": "OFFCHAIN",
+    "prepared_at": "2026-03-11T18:26:11.501Z"
+  },
+  "payout_batch_id": "OWNER_MULTI_1773253571491",
+  "processed_at": "2026-03-11T18:26:11.503Z",
+  "route_attempted": "crypto"
+}

@@ -1,0 +1,1052 @@
+{
+  "at": "2026-03-20T02:22:24.326Z",
+  "summary": {
+    "total": 71,
+    "ready": 71,
+    "blocked": 0
+  },
+  "missions": [
+    {
+      "id": "INF-001",
+      "title": "Self-Setup - DropMagic Identity & API Auth",
+      "type": "infrastructure",
+      "status": "deployed",
+      "priority": "critical",
+      "channel": "infrastructure",
+      "dependencies": [],
+      "phase": 0,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\INF-001.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "INF-010",
+      "title": "Continuity - Encrypted cloud mirror + restore drill",
+      "type": "infrastructure",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "infrastructure",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 0,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\INF-010.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "INF-011",
+      "title": "Dynamic adaptation - Agent scorecards + reinforcement loop policy",
+      "type": "infrastructure",
+      "status": "pending",
+      "priority": "high",
+      "channel": "infrastructure",
+      "dependencies": [
+        "OPS-010"
+      ],
+      "phase": 0,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\INF-011.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "MKT-001",
+      "title": "Market Research - Winning Products (TikTok/Temu)",
+      "type": "market_research",
+      "status": "deployed",
+      "priority": "high",
+      "channel": "market_research",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 1,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\MKT-001.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "MKT-002",
+      "title": "Content & Ad Generation - Viral Launch",
+      "type": "marketing",
+      "status": "deployed",
+      "priority": "high",
+      "channel": "marketing",
+      "dependencies": [
+        "INF-001",
+        "MKT-001",
+        "STO-001"
+      ],
+      "phase": 1,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\MKT-002.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "MKT-010",
+      "title": "Strategic positioning - Influence map (people, platforms, APIs, flows) + access plan",
+      "type": "market_research",
+      "status": "pending",
+      "priority": "high",
+      "channel": "market_research",
+      "dependencies": [],
+      "phase": 1,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\MKT-010.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "MKT-011",
+      "title": "Monetization ladder - Content → lead magnet → email → course → subscription",
+      "type": "marketing",
+      "status": "pending",
+      "priority": "medium",
+      "channel": "marketing",
+      "dependencies": [
+        "STO-010"
+      ],
+      "phase": 1,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\MKT-011.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "PAY-001",
+      "title": "Financial Infrastructure - Multi-Currency Payout Setup",
+      "type": "financial_setup",
+      "status": "deployed",
+      "priority": "critical",
+      "channel": "financial_setup",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 2,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\PAY-001.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "STO-001",
+      "title": "Store Setup - DropMagic Autonomous Build",
+      "type": "store_setup",
+      "status": "deployed",
+      "priority": "high",
+      "channel": "store_setup",
+      "dependencies": [
+        "INF-001",
+        "MKT-001"
+      ],
+      "phase": 2,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\STO-001.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "STO-010",
+      "title": "Multi-layer monetization - Digital asset store pipeline (legal templates/bundles)",
+      "type": "store_setup",
+      "status": "pending",
+      "priority": "medium",
+      "channel": "store_setup",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 2,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\STO-010.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "68c73bbe3efa5daf0a6709aa",
+      "title": "Generate consistent revenue for realworldcerts.com",
+      "type": "marketing",
+      "status": "deployed",
+      "priority": "critical",
+      "channel": "marketing",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 3,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\68c73bbe3efa5daf0a6709aa.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "6948efedb395307e371a4804",
+      "title": "Ustadh.io (Verified Micro-Skills & Tutoring Platform)",
+      "type": "marketing",
+      "status": "deployed",
+      "priority": "critical",
+      "channel": "marketing",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 3,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\6948efedb395307e371a4804.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "6949298e487b2732b7dd45be",
+      "title": "SME Social Growth Agent Sales & Lead Generation",
+      "type": "marketing",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "marketing",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 3,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\6949298e487b2732b7dd45be.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "6949467151f90bf73859f7fe",
+      "title": "SWARM-ECOM-AUTONOMY v2.0",
+      "type": "marketing",
+      "status": "deployed",
+      "priority": "critical",
+      "channel": "marketing",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 3,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\6949467151f90bf73859f7fe.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "OPS-011",
+      "title": "Guardrails - Compliance, unit economics, and execution kill-switches for new streams",
+      "type": "operations",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "operations",
+      "dependencies": [],
+      "phase": 3,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\OPS-011.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "68c7e0f1fe47320743671675",
+      "title": "Brand Building and Niche Product Differentiation",
+      "type": "marketing",
+      "status": "deployed",
+      "priority": "high",
+      "channel": "marketing",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 3,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\68c7e0f1fe47320743671675.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "68e764bad3991759502b86a0",
+      "title": "Configure Rewardful Affiliate Program",
+      "type": "marketing",
+      "status": "deployed",
+      "priority": "high",
+      "channel": "marketing",
+      "dependencies": [],
+      "phase": 3,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\68e764bad3991759502b86a0.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69495d85c95b207cb70e1f7f",
+      "title": "Global Publication & Monetization Strategy for 'Echoes of Resilience'",
+      "type": "marketing",
+      "status": "pending",
+      "priority": "high",
+      "channel": "marketing",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 3,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69495d85c95b207cb70e1f7f.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69496d6139b52c6b1d7cf3a7",
+      "title": "Global Non-English Community Content Distribution",
+      "type": "marketing",
+      "status": "deployed",
+      "priority": "high",
+      "channel": "marketing",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 3,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69496d6139b52c6b1d7cf3a7.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69496d6139b52c6b1d7cf3a9",
+      "title": "Establish Local Influencer & Community Partnerships",
+      "type": "marketing",
+      "status": "pending",
+      "priority": "high",
+      "channel": "marketing",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 3,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69496d6139b52c6b1d7cf3a9.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69496e6ae10ccb8e82d8a692",
+      "title": "Launch Non-Western Skill Certification Program",
+      "type": "marketing",
+      "status": "pending",
+      "priority": "high",
+      "channel": "marketing",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 3,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69496e6ae10ccb8e82d8a692.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "OPS-010",
+      "title": "Systemic leverage - Audit swarm tasks, remove redundancy, define microagents",
+      "type": "operations",
+      "status": "pending",
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 3,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\OPS-010.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "68bc5353ef800d98b63c95f9",
+      "title": "Establish Automated Arbitrage Operations Across 3 Markets",
+      "type": "marketing",
+      "status": "deployed",
+      "priority": "medium",
+      "channel": "marketing",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 3,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\68bc5353ef800d98b63c95f9.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69496e6ae10ccb8e82d8a693",
+      "title": "Establish Local Language Community Memberships",
+      "type": "marketing",
+      "status": "pending",
+      "priority": "medium",
+      "channel": "marketing",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 3,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69496e6ae10ccb8e82d8a693.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "OPS-001",
+      "title": "Revenue Routing & Autonomous Operations",
+      "type": "operations",
+      "status": "deployed",
+      "priority": "medium",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001",
+        "PAY-001",
+        "STO-001"
+      ],
+      "phase": 3,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\OPS-001.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "68ffb8342c6ea1e8006871eb",
+      "title": "Implement Comprehensive Agent-Enabled Funds Transfer Protocol",
+      "type": "operations",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\68ffb8342c6ea1e8006871eb.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "6900754e70a785ae53017535",
+      "title": "Immediate PayPal Resolution Strategy",
+      "type": "operations",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\6900754e70a785ae53017535.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "691c3b2feb5f5e4ad96ef56b",
+      "title": "PayPal Integration Mission",
+      "type": "operations",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\691c3b2feb5f5e4ad96ef56b.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69457a6ff075efc26fd877fb",
+      "title": "Immediate Payout Recovery",
+      "type": "operations",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69457a6ff075efc26fd877fb.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69457a6ff075efc26fd877fc",
+      "title": "System Activation & Resource Allocation",
+      "type": "operations",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69457a6ff075efc26fd877fc.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69457a6ff075efc26fd877fd",
+      "title": "PayPal Integration Fix",
+      "type": "operations",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69457a6ff075efc26fd877fd.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69457a6ff075efc26fd877ff",
+      "title": "Success Verification Protocol",
+      "type": "operations",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69457a6ff075efc26fd877ff.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69458483eff7ba65805bf301",
+      "title": "PayPal Payout Fix",
+      "type": "operations",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69458483eff7ba65805bf301.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69458f9ba5038b0c3a86caa1",
+      "title": "Database Migration - Payout Tables",
+      "type": "operations",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69458f9ba5038b0c3a86caa1.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69458f9ba5038b0c3a86caa2",
+      "title": "PayPal Payout Service Deployment",
+      "type": "operations",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69458f9ba5038b0c3a86caa2.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69458f9ba5038b0c3a86caa6",
+      "title": "Deployment Execution",
+      "type": "operations",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69458f9ba5038b0c3a86caa6.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69458f9ba5038b0c3a86caa7",
+      "title": "Post-Deployment Verification",
+      "type": "operations",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69458f9ba5038b0c3a86caa7.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69458fa7a5038b0c3a86cab0",
+      "title": "Database Migration - Payout Tables",
+      "type": "operations",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69458fa7a5038b0c3a86cab0.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69458fa7a5038b0c3a86cab1",
+      "title": "PayPal Payout Service Deployment",
+      "type": "operations",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69458fa7a5038b0c3a86cab1.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69458fa7a5038b0c3a86cab5",
+      "title": "Deployment Execution",
+      "type": "operations",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69458fa7a5038b0c3a86cab5.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69458fa7a5038b0c3a86cab6",
+      "title": "Post-Deployment Verification",
+      "type": "operations",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69458fa7a5038b0c3a86cab6.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "694687c7df112f68e3ee01d7",
+      "title": "Post-Deployment Verification",
+      "type": "operations",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\694687c7df112f68e3ee01d7.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "68f39bada9798f8fb8be6799",
+      "title": "Payment Method Verification Unblocker",
+      "type": "operations",
+      "status": "pending",
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\68f39bada9798f8fb8be6799.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "68f39bb0a9798f8fb8be67b3",
+      "title": "Account Ownership Verification Unblocker",
+      "type": "operations",
+      "status": "pending",
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\68f39bb0a9798f8fb8be67b3.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "68f39da2e5e54dee055a4c91",
+      "title": "Platform Integration Fixes",
+      "type": "operations",
+      "status": "pending",
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\68f39da2e5e54dee055a4c91.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "68f39da4e5e54dee055a4ca0",
+      "title": "Listing Data Export",
+      "type": "operations",
+      "status": "pending",
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\68f39da4e5e54dee055a4ca0.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "68f39da7e5e54dee055a4cab",
+      "title": "Account Migration Prep",
+      "type": "operations",
+      "status": "pending",
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\68f39da7e5e54dee055a4cab.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "68f39dade5e54dee055a4cd5",
+      "title": "Real Revenue Recovery Plan",
+      "type": "operations",
+      "status": "pending",
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\68f39dade5e54dee055a4cd5.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "691c3b8e1f0b9ad1d61895bb",
+      "title": "Implement Automated Checkpoints for Missions",
+      "type": "operations",
+      "status": "pending",
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\691c3b8e1f0b9ad1d61895bb.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "691c3b8e1f0b9ad1d61895bc",
+      "title": "Develop Real-time Mission Performance Dashboard",
+      "type": "operations",
+      "status": "pending",
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\691c3b8e1f0b9ad1d61895bc.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "6945788e536ff7b26a9b9417",
+      "title": "Re-run not executed payout PP-2024-001 and update system records",
+      "type": "operations",
+      "status": "pending",
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\6945788e536ff7b26a9b9417.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69457a6ff075efc26fd877fe",
+      "title": "Dashboard & Record Updates",
+      "type": "operations",
+      "status": "pending",
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69457a6ff075efc26fd877fe.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69458f9ba5038b0c3a86caa3",
+      "title": "Auto-Reconciliation Loop Setup",
+      "type": "operations",
+      "status": "pending",
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69458f9ba5038b0c3a86caa3.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69458f9ba5038b0c3a86caa4",
+      "title": "Webhook Configuration",
+      "type": "operations",
+      "status": "pending",
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69458f9ba5038b0c3a86caa4.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69458f9ba5038b0c3a86caa5",
+      "title": "Safety Rules Enforcement",
+      "type": "operations",
+      "status": "pending",
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69458f9ba5038b0c3a86caa5.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69458fa7a5038b0c3a86cab2",
+      "title": "Auto-Reconciliation Loop Setup",
+      "type": "operations",
+      "status": "pending",
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69458fa7a5038b0c3a86cab2.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69458fa7a5038b0c3a86cab3",
+      "title": "Webhook Configuration",
+      "type": "operations",
+      "status": "pending",
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69458fa7a5038b0c3a86cab3.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69458fa7a5038b0c3a86cab4",
+      "title": "Safety Rules Enforcement",
+      "type": "operations",
+      "status": "pending",
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69458fa7a5038b0c3a86cab4.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "6948f0be416a963369692fe0",
+      "title": "Create Master Portfolio Dashboard",
+      "type": "operations",
+      "status": "pending",
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\6948f0be416a963369692fe0.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "b44_upgrade_premium",
+      "title": "Upgrade Base44 plan to Premium using promo TAAFT",
+      "type": "operations",
+      "status": null,
+      "priority": "high",
+      "channel": "operations",
+      "dependencies": [],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\b44_upgrade_premium.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "68ffa4810a30d54c629c26b7",
+      "title": "System Integrity Test - Mission Persistence Check",
+      "type": "operations",
+      "status": "pending",
+      "priority": "medium",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\68ffa4810a30d54c629c26b7.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "691c3b8e1f0b9ad1d61895bd",
+      "title": "Implement Mission Dependency Mapping System",
+      "type": "operations",
+      "status": "pending",
+      "priority": "medium",
+      "channel": "operations",
+      "dependencies": [],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\691c3b8e1f0b9ad1d61895bd.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "6948e41f1e5c0e1c906efee1",
+      "title": "Historical Revenue Audit and Backfill",
+      "type": "operations",
+      "status": "pending",
+      "priority": "medium",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\6948e41f1e5c0e1c906efee1.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "6948eff3b395307e371a4806",
+      "title": "AI-Logistique (Cross-Border Informal Transport Network)",
+      "type": "operations",
+      "status": "pending",
+      "priority": "medium",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\6948eff3b395307e371a4806.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "6948eff3b395307e371a4807",
+      "title": "Agri-Link (Hyperlocal Farmer-to-Buyer Marketplace)",
+      "type": "operations",
+      "status": "pending",
+      "priority": "medium",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\6948eff3b395307e371a4807.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "6948eff3b395307e371a4808",
+      "title": "Sante365 (Integrated Health Appointments & Records)",
+      "type": "operations",
+      "status": "pending",
+      "priority": "medium",
+      "channel": "operations",
+      "dependencies": [
+        "INF-001"
+      ],
+      "phase": 4,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\6948eff3b395307e371a4808.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69495d36282e49098ee4a887",
+      "title": "Refine and Structure \"Echoes of Resilience: A Symphony of Self-Discovery\" Manuscript",
+      "type": "content_creation",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "content_creation",
+      "dependencies": [],
+      "phase": 9,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69495d36282e49098ee4a887.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69496e6ae10ccb8e82d8a690",
+      "title": "De-Anglicize & Localize Survival Content",
+      "type": "content_creation",
+      "status": "pending",
+      "priority": "critical",
+      "channel": "content_creation",
+      "dependencies": [],
+      "phase": 9,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69496e6ae10ccb8e82d8a690.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69492fdf37681e7f2603ec25",
+      "title": "Deliver Starter Pack Services for SME Client",
+      "type": "content_creation",
+      "status": "pending",
+      "priority": "high",
+      "channel": "content_creation",
+      "dependencies": [],
+      "phase": 9,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69492fdf37681e7f2603ec25.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "69496e6ae10ccb8e82d8a691",
+      "title": "Develop Regional Survival Micro-Guides",
+      "type": "content_creation",
+      "status": "pending",
+      "priority": "high",
+      "channel": "content_creation",
+      "dependencies": [],
+      "phase": 9,
+      "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69496e6ae10ccb8e82d8a691.json",
+      "missing_dependencies": [],
+      "ready": true
+    },
+    {
+      "id": "website_feedback_collect_2026-02-06",
+      "title": "Collect Website Feedback",
+      "type": "ops_feedback",
+      "status": null,
+      "priority": "high",
+      "channel": "ops_feedback",
+      "dependencies": [],
+      "phase": 9,
+      "file": "c:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\website_feedback_collect_2026-02-06.json",
+      "missing_dependencies": [],
+      "ready": true
+    }
+  ]
+}

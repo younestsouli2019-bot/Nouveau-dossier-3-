@@ -1,0 +1,31 @@
+{
+  "byRoute": {
+    "paypal": {
+      "failures": 704,
+      "lastFailureAt": 1771785370340,
+      "lastSuccessAt": 0,
+      "cooldownUntil": 1771788970340,
+      "lastReason": "PayPal token request failed (401): {\"error\":\"invalid_client\",\"error_description\":\"Client Authentication failed\"}"
+    },
+    "crypto": {
+      "failures": 0,
+      "lastFailureAt": 1771781022753,
+      "lastSuccessAt": 1774300425692,
+      "cooldownUntil": 0,
+      "lastReason": "Binance withdrawal failed: binance {\"code\":-2015,\"msg\":\"Invalid API-key, IP, or permissions for action.\"}"
+    },
+    "wise": {
+      "failures": 1,
+      "lastFailureAt": 1771081912379,
+      "lastSuccessAt": 1771081907807,
+      "cooldownUntil": 1771081942379,
+      "lastReason": "unknown_route:wise"
+    },
+    "payoneer_standard": {
+      "failures": 0,
+      "lastFailureAt": 0,
+      "lastSuccessAt": 0,
+      "cooldownUntil": 0
+    }
+  }
+}

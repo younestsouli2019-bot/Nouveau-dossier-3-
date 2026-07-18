@@ -1,0 +1,77 @@
+{
+  "name": "RevenueEvent",
+  "description": "Revenue events with PSP verification proof",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "text",
+      "required": true,
+      "unique": true
+    },
+    {
+      "name": "amount",
+      "type": "number",
+      "required": true
+    },
+    {
+      "name": "currency",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "occurred_at",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "source",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "external_id",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "verification_proof",
+      "type": "json",
+      "required": false
+    },
+    {
+      "name": "metadata",
+      "type": "json",
+      "required": false
+    },
+    {
+      "name": "payout_batch_id",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "settled",
+      "type": "boolean",
+      "required": false
+    },
+    {
+      "name": "settled_at",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "created_at",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "event_hash",
+      "type": "text",
+      "required": false
+    }
+  ]
+}

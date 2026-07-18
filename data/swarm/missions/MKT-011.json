@@ -1,0 +1,19 @@
+{
+  "id": "MKT-011",
+  "title": "Monetization ladder - Content → lead magnet → email → course → subscription",
+  "channel": "marketing",
+  "priority": "medium",
+  "status": "active",
+  "data": {
+    "mission_parameters": "{\"task\":\"monetization_ladder\",\"dependent_on\":[\"STO-010\"],\"objectives\":[\"content_generation_pipeline\",\"course_packaging\",\"subscription_access\",\"microtransactions_layer\"],\"deliverables\":[\"data/swarm/monetization_ladder.json\"]}"
+  },
+  "created_at": "2026-03-20T01:30:15.329Z",
+  "last_executed_at": "2026-03-30T21:00:20.000Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Launched affiliate promotion campaign.",
+      "revenue_estimate": 50
+    }
+  ]
+}

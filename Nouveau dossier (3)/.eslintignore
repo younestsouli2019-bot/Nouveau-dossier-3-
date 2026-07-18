@@ -1,0 +1,13 @@
+node_modules/
+archive/
+reports/
+out/
+data/
+settlements/
+submitted.manually/
+external/
+.qodo/
+**/*.csv
+**/*.xls
+**/*.xlsx
+**/*.zip

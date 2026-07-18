@@ -1,0 +1,27 @@
+{
+  "id": "68c53e37b0686aa0ab90b67a",
+  "title": "68bd57cd3f63e05ddaf19e04",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "68bd57cd3f63e05ddaf19e04",
+    "type": "operations",
+    "priority": "high",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"68b7f8767633f92fe07c284f\",\"68b7f8767633f92fe07c2850\",\"68b7f031d9defbb9a2ceb84e\",\"68b7f037d9defbb9a2ceb91b\",\"689d9755744a85709b47c4fe\",\"68b7f012d9defbb9a2ceb56f\",\"68b7f049d9defbb9a2cec03f\",\"68b7f04ad9defbb9a2cec051\"]",
+    "mission_parameters": "",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "68c53e37b0686aa0ab90b67a",
+    "created_date": "2025-09-13T09:49:43.656000",
+    "updated_date": "2025-09-13T09:49:43.656000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:12.003Z"
+}

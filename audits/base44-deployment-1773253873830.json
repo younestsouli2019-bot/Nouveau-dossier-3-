@@ -1,0 +1,197 @@
+[
+  {
+    "timestamp": "2026-03-11T18:31:13.820Z",
+    "type": "info",
+    "message": "Processing: RevenueEvent"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.821Z",
+    "type": "push",
+    "message": "[DRY-RUN] GET /entities/RevenueEvent"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.822Z",
+    "type": "push",
+    "message": "Schema does not exist, creating..."
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.822Z",
+    "type": "push",
+    "message": "[DRY-RUN] POST /entities"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.822Z",
+    "type": "success",
+    "message": "Schema created successfully"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.822Z",
+    "type": "info",
+    "message": "Processing: Earning"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.822Z",
+    "type": "push",
+    "message": "[DRY-RUN] GET /entities/Earning"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.823Z",
+    "type": "push",
+    "message": "Schema does not exist, creating..."
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.823Z",
+    "type": "push",
+    "message": "[DRY-RUN] POST /entities"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.823Z",
+    "type": "success",
+    "message": "Schema created successfully"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.823Z",
+    "type": "info",
+    "message": "Processing: PayoutBatch"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.823Z",
+    "type": "push",
+    "message": "[DRY-RUN] GET /entities/PayoutBatch"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.823Z",
+    "type": "push",
+    "message": "Schema does not exist, creating..."
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.823Z",
+    "type": "push",
+    "message": "[DRY-RUN] POST /entities"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.824Z",
+    "type": "success",
+    "message": "Schema created successfully"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.824Z",
+    "type": "info",
+    "message": "Processing: PayoutItem"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.824Z",
+    "type": "push",
+    "message": "[DRY-RUN] GET /entities/PayoutItem"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.824Z",
+    "type": "push",
+    "message": "Schema does not exist, creating..."
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.824Z",
+    "type": "push",
+    "message": "[DRY-RUN] POST /entities"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.824Z",
+    "type": "success",
+    "message": "Schema created successfully"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.824Z",
+    "type": "info",
+    "message": "Processing: TransactionLog"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.824Z",
+    "type": "push",
+    "message": "[DRY-RUN] GET /entities/TransactionLog"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.825Z",
+    "type": "push",
+    "message": "Schema does not exist, creating..."
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.825Z",
+    "type": "push",
+    "message": "[DRY-RUN] POST /entities"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.825Z",
+    "type": "success",
+    "message": "Schema created successfully"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.825Z",
+    "type": "info",
+    "message": "Processing: AgentFeedback"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.825Z",
+    "type": "push",
+    "message": "[DRY-RUN] GET /entities/AgentFeedback"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.825Z",
+    "type": "push",
+    "message": "Schema does not exist, creating..."
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.825Z",
+    "type": "push",
+    "message": "[DRY-RUN] POST /entities"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.826Z",
+    "type": "success",
+    "message": "Schema created successfully"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.826Z",
+    "type": "info",
+    "message": "Validating: Earnings have owner beneficiaries..."
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.827Z",
+    "type": "push",
+    "message": "[DRY-RUN] GET /entities/Earning/records?"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.827Z",
+    "type": "info",
+    "message": "No records found (expected for new deployment)"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.827Z",
+    "type": "info",
+    "message": "Validating: PayoutBatches have owner recipients..."
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.827Z",
+    "type": "push",
+    "message": "[DRY-RUN] GET /entities/PayoutBatch/records?"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.827Z",
+    "type": "info",
+    "message": "No records found (expected for new deployment)"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.827Z",
+    "type": "info",
+    "message": "Validating: PayoutItems have owner recipients..."
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.827Z",
+    "type": "push",
+    "message": "[DRY-RUN] GET /entities/PayoutItem/records?"
+  },
+  {
+    "timestamp": "2026-03-11T18:31:13.828Z",
+    "type": "info",
+    "message": "No records found (expected for new deployment)"
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "provider": "bybit",
+  "action": "withdraw",
+  "coin": "USDT",
+  "network": "ERC20",
+  "address": "UQDIrlJp7NmV-5mief8eNB0b0sYGO0L62Vu7oGX49UXtqlDQ",
+  "amount": 3.7,
+  "status": "WAITING_MANUAL_EXECUTION",
+  "creds_present": true,
+  "origin": "in_house"
+}

@@ -1,0 +1,14 @@
+{
+  "status": "processing",
+  "gateway_response": {
+    "status": "INSTRUCTIONS_READY",
+    "provider": "bitget",
+    "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\crypto\\bitget_instruction_1773107784598.json",
+    "network": "BEP20",
+    "prepared_at": "2026-03-10T01:56:22.004Z",
+    "creds_present": true
+  },
+  "payout_batch_id": "OWNER_MULTI_1773107781993",
+  "processed_at": "2026-03-10T01:56:29.256Z",
+  "route_attempted": "crypto"
+}

@@ -1,0 +1,36 @@
+{
+  "id": "69495d36282e49098ee4a887",
+  "title": "Refine and Structure \"Echoes of Resilience: A Symphony of Self-Discovery\" Manuscript",
+  "channel": "content_creation",
+  "priority": "critical",
+  "status": "active",
+  "data": {
+    "title": "Refine and Structure \"Echoes of Resilience: A Symphony of Self-Discovery\" Manuscript",
+    "type": "content_creation",
+    "priority": "critical",
+    "status": "pending",
+    "assigned_agent_ids": "[\"content_strategist_agent\",\"writer_agent\"]",
+    "mission_parameters": "{\"tasks\":[\"Analyze existing content for redundancies and inconsistencies\",\"Create a logical chapter-by-chapter outline\",\"Reorganize existing content into the new structure\",\"Identify gaps for expansion, especially for outlined sections\",\"Ensure seamless narrative integration of Jack's story and expert insights\",\"Improve transitions between topics and chapters\"],\"desired_structure_overview\":[\"Part 1: The Foundations of Self-Discovery (Hypersensitivity, Self-Awareness, Mindfulness, CBT)\",\"Part 2: Navigating the Social Landscape (Social Skills, Exposure, Wisdom from Experts)\",\"Part 3: Cultivating Resilience and Growth (Jack's Journey, Mindset, Neuroscience)\",\"Part 4: Implementing Transformation (Practical Application, Real-Life Psychology)\",\"Part 5: Beyond Personal Growth (Inclusivity, Professional Thriving)\",\"Comprehensive Conclusion & Call to Action\"],\"manuscript_sections\":[\"Introduction\",\"Section 1: Understanding Hypersensitivity and Social Interactions (1.1, 1.2, 1.3, 1.4, 1.5)\",\"Standalone: Mindfulness and Meditation\",\"Standalone: Cognitive-Behavioral Therapy (CBT)\",\"Standalone: Social Skills Training\",\"Standalone: Exposure Therapy\",\"Standalone: Lifestyle Modifications\",\"Section Four: Putting it into Practice\",\"Section Five: The Power of Mindset (Outline)\",\"Chapter Two: Understanding Hypersensitivity and Its Effects\",\"Discussion: Robert Greene\",\"Discussion: Dr. Ivan Joseph\",\"Discussion: Suzana Herculano-Houzel\",\"Discussion: Jim Kwik\",\"Discussion: Brendon Burchard\",\"Discussion: Philosophers\",\"Neuroscience Terms\",\"The Turning Point: Jack's Discovery\",\"Applying Psychology to Real Life\",\"Empowering Readers for Their Journeys\",\"Fostering Inclusivity and Understanding (Outline)\",\"Thriving in Professional Environments (Outline)\",\"Conclusion: Commencement, Not Conclusion\",\"Beyond the Pages: A Call to Action\"]}",
+    "progress_data": "",
+    "estimated_duration_hours": "20",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "69495d36282e49098ee4a887",
+    "created_date": "2025-12-22T15:01:10.236000",
+    "updated_date": "2025-12-22T15:01:10.236000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-02-24T12:21:21.639Z",
+  "last_executed_at": "2026-03-30T20:50:58.881Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Generated and licensed new niche content batch.",
+      "revenue_estimate": 25
+    }
+  ]
+}

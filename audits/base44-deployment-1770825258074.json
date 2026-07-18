@@ -1,0 +1,182 @@
+[
+  {
+    "timestamp": "2026-02-11T15:54:14.894Z",
+    "type": "info",
+    "message": "Processing: RevenueEvent"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:14.901Z",
+    "type": "push",
+    "message": "GET /entities/RevenueEvent"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:15.688Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"}}"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:15.689Z",
+    "type": "error",
+    "message": "Failed: Base44 API error: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"}}"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:15.689Z",
+    "type": "info",
+    "message": "Processing: Earning"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:15.689Z",
+    "type": "push",
+    "message": "GET /entities/Earning"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:15.987Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"}}"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:15.987Z",
+    "type": "error",
+    "message": "Failed: Base44 API error: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"}}"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:15.987Z",
+    "type": "info",
+    "message": "Processing: PayoutBatch"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:15.987Z",
+    "type": "push",
+    "message": "GET /entities/PayoutBatch"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:16.280Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"}}"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:16.281Z",
+    "type": "error",
+    "message": "Failed: Base44 API error: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"}}"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:16.281Z",
+    "type": "info",
+    "message": "Processing: PayoutItem"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:16.281Z",
+    "type": "push",
+    "message": "GET /entities/PayoutItem"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:16.555Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"}}"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:16.555Z",
+    "type": "error",
+    "message": "Failed: Base44 API error: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"}}"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:16.555Z",
+    "type": "info",
+    "message": "Processing: TransactionLog"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:16.556Z",
+    "type": "push",
+    "message": "GET /entities/TransactionLog"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:16.830Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"}}"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:16.830Z",
+    "type": "error",
+    "message": "Failed: Base44 API error: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"}}"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:16.831Z",
+    "type": "info",
+    "message": "Processing: AgentFeedback"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:16.831Z",
+    "type": "push",
+    "message": "GET /entities/AgentFeedback"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:17.127Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"}}"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:17.127Z",
+    "type": "error",
+    "message": "Failed: Base44 API error: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"}}"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:17.129Z",
+    "type": "info",
+    "message": "Validating: Earnings have owner beneficiaries..."
+  },
+  {
+    "timestamp": "2026-02-11T15:54:17.130Z",
+    "type": "push",
+    "message": "GET /entities/Earning/records?"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:17.437Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"}}"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:17.438Z",
+    "type": "error",
+    "message": "Validation error: Base44 API error: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"}}"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:17.438Z",
+    "type": "info",
+    "message": "Validating: PayoutBatches have owner recipients..."
+  },
+  {
+    "timestamp": "2026-02-11T15:54:17.438Z",
+    "type": "push",
+    "message": "GET /entities/PayoutBatch/records?"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:17.744Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"}}"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:17.744Z",
+    "type": "error",
+    "message": "Validation error: Base44 API error: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"}}"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:17.745Z",
+    "type": "info",
+    "message": "Validating: PayoutItems have owner recipients..."
+  },
+  {
+    "timestamp": "2026-02-11T15:54:17.745Z",
+    "type": "push",
+    "message": "GET /entities/PayoutItem/records?"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:18.066Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"}}"
+  },
+  {
+    "timestamp": "2026-02-11T15:54:18.067Z",
+    "type": "error",
+    "message": "Validation error: Base44 API error: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"}}"
+  }
+]

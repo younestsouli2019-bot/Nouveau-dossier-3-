@@ -1,0 +1,1002 @@
+[
+  {
+    "timestamp": "2026-01-16T10:35:43.208Z",
+    "batch_id": "PAYO_HISTORICAL_1768559742922_1",
+    "action": "historical_settlement",
+    "events_settled": [
+      {
+        "event_id": "68bbde98768731d1ecd410c0",
+        "amount": 2840,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.208Z"
+      },
+      {
+        "event_id": "68bbde98768731d1ecd410c1",
+        "amount": 1680,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.208Z"
+      },
+      {
+        "event_id": "68e0f56d5a1c0e13fda4321e",
+        "amount": 450.5,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.208Z"
+      },
+      {
+        "event_id": "68e0f56d5a1c0e13fda4321f",
+        "amount": 275,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.208Z"
+      },
+      {
+        "event_id": "68e0f56d5a1c0e13fda43220",
+        "amount": 890.25,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.208Z"
+      },
+      {
+        "event_id": "68e0f56d5a1c0e13fda43221",
+        "amount": 325,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.208Z"
+      },
+      {
+        "event_id": "68e0f56d5a1c0e13fda43222",
+        "amount": 150.75,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.208Z"
+      },
+      {
+        "event_id": "68e0f56d5a1c0e13fda43223",
+        "amount": 520,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.208Z"
+      },
+      {
+        "event_id": "68e0f56d5a1c0e13fda43224",
+        "amount": 680.5,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.208Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2d4",
+        "amount": 450.5,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.208Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2d5",
+        "amount": 275,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.208Z"
+      }
+    ],
+    "constitutional_check": {
+      "valid": true,
+      "violations": [],
+      "requires_human_approval": true
+    }
+  },
+  {
+    "timestamp": "2026-01-16T10:35:43.219Z",
+    "batch_id": "PAYO_HISTORICAL_1768559743212_2",
+    "action": "historical_settlement",
+    "events_settled": [
+      {
+        "event_id": "68e7500c4eae3dbaf591e2d6",
+        "amount": 890.25,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.219Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2d7",
+        "amount": 325,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.219Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2d8",
+        "amount": 150.75,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.219Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2d9",
+        "amount": 520,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.219Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2da",
+        "amount": 680.5,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.219Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2db",
+        "amount": 410,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.219Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2dc",
+        "amount": 780,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.219Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2dd",
+        "amount": 1250.5,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.219Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2de",
+        "amount": 620,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.219Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2df",
+        "amount": 340.75,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.219Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e0",
+        "amount": 495,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.219Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e1",
+        "amount": 825.25,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.219Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e2",
+        "amount": 380,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.219Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e3",
+        "amount": 290.5,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.219Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e4",
+        "amount": 560,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.219Z"
+      }
+    ],
+    "constitutional_check": {
+      "valid": true,
+      "violations": [],
+      "requires_human_approval": true
+    }
+  },
+  {
+    "timestamp": "2026-01-16T10:35:43.229Z",
+    "batch_id": "PAYO_HISTORICAL_1768559743222_3",
+    "action": "historical_settlement",
+    "events_settled": [
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e5",
+        "amount": 715.75,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.229Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e6",
+        "amount": 425,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.229Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e7",
+        "amount": 310.25,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.229Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e8",
+        "amount": 940,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.229Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e9",
+        "amount": 580.5,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.229Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2ea",
+        "amount": 670,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.229Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2eb",
+        "amount": 395.75,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.229Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2ec",
+        "amount": 825,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.229Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2ed",
+        "amount": 445.25,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.229Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2ee",
+        "amount": 520,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.229Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2ef",
+        "amount": 360.5,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.229Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f0",
+        "amount": 755,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.229Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f1",
+        "amount": 490.75,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.229Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f2",
+        "amount": 615,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.229Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f3",
+        "amount": 280.25,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.229Z"
+      }
+    ],
+    "constitutional_check": {
+      "valid": true,
+      "violations": [],
+      "requires_human_approval": true
+    }
+  },
+  {
+    "timestamp": "2026-01-16T10:35:43.240Z",
+    "batch_id": "PAYO_HISTORICAL_1768559743232_4",
+    "action": "historical_settlement",
+    "events_settled": [
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f4",
+        "amount": 720,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.240Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f5",
+        "amount": 885.5,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.240Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f6",
+        "amount": 540,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.240Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f7",
+        "amount": 315.75,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.240Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f8",
+        "amount": 660,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.240Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f9",
+        "amount": 795.25,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.240Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2fa",
+        "amount": 430,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.240Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2fb",
+        "amount": 375.5,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.240Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2fc",
+        "amount": 550,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.240Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2fd",
+        "amount": 820.75,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.240Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2fe",
+        "amount": 485,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.240Z"
+      },
+      {
+        "event_id": "68e750acedec97285a166559",
+        "amount": 580,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.240Z"
+      },
+      {
+        "event_id": "68e750acedec97285a16655a",
+        "amount": 325.5,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.240Z"
+      },
+      {
+        "event_id": "68e750acedec97285a16655b",
+        "amount": 750,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.240Z"
+      },
+      {
+        "event_id": "68e750acedec97285a16655c",
+        "amount": 215.75,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.240Z"
+      },
+      {
+        "event_id": "68e750acedec97285a16655d",
+        "amount": 445,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.240Z"
+      }
+    ],
+    "constitutional_check": {
+      "valid": true,
+      "violations": [],
+      "requires_human_approval": true
+    }
+  },
+  {
+    "timestamp": "2026-01-16T10:35:43.251Z",
+    "batch_id": "PAYO_HISTORICAL_1768559743243_5",
+    "action": "historical_settlement",
+    "events_settled": [
+      {
+        "event_id": "68e750acedec97285a16655e",
+        "amount": 890.25,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.251Z"
+      },
+      {
+        "event_id": "68e750acedec97285a16655f",
+        "amount": 620,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.251Z"
+      },
+      {
+        "event_id": "PURCHASE_1767787277226",
+        "amount": 32,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.251Z"
+      },
+      {
+        "event_id": "PURCHASE_1767787338773",
+        "amount": 47,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.251Z"
+      },
+      {
+        "event_id": "SWARM_EXEC_1767293194734_1051928a",
+        "amount": 159.45,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.251Z"
+      },
+      {
+        "event_id": "SWARM_EXEC_1767356101285_cf31f851",
+        "amount": 158.57,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.251Z"
+      },
+      {
+        "event_id": "SWARM_EXEC_1767501886827_f2bddbee",
+        "amount": 142.22,
+        "currency": "USD",
+        "settled_at": "2026-01-16T10:35:43.252Z"
+      }
+    ],
+    "constitutional_check": {
+      "valid": true,
+      "violations": [],
+      "requires_human_approval": false
+    }
+  },
+  {
+    "timestamp": "2026-02-07T13:49:11.332Z",
+    "action": "plaid_auth_numbers_retrieved",
+    "status": "ready_for_billing"
+  },
+  {
+    "timestamp": "2026-02-07T16:51:45.681Z",
+    "action": "plaid_transfer_authorization_denied",
+    "amount": 25,
+    "rationale_code": null,
+    "rationale_description": null
+  },
+  {
+    "timestamp": "2026-02-07T16:51:49.036Z",
+    "action": "plaid_transfer_authorization_denied_retry",
+    "amount": 1,
+    "rationale_code": null,
+    "rationale_description": null
+  },
+  {
+    "timestamp": "2026-02-07T16:51:50.103Z",
+    "action": "plaid_auth_numbers_retrieved",
+    "status": "ready_for_billing"
+  },
+  {
+    "timestamp": "2026-02-07T17:00:10.720Z",
+    "action": "plaid_transfer_authorization_denied",
+    "amount": 1,
+    "rationale_code": null,
+    "rationale_description": null
+  },
+  {
+    "timestamp": "2026-02-07T17:00:14.318Z",
+    "action": "plaid_transfer_authorization_denied_retry",
+    "amount": 1,
+    "rationale_code": null,
+    "rationale_description": null
+  },
+  {
+    "timestamp": "2026-02-07T17:00:18.531Z",
+    "action": "plaid_auth_numbers_retrieved",
+    "status": "ready_for_billing"
+  },
+  {
+    "timestamp": "2026-02-07T17:03:46.370Z",
+    "action": "plaid_webhook",
+    "webhook_type": "TRANSFER",
+    "webhook_code": "TRANSFER_CREATED",
+    "item_id": null,
+    "account_id": null,
+    "amount": "1.00",
+    "currency": "USD",
+    "status": "pending",
+    "evidence": {
+      "headers": {
+        "host": "localhost:5057",
+        "connection": "keep-alive",
+        "content-type": "application/json",
+        "accept": "*/*",
+        "accept-language": "*",
+        "sec-fetch-mode": "cors",
+        "user-agent": "node",
+        "accept-encoding": "gzip, deflate",
+        "content-length": "158"
+      }
+    }
+  },
+  {
+    "timestamp": "2026-02-07T17:59:36.744Z",
+    "action": "plaid_webhook",
+    "webhook_type": "TRANSFER",
+    "webhook_code": "TRANSFER_CREATED",
+    "item_id": null,
+    "account_id": null,
+    "amount": "1.00",
+    "currency": "USD",
+    "status": "pending",
+    "evidence": {
+      "headers": {
+        "host": "localhost:5057",
+        "connection": "keep-alive",
+        "content-type": "application/json",
+        "x-plaid-signature": "deadbeef",
+        "accept": "*/*",
+        "accept-language": "*",
+        "sec-fetch-mode": "cors",
+        "user-agent": "node",
+        "accept-encoding": "gzip, deflate",
+        "content-length": "158"
+      },
+      "signature_valid": null
+    }
+  },
+  {
+    "timestamp": "2026-02-25T20:23:52.903Z",
+    "batch_id": "PAYO_HISTORICAL_1772051032587_1",
+    "action": "historical_settlement",
+    "events_settled": [
+      {
+        "event_id": "68bbde98768731d1ecd410c0",
+        "amount": 2840,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.903Z"
+      },
+      {
+        "event_id": "68bbde98768731d1ecd410c1",
+        "amount": 1680,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.903Z"
+      },
+      {
+        "event_id": "68e0f56d5a1c0e13fda4321e",
+        "amount": 450.5,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.903Z"
+      },
+      {
+        "event_id": "68e0f56d5a1c0e13fda4321f",
+        "amount": 275,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.903Z"
+      },
+      {
+        "event_id": "68e0f56d5a1c0e13fda43220",
+        "amount": 890.25,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.903Z"
+      },
+      {
+        "event_id": "68e0f56d5a1c0e13fda43221",
+        "amount": 325,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.903Z"
+      },
+      {
+        "event_id": "68e0f56d5a1c0e13fda43222",
+        "amount": 150.75,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.903Z"
+      },
+      {
+        "event_id": "68e0f56d5a1c0e13fda43223",
+        "amount": 520,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.903Z"
+      },
+      {
+        "event_id": "68e0f56d5a1c0e13fda43224",
+        "amount": 680.5,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.903Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2d4",
+        "amount": 450.5,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.903Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2d5",
+        "amount": 275,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.903Z"
+      }
+    ],
+    "constitutional_check": {
+      "valid": true,
+      "violations": [],
+      "requires_human_approval": true
+    }
+  },
+  {
+    "timestamp": "2026-02-25T20:23:52.921Z",
+    "batch_id": "PAYO_HISTORICAL_1772051032908_2",
+    "action": "historical_settlement",
+    "events_settled": [
+      {
+        "event_id": "68e7500c4eae3dbaf591e2d6",
+        "amount": 890.25,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.921Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2d7",
+        "amount": 325,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.921Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2d8",
+        "amount": 150.75,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.921Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2d9",
+        "amount": 520,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.921Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2da",
+        "amount": 680.5,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.921Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2db",
+        "amount": 410,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.921Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2dc",
+        "amount": 780,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.921Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2dd",
+        "amount": 1250.5,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.921Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2de",
+        "amount": 620,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.921Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2df",
+        "amount": 340.75,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.921Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e0",
+        "amount": 495,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.921Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e1",
+        "amount": 825.25,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.921Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e2",
+        "amount": 380,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.921Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e3",
+        "amount": 290.5,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.921Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e4",
+        "amount": 560,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.921Z"
+      }
+    ],
+    "constitutional_check": {
+      "valid": true,
+      "violations": [],
+      "requires_human_approval": true
+    }
+  },
+  {
+    "timestamp": "2026-02-25T20:23:52.939Z",
+    "batch_id": "PAYO_HISTORICAL_1772051032926_3",
+    "action": "historical_settlement",
+    "events_settled": [
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e5",
+        "amount": 715.75,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.939Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e6",
+        "amount": 425,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.939Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e7",
+        "amount": 310.25,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.939Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e8",
+        "amount": 940,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.939Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2e9",
+        "amount": 580.5,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.939Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2ea",
+        "amount": 670,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.939Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2eb",
+        "amount": 395.75,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.939Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2ec",
+        "amount": 825,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.939Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2ed",
+        "amount": 445.25,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.939Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2ee",
+        "amount": 520,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.939Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2ef",
+        "amount": 360.5,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.939Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f0",
+        "amount": 755,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.939Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f1",
+        "amount": 490.75,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.939Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f2",
+        "amount": 615,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.939Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f3",
+        "amount": 280.25,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.939Z"
+      }
+    ],
+    "constitutional_check": {
+      "valid": true,
+      "violations": [],
+      "requires_human_approval": true
+    }
+  },
+  {
+    "timestamp": "2026-02-25T20:23:52.956Z",
+    "batch_id": "PAYO_HISTORICAL_1772051032944_4",
+    "action": "historical_settlement",
+    "events_settled": [
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f4",
+        "amount": 720,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.956Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f5",
+        "amount": 885.5,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.956Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f6",
+        "amount": 540,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.956Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f7",
+        "amount": 315.75,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.956Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f8",
+        "amount": 660,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.956Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2f9",
+        "amount": 795.25,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.956Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2fa",
+        "amount": 430,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.956Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2fb",
+        "amount": 375.5,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.956Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2fc",
+        "amount": 550,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.956Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2fd",
+        "amount": 820.75,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.956Z"
+      },
+      {
+        "event_id": "68e7500c4eae3dbaf591e2fe",
+        "amount": 485,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.956Z"
+      },
+      {
+        "event_id": "68e750acedec97285a166559",
+        "amount": 580,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.956Z"
+      },
+      {
+        "event_id": "68e750acedec97285a16655a",
+        "amount": 325.5,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.956Z"
+      },
+      {
+        "event_id": "68e750acedec97285a16655b",
+        "amount": 750,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.956Z"
+      },
+      {
+        "event_id": "68e750acedec97285a16655c",
+        "amount": 215.75,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.956Z"
+      },
+      {
+        "event_id": "68e750acedec97285a16655d",
+        "amount": 445,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.956Z"
+      }
+    ],
+    "constitutional_check": {
+      "valid": true,
+      "violations": [],
+      "requires_human_approval": true
+    }
+  },
+  {
+    "timestamp": "2026-02-25T20:23:52.971Z",
+    "batch_id": "PAYO_HISTORICAL_1772051032962_5",
+    "action": "historical_settlement",
+    "events_settled": [
+      {
+        "event_id": "68e750acedec97285a16655e",
+        "amount": 890.25,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.971Z"
+      },
+      {
+        "event_id": "68e750acedec97285a16655f",
+        "amount": 620,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.971Z"
+      },
+      {
+        "event_id": "PURCHASE_1767787277226",
+        "amount": 32,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.971Z"
+      },
+      {
+        "event_id": "PURCHASE_1767787338773",
+        "amount": 47,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.971Z"
+      },
+      {
+        "event_id": "SWARM_EXEC_1767293194734_1051928a",
+        "amount": 159.45,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.971Z"
+      },
+      {
+        "event_id": "SWARM_EXEC_1767356101285_cf31f851",
+        "amount": 158.57,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.971Z"
+      },
+      {
+        "event_id": "SWARM_EXEC_1767501886827_f2bddbee",
+        "amount": 142.22,
+        "currency": "USD",
+        "settled_at": "2026-02-25T20:23:52.971Z"
+      }
+    ],
+    "constitutional_check": {
+      "valid": true,
+      "violations": [],
+      "requires_human_approval": false
+    }
+  },
+  {
+    "timestamp": "2026-02-27T22:22:46.211Z",
+    "action": "plaid_transfer_authorization_denied",
+    "amount": 1,
+    "rationale_code": null,
+    "rationale_description": null
+  },
+  {
+    "timestamp": "2026-02-27T22:22:50.593Z",
+    "action": "plaid_transfer_authorization_denied_retry",
+    "amount": 1,
+    "rationale_code": null,
+    "rationale_description": null
+  },
+  {
+    "timestamp": "2026-02-27T22:22:52.068Z",
+    "action": "plaid_auth_numbers_retrieved",
+    "status": "ready_for_billing"
+  }
+]

@@ -1,0 +1,36 @@
+{
+  "id": "OPS-001",
+  "title": "Revenue Routing & Autonomous Operations",
+  "channel": "operations",
+  "priority": "medium",
+  "status": "active",
+  "data": {
+    "title": "Revenue Routing & Autonomous Operations",
+    "type": "operations",
+    "priority": "medium",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"finance_agent\",\"ops_manager_agent\"]",
+    "mission_parameters": "{\"task\":\"monitor_and_route\",\"frequency\":\"daily\",\"currency_conversion\":\"auto\",\"profit_split\":{\"reinvest\":0.4,\"payout\":0.6},\"payout_priority\":[\"us\",\"uk\",\"eu\"],\"fallback_payment\":\"paypal\",\"dependent_on\":[\"INF-001\",\"PAY-001\",\"STO-001\"]}",
+    "progress_data": "{\"step\":\"monitoring\",\"total_revenue\":0,\"last_payout_date\":\"\"}",
+    "estimated_duration_hours": "720",
+    "actual_duration_hours": "",
+    "deadline": "2027-02-22T23:15:44.299Z",
+    "completion_notes": "",
+    "revenue_generated": "0",
+    "id": "OPS-001",
+    "created_date": "2026-02-22T23:15:44.296Z",
+    "updated_date": "2026-02-22T23:15:44.296Z",
+    "created_by_id": "",
+    "created_by": "$ENV:SWARM_OWNER_EMAIL",
+    "is_sample": ""
+  },
+  "created_at": "2026-02-24T12:21:21.665Z",
+  "last_executed_at": "2026-03-30T21:00:20.123Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Autonomous operational optimization complete.",
+      "revenue_estimate": 10
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "id": "68c7e0f1fe47320743671675",
+  "title": "Brand Building and Niche Product Differentiation",
+  "channel": "marketing",
+  "priority": "high",
+  "status": "active",
+  "data": {
+    "title": "Brand Building and Niche Product Differentiation",
+    "type": "marketing",
+    "priority": "high",
+    "status": "deployed",
+    "assigned_agent_ids": "[]",
+    "mission_parameters": "{\"target_platforms\":[\"Zendrop\",\"Modalyst\"],\"objective\":\"Develop and promote unique product offerings with custom branding to establish strong market presence and customer loyalty.\",\"key_features_to_leverage\":[\"custom_packaging\",\"private_label_options\",\"eco_friendly_suppliers\",\"sustainable_products\"],\"revenue_impact\":\"Increased customer lifetime value, premium pricing opportunities, and reduced marketing costs due to brand recognition.\",\"dependent_on\":\"INF-001\"}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "68c7e0f1fe47320743671675",
+    "created_date": "2025-09-15T09:48:33.745000",
+    "updated_date": "2025-09-15T12:04:47.747000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-02-24T12:21:21.657Z",
+  "last_executed_at": "2026-03-30T20:50:58.341Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Launched affiliate promotion campaign.",
+      "revenue_estimate": 50
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "type": "ap2.intent",
+  "id": "intent_bank_wire_owner_1768922900000",
+  "constraints": {
+    "route_preference": [
+      "bank_wire"
+    ],
+    "currency": "USD"
+  }
+}

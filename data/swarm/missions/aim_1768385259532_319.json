@@ -1,0 +1,16 @@
+{
+  "id": "aim_1768385259532_319",
+  "title": "526→* Emit this as **machine-readable JSON Schema** sumit to swarm",
+  "channel": "payoneer",
+  "priority": "medium",
+  "data": {
+    "amounts": [],
+    "recipient": "younestsouli2019@gmail.com"
+  },
+  "created_at": "2026-01-14T10:07:39.535Z",
+  "posp_proof": {
+    "score": 1482,
+    "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\exports\\posp-proofs\\posp_proof_local:12916_1768385259694.json",
+    "hash": "1f7bda97cb971235ce757879180c01272f229ec4f8b11eb9a04de0ba90692d50"
+  }
+}

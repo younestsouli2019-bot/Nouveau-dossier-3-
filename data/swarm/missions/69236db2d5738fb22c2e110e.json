@@ -1,0 +1,27 @@
+{
+  "id": "69236db2d5738fb22c2e110e",
+  "title": "Resolve PayPal 403 Authorization Errors",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Resolve PayPal 403 Authorization Errors",
+    "type": "operations",
+    "priority": "medium",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"PayPalAuthResolver\"]",
+    "mission_parameters": "{\"debug_ids\":[\"8730ed5341f26\",\"789f12aeda406\",\"77ffa6bde7861\"],\"credential_rotation_schedule\":\"0 2 * * *\",\"paypal_support_contact\":\"1-888-221-1161\"}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "69236db2d5738fb22c2e110e",
+    "created_date": "2025-11-23T20:25:22.356000",
+    "updated_date": "2025-11-23T20:25:55.724000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:11.997Z"
+}

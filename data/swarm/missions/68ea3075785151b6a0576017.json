@@ -1,0 +1,27 @@
+{
+  "id": "68ea3075785151b6a0576017",
+  "title": "Create Revenue Monitoring Dashboard with Canva Alerts",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Create Revenue Monitoring Dashboard with Canva Alerts",
+    "type": "operations",
+    "priority": "critical",
+    "status": "deployed",
+    "assigned_agent_ids": "[]",
+    "mission_parameters": "",
+    "progress_data": "",
+    "estimated_duration_hours": "12",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "68ea3075785151b6a0576017",
+    "created_date": "2025-10-11T10:24:53.108000",
+    "updated_date": "2025-10-11T17:01:05.312000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:12.000Z"
+}

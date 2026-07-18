@@ -1,0 +1,19 @@
+{
+  "id": "INF-011",
+  "title": "Dynamic adaptation - Agent scorecards + reinforcement loop policy",
+  "channel": "infrastructure",
+  "priority": "high",
+  "status": "active",
+  "data": {
+    "mission_parameters": "{\"task\":\"reinforcement_policy\",\"dependent_on\":[\"OPS-010\"],\"objectives\":[\"define_success_metrics\",\"reward_high_performers\",\"phase_out_underperformers\",\"keep_human_override\"],\"guardrails\":{\"risk_averse\":true,\"no_unaudited_money_movement\":true},\"deliverables\":[\"data/swarm/agent_scorecards.json\"]}"
+  },
+  "created_at": "2026-03-20T01:30:15.316Z",
+  "last_executed_at": "2026-03-30T21:00:19.973Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Autonomous operational optimization complete.",
+      "revenue_estimate": 10
+    }
+  ]
+}

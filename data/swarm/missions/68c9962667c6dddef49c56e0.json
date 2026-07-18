@@ -1,0 +1,27 @@
+{
+  "id": "68c9962667c6dddef49c56e0",
+  "title": "Recurring Problem Detection & Solution Commercialization",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Recurring Problem Detection & Solution Commercialization",
+    "type": "operations",
+    "priority": "high",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"68c9960667c6dddef49c5517\",\"68c9960967c6dddef49c5532\",\"68c9960e67c6dddef49c5557\",\"68c9961067c6dddef49c556e\",\"68c9961767c6dddef49c55b6\",\"68c9961967c6dddef49c55f9\",\"68c9961b67c6dddef49c5614\",\"68c9961d67c6dddef49c5690\",\"68c9962067c6dddef49c56a0\"]",
+    "mission_parameters": "",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "68c9962667c6dddef49c56e0",
+    "created_date": "2025-09-16T16:53:58.110000",
+    "updated_date": "2025-10-04T13:24:31.217000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:12.002Z"
+}

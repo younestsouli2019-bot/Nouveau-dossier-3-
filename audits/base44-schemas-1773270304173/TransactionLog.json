@@ -1,0 +1,72 @@
+{
+  "name": "TransactionLog",
+  "description": "Immutable audit trail of all transactions",
+  "fields": [
+    {
+      "name": "log_id",
+      "type": "text",
+      "required": true,
+      "unique": true
+    },
+    {
+      "name": "transaction_type",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "amount",
+      "type": "number",
+      "required": true
+    },
+    {
+      "name": "currency",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "transaction_date",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "payment_method",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "reference_id",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "payout_batch_id",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "payout_item_id",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "metadata",
+      "type": "json",
+      "required": false
+    }
+  ]
+}

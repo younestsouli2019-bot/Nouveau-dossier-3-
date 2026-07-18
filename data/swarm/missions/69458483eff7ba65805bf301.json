@@ -1,0 +1,36 @@
+{
+  "id": "69458483eff7ba65805bf301",
+  "title": "PayPal Payout Fix",
+  "channel": "operations",
+  "priority": "critical",
+  "status": "active",
+  "data": {
+    "title": "PayPal Payout Fix",
+    "type": "operations",
+    "priority": "critical",
+    "status": "pending",
+    "assigned_agent_ids": "[]",
+    "mission_parameters": "{\"key_actions_overview\":[\"Reprocess failed payouts.\",\"Restart payout workers, set PayPal to live mode, start webhook listeners, and scale resources.\",\"Verify PayPal setup, refresh API credentials, and configure webhooks.\",\"Update database schema (create transaction log, triggers) and dashboard components.\",\"Monitor progress and perform final verification against the checklist, including PayPal account and system logs checks.\"],\"failed_payouts_to_reprocess\":[{\"date\":\"2025-12-12\",\"amount\":28500,\"id\":\"PP-2024-001\"},{\"date\":\"2025-12-05\",\"amount\":35200,\"id\":\"PP-2024-002\"},{\"date\":\"2025-11-28\",\"id\":\"PP-2024-003\",\"amount\":42100},{\"amount\":31800,\"id\":\"PP-2024-004\",\"date\":\"2025-11-21\"}],\"phases_of_execution\":[\"Immediate Payout Recovery (15 minutes)\",\"System Activation & Resource Allocation (30 minutes)\",\"PayPal Integration Fix (45 minutes)\",\"Dashboard & Record Updates (20 minutes)\",\"Success Verification Protocol (24 hours)\"],\"mission_objective_summary\":\"To fix issues with PayPal payouts, including reprocessing failed payouts, activating system components, correcting PayPal integration, updating dashboards, and verifying success. The detailed execution guide and verification checklist provided in the operational documentation (original script) outline the steps.\",\"paypal_email\":\"younestsouli2019@gmail.com\",\"dependent_on\":\"INF-001\"}",
+    "progress_data": "",
+    "estimated_duration_hours": "26",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "137600",
+    "id": "69458483eff7ba65805bf301",
+    "created_date": "2025-12-19T16:59:47.433000",
+    "updated_date": "2025-12-19T16:59:47.433000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-02-24T12:21:21.643Z",
+  "last_executed_at": "2026-03-30T20:50:58.636Z",
+  "execution_log": [
+    {
+      "ok": true,
+      "msg": "Autonomous operational optimization complete.",
+      "revenue_estimate": 10
+    }
+  ]
+}

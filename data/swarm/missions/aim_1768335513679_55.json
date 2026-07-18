@@ -1,0 +1,16 @@
+{
+	"id": "aim_1768335513679_55",
+	"title": "All proofs are valid and match contract terms",
+	"channel": "payoneer",
+	"priority": "medium",
+	"data": {
+		"amounts": [],
+		"recipient": "younestsouli2019@gmail.com"
+	},
+	"created_at": "2026-01-13T20:18:33.680Z",
+	"posp_proof": {
+		"score": 1482,
+		"file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\exports\\posp-proofs\\posp_proof_local:31544_1768335514191.json",
+		"hash": "98ad8f90b252a4c95cfdfe13c53dc4f155031c4a219ab212f5171216e2d9d614"
+	}
+}

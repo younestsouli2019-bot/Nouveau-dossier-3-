@@ -1,0 +1,52 @@
+{
+  "name": "AgentFeedback",
+  "description": "Feedback, escalations, and upgrade requests from autonomous agents",
+  "fields": [
+    {
+      "name": "feedback_id",
+      "type": "text",
+      "required": true,
+      "unique": true
+    },
+    {
+      "name": "agent_id",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "type",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "content",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "priority",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "context",
+      "type": "json",
+      "required": false
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "created_at",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "resolution_notes",
+      "type": "text",
+      "required": false
+    }
+  ]
+}

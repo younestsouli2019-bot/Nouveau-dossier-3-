@@ -1,0 +1,27 @@
+{
+  "id": "68beddf551088dc2206bd7ed",
+  "title": "Pilot Program Design",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Pilot Program Design",
+    "type": "operations",
+    "priority": "high",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"Product Owner\"]",
+    "mission_parameters": "{\"description\":\"Plan MVP or pilot test of revenue model with measurable KPIs.\",\"data_sources\":\"Execution roadmap,outreach plan\",\"deliverables\":\"Pilot design doc\",\"dependencies\":\"M015;M016\",\"automation\":\"No\",\"tools\":\"Docs\"}",
+    "progress_data": "{\"source_status\":\"Not Started\"}",
+    "estimated_duration_hours": "24",
+    "actual_duration_hours": "",
+    "deadline": "2025-12-02T00:00:00",
+    "completion_notes": "Plan MVP or pilot test of revenue model with measurable KPIs.",
+    "revenue_generated": "",
+    "id": "68beddf551088dc2206bd7ed",
+    "created_date": "2025-09-08T13:45:25.901000",
+    "updated_date": "2025-09-12T16:31:49.350000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:12.004Z"
+}

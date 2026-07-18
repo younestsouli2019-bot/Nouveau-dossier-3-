@@ -1,0 +1,56 @@
+{
+  "timestamp": "2026-02-19T00:00:00.000Z",
+  "platform": "android",
+  "device": "Samsung Galaxy A8",
+  "threat_model": {
+    "level": "high",
+    "tags": [
+      "pegasus",
+      "graphite",
+      "zero-click",
+      "state-grade-spyware"
+    ],
+    "notes": [
+      "Focus on reducing remote attack surface (messaging, VoIP, baseband, browser).",
+      "Assume physical access by a determined attacker is out of scope.",
+      "Some mitigations require ADB or device owner privileges and may not be fully automatable."
+    ]
+  },
+  "checklist": [
+    "Enable full-disk encryption",
+    "Require PIN/biometric with short lock timeout",
+    "Disable installation from unknown sources",
+    "Disable USB debugging",
+    "Keep OS and apps updated (Samsung firmware + Play system updates)",
+    "Restrict notifications on lock screen (hide sensitive content)",
+    "Enable device find/remote wipe",
+    "Harden browser: block third-party cookies, disable risky flags, prefer Firefox or Chromium with hardened config",
+    "Use privacy DNS (DoH/DoT) if available",
+    "Review app permissions and revoke unnecessary (camera, mic, SMS, call logs, location)",
+    "Enable Play Protect and periodic app scanning",
+    "Disable OEM unlock and re-lock bootloader if previously unlocked",
+    "Set strong SIM PIN and disable SIM toolkit push where possible",
+    "Disable Wi-Fi auto-connect to open or unknown networks",
+    "Disable Bluetooth visibility and turn off Bluetooth when not in use",
+    "Block sideload via package installer policies / enterprise profile where possible",
+    "Disable MMS auto-download in all messaging apps (Samsung Messages, WhatsApp, Signal, etc.)",
+    "Disable link previews and in-app browsers in messengers where possible (to reduce zero-click parsing surface)",
+    "Limit installed messaging and VoIP apps to a minimal, trusted set",
+    "Disable call recording, remote support and remote control apps not strictly required",
+    "Turn off nearby device scanning, Wi-Fi and Bluetooth scanning when not navigating",
+    "Disable developer options entirely after configuration (no USB debugging, no OEM unlock toggles)",
+    "Disable smart network switching / Wi-Fi+ that automatically joins untrusted networks",
+    "Limit background sync and backup for sensitive apps (avoid uploading full message databases)",
+    "Use a separate hardened profile or device for sensitive communications only (minimal apps, no social media)",
+    "Reboot device at least once per day to clear some in-memory spyware implants",
+    "Regularly export and clear logs for monitoring while avoiding unnecessary retention",
+    "Use strong device-level passphrase (not only pattern) and avoid showing pattern traces",
+    "Disable screen-over-other-apps and accessibility permissions for non-essential apps",
+    "Periodically review installed system apps and disable non-essential attack surface where safe (e.g., unused browsers, email clients, social apps)",
+    "Avoid clicking links in unsolicited messages; open critical URLs on a separate, non-primary device",
+    "When possible, keep Samsung Knox protections enabled and do not root the device"
+  ],
+  "telemetry": {
+    "adb": false
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "68e004d62c8934282a84f625",
+  "title": "Immediately Identify Available Funds",
+  "channel": "operations",
+  "priority": "high",
+  "data": {
+    "title": "Immediately Identify Available Funds",
+    "type": "operations",
+    "priority": "high",
+    "status": "deployed",
+    "assigned_agent_ids": "[\"68df8940de5817b225ac64db\"]",
+    "mission_parameters": "{\"action\":\"identify_available_funds\"}",
+    "progress_data": "",
+    "estimated_duration_hours": "",
+    "actual_duration_hours": "",
+    "deadline": "",
+    "completion_notes": "",
+    "revenue_generated": "",
+    "id": "68e004d62c8934282a84f625",
+    "created_date": "2025-10-03T17:16:06.040000",
+    "updated_date": "2025-10-03T17:16:36.841000",
+    "created_by_id": "6888ac155ebf84dd9855ea99",
+    "created_by": "younesdgc@gmail.com",
+    "is_sample": "false"
+  },
+  "created_at": "2026-01-31T20:12:12.000Z"
+}

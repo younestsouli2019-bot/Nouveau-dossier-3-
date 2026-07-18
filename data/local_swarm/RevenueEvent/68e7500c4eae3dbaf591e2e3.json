@@ -1,0 +1,9 @@
+{
+  "id": "68e7500c4eae3dbaf591e2e3",
+  "amount": 0,
+  "currency": "290.5",
+  "status": "COMPLETED",
+  "source": "csv_migration",
+  "raw": "68e7500c4eae3dbaf591e2e3,c952b81a96bab9b1474000fc68ec713e4c5fd3fd1dc99ebe49261014ccf4be0f,Quora Answers,,290.5,USD,earned,,,,,\"{\"\"agent_id\"\":\"\"agent-4\"\",\"\"legacy_file\"\":\"\"Analytics_export (1).csv\"\",\"\"ingested_at\"\":\"\"2026-01-02T21:26:40.980Z\"\"}\",6958376f3cdc6b6e38d8210d,2026-01-02T21:23:59.368000,2026-01-02T21:23:59.368000,anonymous,anonymous,false",
+  "created_at": "2026-02-01T23:10:29.637Z"
+}

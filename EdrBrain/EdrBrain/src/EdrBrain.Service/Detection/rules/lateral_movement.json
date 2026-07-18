@@ -1,0 +1,89 @@
+[
+  {
+    "Id": "a1b2c3d4-0003-4000-8000-000000000001",
+    "Title": "Browser Spawning Shell Process",
+    "Description": "Detects a web browser spawning command-line interpreters or scripting engines, which is a strong indicator of a drive-by download or browser exploit. This is rarely seen in normal operations and is a hallmark of malvertising and exploit kit delivery.",
+    "Author": "EdrBrain",
+    "Date": "2026-06-12",
+    "Status": "stable",
+    "Level": "high",
+    "Tags": ["attack.initial_access", "attack.t1189", "attack.execution"],
+    "FalsePositives": ["Browser extensions that legitimately spawn shells are extremely rare"],
+    "Detection": {
+      "Selection": {
+        "action": "ProcessCreate",
+        "parent_name": "*chrome.exe*|*firefox.exe*|*msedge.exe*|*iexplore.exe*",
+        "proc_name": "*cmd.exe*|*powershell*|*wscript*|*cscript*"
+      }
+    }
+  },
+  {
+    "Id": "a1b2c3d4-0003-4000-8000-000000000002",
+    "Title": "Suspicious Download-Execute Pattern",
+    "Description": "Detects a file created in a temporary or user-writable directory followed by its execution within a short time window, a common pattern for malware delivered via malvertising or phishing.",
+    "Author": "EdrBrain",
+    "Date": "2026-06-12",
+    "Status": "test",
+    "Level": "medium",
+    "Tags": ["attack.execution", "attack.t1204.002"],
+    "FalsePositives": ["Software updaters downloading and executing updates"],
+    "Detection": {
+      "Selection": {
+        "action": "FileCreate",
+        "target": "*temp*exe*|*temp*bat*|*temp*ps1*|*temp*vbs*|*temp*js*|*downloads*exe*"
+      },
+      "Timeframe": "00:00:30"
+    }
+  },
+  {
+    "Id": "a1b2c3d4-0003-4000-8000-000000000003",
+    "Title": "WMI Lateral Movement",
+    "Description": "Detects WMI provider host (wmiprvse.exe) spawning unexpected child processes, which indicates WMI-based lateral movement or remote execution. Legitimate WMI activity typically spawns only management tools.",
+    "Author": "EdrBrain",
+    "Date": "2026-06-12",
+    "Status": "test",
+    "Level": "high",
+    "Tags": ["attack.lateral_movement", "attack.t1047"],
+    "FalsePositives": ["Enterprise management tools using WMI for remote administration"],
+    "Detection": {
+      "Selection": {
+        "action": "ProcessCreate",
+        "parent_name": "*wmiprvse*",
+        "proc_name": "*cmd.exe*|*powershell*|*wscript*|*certutil*|*bitsadmin*"
+      }
+    }
+  },
+  {
+    "Id": "a1b2c3d4-0003-4000-8000-000000000004",
+    "Title": "Registry Run Key Persistence",
+    "Description": "Detects modifications to Windows Run or RunOnce registry keys, a classic persistence mechanism used by nearly all malware families. Path-specific matching reduces false positives from legitimate startup entries.",
+    "Author": "EdrBrain",
+    "Date": "2026-06-12",
+    "Status": "stable",
+    "Level": "high",
+    "Tags": ["attack.persistence", "attack.t1547.001"],
+    "FalsePositives": ["Legitimate software installers adding startup entries", "Enterprise management agents"],
+    "Detection": {
+      "Selection": {
+        "action": "RegistrySetValue",
+        "target": "*CurrentVersion\\Run*|*CurrentVersion\\RunOnce*"
+      }
+    }
+  },
+  {
+    "Id": "a1b2c3d4-0003-4000-8000-000000000005",
+    "Title": "Process Injection via Remote Thread",
+    "Description": "Detects creation of remote threads across process boundaries, the core mechanism of process injection. This technique is used by advanced malware for defense evasion and credential theft.",
+    "Author": "EdrBrain",
+    "Date": "2026-06-12",
+    "Status": "stable",
+    "Level": "high",
+    "Tags": ["attack.defense_evasion", "attack.t1055", "attack.privilege_escalation"],
+    "FalsePositives": ["Debugging tools and some security products"],
+    "Detection": {
+      "Selection": {
+        "action": "CreateRemoteThread"
+      }
+    }
+  }
+]
