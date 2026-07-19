@@ -1,0 +1,592 @@
+[
+  {
+    "timestamp": "2026-03-11T20:58:31.934Z",
+    "type": "info",
+    "message": "Base URL candidates:\n  - https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98\n  - https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98\n  - https://api.base44.app/apps/6888ac155ebf84dd9855ea98\n  - https://api.base44.app/app/6888ac155ebf84dd9855ea98\n  - https://api.base44.app/v1\n  - https://api.base44.app\n  - https://api.base44.com/v1/apps/6888ac155ebf84dd9855ea98\n  - https://api.base44.com/v1/app/6888ac155ebf84dd9855ea98\n  - https://api.base44.com/apps/6888ac155ebf84dd9855ea98\n  - https://api.base44.com/app/6888ac155ebf84dd9855ea98\n  - https://api.base44.com/v1\n  - https://api.base44.com\n  - https://base44.app/api/apps/6888ac155ebf84dd9855ea98\n  - https://base44.app/api/app/6888ac155ebf84dd9855ea98\n  - https://base44.app/api\n  - https://base44.app"
+  },
+  {
+    "timestamp": "2026-03-11T20:58:31.937Z",
+    "type": "info",
+    "message": "Processing: RevenueEvent"
+  },
+  {
+    "timestamp": "2026-03-11T20:58:31.938Z",
+    "type": "push",
+    "message": "GET /entities/RevenueEvent (attempt 1/5)"
+  },
+  {
+    "timestamp": "2026-03-11T20:58:33.029Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:33.372Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:33.667Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:33.952Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:34.273Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:34.595Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:40.702Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/api/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:40.997Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/api yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:41.326Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:41.326Z",
+    "type": "error",
+    "message": "Request failed: Base44 API forbidden: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"},\"request_id\":null} - allow:"
+  },
+  {
+    "timestamp": "2026-03-11T20:58:41.326Z",
+    "type": "error",
+    "message": "Failed: Base44 API forbidden: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"},\"request_id\":null} - allow:"
+  },
+  {
+    "timestamp": "2026-03-11T20:58:41.327Z",
+    "type": "info",
+    "message": "Processing: Earning"
+  },
+  {
+    "timestamp": "2026-03-11T20:58:41.327Z",
+    "type": "push",
+    "message": "GET /entities/Earning (attempt 1/5)"
+  },
+  {
+    "timestamp": "2026-03-11T20:58:41.786Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:42.051Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:42.347Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:43.016Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:43.374Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:43.667Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:48.774Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/api/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:49.077Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/api yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:49.386Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:49.386Z",
+    "type": "error",
+    "message": "Request failed: Base44 API forbidden: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"},\"request_id\":null} - allow:"
+  },
+  {
+    "timestamp": "2026-03-11T20:58:49.386Z",
+    "type": "error",
+    "message": "Failed: Base44 API forbidden: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"},\"request_id\":null} - allow:"
+  },
+  {
+    "timestamp": "2026-03-11T20:58:49.386Z",
+    "type": "info",
+    "message": "Processing: PayoutBatch"
+  },
+  {
+    "timestamp": "2026-03-11T20:58:49.386Z",
+    "type": "push",
+    "message": "GET /entities/PayoutBatch (attempt 1/5)"
+  },
+  {
+    "timestamp": "2026-03-11T20:58:49.943Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:50.259Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:50.576Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:50.891Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:51.176Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:51.472Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:58.150Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/api/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:58.426Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/api yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:58.709Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:58.709Z",
+    "type": "error",
+    "message": "Request failed: Base44 API forbidden: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"},\"request_id\":null} - allow:"
+  },
+  {
+    "timestamp": "2026-03-11T20:58:58.710Z",
+    "type": "error",
+    "message": "Failed: Base44 API forbidden: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"},\"request_id\":null} - allow:"
+  },
+  {
+    "timestamp": "2026-03-11T20:58:58.710Z",
+    "type": "info",
+    "message": "Processing: PayoutItem"
+  },
+  {
+    "timestamp": "2026-03-11T20:58:58.710Z",
+    "type": "push",
+    "message": "GET /entities/PayoutItem (attempt 1/5)"
+  },
+  {
+    "timestamp": "2026-03-11T20:58:59.608Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:58:59.884Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:00.175Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:00.503Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:00.860Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:01.216Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:07.084Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/api/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:07.393Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/api yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:07.720Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:07.721Z",
+    "type": "error",
+    "message": "Request failed: Base44 API forbidden: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"},\"request_id\":null} - allow:"
+  },
+  {
+    "timestamp": "2026-03-11T20:59:07.721Z",
+    "type": "error",
+    "message": "Failed: Base44 API forbidden: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"},\"request_id\":null} - allow:"
+  },
+  {
+    "timestamp": "2026-03-11T20:59:07.721Z",
+    "type": "info",
+    "message": "Processing: TransactionLog"
+  },
+  {
+    "timestamp": "2026-03-11T20:59:07.722Z",
+    "type": "push",
+    "message": "GET /entities/TransactionLog (attempt 1/5)"
+  },
+  {
+    "timestamp": "2026-03-11T20:59:08.221Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:08.566Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:08.850Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:09.167Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:09.490Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:09.778Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:15.461Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/api/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:15.740Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/api yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:16.029Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:16.030Z",
+    "type": "error",
+    "message": "Request failed: Base44 API forbidden: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"},\"request_id\":null} - allow:"
+  },
+  {
+    "timestamp": "2026-03-11T20:59:16.030Z",
+    "type": "error",
+    "message": "Failed: Base44 API forbidden: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"},\"request_id\":null} - allow:"
+  },
+  {
+    "timestamp": "2026-03-11T20:59:16.030Z",
+    "type": "info",
+    "message": "Processing: AgentFeedback"
+  },
+  {
+    "timestamp": "2026-03-11T20:59:16.031Z",
+    "type": "push",
+    "message": "GET /entities/AgentFeedback (attempt 1/5)"
+  },
+  {
+    "timestamp": "2026-03-11T20:59:16.549Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:16.866Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:17.206Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:17.527Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:18.242Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:18.518Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:25.027Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/api/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:25.356Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/api yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:25.650Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:25.650Z",
+    "type": "error",
+    "message": "Request failed: Base44 API forbidden: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"},\"request_id\":null} - allow:"
+  },
+  {
+    "timestamp": "2026-03-11T20:59:25.651Z",
+    "type": "error",
+    "message": "Failed: Base44 API forbidden: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"},\"request_id\":null} - allow:"
+  },
+  {
+    "timestamp": "2026-03-11T20:59:25.652Z",
+    "type": "info",
+    "message": "Validating: Earnings have owner beneficiaries..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:25.652Z",
+    "type": "push",
+    "message": "GET /entities/Earning/records? (attempt 1/5)"
+  },
+  {
+    "timestamp": "2026-03-11T20:59:26.192Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:26.509Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:26.823Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:27.146Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:27.511Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:28.246Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:38.685Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/api/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:38.998Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/api yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:39.384Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:39.384Z",
+    "type": "error",
+    "message": "Request failed: Base44 API forbidden: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"},\"request_id\":null} - allow:"
+  },
+  {
+    "timestamp": "2026-03-11T20:59:39.384Z",
+    "type": "error",
+    "message": "Validation error: Base44 API forbidden: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"},\"request_id\":null} - allow:"
+  },
+  {
+    "timestamp": "2026-03-11T20:59:39.385Z",
+    "type": "info",
+    "message": "Validating: PayoutBatches have owner recipients..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:39.385Z",
+    "type": "push",
+    "message": "GET /entities/PayoutBatch/records? (attempt 1/5)"
+  },
+  {
+    "timestamp": "2026-03-11T20:59:40.169Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:40.823Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:41.494Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:41.986Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:42.265Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:42.545Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:47.776Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/api/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:48.089Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/api yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:48.405Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:48.406Z",
+    "type": "error",
+    "message": "Request failed: Base44 API forbidden: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"},\"request_id\":null} - allow:"
+  },
+  {
+    "timestamp": "2026-03-11T20:59:48.406Z",
+    "type": "error",
+    "message": "Validation error: Base44 API forbidden: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"},\"request_id\":null} - allow:"
+  },
+  {
+    "timestamp": "2026-03-11T20:59:48.406Z",
+    "type": "info",
+    "message": "Validating: PayoutItems have owner recipients..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:48.407Z",
+    "type": "push",
+    "message": "GET /entities/PayoutItem/records? (attempt 1/5)"
+  },
+  {
+    "timestamp": "2026-03-11T20:59:48.924Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:49.238Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:49.521Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/apps/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:49.831Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:50.150Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app/v1 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:50.462Z",
+    "type": "warning",
+    "message": "Base path https://api.base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:56.615Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/api/app/6888ac155ebf84dd9855ea98 yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:56.951Z",
+    "type": "warning",
+    "message": "Base path https://base44.app/api yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:57.705Z",
+    "type": "warning",
+    "message": "Base path https://base44.app yielded \"App not found\". Trying next base..."
+  },
+  {
+    "timestamp": "2026-03-11T20:59:57.706Z",
+    "type": "error",
+    "message": "Request failed: Base44 API forbidden: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"},\"request_id\":null} - allow:"
+  },
+  {
+    "timestamp": "2026-03-11T20:59:57.706Z",
+    "type": "error",
+    "message": "Validation error: Base44 API forbidden: 403 - {\"message\":\"You must be logged in to access this app\",\"detail\":null,\"traceback\":null,\"extra_data\":{\"app_id\":\"6888ac155ebf84dd9855ea98\",\"reason\":\"auth_required\"},\"request_id\":null} - allow:"
+  }
+]

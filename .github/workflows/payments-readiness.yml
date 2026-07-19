@@ -1,0 +1,30 @@
+name: Payments Readiness
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Owner routing readiness
+        run: node ./scripts/owner-routing-readiness.mjs
+      - name: Generate PayPal payer links
+        run: node ./scripts/auto-paypal-owner.mjs
+      - name: Commit changes
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "rwc-bot"
+            git config user.email "rwc-bot@users.noreply.github.com"
+            git add dist_rwc/site-data/payments_readiness.json dist_rwc/site-data/payer_links.json dist_rwc/site-data/payer_links.csv
+            git commit -m "chore: payments readiness and payer links refreshed"
+            git push
+          fi

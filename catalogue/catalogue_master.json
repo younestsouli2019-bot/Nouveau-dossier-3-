@@ -1,0 +1,657 @@
+{
+  "source": "bozni.pdf",
+  "pages": 6,
+  "count": 51,
+  "items": [
+    {
+      "id": "ATF-000001",
+      "brand": null,
+      "name_fr": "7 ICE : 2 Bon de sortie CLIENT FIDEL 1 / 6 20/01/2026 26/003-BS00022 1 SALE Mode de paiement Livré par Effectué par Tél : - Fax : ESPECE SDTM OMAR Quantité Prix de Total par Remise Référence Désignation (%) livrée vente ligne 6970928003664 CRAYON DE COULEUR 12 COURTE 26,00 26,00 1 KINGGIFFT REF XO-KGCP-S12 BOITE DE 12 PAQUT 6970928003657 CRAYON DE COULEUR 12 LONG KINGGIFFT 50,00 50,00 1 REF XO-KGCP-12 BOITE DE 12 PAQUT",
+      "name_ar": "",
+      "label": "7 ICE : 2 Bon de sortie CLIENT FIDEL 1 / 6 20/01/2026 26/003-BS00022 1 SALE Mode de paiement Livré par Effectué par Tél : - Fax : ESPECE SDTM OMAR Quantité Prix de Total par Remise Référence Désignation (%) livrée vente ligne 6970928003664 CRAYON DE COULEUR 12 COURTE 26,00 26,00 1 KINGGIFFT REF XO-KGCP-S12 BOITE DE 12 PAQUT 6970928003657 CRAYON DE COULEUR 12 LONG KINGGIFFT 50,00 50,00 1 REF XO-KGCP-12 BOITE DE 12 PAQUT",
+      "variants": []
+    },
+    {
+      "id": "ATF-000002",
+      "brand": "ACCORD",
+      "name_fr": "18,70 18,70 1 10 BOITE DE 20PCS REF SPM1049",
+      "name_ar": "",
+      "label": "18,70 18,70 1 10 BOITE DE 20PCS REF SPM1049",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "20pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000003",
+      "brand": "ACCORD",
+      "name_fr": "13,20 13,20 1 DE 10 BOITE DE 20PCS REF SPM0945",
+      "name_ar": "",
+      "label": "13,20 13,20 1 DE 10 BOITE DE 20PCS REF SPM0945",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "20pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000004",
+      "brand": "EXPRESS",
+      "name_fr": "18,00 18,00 1 10 PAQUET",
+      "name_ar": "",
+      "label": "18,00 18,00 1 10 PAQUET",
+      "variants": []
+    },
+    {
+      "id": "ATF-000005",
+      "brand": "EXPRESS",
+      "name_fr": "29,00 58,00 2 755 6954884546823 CRAYONS COULEUR 12 PCS LONG 92,00 92,00 1 KR971273 MASH MALOW 12 PCS",
+      "name_ar": "",
+      "label": "29,00 58,00 2 755 6954884546823 CRAYONS COULEUR 12 PCS LONG 92,00 92,00 1 KR971273 MASH MALOW 12 PCS",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "12 pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000006",
+      "brand": "ACCORD",
+      "name_fr": "13,50 27,00 2 REF AG0010 WWZK PAPIER MINISTRE ATLAS 47,00 47,00 1 431528 PRESENTOIRE DE 120 PCS FLUORESCENT 425,00 425,00 1",
+      "name_ar": "",
+      "label": "13,50 27,00 2 REF AG0010 WWZK PAPIER MINISTRE ATLAS 47,00 47,00 1 431528 PRESENTOIRE DE 120 PCS FLUORESCENT 425,00 425,00 1",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "120 pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000008",
+      "brand": "BIC",
+      "name_fr": "58,00 58,00 1 REF:913234",
+      "name_ar": "",
+      "label": "58,00 58,00 1 REF:913234",
+      "variants": []
+    },
+    {
+      "id": "ATF-000009",
+      "brand": "BIC",
+      "name_fr": "58,00 58,00 1 REF:913235",
+      "name_ar": "",
+      "label": "58,00 58,00 1 REF:913235",
+      "variants": []
+    },
+    {
+      "id": "ATF-000010",
+      "brand": "BIC",
+      "name_fr": "58,00 58,00 1 REF:913230",
+      "name_ar": "",
+      "label": "58,00 58,00 1 REF:913230",
+      "variants": []
+    },
+    {
+      "id": "ATF-000011",
+      "brand": "BIC",
+      "name_fr": "58,00 58,00 1 REF:913236",
+      "name_ar": "",
+      "label": "58,00 58,00 1 REF:913236",
+      "variants": []
+    },
+    {
+      "id": "ATF-000012",
+      "brand": "EXPRESS",
+      "name_fr": "24,00 24,00 1 XO-8379 BOITE DE 12 PCS",
+      "name_ar": "",
+      "label": "24,00 24,00 1 XO-8379 BOITE DE 12 PCS",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "12 pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000013",
+      "brand": "EXPRESS",
+      "name_fr": "23,00 23,00 1 XO-8362 BOITE DE 12 PCS 6932913824326 STYLO COULEUR FIFTY COLOR PEN 3A TOP 50,00 50,00 1 SAM BOITE DE 50PCS REF 432M 47-8",
+      "name_ar": "",
+      "label": "23,00 23,00 1 XO-8362 BOITE DE 12 PCS 6932913824326 STYLO COULEUR FIFTY COLOR PEN 3A TOP 50,00 50,00 1 SAM BOITE DE 50PCS REF 432M 47-8",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "12 pcs"
+        },
+        {
+          "kind": "pack",
+          "value": "50pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000014",
+      "brand": "BIC",
+      "name_fr": "27,00 27,00 1 1.2MM BOITE DE 20 PS 949879",
+      "name_ar": "",
+      "label": "27,00 27,00 1 1.2MM BOITE DE 20 PS 949879",
+      "variants": [
+        {
+          "kind": "size",
+          "value": "2mm"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000015",
+      "brand": "BIC",
+      "name_fr": "27,00 27,00 1 1.2MM BOITE DE 20 PS 949880 1 157,90 A reporter... 7 ICE : 2 Bon de sortie CLIENT FIDEL 2 / 6 20/01/2026 26/003-BS00022 1 SALE Mode de paiement Livré par Effectué par Tél : - Fax : ESPECE SDTM OMAR Quantité Prix de Total par Remise Référence Désignation (%) livrée vente ligne 1 157,90 Le report....",
+      "name_ar": "",
+      "label": "27,00 27,00 1 1.2MM BOITE DE 20 PS 949880 1 157,90 A reporter... 7 ICE : 2 Bon de sortie CLIENT FIDEL 2 / 6 20/01/2026 26/003-BS00022 1 SALE Mode de paiement Livré par Effectué par Tél : - Fax : ESPECE SDTM OMAR Quantité Prix de Total par Remise Référence Désignation (%) livrée vente ligne 1 157,90 Le report....",
+      "variants": [
+        {
+          "kind": "size",
+          "value": "2mm"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000016",
+      "brand": "BIC",
+      "name_fr": "27,00 27,00 1 1.2MM BOITE DE 20 PS",
+      "name_ar": "",
+      "label": "27,00 27,00 1 1.2MM BOITE DE 20 PS",
+      "variants": [
+        {
+          "kind": "size",
+          "value": "2mm"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000017",
+      "brand": "BIC",
+      "name_fr": "27,00 27,00 1 1.2MM BOITE DE 20 PS 4902505163210 STYLO PILOT G2 BLEU 12PCS 115,00 115,00 1 4902505163197 STYLO PILOT G2 NOIR 12PCS 115,00 115,00 1",
+      "name_ar": "",
+      "label": "27,00 27,00 1 1.2MM BOITE DE 20 PS 4902505163210 STYLO PILOT G2 BLEU 12PCS 115,00 115,00 1 4902505163197 STYLO PILOT G2 NOIR 12PCS 115,00 115,00 1",
+      "variants": [
+        {
+          "kind": "size",
+          "value": "2mm"
+        },
+        {
+          "kind": "color",
+          "value": "bleu"
+        },
+        {
+          "kind": "pack",
+          "value": "12pcs"
+        },
+        {
+          "kind": "color",
+          "value": "noir"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000018",
+      "brand": "DELI",
+      "name_fr": "50,00 50,00 1 PCS 7102",
+      "name_ar": "",
+      "label": "50,00 50,00 1 PCS 7102",
+      "variants": []
+    },
+    {
+      "id": "ATF-000019",
+      "brand": "DELI",
+      "name_fr": "32,00 32,00 1 BOITE DE 12 PCS",
+      "name_ar": "",
+      "label": "32,00 32,00 1 BOITE DE 12 PCS",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "12 pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000020",
+      "brand": "UHU",
+      "name_fr": "129,00 129,00 1 12PCS",
+      "name_ar": "",
+      "label": "129,00 129,00 1 12PCS",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "12pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000021",
+      "brand": "UHU",
+      "name_fr": "75,00 75,00 1",
+      "name_ar": "",
+      "label": "75,00 75,00 1",
+      "variants": []
+    },
+    {
+      "id": "ATF-000022",
+      "brand": "EXPRESS",
+      "name_fr": "19,00 19,00 1 BOITE DE 24PCS",
+      "name_ar": "",
+      "label": "19,00 19,00 1 BOITE DE 24PCS",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "24pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000023",
+      "brand": "UHU",
+      "name_fr": "150,00 150,00 1 6954884545703 REGLE 20 CM MASH MALOW BOITE DE 30,00 30,00 1 24PCS KR971172",
+      "name_ar": "",
+      "label": "150,00 150,00 1 6954884545703 REGLE 20 CM MASH MALOW BOITE DE 30,00 30,00 1 24PCS KR971172",
+      "variants": [
+        {
+          "kind": "size",
+          "value": "20 cm"
+        },
+        {
+          "kind": "pack",
+          "value": "24pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000024",
+      "brand": "UHU",
+      "name_fr": "140,00 140,00 1 6924035806748 CALCULATRICE PETIT GATES REF DC-210N 8,75 35,00 4",
+      "name_ar": "",
+      "label": "140,00 140,00 1 6924035806748 CALCULATRICE PETIT GATES REF DC-210N 8,75 35,00 4",
+      "variants": []
+    },
+    {
+      "id": "ATF-000025",
+      "brand": "BIC",
+      "name_fr": "27,00 27,00 1 1199110111 BOITE DE 20 PCS",
+      "name_ar": "",
+      "label": "27,00 27,00 1 1199110111 BOITE DE 20 PCS",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "20 pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000026",
+      "brand": "BIC",
+      "name_fr": "27,00 27,00 1 1199110114 BOITE DE 20 PCS 8907016035373 POCHETTE DE 10 STYLO COULEURS 14,00 140,00 10 CLARO REF CL-3637",
+      "name_ar": "",
+      "label": "27,00 27,00 1 1199110114 BOITE DE 20 PCS 8907016035373 POCHETTE DE 10 STYLO COULEURS 14,00 140,00 10 CLARO REF CL-3637",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "20 pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000027",
+      "brand": "EXPRESS",
+      "name_fr": "50,00 50,00 1 XO-0069 BOITE DE 24PCS 734484159168 MARQUEUR TABLEAU SIGMAFLO LIQUID / 105,00 105,00 1 BLEU 12PCS 734484159113 MARQUEUR TABLEAU SIGMAFLO LIQUID 105,00 105,00 1 /NOIR 12PCS 734484159144 MARQUEUR TABLEAU SIGMAFLO LIQUID 105,00 105,00 1 /VERT 12PCS 2 660,90 A reporter... 7 ICE : 2 Bon de sortie CLIENT FIDEL 3 / 6 20/01/2026 26/003-BS00022 1 SALE Mode de paiement Livré par Effectué par Tél : - Fax : ESPECE SDTM OMAR Quantité Prix de Total par Remise Référence Désignation (%) livrée vente ligne 2 660,90 Le report.... 734484159137 MARQUEUR TABLEAU SIGMAFLO LIQUID 105,00 105,00 1 /ROUGE 12PCS 6950126108163 PRESENTOIRE CORRECTEUR 48PCS 125,00 125,00 1 CIVORS",
+      "name_ar": "",
+      "label": "50,00 50,00 1 XO-0069 BOITE DE 24PCS 734484159168 MARQUEUR TABLEAU SIGMAFLO LIQUID / 105,00 105,00 1 BLEU 12PCS 734484159113 MARQUEUR TABLEAU SIGMAFLO LIQUID 105,00 105,00 1 /NOIR 12PCS 734484159144 MARQUEUR TABLEAU SIGMAFLO LIQUID 105,00 105,00 1 /VERT 12PCS 2 660,90 A reporter... 7 ICE : 2 Bon de sortie CLIENT FIDEL 3 / 6 20/01/2026 26/003-BS00022 1 SALE Mode de paiement Livré par Effectué par Tél : - Fax : ESPECE SDTM OMAR Quantité Prix de Total par Remise Référence Désignation (%) livrée vente ligne 2 660,90 Le report.... 734484159137 MARQUEUR TABLEAU SIGMAFLO LIQUID 105,00 105,00 1 /ROUGE 12PCS 6950126108163 PRESENTOIRE CORRECTEUR 48PCS 125,00 125,00 1 CIVORS",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "24pcs"
+        },
+        {
+          "kind": "color",
+          "value": "bleu"
+        },
+        {
+          "kind": "pack",
+          "value": "12pcs"
+        },
+        {
+          "kind": "color",
+          "value": "noir"
+        },
+        {
+          "kind": "color",
+          "value": "vert"
+        },
+        {
+          "kind": "color",
+          "value": "rouge"
+        },
+        {
+          "kind": "pack",
+          "value": "48pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000028",
+      "brand": "DELI",
+      "name_fr": "110,00 110,00 1 C004-2B 6111269522555 PEINTURE 16 WC-1/ALIENS 216 / SPM0583 6,00 18,00 3 6111264113178 PEINTURE AQUARELLE 12 COULEURS 9,80 19,60 2",
+      "name_ar": "",
+      "label": "110,00 110,00 1 C004-2B 6111269522555 PEINTURE 16 WC-1/ALIENS 216 / SPM0583 6,00 18,00 3 6111264113178 PEINTURE AQUARELLE 12 COULEURS 9,80 19,60 2",
+      "variants": []
+    },
+    {
+      "id": "ATF-000029",
+      "brand": "ACCORD",
+      "name_fr": "8809191220073 TAILLE CRAYON ECOLO 1 USAGE REF 68,50 68,50 1 TCR1334 BOITE DE 36PCS",
+      "name_ar": "",
+      "label": "8809191220073 TAILLE CRAYON ECOLO 1 USAGE REF 68,50 68,50 1 TCR1334 BOITE DE 36PCS",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "36pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000030",
+      "brand": "CASIO",
+      "name_fr": "120,00 240,00 2 ORIGINAL FX-82ES PLUS",
+      "name_ar": "",
+      "label": "120,00 240,00 2 ORIGINAL FX-82ES PLUS",
+      "variants": []
+    },
+    {
+      "id": "ATF-000031",
+      "brand": "EXPRESS",
+      "name_fr": "7,20 7,20 1 503011 N 2 6974795885767 STICK NOTE 85/85 AVEC COUVERCLE REF 15,00 25,00 21,25 1",
+      "name_ar": "",
+      "label": "7,20 7,20 1 503011 N 2 6974795885767 STICK NOTE 85/85 AVEC COUVERCLE REF 15,00 25,00 21,25 1",
+      "variants": []
+    },
+    {
+      "id": "ATF-000033",
+      "brand": "EXPRESS",
+      "name_fr": "13,00 13,00 1",
+      "name_ar": "",
+      "label": "13,00 13,00 1",
+      "variants": []
+    },
+    {
+      "id": "ATF-000034",
+      "brand": "MAPED",
+      "name_fr": "72,08 61,27 1",
+      "name_ar": "",
+      "label": "72,08 61,27 1",
+      "variants": []
+    },
+    {
+      "id": "ATF-000035",
+      "brand": "EXPRESS",
+      "name_fr": "13,00 13,00 1",
+      "name_ar": "",
+      "label": "13,00 13,00 1",
+      "variants": []
+    },
+    {
+      "id": "ATF-000036",
+      "brand": "ACCORD",
+      "name_fr": "50,00 50,00 1 PAT06CPM BOITE DE 48PCS 6111260127803 RECHARGE MARQUEUR TABLEAU MEMORY 42,00 42,00 1 RM69 BLEU 24PCS 6111260127810 RECHARGE MARQUEUR TABLEAU MEMORY 42,00 42,00 1 RM69 NOIR 24PCS M68B MARQUEUR TABLEAU RECHARGABLE 60,00 60,00 1 MEMORY M68 BLEU 12PCS M68N MARQUEUR TABLEAU RECHARGABLE 60,00 60,00 1 MEMORY M68 NOIR 12PCS 6941288704683 TAILLE CRAYON MASH MALOW KEYROAD 67,00 67,00 1 REF KR971748 96PCS",
+      "name_ar": "",
+      "label": "50,00 50,00 1 PAT06CPM BOITE DE 48PCS 6111260127803 RECHARGE MARQUEUR TABLEAU MEMORY 42,00 42,00 1 RM69 BLEU 24PCS 6111260127810 RECHARGE MARQUEUR TABLEAU MEMORY 42,00 42,00 1 RM69 NOIR 24PCS M68B MARQUEUR TABLEAU RECHARGABLE 60,00 60,00 1 MEMORY M68 BLEU 12PCS M68N MARQUEUR TABLEAU RECHARGABLE 60,00 60,00 1 MEMORY M68 NOIR 12PCS 6941288704683 TAILLE CRAYON MASH MALOW KEYROAD 67,00 67,00 1 REF KR971748 96PCS",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "48pcs"
+        },
+        {
+          "kind": "color",
+          "value": "bleu"
+        },
+        {
+          "kind": "pack",
+          "value": "24pcs"
+        },
+        {
+          "kind": "color",
+          "value": "noir"
+        },
+        {
+          "kind": "pack",
+          "value": "12pcs"
+        },
+        {
+          "kind": "pack",
+          "value": "96pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000037",
+      "brand": "DELI",
+      "name_fr": "21,00 21,00 1 6111269526737 SCOTCH RUBAN ADHESIF DECORATIF",
+      "name_ar": "",
+      "label": "21,00 21,00 1 6111269526737 SCOTCH RUBAN ADHESIF DECORATIF",
+      "variants": []
+    },
+    {
+      "id": "ATF-000038",
+      "brand": "ACCORD",
+      "name_fr": "60 PCS 3 899,72 A reporter... 7 ICE : 2 Bon de sortie CLIENT FIDEL 4 / 6 20/01/2026 26/003-BS00022 1 SALE Mode de paiement Livré par Effectué par Tél : - Fax : ESPECE SDTM OMAR Quantité Prix de Total par Remise Référence Désignation (%) livrée vente ligne 3 899,72 Le report.... 6952061901120 CALCULATRICE BUREAU KAIKCE 3A TOP 15,00 39,05 33,19 1 SAM REF KC-7800N 51-3",
+      "name_ar": "",
+      "label": "60 PCS 3 899,72 A reporter... 7 ICE : 2 Bon de sortie CLIENT FIDEL 4 / 6 20/01/2026 26/003-BS00022 1 SALE Mode de paiement Livré par Effectué par Tél : - Fax : ESPECE SDTM OMAR Quantité Prix de Total par Remise Référence Désignation (%) livrée vente ligne 3 899,72 Le report.... 6952061901120 CALCULATRICE BUREAU KAIKCE 3A TOP 15,00 39,05 33,19 1 SAM REF KC-7800N 51-3",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "60 pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000039",
+      "brand": "DELI",
+      "name_fr": "75,00 75,00 1 M888F 6939961501414 ARDOISE DOUBLE FACE ECOLO 20/30 REF 13,00 39,00 3 ARE9615 439348 ARDOISE BLANCHE ALIF REF 19-27B 6,19 49,52 8",
+      "name_ar": "",
+      "label": "75,00 75,00 1 M888F 6939961501414 ARDOISE DOUBLE FACE ECOLO 20/30 REF 13,00 39,00 3 ARE9615 439348 ARDOISE BLANCHE ALIF REF 19-27B 6,19 49,52 8",
+      "variants": [
+        {
+          "kind": "color",
+          "value": "blanc"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000040",
+      "brand": "MAPED",
+      "name_fr": "57,57 48,93 1",
+      "name_ar": "",
+      "label": "57,57 48,93 1",
+      "variants": []
+    },
+    {
+      "id": "ATF-000041",
+      "brand": "MAPED",
+      "name_fr": "60,13 52,91 1",
+      "name_ar": "",
+      "label": "60,13 52,91 1",
+      "variants": []
+    },
+    {
+      "id": "ATF-000042",
+      "brand": "MAPED",
+      "name_fr": "60,13 51,11 1 6111249072353 SCOTCH SCOLAIRE GRAND 18/25 1,35 21,60 16 TP1825/XO-2353",
+      "name_ar": "",
+      "label": "60,13 51,11 1 6111249072353 SCOTCH SCOLAIRE GRAND 18/25 1,35 21,60 16 TP1825/XO-2353",
+      "variants": []
+    },
+    {
+      "id": "ATF-000043",
+      "brand": "EXPRESS",
+      "name_fr": "13,20 13,20 1 220/110 REF XO-0977 PAQUETS DE 50 PCS",
+      "name_ar": "",
+      "label": "13,20 13,20 1 220/110 REF XO-0977 PAQUETS DE 50 PCS",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "50 pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000044",
+      "brand": "MAPED",
+      "name_fr": "15,00 247,10 210,04 1 PCS 6111250480352 COPIE DOUBLE A4 BLANCHE ESSENTIEL 4,50 45,00 10",
+      "name_ar": "",
+      "label": "15,00 247,10 210,04 1 PCS 6111250480352 COPIE DOUBLE A4 BLANCHE ESSENTIEL 4,50 45,00 10",
+      "variants": [
+        {
+          "kind": "color",
+          "value": "blanc"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000045",
+      "brand": "ACCORD",
+      "name_fr": "3,20 38,40 12 MM REF BR0003 ENVLS ENVELOPPE PETITE 21 NORMAL 50 PCS 5,50 27,50 5 BNP BON POUR 50X2 AVEC CARBON 2,80 11,20 4 FCTN FACTURE A5 ARABE NUMERO 6,00 24,00 4 FTR100 FACTURE A5 FRANCAIS NUMERO 6,00 24,00 4 0000529700009 RAPPORTEUR NORMAL 48 24,00 24,00 1",
+      "name_ar": "",
+      "label": "3,20 38,40 12 MM REF BR0003 ENVLS ENVELOPPE PETITE 21 NORMAL 50 PCS 5,50 27,50 5 BNP BON POUR 50X2 AVEC CARBON 2,80 11,20 4 FCTN FACTURE A5 ARABE NUMERO 6,00 24,00 4 FTR100 FACTURE A5 FRANCAIS NUMERO 6,00 24,00 4 0000529700009 RAPPORTEUR NORMAL 48 24,00 24,00 1",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "50 pcs"
+        },
+        {
+          "kind": "size",
+          "value": "50x2"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000046",
+      "brand": "EXPRESS",
+      "name_fr": "0000529600002 EQUERRE NORMAL 48PC/RL1520 24,00 24,00 1 6253504982288 PATE A MODELER JORDAN 12 COULEURS 11,30 33,90 3 COEUR 150G REF MC150R12H 1261200124890 REGLE 20 CM 48 PCS RL1516/XJ-2988 24,00 24,00 1",
+      "name_ar": "",
+      "label": "0000529600002 EQUERRE NORMAL 48PC/RL1520 24,00 24,00 1 6253504982288 PATE A MODELER JORDAN 12 COULEURS 11,30 33,90 3 COEUR 150G REF MC150R12H 1261200124890 REGLE 20 CM 48 PCS RL1516/XJ-2988 24,00 24,00 1",
+      "variants": [
+        {
+          "kind": "size",
+          "value": "20 cm"
+        },
+        {
+          "kind": "pack",
+          "value": "48 pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000047",
+      "brand": "EXPRESS",
+      "name_fr": "WR91 PAPIER CNOPS / FAR /CNSS 100PCS 20,00 100,00 5 4 870,22 A reporter... 7 ICE : 2 Bon de sortie CLIENT FIDEL 5 / 6 20/01/2026 26/003-BS00022 1 SALE Mode de paiement Livré par Effectué par Tél : - Fax : ESPECE SDTM OMAR Quantité Prix de Total par Remise Référence Désignation (%) livrée vente ligne 4 870,22 Le report....",
+      "name_ar": "",
+      "label": "WR91 PAPIER CNOPS / FAR /CNSS 100PCS 20,00 100,00 5 4 870,22 A reporter... 7 ICE : 2 Bon de sortie CLIENT FIDEL 5 / 6 20/01/2026 26/003-BS00022 1 SALE Mode de paiement Livré par Effectué par Tél : - Fax : ESPECE SDTM OMAR Quantité Prix de Total par Remise Référence Désignation (%) livrée vente ligne 4 870,22 Le report....",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "100pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000048",
+      "brand": "EXPRESS",
+      "name_fr": "30,50 30,50 1 / ALINEA 6948605085968 BLOC MILLIMETRE A4 DALIL 15,00 15,00 1 3700746307 CHEMISE CARTONNEE SUP-180G CHRONO / 60,00 60,00 1 COLOR ++ PEGASUS 6923100855841 TAILLE CRAYON ECOLO 1 USAGE REF 45,60 45,60 1 TCR1008 BOITE DE 24PCS",
+      "name_ar": "",
+      "label": "30,50 30,50 1 / ALINEA 6948605085968 BLOC MILLIMETRE A4 DALIL 15,00 15,00 1 3700746307 CHEMISE CARTONNEE SUP-180G CHRONO / 60,00 60,00 1 COLOR ++ PEGASUS 6923100855841 TAILLE CRAYON ECOLO 1 USAGE REF 45,60 45,60 1 TCR1008 BOITE DE 24PCS",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "24pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000049",
+      "brand": "TOP SAM",
+      "name_fr": "20,00 82,08 65,66 1 REF 1-1 BOITE DE 24 PCS 00008723 COMPAS V90 M-SCHOOL BOIT DE 12PCS 36,00 36,00 1 6111250481779 CARNET PIQUE 96P 13.5/21 N°6 ESSENTIEL 3,75 56,25 15 6111251172751 CAHIER DE NOTES REGISTRE 5 SUJETS 24,00 120,00 5 BLEU MARINE 17/22 240 P 5*5 REF 7275 6111243220125 CHEMISE BULL JAUNE MIFIN MAESTRO 50G 28,50 28,50 1 250 CHEMISE MED PAPER DARIQRA A4 DARIQRA 240G 100PCS 54,00 54,00 1 44-27 POCHETTE PERFOREE A4 80M",
+      "name_ar": "",
+      "label": "20,00 82,08 65,66 1 REF 1-1 BOITE DE 24 PCS 00008723 COMPAS V90 M-SCHOOL BOIT DE 12PCS 36,00 36,00 1 6111250481779 CARNET PIQUE 96P 13.5/21 N°6 ESSENTIEL 3,75 56,25 15 6111251172751 CAHIER DE NOTES REGISTRE 5 SUJETS 24,00 120,00 5 BLEU MARINE 17/22 240 P 5*5 REF 7275 6111243220125 CHEMISE BULL JAUNE MIFIN MAESTRO 50G 28,50 28,50 1 250 CHEMISE MED PAPER DARIQRA A4 DARIQRA 240G 100PCS 54,00 54,00 1 44-27 POCHETTE PERFOREE A4 80M",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "24 pcs"
+        },
+        {
+          "kind": "pack",
+          "value": "12pcs"
+        },
+        {
+          "kind": "color",
+          "value": "bleu"
+        },
+        {
+          "kind": "color",
+          "value": "jaune"
+        },
+        {
+          "kind": "pack",
+          "value": "100pcs"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000050",
+      "brand": "TOP SAM",
+      "name_fr": "DE 100 4456 SERRE FEUILLE 08 1,22 122,00 100",
+      "name_ar": "",
+      "label": "DE 100 4456 SERRE FEUILLE 08 1,22 122,00 100",
+      "variants": []
+    },
+    {
+      "id": "ATF-000051",
+      "brand": "ACCORD",
+      "name_fr": "15,00 216,00 183,60 1",
+      "name_ar": "",
+      "label": "15,00 216,00 183,60 1",
+      "variants": []
+    },
+    {
+      "id": "ATF-000052",
+      "brand": "TOP SAM",
+      "name_fr": "793655555 SCOTCH EMBALAGE TRANSPARENT 13,50 81,00 6 100M/48MM OFFICELINE 9789920373364 ﺍﻟﺪﻓﺘﺮ ﺍﻟﺼﺤﻲ ﻟﻠﻄﻔﻞ 20,00 8,00 32,00 5 DFT0 ﺍﻟﺪﻓﺘﺮ ﺍﻟﺼﺤﻲ ﻟﻠﻤﺮﺃﺓ 20,00 8,00 32,00 5 250022 CAHIER 48 P 17/22 ESSENTIEL 1,20 24,00 20 6111250480383 COPIE DOUBLE 17/22 BLANCHE 96P 2,80 28,00 10 ESSENTIEL",
+      "name_ar": "",
+      "label": "793655555 SCOTCH EMBALAGE TRANSPARENT 13,50 81,00 6 100M/48MM OFFICELINE 9789920373364 ﺍﻟﺪﻓﺘﺮ ﺍﻟﺼﺤﻲ ﻟﻠﻄﻔﻞ 20,00 8,00 32,00 5 DFT0 ﺍﻟﺪﻓﺘﺮ ﺍﻟﺼﺤﻲ ﻟﻠﻤﺮﺃﺓ 20,00 8,00 32,00 5 250022 CAHIER 48 P 17/22 ESSENTIEL 1,20 24,00 20 6111250480383 COPIE DOUBLE 17/22 BLANCHE 96P 2,80 28,00 10 ESSENTIEL",
+      "variants": [
+        {
+          "kind": "size",
+          "value": "48mm"
+        },
+        {
+          "kind": "color",
+          "value": "blanc"
+        }
+      ]
+    },
+    {
+      "id": "ATF-000053",
+      "brand": "EXPRESS",
+      "name_fr": "49,80 49,80 1 250/350 REF XO-1080PAQUETS DE 50 PCS EN90 ENVELOPPE 90 PAQUET DE 50 PCS 39,00 78,00 2 EN81 ENVELOPPE 81 PAQUET DE 50 PCS 33,00 132,00 4 6 199,39 A reporter... 7 ICE : 2 Bon de sortie CLIENT FIDEL 6 / 6 20/01/2026 26/003-BS00022 1 SALE Mode de paiement Livré par Effectué par Tél : - Fax : ESPECE SDTM OMAR Quantité Prix de Total par Remise Référence Désignation (%) livrée vente ligne 6 199,39 Le report.... 685685 ﺍﻟﺘﻮﺯﻳﻊ ﺍﻟﺴﻨﻮﻱ 1,80 180,00 100 R11 RAM PAPIER A4 80G MONDI COPYREX 33,00 165,00 5 10,00 24,00 3 10,00 8,00 1 9789933458485 - ﺍﻟﻤﻌﺮﻓﺔ ﺭﺑﻊ ﻳﺲ ﺗﺠﻮﻳﺪ ﻭ ﺭﺵ ﺣﺠﻢ ﻧﺼﻒ24/17 20,00 47,00 37,60 1 2019201 ﺭﻗﻢ 45865 ﻣﺼﺤﻒ ﻭﺭﺵ ﻧﺼﻒ ﺗﺠﻮﻳﺪ ﺷﺎﻣﻮﺍ 24/17 20,00 115,00 92,00 1 ﺩﺍﺭ ﺍﻟﻤﻌﺮﻓﺔ ﺍﻗﺘﺼﺎﺩﻱ Remarque Pointé par NET A PAYER 1 6 705,98 107 Arrêté le présent bon de sortie à la somme de : SIX MILLE SEPT CENT CINQ DHS ET QUATRE-VINGT-DIX-HUIT CTS",
+      "name_ar": "9789933423698 ﺟﺰء ﻋﻢ ﺑﺮﻭﺍﻳﺔ ﻭﺭﺵ ﺗﺠﻮﻳﺪ24/17 /ﺍﻟﻤﻌﺮﻓﺔ 20,00 9789933458911 ﺟﺰء ﻗﺪ ﺳﻤﻊ ﺑﺮﻭﺍﻳﺔ ﻭﺭﺵ ﺗﺠﻮﻳﺪ/ﺍﻟﻤﻌﺮﻓﺔ 20,00",
+      "label": "49,80 49,80 1 250/350 REF XO-1080PAQUETS DE 50 PCS EN90 ENVELOPPE 90 PAQUET DE 50 PCS 39,00 78,00 2 EN81 ENVELOPPE 81 PAQUET DE 50 PCS 33,00 132,00 4 6 199,39 A reporter... 7 ICE : 2 Bon de sortie CLIENT FIDEL 6 / 6 20/01/2026 26/003-BS00022 1 SALE Mode de paiement Livré par Effectué par Tél : - Fax : ESPECE SDTM OMAR Quantité Prix de Total par Remise Référence Désignation (%) livrée vente ligne 6 199,39 Le report.... 685685 ﺍﻟﺘﻮﺯﻳﻊ ﺍﻟﺴﻨﻮﻱ 1,80 180,00 100 R11 RAM PAPIER A4 80G MONDI COPYREX 33,00 165,00 5 10,00 24,00 3 10,00 8,00 1 9789933458485 - ﺍﻟﻤﻌﺮﻓﺔ ﺭﺑﻊ ﻳﺲ ﺗﺠﻮﻳﺪ ﻭ ﺭﺵ ﺣﺠﻢ ﻧﺼﻒ24/17 20,00 47,00 37,60 1 2019201 ﺭﻗﻢ 45865 ﻣﺼﺤﻒ ﻭﺭﺵ ﻧﺼﻒ ﺗﺠﻮﻳﺪ ﺷﺎﻣﻮﺍ 24/17 20,00 115,00 92,00 1 ﺩﺍﺭ ﺍﻟﻤﻌﺮﻓﺔ ﺍﻗﺘﺼﺎﺩﻱ Remarque Pointé par NET A PAYER 1 6 705,98 107 Arrêté le présent bon de sortie à la somme de : SIX MILLE SEPT CENT CINQ DHS ET QUATRE-VINGT-DIX-HUIT CTS",
+      "variants": [
+        {
+          "kind": "pack",
+          "value": "50 pcs"
+        }
+      ]
+    }
+  ]
+}

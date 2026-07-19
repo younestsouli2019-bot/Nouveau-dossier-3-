@@ -1,0 +1,42 @@
+{
+  "Divers": {
+    "divider_color": "#0e1118",
+    "logo_path": "ChatGPT Image Jan 29, 2026, 07_09_19 PM.png",
+    "font": "Helvetica-Bold"
+  },
+  "BIC": {
+    "divider_color": "#e67e22",
+    "logo_path": "ChatGPT Image Jan 29, 2026, 07_09_19 PM.png",
+    "font": "Helvetica-Bold"
+  },
+  "UHU": {
+    "divider_color": "#f1c40f",
+    "logo_path": "ChatGPT Image Jan 29, 2026, 07_09_19 PM.png",
+    "font": "Helvetica-Bold"
+  },
+  "PILOT": {
+    "divider_color": "#2980b9",
+    "logo_path": "ChatGPT Image Jan 29, 2026, 07_09_19 PM.png",
+    "font": "Helvetica-Bold"
+  },
+  "DELI": {
+    "divider_color": "#c0392b",
+    "logo_path": "ChatGPT Image Jan 29, 2026, 07_09_19 PM.png",
+    "font": "Helvetica-Bold"
+  },
+  "SIGMAFLO": {
+    "divider_color": "#2c3e50",
+    "logo_path": "ChatGPT Image Jan 29, 2026, 07_09_19 PM.png",
+    "font": "Helvetica-Bold"
+  },
+  "CASIO": {
+    "divider_color": "#34495e",
+    "logo_path": "ChatGPT Image Jan 29, 2026, 07_09_19 PM.png",
+    "font": "Helvetica-Bold"
+  },
+  "SAMSUNG": {
+    "divider_color": "#1f618d",
+    "logo_path": "ChatGPT Image Jan 29, 2026, 07_09_19 PM.png",
+    "font": "Helvetica-Bold"
+  }
+}

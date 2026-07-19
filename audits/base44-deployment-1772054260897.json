@@ -1,0 +1,352 @@
+[
+  {
+    "timestamp": "2026-02-25T21:17:34.906Z",
+    "type": "info",
+    "message": "Processing: RevenueEvent"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:34.915Z",
+    "type": "push",
+    "message": "GET /entities/RevenueEvent"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:35.564Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 404 - {\"error_type\":\"HTTPException\",\"message\":\"App not found\",\"detail\":\"App not found\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:35.565Z",
+    "type": "push",
+    "message": "Schema does not exist, creating..."
+  },
+  {
+    "timestamp": "2026-02-25T21:17:35.565Z",
+    "type": "push",
+    "message": "POST /entities"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:36.262Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:36.263Z",
+    "type": "error",
+    "message": "Failed: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:36.263Z",
+    "type": "info",
+    "message": "Processing: Earning"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:36.263Z",
+    "type": "push",
+    "message": "GET /entities/Earning"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:36.546Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 404 - {\"error_type\":\"HTTPException\",\"message\":\"App not found\",\"detail\":\"App not found\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:36.546Z",
+    "type": "push",
+    "message": "Schema does not exist, creating..."
+  },
+  {
+    "timestamp": "2026-02-25T21:17:36.546Z",
+    "type": "push",
+    "message": "POST /entities"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:36.763Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:36.763Z",
+    "type": "error",
+    "message": "Failed: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:36.764Z",
+    "type": "info",
+    "message": "Processing: PayoutBatch"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:36.764Z",
+    "type": "push",
+    "message": "GET /entities/PayoutBatch"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:37.368Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 404 - {\"error_type\":\"HTTPException\",\"message\":\"App not found\",\"detail\":\"App not found\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:37.369Z",
+    "type": "push",
+    "message": "Schema does not exist, creating..."
+  },
+  {
+    "timestamp": "2026-02-25T21:17:37.369Z",
+    "type": "push",
+    "message": "POST /entities"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:37.579Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:37.580Z",
+    "type": "error",
+    "message": "Failed: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:37.580Z",
+    "type": "info",
+    "message": "Processing: PayoutItem"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:37.580Z",
+    "type": "push",
+    "message": "GET /entities/PayoutItem"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:37.865Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 404 - {\"error_type\":\"HTTPException\",\"message\":\"App not found\",\"detail\":\"App not found\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:37.865Z",
+    "type": "push",
+    "message": "Schema does not exist, creating..."
+  },
+  {
+    "timestamp": "2026-02-25T21:17:37.865Z",
+    "type": "push",
+    "message": "POST /entities"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:38.130Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:38.131Z",
+    "type": "error",
+    "message": "Failed: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:38.131Z",
+    "type": "info",
+    "message": "Processing: TransactionLog"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:38.131Z",
+    "type": "push",
+    "message": "GET /entities/TransactionLog"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:38.410Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 404 - {\"error_type\":\"HTTPException\",\"message\":\"App not found\",\"detail\":\"App not found\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:38.410Z",
+    "type": "push",
+    "message": "Schema does not exist, creating..."
+  },
+  {
+    "timestamp": "2026-02-25T21:17:38.410Z",
+    "type": "push",
+    "message": "POST /entities"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:38.666Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:38.666Z",
+    "type": "error",
+    "message": "Failed: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:38.667Z",
+    "type": "info",
+    "message": "Processing: AgentFeedback"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:38.667Z",
+    "type": "push",
+    "message": "GET /entities/AgentFeedback"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:38.935Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 404 - {\"error_type\":\"HTTPException\",\"message\":\"App not found\",\"detail\":\"App not found\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:38.936Z",
+    "type": "push",
+    "message": "Schema does not exist, creating..."
+  },
+  {
+    "timestamp": "2026-02-25T21:17:38.936Z",
+    "type": "push",
+    "message": "POST /entities"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:39.156Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:39.156Z",
+    "type": "error",
+    "message": "Failed: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:39.157Z",
+    "type": "push",
+    "message": "Creating test RevenueEvent..."
+  },
+  {
+    "timestamp": "2026-02-25T21:17:39.158Z",
+    "type": "push",
+    "message": "POST /entities/RevenueEvent/records"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:39.373Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:39.373Z",
+    "type": "error",
+    "message": "Failed to create RevenueEvent: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:39.373Z",
+    "type": "push",
+    "message": "Creating test Earning (OWNER)..."
+  },
+  {
+    "timestamp": "2026-02-25T21:17:39.374Z",
+    "type": "push",
+    "message": "POST /entities/Earning/records"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:39.639Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:39.639Z",
+    "type": "error",
+    "message": "Failed to create Earning: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:39.639Z",
+    "type": "push",
+    "message": "Creating test PayoutBatch..."
+  },
+  {
+    "timestamp": "2026-02-25T21:17:39.640Z",
+    "type": "push",
+    "message": "POST /entities/PayoutBatch/records"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:39.897Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:39.897Z",
+    "type": "error",
+    "message": "Failed to create PayoutBatch: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:39.898Z",
+    "type": "push",
+    "message": "Creating test PayoutItem..."
+  },
+  {
+    "timestamp": "2026-02-25T21:17:39.898Z",
+    "type": "push",
+    "message": "POST /entities/PayoutItem/records"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:40.109Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:40.109Z",
+    "type": "error",
+    "message": "Failed to create PayoutItem: Base44 API error: 405 - {\"error_type\":\"HTTPException\",\"message\":\"Method Not Allowed\",\"detail\":\"Method Not Allowed\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:40.111Z",
+    "type": "info",
+    "message": "Validating: Earnings have owner beneficiaries..."
+  },
+  {
+    "timestamp": "2026-02-25T21:17:40.111Z",
+    "type": "push",
+    "message": "GET /entities/Earning/records?"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:40.381Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 404 - {\"error_type\":\"HTTPException\",\"message\":\"App not found\",\"detail\":\"App not found\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:40.381Z",
+    "type": "error",
+    "message": "Validation error: Base44 API error: 404 - {\"error_type\":\"HTTPException\",\"message\":\"App not found\",\"detail\":\"App not found\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:40.382Z",
+    "type": "info",
+    "message": "Validating: PayoutBatches have owner recipients..."
+  },
+  {
+    "timestamp": "2026-02-25T21:17:40.382Z",
+    "type": "push",
+    "message": "GET /entities/PayoutBatch/records?"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:40.676Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 404 - {\"error_type\":\"HTTPException\",\"message\":\"App not found\",\"detail\":\"App not found\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:40.676Z",
+    "type": "error",
+    "message": "Validation error: Base44 API error: 404 - {\"error_type\":\"HTTPException\",\"message\":\"App not found\",\"detail\":\"App not found\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:40.677Z",
+    "type": "info",
+    "message": "Validating: PayoutItems have owner recipients..."
+  },
+  {
+    "timestamp": "2026-02-25T21:17:40.677Z",
+    "type": "push",
+    "message": "GET /entities/PayoutItem/records?"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:40.891Z",
+    "type": "error",
+    "message": "Request failed: Base44 API error: 404 - {\"error_type\":\"HTTPException\",\"message\":\"App not found\",\"detail\":\"App not found\",\"traceback\":\"\",\"request_id\":null}"
+  },
+  {
+    "timestamp": "2026-02-25T21:17:40.892Z",
+    "type": "error",
+    "message": "Validation error: Base44 API error: 404 - {\"error_type\":\"HTTPException\",\"message\":\"App not found\",\"detail\":\"App not found\",\"traceback\":\"\",\"request_id\":null}"
+  }
+]

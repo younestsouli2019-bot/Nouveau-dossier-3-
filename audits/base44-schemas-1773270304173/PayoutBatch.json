@@ -1,0 +1,92 @@
+{
+  "name": "PayoutBatch",
+  "description": "Payout batches for owner settlements",
+  "fields": [
+    {
+      "name": "batch_id",
+      "type": "text",
+      "required": true,
+      "unique": true
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "total_amount",
+      "type": "number",
+      "required": true
+    },
+    {
+      "name": "currency",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "created_at",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "approved_at",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "submitted_at",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "completed_at",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "cancelled_at",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "notes",
+      "type": "json",
+      "required": false
+    },
+    {
+      "name": "settlement_id",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "earning_ids",
+      "type": "json",
+      "required": false
+    },
+    {
+      "name": "revenue_event_ids",
+      "type": "json",
+      "required": false
+    },
+    {
+      "name": "payout_method",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "recipient",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "recipient_type",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "owner_directive_enforced",
+      "type": "boolean",
+      "required": false
+    }
+  ]
+}

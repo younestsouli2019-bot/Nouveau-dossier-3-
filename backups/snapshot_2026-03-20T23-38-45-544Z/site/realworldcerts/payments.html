@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RealWorldCerts - Payments</title>
+  <meta name="description" content="Secure payment options for RealWorldCerts.">
+  <link rel="canonical" href="https://realworldcerts.com/payments.html">
+  <link rel="stylesheet" href="/assets/style.css">
+  <meta name="robots" content="index,follow">
+</head>
+<body>
+  <header class="site">
+    <div class="container row">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="g" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#60a5fa"/>
+            </linearGradient>
+          </defs>
+          <rect x="2" y="2" width="20" height="20" rx="6" fill="url(#g)"/>
+          <rect x="7" y="8" width="10" height="2" rx="1" fill="#ffffff" fill-opacity="0.95"/>
+          <rect x="7" y="12" width="8" height="2" rx="1" fill="#e5f0ff" fill-opacity="0.95"/>
+          <rect x="7" y="16" width="6" height="2" rx="1" fill="#dbeafe" fill-opacity="0.95"/>
+        </svg>
+        <div>
+          <h1 class="title"><a href="/">RealWorldCerts</a></h1>
+          <div class="subtitle">Payments</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/courses.html">Courses</a>
+        <a href="/payments.html">Payments</a>
+        <a href="/contact.html">Support</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <div class="card">
+      <h2>Selected Item</h2>
+      <p class="muted">If you came from a course page, your selection appears here.</p>
+      <div class="row">
+        <span class="pill mono" id="sku"></span>
+        <span class="pill mono" id="amount"></span>
+      </div>
+      <p class="muted" style="margin-top:12px">After payment, delivery is sent to your email. If you need help, contact <a href="mailto:younesdgc@gmail.com">younesdgc@gmail.com</a>.</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>PayPal</h2>
+        <p class="muted">Fast checkout.</p>
+        <div class="row">
+          <a class="btn" href="https://www.paypal.com/ncp/payment/726Z3FMU2DRUG" rel="noopener">Pay with PayPal</a>
+          <a class="btn" href="https://paypal.me/realworldcerts" rel="noopener">PayPal.me</a>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Crypto (USDT)</h2>
+        <p class="muted">Send only USDT on the matching network.</p>
+        <h3>USDT BEP20 (BSC)</h3>
+        <div class="mono">0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7</div>
+        <h3 style="margin-top:16px">USDT ERC20 (ETH)</h3>
+        <div class="mono">0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7</div>
+      </div>
+    </div>
+  </main>
+  <footer class="site">
+    <div class="container"><p>© RealWorldCerts</p></div>
+  </footer>
+  <script>
+    (function () {
+      const p = new URLSearchParams(location.search);
+      const sku = p.get('sku') || 'SKU: (not specified)';
+      const amount = p.get('amount') || 'Amount: (not specified)';
+      document.getElementById('sku').textContent = sku;
+      document.getElementById('amount').textContent = amount;
+    })();
+  </script>
+</body>
+</html>

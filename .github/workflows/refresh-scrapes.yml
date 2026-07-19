@@ -1,0 +1,26 @@
+name: Refresh Scrapes
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Refresh dataset
+        run: node ./scripts/refresh-scrapes.mjs
+      - name: Commit changes (if any)
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "rwc-bot"
+            git config user.email "rwc-bot@users.noreply.github.com"
+            git add dist_rwc/site-data/scrapes.json
+            git commit -m "chore: refresh scrapes dataset"
+            git push
+          fi

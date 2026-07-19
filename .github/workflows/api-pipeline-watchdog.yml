@@ -1,0 +1,35 @@
+name: API Pipeline Watchdog
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: api-pipeline-watchdog
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - name: API docs status
+        run: node ./Nouveau dossier (3)/Nouveau-dossier-3-/scripts/api-docs-watchdog.mjs
+      - name: Owner routing validation
+        run: node ./Nouveau dossier (3)/Nouveau-dossier-3-/scripts/validate-owner-routing-env.mjs > dist_rwc/site-data/owner_routing_check.json
+      - name: Readiness ping
+        run: npm run live:readiness:ping
+      - name: Commit changes
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "chore: api pipeline watchdog updates"
+            git push
+          else
+            echo "No changes to commit."

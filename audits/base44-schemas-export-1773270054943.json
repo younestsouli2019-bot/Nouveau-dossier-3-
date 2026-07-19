@@ -1,0 +1,458 @@
+{
+  "appId": "6888ac155ebf84dd9855ea98",
+  "exported_at": "2026-03-11T23:00:54.943Z",
+  "entities": {
+    "RevenueEvent": {
+      "name": "RevenueEvent",
+      "description": "Revenue events with PSP verification proof",
+      "fields": [
+        {
+          "name": "event_id",
+          "type": "text",
+          "required": true,
+          "unique": true
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "currency",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "occurred_at",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "source",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "external_id",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "verification_proof",
+          "type": "json",
+          "required": false
+        },
+        {
+          "name": "metadata",
+          "type": "json",
+          "required": false
+        },
+        {
+          "name": "payout_batch_id",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "settled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "settled_at",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "created_at",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "event_hash",
+          "type": "text",
+          "required": false
+        }
+      ]
+    },
+    "Earning": {
+      "name": "Earning",
+      "description": "Owner revenue allocations - OWNER ONLY",
+      "fields": [
+        {
+          "name": "earning_id",
+          "type": "text",
+          "required": true,
+          "unique": true
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "currency",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "occurred_at",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "source",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "beneficiary",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "settlement_id",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "metadata",
+          "type": "json",
+          "required": false
+        },
+        {
+          "name": "revenue_event_id",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "payout_batch_id",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "created_at",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "settled_at",
+          "type": "text",
+          "required": false
+        }
+      ]
+    },
+    "PayoutBatch": {
+      "name": "PayoutBatch",
+      "description": "Payout batches for owner settlements",
+      "fields": [
+        {
+          "name": "batch_id",
+          "type": "text",
+          "required": true,
+          "unique": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "total_amount",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "currency",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "approved_at",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "submitted_at",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "completed_at",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "cancelled_at",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "notes",
+          "type": "json",
+          "required": false
+        },
+        {
+          "name": "settlement_id",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "earning_ids",
+          "type": "json",
+          "required": false
+        },
+        {
+          "name": "revenue_event_ids",
+          "type": "json",
+          "required": false
+        },
+        {
+          "name": "payout_method",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "recipient",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "recipient_type",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "owner_directive_enforced",
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "PayoutItem": {
+      "name": "PayoutItem",
+      "description": "Individual items within payout batches",
+      "fields": [
+        {
+          "name": "item_id",
+          "type": "text",
+          "required": true,
+          "unique": true
+        },
+        {
+          "name": "batch_id",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "currency",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "recipient",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "recipient_type",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "processed_at",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "revenue_event_id",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "earning_id",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "transaction_id",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "paypal_status",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "paypal_transaction_id",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "paypal_item_id",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "error_message",
+          "type": "text",
+          "required": false
+        }
+      ]
+    },
+    "TransactionLog": {
+      "name": "TransactionLog",
+      "description": "Immutable audit trail of all transactions",
+      "fields": [
+        {
+          "name": "log_id",
+          "type": "text",
+          "required": true,
+          "unique": true
+        },
+        {
+          "name": "transaction_type",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "currency",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "transaction_date",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "payment_method",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "reference_id",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "payout_batch_id",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "payout_item_id",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "metadata",
+          "type": "json",
+          "required": false
+        }
+      ]
+    },
+    "AgentFeedback": {
+      "name": "AgentFeedback",
+      "description": "Feedback, escalations, and upgrade requests from autonomous agents",
+      "fields": [
+        {
+          "name": "feedback_id",
+          "type": "text",
+          "required": true,
+          "unique": true
+        },
+        {
+          "name": "agent_id",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "content",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "context",
+          "type": "json",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "resolution_notes",
+          "type": "text",
+          "required": false
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+	"$schema": "https://biomejs.dev/schemas/1.0.0/config.json",
+	"formatter": {
+		"enabled": true
+	},
+	"files": {
+		"includes": ["**/*"],
+		"experimentalScannerIgnores": [
+			"node_modules/**",
+			"archive/**",
+			"reports/**",
+			"out/**",
+			"data/**",
+			"settlements/**",
+			"submitted.manually/**",
+			"external/**",
+			".qodo/**",
+			"**/*.csv",
+			"**/*.xls",
+			"**/*.xlsx",
+			"**/*.zip",
+			"**/*.jsonl"
+		]
+	}
+}

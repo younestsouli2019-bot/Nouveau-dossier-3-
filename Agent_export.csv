@@ -1,0 +1,6 @@
+name,category,subcategory,description,platform,target_social_platforms,automation_level,setup_difficulty,cost,expected_traffic_boost,viral_potential,setup_time,status,swarm_compatible,swarm_role,success_rate,median_latency,value_per_hour,setup_instructions,api_requirements,target_urls,content_types,real_time_metrics,cpu_usage,memory_usage,active_tasks,queue_length,last_heartbeat,error_count,throughput,workflow_config,triggers,schedule,dependencies,retry_policy,timeout,coordination_settings,can_coordinate_others,coordination_priority,collaboration_agents
+Viral Swarm Commander,viral_swarm,swarm_coordination,Advanced AI agent designed to orchestrate viral marketing campaigns across multiple platforms using swarm intelligence. Coordinates thousands of micro-agents to amplify content reach and engagement.,Base44 Platform,"Twitter,Instagram,TikTok,YouTube,LinkedIn,Reddit",fully_autonomous,intermediate,enterprise,500,extreme,2 hours,active,true,commander,98.5,150,2500,"1. Upload CSV to Base44
+2. Configure target platforms
+3. Set campaign parameters
+4. Deploy swarm agents
+5. Monitor performance dashboard","Base44 API key,Social media accounts,Viral content templates",https://realworldcerts.com,"Viral videos,Memes,Stories,Live streams,Polls,Challenges",true,15.2,2.1GB,847,1247,2026-02-15T14:50:00Z,3,2847,"{"

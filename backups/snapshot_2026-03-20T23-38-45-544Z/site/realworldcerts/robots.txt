@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://realworldcerts.com/sitemap.xml

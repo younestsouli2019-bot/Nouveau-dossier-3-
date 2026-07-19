@@ -1,0 +1,53 @@
+name: Autonomous Scheduler
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 * * * *"
+permissions:
+  contents: write
+jobs:
+  autonomous-tick:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: autonomous-scheduler
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - name: Register baseline agents
+        run: npm run swarm:add:agents
+      - name: Headhunter discovery
+        run: npm run swarm:headhunter:once
+      - name: Autonomous once
+        run: npm run autonomous:once
+      - name: Health readiness ping
+        run: npm run live:readiness:ping
+      - name: Build catalogue (ultimate)
+        run: npm run catalogue:ultimate
+      - name: Build catalogue (advanced)
+        run: npm run catalogue:pdfkit
+      - name: Sync catalogue PDF into static artifact
+        run: node ./scripts/sync-catalogue-to-static.mjs
+      - name: Fallback placeholder if missing
+        run: |
+          if [ ! -f "catalogue/catalogue_master.pdf" ]; then
+            node ./scripts/generate-catalogue-placeholder.mjs
+          fi
+      - name: Write real-world truth marker
+        run: node ./scripts/realworld-truth.mjs
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "autonomous tick: agents, readiness, and state updates"
+            git push origin HEAD:${{ github.ref_name }}
+          else
+            echo "No changes to commit."
+          fi

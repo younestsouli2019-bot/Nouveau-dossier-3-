@@ -1,0 +1,37 @@
+{
+  "Acme Software LLC": {
+    "display_name": "Acme Software Billing",
+    "email": "billing@acmesoftware-llc.com",
+    "type": "Company",
+    "country": null,
+    "state": null
+  },
+  "BluePeak Consulting Group": {
+    "display_name": "BluePeak Consulting Billing",
+    "email": "accounts@bluepeakconsultinggroup.com",
+    "type": "Company",
+    "country": null,
+    "state": null
+  },
+  "BluePeak Consulting GmbH": {
+    "display_name": "BluePeak Consulting Billing",
+    "email": "accounts@bluepeakconsultinggroup.com",
+    "type": "Company",
+    "country": null,
+    "state": null
+  },
+  "Nimbus Analytics Inc": {
+    "display_name": "Nimbus Analytics Billing",
+    "email": "ap@nimbusanalytics.com",
+    "type": "Company",
+    "country": null,
+    "state": null
+  },
+  "Nimbus Analytics Inc.": {
+    "display_name": "Nimbus Analytics Billing",
+    "email": "ap@nimbusanalytics.com",
+    "type": "Company",
+    "country": null,
+    "state": null
+  }
+}
