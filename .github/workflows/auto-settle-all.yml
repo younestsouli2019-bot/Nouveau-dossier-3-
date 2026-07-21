@@ -1,14 +1,14 @@
-name: Revenue Monitor
+name: Auto-Settle All
 on:
   schedule:
-    - cron: '0 */4 * * *'
+    - cron: '0 */6 * * *'
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  monitor:
+  pipeline:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,7 +19,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Detect Revenue & Create Payout Batches
+      - name: Step 1 — Detect Revenue & Create Payout Batches
         run: node scripts/auto-payout.mjs
         env:
           BASE44_SWARM_API_KEY: ${{ secrets.BASE44_SWARM_API_KEY }}
@@ -28,7 +28,7 @@ jobs:
           RECIPIENT_NAME: ${{ secrets.OWNER_BENEFICIARY_NAME || 'Younes Tsouli' }}
           RECIPIENT_EMAIL: ${{ secrets.OWNER_PAYPAL_EMAIL || 'younestsouli2019@gmail.com' }}
 
-      - name: Execute Pending Bank Wires
+      - name: Step 2 — Execute Bank Wires via Wise
         run: node scripts/auto-settle-bank-wire.mjs
         env:
           BASE44_FLOW_API_KEY: ${{ secrets.BASE44_FLOW_API_KEY }}
@@ -46,11 +46,19 @@ jobs:
           OWNER_ACCOUNT_NUMBER: ${{ secrets.OWNER_ACCOUNT_NUMBER }}
           OWNER_SORT_CODE: ${{ secrets.OWNER_SORT_CODE }}
           OWNER_BANK_CURRENCY: ${{ secrets.OWNER_BANK_CURRENCY || 'USD' }}
+          OWNER_ACCOUNT_TYPE: CHECKING
+
+      - name: Step 3 — Query Final Status
+        run: node scripts/query-financial-status.mjs
+        env:
+          BASE44_FLOW_API_KEY: ${{ secrets.BASE44_FLOW_API_KEY }}
+          BASE44_SWARM_API_KEY: ${{ secrets.BASE44_SWARM_API_KEY }}
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: revenue-monitor-${{ github.run_id }}
+          name: auto-settle-${{ github.run_id }}
           path: |
             dist_rwc/auto-payout-result.json
             dist_rwc/auto-settle-result.json
+            dist_rwc/financial-status.json
