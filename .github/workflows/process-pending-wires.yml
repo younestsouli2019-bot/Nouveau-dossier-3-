@@ -1,0 +1,38 @@
+name: Process Pending Wires
+on:
+  schedule:
+    - cron: '0 */12 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: node scripts/process-pending-wires.mjs
+        env:
+          BASE44_FLOW_API_KEY: ${{ secrets.BASE44_FLOW_API_KEY }}
+          BASE44_SWARM_API_KEY: ${{ secrets.BASE44_SWARM_API_KEY }}
+          SWARM_LIVE: 'true'
+          BANK_WIRE_ENABLE: 'true'
+          BANK_WIRE_PROVIDER: WISE
+          WISE_API_KEY: ${{ secrets.WISE_API_KEY }}
+          WISE_PROFILE_ID: ${{ secrets.WISE_PROFILE_ID }}
+          OWNER_BENEFICIARY_NAME: ${{ secrets.OWNER_BENEFICIARY_NAME }}
+          OWNER_IBAN: ${{ secrets.OWNER_IBAN }}
+          OWNER_SWIFT: ${{ secrets.OWNER_SWIFT }}
+          OWNER_ACCOUNT_NUMBER: ${{ secrets.OWNER_ACCOUNT_NUMBER }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pending-wires-${{ github.run_id }}
+          path: dist_rwc/pending-wires.json
