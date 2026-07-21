@@ -1,0 +1,73 @@
+name: Bank Wire Instruction
+on:
+  workflow_dispatch:
+    inputs:
+      amount:
+        description: 'Transfer amount'
+        required: true
+        type: string
+      currency:
+        description: 'Currency (USD, EUR, GBP)'
+        required: false
+        default: 'USD'
+        type: string
+      recipient_name:
+        description: 'Recipient full name'
+        required: true
+        type: string
+      recipient_iban:
+        description: 'Recipient IBAN'
+        required: true
+        type: string
+      recipient_swift:
+        description: 'Recipient SWIFT/BIC'
+        required: true
+        type: string
+      recipient_account:
+        description: 'Recipient account number (optional)'
+        required: false
+        type: string
+      purpose:
+        description: 'Payment purpose'
+        required: false
+        default: 'Revenue settlement — owner direct payout'
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: node scripts/generate-swift-mt103.mjs
+        env:
+          AMOUNT: ${{ github.event.inputs.amount }}
+          CURRENCY: ${{ github.event.inputs.currency }}
+          RECIPIENT_NAME: ${{ github.event.inputs.recipient_name }}
+          RECIPIENT_IBAN: ${{ github.event.inputs.recipient_iban }}
+          RECIPIENT_SWIFT: ${{ github.event.inputs.recipient_swift }}
+          RECIPIENT_ACCOUNT: ${{ github.event.inputs.recipient_account }}
+          PURPOSE: ${{ github.event.inputs.purpose }}
+          OWNER_BENEFICIARY_NAME: ${{ secrets.OWNER_BENEFICIARY_NAME }}
+          OWNER_SWIFT: ${{ secrets.OWNER_SWIFT }}
+          OWNER_IBAN: ${{ secrets.OWNER_IBAN }}
+          OWNER_ACCOUNT_NUMBER: ${{ secrets.OWNER_ACCOUNT_NUMBER }}
+          OWNER_BANK_COUNTRY: ${{ secrets.OWNER_BANK_COUNTRY }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mt103-instruction
+          path: dist_rwc/mt103-*.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mt103-metadata
+          path: dist_rwc/mt103-*-meta.json

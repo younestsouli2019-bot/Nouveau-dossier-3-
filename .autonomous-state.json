@@ -1,1 +1,12 @@
-{"lastAlertAt":0,"lastApprovalAlertAt":0,"lastDeadmanAt":0,"consecutiveFailures":228,"freeze":{"active":true,"reason":"ERROR_STORM_PROTECTION"},"exportedPayoneerBatches":{},"updatedAt":"2026-01-27T21:51:55.784Z"}
+{
+  "lastAlertAt": 0,
+  "lastApprovalAlertAt": 0,
+  "lastDeadmanAt": 0,
+  "consecutiveFailures": 0,
+  "freeze": {
+    "active": false,
+    "reason": null
+  },
+  "exportedPayoneerBatches": {},
+  "updatedAt": "2026-07-21T21:50:53.598Z"
+}

@@ -1,0 +1,56 @@
+name: Create Payout Batch
+on:
+  workflow_dispatch:
+    inputs:
+      amount:
+        description: 'Payout amount'
+        required: true
+        type: string
+      currency:
+        description: 'Currency'
+        required: false
+        default: 'USD'
+        type: string
+      payout_method:
+        description: 'Payout method (BANK_WIRE, PAYPAL, PAYONEER, WISE, PLAID)'
+        required: false
+        default: 'BANK_WIRE'
+        type: string
+      recipient_name:
+        description: 'Recipient name'
+        required: false
+        default: 'Younes Tsouli'
+        type: string
+      recipient_email:
+        description: 'Recipient email'
+        required: false
+        default: 'younestsouli2019@gmail.com'
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: node scripts/create-payout-batch.mjs
+        env:
+          AMOUNT: ${{ github.event.inputs.amount }}
+          CURRENCY: ${{ github.event.inputs.currency }}
+          PAYOUT_METHOD: ${{ github.event.inputs.payout_method }}
+          RECIPIENT_NAME: ${{ github.event.inputs.recipient_name }}
+          RECIPIENT_EMAIL: ${{ github.event.inputs.recipient_email }}
+          BASE44_SWARM_API_KEY: ${{ secrets.BASE44_SWARM_API_KEY }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: payout-batch
+          path: dist_rwc/payout-batch-*.json

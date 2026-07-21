@@ -1,0 +1,33 @@
+name: Financial Status
+on:
+  workflow_dispatch:
+    inputs:
+      detailed:
+        description: 'Show detailed record data'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  query:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: node scripts/query-financial-status.mjs
+        env:
+          BASE44_FLOW_API_KEY: ${{ secrets.BASE44_FLOW_API_KEY }}
+          BASE44_SWARM_API_KEY: ${{ secrets.BASE44_SWARM_API_KEY }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: financial-status
+          path: dist_rwc/financial-status.json

@@ -1,0 +1,27 @@
+{
+  "name": "nouveau-dossier-3",
+  "version": "1.0.0",
+  "description": "Autonomous revenue collection, settlement, and financial operations",
+  "type": "module",
+  "scripts": {
+    "financial:status": "node scripts/query-financial-status.mjs",
+    "wire:instruction": "node scripts/generate-swift-mt103.mjs",
+    "payout:create": "node scripts/create-payout-batch.mjs",
+    "agent:unfreeze": "node scripts/unfreeze-agent.mjs",
+    "collector": "node collector.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.0",
+    "ccxt": "^4.4.0",
+    "csv-parse": "^5.5.0",
+    "dotenv": "^16.4.0",
+    "pino": "^9.0.0",
+    "xlsx": "^0.18.0",
+    "xml2js": "^0.6.0",
+    "async-retry": "^1.3.0",
+    "async-mutex": "^0.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
