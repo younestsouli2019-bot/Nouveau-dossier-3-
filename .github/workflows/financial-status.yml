@@ -1,5 +1,7 @@
 name: Financial Status
 on:
+  schedule:
+    - cron: '0 */6 * * *'
   workflow_dispatch:
     inputs:
       detailed:
@@ -29,5 +31,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: financial-status
+          name: financial-status-${{ github.run_id }}
           path: dist_rwc/financial-status.json

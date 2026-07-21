@@ -1,0 +1,43 @@
+name: Revenue Monitor
+on:
+  schedule:
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+    inputs:
+      threshold:
+        description: 'Minimum available amount to trigger payout'
+        required: false
+        default: '100'
+        type: string
+      payout_method:
+        description: 'Payout method (BANK_WIRE, PAYPAL, PAYONEER, WISE, PLAID)'
+        required: false
+        default: 'BANK_WIRE'
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: node scripts/auto-payout.mjs
+        env:
+          BASE44_SWARM_API_KEY: ${{ secrets.BASE44_SWARM_API_KEY }}
+          PAYOUT_THRESHOLD: ${{ github.event.inputs.threshold || '100' }}
+          PAYOUT_METHOD: ${{ github.event.inputs.payout_method || 'BANK_WIRE' }}
+          RECIPIENT_NAME: ${{ secrets.OWNER_BENEFICIARY_NAME || 'Younes Tsouli' }}
+          RECIPIENT_EMAIL: ${{ secrets.OWNER_PAYPAL_EMAIL || 'younestsouli2019@gmail.com' }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: auto-payout-${{ github.run_id }}
+          path: dist_rwc/auto-payout-result.json
