@@ -53,3 +53,19 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Settlement artifacts (generated, not source)
+settlements/bank_wires/mt103_*.txt
+settlements/wise/
+settlements/reconciliation-*.json
+settlements/processed-batches.json
+dist_rwc/
+
+# Temp files
+*.zip
+*.tmp
+*.bak
+_job_logs/
+.tmp_extract_out.json
+ci-full-logs.txt
+ci-logs.bin

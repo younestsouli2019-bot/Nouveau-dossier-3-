@@ -1,15 +1,19 @@
 {
   "name": "nouveau-dossier-3",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Autonomous revenue collection, settlement, and financial operations",
   "type": "module",
   "scripts": {
+    "auto-settle": "node scripts/auto-settle-bank-wire.mjs",
+    "auto-payout": "node scripts/auto-payout.mjs",
+    "reconcile": "node scripts/reconcile-settlements.mjs",
+    "notify": "node scripts/notify-owner.mjs",
     "financial:status": "node scripts/query-financial-status.mjs",
     "wire:instruction": "node scripts/generate-swift-mt103.mjs",
     "payout:create": "node scripts/create-payout-batch.mjs",
     "agent:unfreeze": "node scripts/unfreeze-agent.mjs",
-    "auto-settle": "node scripts/auto-settle-bank-wire.mjs",
-    "auto-payout": "node scripts/auto-payout.mjs"
+    "wise:settle": "node scripts/settle-owner-wise.mjs",
+    "wires:pending": "node scripts/process-pending-wires.mjs"
   },
   "engines": {
     "node": ">=18.0.0"

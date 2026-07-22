@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 /**
- * AUTO-SETTLE BANK WIRE — Fully Autonomous (Moroccan Account Support)
+ * AUTO-SETTLE BANK WIRE — Fully Autonomous v2
  *
- * 1. Query Base44 for pending BANK_WIRE PayoutBatches
- * 2. Execute via Wise API OR generate SWIFT MT103 instructions
- * 3. Update batch status in Base44
- * 4. Log results
+ * 1. Load processed-set to avoid re-processing
+ * 2. Query Base44 for pending BANK_WIRE PayoutBatches
+ * 3. Execute via Wise API OR generate SWIFT MT103 instructions
+ * 4. Update batch status in Base44 + persist processed-set
+ * 5. Notify owner via webhook
+ * 6. Log results
  *
  * Zero manual intervention. Owner hands-free policy.
  */
@@ -22,7 +24,35 @@ const WISE_API = process.env.WISE_ENVIRONMENT === 'live'
   ? 'https://api.wise.com'
   : 'https://api.sandbox.transferwise.tech';
 
-// ── Load bank config ──
+const PROCESSED_FILE = path.resolve('settlements', 'processed-batches.json');
+
+// ── Helpers ──
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function withRetry(fn, label, maxRetries = 3) {
+  for (let i = 0; i <= maxRetries; i++) {
+    try { return await fn(); }
+    catch (e) {
+      if (i === maxRetries) throw e;
+      const delay = 1000 * 2 ** i;
+      console.warn(`    Retry ${i + 1}/${maxRetries} for ${label} in ${delay}ms: ${e.message}`);
+      await sleep(delay);
+    }
+  }
+}
+
+function loadProcessedSet() {
+  try {
+    if (fs.existsSync(PROCESSED_FILE)) return new Set(JSON.parse(fs.readFileSync(PROCESSED_FILE, 'utf8')));
+  } catch { /* ignore */ }
+  return new Set();
+}
+
+function saveProcessedSet(set) {
+  fs.mkdirSync(path.dirname(PROCESSED_FILE), { recursive: true });
+  fs.writeFileSync(PROCESSED_FILE, JSON.stringify([...set], null, 2));
+}
 
 function loadBankConfig() {
   const cfgPath = path.resolve('bank-config.json');
@@ -37,7 +67,7 @@ function normDigits(v) { return String(v || '').replace(/\D+/g, '').trim(); }
 
 async function fetchPendingBatches(agent) {
   const url = `https://${agent.name}-${agent.appId.slice(-8)}.base44.app/api/entities/PayoutBatch?limit=50&sort_by=-created_date`;
-  const res = await fetch(url, { headers: { api_key: agent.key } });
+  const res = await withRetry(() => fetch(url, { headers: { api_key: agent.key } }), `fetch ${agent.name}`);
   if (!res.ok) return [];
   const data = await res.json();
   return (Array.isArray(data) ? data : []).filter(b =>
@@ -50,17 +80,22 @@ async function fetchPendingBatches(agent) {
 
 async function updateBatch(agent, batchId, patch) {
   const url = `https://${agent.name}-${agent.appId.slice(-8)}.base44.app/api/entities/PayoutBatch/${batchId}`;
-  const res = await fetch(url, {
-    method: 'PUT',
-    headers: { api_key: agent.key, 'Content-Type': 'application/json' },
-    body: JSON.stringify(patch),
-  });
-  if (!res.ok) {
-    const t = await res.text();
-    console.error(`  Base44 update failed ${res.status}: ${t}`);
+  try {
+    const res = await withRetry(() => fetch(url, {
+      method: 'PUT',
+      headers: { api_key: agent.key, 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    }), `update ${batchId}`);
+    if (!res.ok) {
+      const t = await res.text();
+      console.warn(`  Base44 update failed ${res.status}: ${t}`);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.warn(`  Base44 update error: ${e.message}`);
     return false;
   }
-  return true;
 }
 
 // ── Wise API helpers ──
@@ -68,10 +103,10 @@ async function updateBatch(agent, batchId, patch) {
 async function wiseReq(endpoint, opts = {}) {
   const apiKey = process.env.WISE_API_KEY;
   if (!apiKey) throw new Error('Missing WISE_API_KEY');
-  const res = await fetch(`${WISE_API}${endpoint}`, {
+  const res = await withRetry(() => fetch(`${WISE_API}${endpoint}`, {
     ...opts,
     headers: { ...opts.headers, Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-  });
+  }), `wise ${endpoint}`);
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Wise ${res.status}: ${err}`);
@@ -95,21 +130,10 @@ function getOwnerSpecFromEnv(currency) {
     if (!sortCode || !accountNumber) throw new Error('Missing OWNER_SORT_CODE/OWNER_ACCOUNT_NUMBER for GBP');
     return { currency: 'GBP', name, type: 'sort_code', details: { sortCode, accountNumber } };
   }
-  // USD
   const abartn = normDigits(process.env.OWNER_ROUTING_NUMBER);
   const accountNumber = normDigits(process.env.OWNER_ACCOUNT_NUMBER);
   if (!abartn || !accountNumber) throw new Error('Missing OWNER_ROUTING_NUMBER/OWNER_ACCOUNT_NUMBER for USD');
   return { currency: 'USD', name, type: 'aba', details: { abartn, accountNumber, accountType: String(process.env.OWNER_ACCOUNT_TYPE || 'CHECKING').toUpperCase(), legalType: 'PRIVATE' } };
-}
-
-function getOwnerSpecFromConfig(cfg, currency) {
-  const o = cfg.owner;
-  const ccy = String(currency || o.currency || 'USD').toUpperCase();
-  // Moroccan MAD via SWIFT
-  if (ccy === 'MAD' || o.swift_bic === 'BCMAMAMC') {
-    return { currency: 'MAD', name: o.name, type: 'swift', details: { swift: o.swift_bic, rib: o.rib, bankName: o.bank_name, country: o.bank_country } };
-  }
-  return getOwnerSpecFromEnv(ccy);
 }
 
 async function findOrCreateRecipient(spec) {
@@ -148,35 +172,63 @@ function generateMT103(batch, cfg) {
   const yy = String(now.getFullYear()).slice(-2);
   const mm = String(now.getMonth() + 1).padStart(2, '0');
   const dd = String(now.getDate()).padStart(2, '0');
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mi = String(now.getMinutes()).padStart(2, '0');
   const dateStr = `${yy}${mm}${dd}`;
+  const timeStr = `${hh}${mi}`;
   const ref = `MT103-${dateStr}-${batch.batch_id.slice(-12)}`;
-  const amt = String(Math.round(batch.total_amount * 100)).padEnd(15);
+  const amt = Number(batch.total_amount).toFixed(2);
   const o = cfg.owner;
+  const txRef = batch.batch_id.slice(-16);
 
   return `{1:F01${o.swift_bic}0000000000}
 {2:I103${o.swift_bic}N}
 {4:
 :20:${ref}
 :23B:CRED
+:30:${dateStr}${timeStr}
 :32A:${dateStr}${batch.currency || 'MAD'}${amt}
 :50K:/${o.rib}
 ${o.name}
 :59:/${o.rib}
 ${o.name}
-${o.address}
+${o.address || ''}
 :71A:SHA
-:72:/BENEF//${o.name}
-/ACC/${o.rib}
+:72:/ACC/${o.rib}
+/BENEF//${o.name}
+/TXID/${txRef}
 -}`;
+}
+
+// ── Notification ──
+
+async function notifyOwner(summary) {
+  const webhook = process.env.OWNER_NOTIFICATION_WEBHOOK;
+  if (!webhook) return;
+  try {
+    await fetch(webhook, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: `✅ Bank Wire Settlement Complete\n` +
+              `Total: $${summary.totalExecuted.toFixed(2)}\n` +
+              `Batches: ${summary.log.length}\n` +
+              `Failed: $${summary.totalFailed.toFixed(2)}\n` +
+              `Time: ${summary.timestamp}`,
+      }),
+    });
+  } catch { /* best effort */ }
 }
 
 // ── Main ──
 
 async function main() {
-  console.log('=== AUTO-SETTLE BANK WIRES (HANDS-FREE) ===\n');
+  console.log('=== AUTO-SETTLE BANK WIRES v2 (HANDS-FREE) ===\n');
 
   const cfg = loadBankConfig();
   const hasWise = !!process.env.WISE_API_KEY && !!process.env.WISE_PROFILE_ID;
+  const processed = loadProcessedSet();
+  let skippedDupes = 0;
 
   if (cfg) {
     console.log(`Bank: ${cfg.owner.bank_name} | SWIFT: ${cfg.owner.swift_bic} | RIB: ${cfg.owner.rib}`);
@@ -191,7 +243,7 @@ async function main() {
     console.error('FATAL: No bank config or Wise API credentials');
     process.exit(1);
   }
-  console.log('');
+  console.log(`Previously processed: ${processed.size} batches\n`);
 
   let totalExecuted = 0;
   let totalFailed = 0;
@@ -204,34 +256,40 @@ async function main() {
     console.log(`${agent.name}: ${batches.length} pending BANK_WIRE batches\n`);
 
     for (const b of batches) {
+      const batchKey = `${agent.name}:${b.batch_id}`;
+
+      if (processed.has(batchKey)) {
+        skippedDupes++;
+        console.log(`  ${b.batch_id}: SKIP (already processed)`);
+        continue;
+      }
+
       const amt = b.total_amount || 0;
       const ccy = b.currency || 'MAD';
       const ref = `Auto-settle ${b.batch_id} — ${new Date().toISOString().slice(0, 10)}`;
 
       console.log(`  ${b.batch_id}: $${amt.toFixed(2)} ${ccy}`);
 
-      // Mark processing
       await updateBatch(agent, b.batch_id, { status: 'processing' });
 
       try {
         if (hasWise) {
-          // Execute via Wise API
           const spec = getOwnerSpecFromEnv(ccy);
           let recipientId;
           try {
             recipientId = await findOrCreateRecipient(spec);
-          } catch {
-            // If Wise recipient fails, fall back to MT103
+          } catch (e) {
             if (cfg) {
               const mt103 = generateMT103(b, cfg);
               const dir = path.resolve('settlements', 'bank_wires');
               fs.mkdirSync(dir, { recursive: true });
               const filePath = path.join(dir, `mt103_${b.batch_id}.txt`);
               fs.writeFileSync(filePath, mt103, 'utf8');
-              console.log(`    MT103 generated → ${filePath}`);
-              await updateBatch(agent, b.batch_id, { status: 'completed', processed_at: new Date().toISOString(), gateway_ref: `mt103:${filePath}` });
+              console.log(`    MT103 fallback → ${filePath}`);
+              await updateBatch(agent, b.batch_id, { status: 'completed', processed_at: new Date().toISOString(), gateway_ref: `mt103:${path.basename(filePath)}` });
               totalExecuted += amt;
               log.push({ agent: agent.name, batch_id: b.batch_id, amount: amt, mode: 'mt103_instruction', ok: true });
+              processed.add(batchKey);
               continue;
             }
             throw e;
@@ -241,17 +299,18 @@ async function main() {
           await updateBatch(agent, b.batch_id, { status: 'completed', processed_at: new Date().toISOString(), gateway_ref: `wise:${result.transferId}` });
           totalExecuted += amt;
           log.push({ agent: agent.name, batch_id: b.batch_id, amount: amt, transferId: result.transferId, status: result.status, ok: true });
+          processed.add(batchKey);
         } else if (cfg) {
-          // Generate SWIFT MT103 instruction
           const mt103 = generateMT103(b, cfg);
           const dir = path.resolve('settlements', 'bank_wires');
           fs.mkdirSync(dir, { recursive: true });
           const filePath = path.join(dir, `mt103_${b.batch_id}.txt`);
           fs.writeFileSync(filePath, mt103, 'utf8');
           console.log(`    MT103 → ${filePath}`);
-          await updateBatch(agent, b.batch_id, { status: 'completed', processed_at: new Date().toISOString(), gateway_ref: `mt103:${filePath}` });
+          await updateBatch(agent, b.batch_id, { status: 'completed', processed_at: new Date().toISOString(), gateway_ref: `mt103:${path.basename(filePath)}` });
           totalExecuted += amt;
           log.push({ agent: agent.name, batch_id: b.batch_id, amount: amt, mode: 'mt103_instruction', ok: true });
+          processed.add(batchKey);
         }
       } catch (e) {
         console.error(`    FAILED: ${e.message}`);
@@ -263,13 +322,18 @@ async function main() {
     console.log('');
   }
 
+  saveProcessedSet(processed);
+
+  const summary = { timestamp: new Date().toISOString(), totalExecuted, totalFailed, skippedDupes, log };
   console.log('=== SUMMARY ===');
-  console.log(`Executed: $${totalExecuted.toFixed(2)}`);
-  console.log(`Failed:   $${totalFailed.toFixed(2)}`);
-  console.log(`Entries:  ${log.length}`);
+  console.log(`Executed:  $${totalExecuted.toFixed(2)}`);
+  console.log(`Failed:    $${totalFailed.toFixed(2)}`);
+  console.log(`Skipped:   ${skippedDupes} (already processed)`);
+  console.log(`Entries:   ${log.length}`);
 
   await fs.promises.mkdir('dist_rwc', { recursive: true });
-  await fs.promises.writeFile('dist_rwc/auto-settle-result.json', JSON.stringify({ timestamp: new Date().toISOString(), totalExecuted, totalFailed, log }, null, 2));
+  await fs.promises.writeFile('dist_rwc/auto-settle-result.json', JSON.stringify(summary, null, 2));
+  await notifyOwner(summary);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

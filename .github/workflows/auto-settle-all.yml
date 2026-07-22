@@ -51,6 +51,18 @@ jobs:
           BASE44_FLOW_API_KEY: ${{ secrets.BASE44_FLOW_API_KEY }}
           BASE44_SWARM_API_KEY: ${{ secrets.BASE44_SWARM_API_KEY }}
 
+      - name: Step 4 — Reconcile Settlements
+        run: node scripts/reconcile-settlements.mjs
+        env:
+          BASE44_FLOW_API_KEY: ${{ secrets.BASE44_FLOW_API_KEY }}
+          BASE44_SWARM_API_KEY: ${{ secrets.BASE44_SWARM_API_KEY }}
+
+      - name: Step 5 — Notify Owner
+        if: always()
+        run: node scripts/notify-owner.mjs
+        env:
+          OWNER_NOTIFICATION_WEBHOOK: ${{ secrets.OWNER_NOTIFICATION_WEBHOOK }}
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -59,3 +71,5 @@ jobs:
             dist_rwc/auto-payout-result.json
             dist_rwc/auto-settle-result.json
             dist_rwc/financial-status.json
+            dist_rwc/reconciliation.json
+            settlements/processed-batches.json
