@@ -30,7 +30,10 @@ async function fetchPendingBatches(agent) {
   if (!res.ok) return [];
   const data = await res.json();
   return (Array.isArray(data) ? data : []).filter(b =>
-    b.status === 'pending' && b.payout_method === 'BANK_WIRE'
+    b.status === 'pending' && (
+      b.payout_method === 'BANK_WIRE' ||
+      String(b.batch_id || '').includes('BANK_WIRE')
+    )
   );
 }
 
