@@ -9,6 +9,7 @@ const SEND_LOG = path.join(LOG_DIR, 'send-log.json');
 const ACTIVITY_LOG = path.join(LOG_DIR, 'activity-log.json');
 const VENDOR_DB = path.join(BASE, 'exports', 'procurement-requests', 'vendor-database.json');
 const BATCH_DIR = path.join(BASE, 'exports', 'procurement-requests');
+const PO_DIR = path.join(BASE, 'exports', 'purchase-orders');
 const PROCESSING_LOG = path.join(LOG_DIR, 'processed-replies.json');
 const STATE_FILE = path.join(LOG_DIR, 'loop-state.json');
 
@@ -76,6 +77,61 @@ function analyzeReply(body, vendor) {
   return 'general';
 }
 
+function extractPrices(body) {
+  const prices = [];
+  const matches = body.match(/(\d[\d\s.,]*)\s*(dh|dhs|mad|درهم|\$|usd|eur)?/gi);
+  if (matches) {
+    for (const m of matches) {
+      const num = parseFloat(m.replace(/[^\d.,]/g, '').replace(',', '.'));
+      if (num > 0 && num < 1000000) prices.push(num);
+    }
+  }
+  return prices;
+}
+
+function generatePO(vendor, body, batchId) {
+  if (!fs.existsSync(PO_DIR)) fs.mkdirSync(PO_DIR, { recursive: true });
+
+  const today = new Date().toISOString().slice(0, 10);
+  const poId = `PO-${batchId}-${vendor.id || 'UNK'}-${Date.now()}`;
+  const prices = extractPrices(body);
+
+  const batchFile = path.join(BATCH_DIR, `batch-${batchId}-procurement.json`);
+  let items = [];
+  if (fs.existsSync(batchFile)) {
+    const batch = loadJson(batchFile);
+    if (batch?.items) items = batch.items;
+    else if (Array.isArray(batch)) items = batch;
+  }
+
+  const po = {
+    po_id: poId,
+    batch_id: batchId,
+    vendor: {
+      id: vendor.id,
+      name: vendor.name,
+      tiktok: vendor.tiktok,
+      phone: vendor.phone || vendor.whatsapp,
+    },
+    created_at: new Date().toISOString(),
+    status: 'pending_review',
+    items: items.map((item, i) => ({
+      name: item.name || item.description || `Item ${i + 1}`,
+      qty: item.quantity || item.qty || 1,
+      unit_price: prices[i] || prices[0] || null,
+      currency: body.includes('$') || body.toLowerCase().includes('usd') ? 'USD' : 'MAD',
+    })),
+    raw_message: body.substring(0, 500),
+    total_prices_found: prices.length,
+  };
+
+  const poFile = path.join(PO_DIR, `${poId}.json`);
+  saveJson(poFile, po);
+  log('PO', `📄 Generated PO: ${poId} for ${vendor.name} (batch ${batchId}) — ${prices.length} prices found`);
+
+  return po;
+}
+
 function generateFollowUp(analysis, body, vendor) {
   if (analysis === 'price_quote') {
     return `شكرا على الأسعار ${vendor.name} 🙏\n\nواش ممكن تأكد ليا:\n1. التوفر (متوفر دابا؟)\n2. مدة التوصيل\n3. طريقة الدفع (CCP / تحويل بنكي / عند التوصيل)\n\nمهم: التوصيل لوت. ريطا، بوزنيقة`;
@@ -139,6 +195,17 @@ async function processReply(idx, reply) {
 
   const analysis = analyzeReply(reply.body, vendor);
   log('REPLY', `  📊 Analysis: ${analysis}`);
+
+  // Auto-generate PO on price quotes
+  if (analysis === 'price_quote') {
+    const batchIds = vendor.batches || [];
+    for (const bid of batchIds) {
+      const po = generatePO(vendor, reply.body, bid);
+      try {
+        await sendViaApi('+212639158209', `📄 Auto-PO generated!\n\nVendor: ${vendor.name}\nBatch: ${bid}\nPO: ${po.po_id}\nPrices found: ${po.total_prices_found}\n\n→ Review: exports/purchase-orders/${po.po_id}.json`);
+      } catch {}
+    }
+  }
 
   const followUp = generateFollowUp(analysis, reply.body, vendor);
   if (!followUp) {
