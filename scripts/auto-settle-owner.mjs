@@ -83,6 +83,13 @@ function loadState() {
 function getUnsettledRevenues() {
   const state = loadState();
   const settledIds = new Set(state.executedPayouts.map(p => p.earningId));
+
+  // Also check legacy auto-wire-state to prevent double-processing
+  const legacyState = loadJson(path.join(ROOT, "exports", "bank-wire", "auto-wire-state.json"));
+  if (legacyState?.executedWires) {
+    for (const w of legacyState.executedWires) settledIds.add(w.earningId);
+  }
+
   const revenues = [];
 
   for (const storePath of [LEDGER_BASE44, LEDGER_AUTONOMOUS]) {
