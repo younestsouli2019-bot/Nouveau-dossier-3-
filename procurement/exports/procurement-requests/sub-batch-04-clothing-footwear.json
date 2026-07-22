@@ -1,0 +1,60 @@
+﻿{
+  "type": "owner_procurement_request",
+  "version": 1,
+  "requestedAt": "2026-06-16T19:00:00.000Z",
+  "status": "requested",
+  "owner": {
+    "name": "Mr Younes Tsouli",
+    "phone": "+212639158209",
+    "email": "younesdgc@gmail.com",
+    "shippingAddress": {
+      "line1": "Lot. Rita LOT C Im B",
+      "line2": "APT 17 BOUZNIKA",
+      "city": "Bouznika",
+      "region": "Ben Slimane",
+      "postalCode": "13100",
+      "country": "Morocco"
+    }
+  },
+  "requirements": {
+    "purpose": "clothing_footwear",
+    "notes": ["Pre-paid by swarm — recipient does not disburse anything"]
+  },
+  "items": [
+    {
+      "category": "footwear",
+      "name": "Kricely Trail Shoes",
+      "size": "EU 49 / US 13",
+      "color": "Yellow",
+      "quantity": 1
+    },
+    {
+      "category": "footwear",
+      "name": "Kricely Trail Shoes",
+      "size": "EU 49 / US 13",
+      "color": "Camouflage",
+      "quantity": 1
+    },
+    {
+      "category": "jacket",
+      "name": "Brandit M-65 Giant Jacket",
+      "color": "Olive",
+      "size": "2XL",
+      "quantity": 1
+    },
+    {
+      "category": "jacket",
+      "name": "Mil-Tec US Tactical Flight Jacket",
+      "color": "Black",
+      "size": "2XL",
+      "quantity": 1
+    }
+  ],
+  "constraints": {
+    "currency": "MAD",
+    "maxBudgetApprox": 2500,
+    "priority": "medium",
+    "prepaid": true,
+    "unitEconomicsGuardrails": true
+  }
+}

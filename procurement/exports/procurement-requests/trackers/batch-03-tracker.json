@@ -1,0 +1,27 @@
+{
+  "batch": 3,
+  "batch_name": "dell-laptops",
+  "recipient": "Mr Younes Tsouli",
+  "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+  "budget": "30000 MAD",
+  "status": "sourcing",
+  "items": [
+    {
+      "name": "Dell Precision 3541",
+      "brand": null,
+      "category": "laptop",
+      "quantity": 2,
+      "vendor_assigned": null,
+      "price_quoted": null,
+      "currency": "MAD",
+      "order_status": "pending",
+      "tracking_number": null,
+      "delivery_date": null,
+      "notes": null
+    }
+  ],
+  "vendors_contacted": [],
+  "total_estimated": null,
+  "total_actual": null,
+  "created_at": "2026-07-22T09:43:05.998Z"
+}

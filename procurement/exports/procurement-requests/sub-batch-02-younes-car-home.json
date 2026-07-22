@@ -1,0 +1,57 @@
+﻿{
+  "type": "owner_procurement_request",
+  "version": 1,
+  "requestedAt": "2026-06-16T19:00:00.000Z",
+  "status": "requested",
+  "owner": {
+    "name": "Mr Younes Tsouli",
+    "phone": "+212639158209",
+    "email": "younesdgc@gmail.com",
+    "shippingAddress": {
+      "line1": "Lot. Rita LOT C Im B",
+      "line2": "APT 17 BOUZNIKA",
+      "city": "Bouznika",
+      "region": "Ben Slimane",
+      "postalCode": "13100",
+      "country": "Morocco"
+    }
+  },
+  "requirements": {
+    "purpose": "car_home_maintenance",
+    "notes": ["Pre-paid by swarm — recipient does not disburse anything"]
+  },
+  "items": [
+    {
+      "category": "electronics",
+      "name": "Caméra de tableau de bord avant/arrière",
+      "brand": "TOTNG",
+      "description": "Avant 1080P, intégrée 720P, grand angle 170°, vision nocturne, surveillance parking 24h, G-Sensor (pas de carte SD)",
+      "quantity": 1
+    },
+    {
+      "category": "cleaning",
+      "name": "Brosse Électrique Rotative Polyvalente 5-en-1",
+      "description": "Manche télescopique, rechargeable USB, 5 têtes interchangeables pour carrelages, baignoires, éviers, murs, salle de bain",
+      "quantity": 1
+    },
+    {
+      "category": "cleaning",
+      "name": "Nettoyeur Haute Pression Lightning — Pistolet Mousseur",
+      "description": "Portable, long manche, force de pulvérisation 2X, lavage voiture, arrosage plantes, gonflage pneus",
+      "quantity": 1
+    },
+    {
+      "category": "kitchen",
+      "name": "Protecteurs d'éclaboussures pour évier de cuisine",
+      "description": "Séparateur de plan de travail antidérapant, grandes ventouses, 8 pièces",
+      "quantity": 8
+    }
+  ],
+  "constraints": {
+    "currency": "MAD",
+    "maxBudgetApprox": 2000,
+    "priority": "medium",
+    "prepaid": true,
+    "unitEconomicsGuardrails": true
+  }
+}

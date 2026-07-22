@@ -1,0 +1,57 @@
+﻿{
+  "type": "owner_procurement_request",
+  "version": 1,
+  "requestedAt": "2026-06-16T19:00:00.000Z",
+  "status": "requested",
+  "owner": {
+    "name": "Mr Younes Tsouli",
+    "phone": "+212639158209",
+    "email": "younesdgc@gmail.com",
+    "shippingAddress": {
+      "line1": "Lot. Rita LOT C Im B",
+      "line2": "APT 17 BOUZNIKA",
+      "city": "Bouznika",
+      "region": "Ben Slimane",
+      "postalCode": "13100",
+      "country": "Morocco"
+    }
+  },
+  "requirements": {
+    "purpose": "tobacco_coffee_supplies",
+    "notes": ["Pre-paid by swarm — recipient does not disburse anything"]
+  },
+  "items": [
+    {
+      "category": "tobacco",
+      "name": "Winston Filter Soft",
+      "quantity": 20
+    },
+    {
+      "category": "tobacco",
+      "name": "Panter Mignon",
+      "quantity": 5
+    },
+    {
+      "category": "tobacco",
+      "name": "Panter Café Crème Original",
+      "quantity": 5
+    },
+    {
+      "category": "tobacco",
+      "name": "Camel Yellow Soft Filters",
+      "quantity": 5
+    },
+    {
+      "category": "coffee",
+      "name": "Café Pur Arabica 1KG Bali",
+      "quantity": 3
+    }
+  ],
+  "constraints": {
+    "currency": "MAD",
+    "maxBudgetApprox": 2500,
+    "priority": "high",
+    "prepaid": true,
+    "unitEconomicsGuardrails": true
+  }
+}

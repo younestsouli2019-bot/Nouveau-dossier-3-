@@ -1,0 +1,65 @@
+{
+  "type": "owner_procurement_request",
+  "version": 1,
+  "requestedAt": "2026-06-16T19:00:00.000Z",
+  "status": "requested",
+  "owner": {
+    "name": "M Bachir Tsouli",
+    "phone": "",
+    "email": "",
+    "shippingAddress": {
+      "line1": "45 Avenue Ibn Sina Agdal Rabat",
+      "line2": "Appt 4",
+      "city": "Rabat",
+      "region": "Rabat",
+      "postalCode": "10000",
+      "country": "Morocco"
+    }
+  },
+  "requirements": {
+    "purpose": "electronics_personal_care",
+    "notes": ["Pre-paid by swarm — recipient does not disburse anything"]
+  },
+  "items": [
+    {
+      "category": "tablet",
+      "name": "Tablette CR 10.1\" Android 16 2-en-1",
+      "description": "Avec GMS Tab",
+      "quantity": 1
+    },
+    {
+      "category": "fragrance",
+      "name": "Paco Rabanne Perfume",
+      "quantity": 1
+    },
+    {
+      "category": "fragrance",
+      "name": "Mont Blanc Legend",
+      "quantity": 1
+    },
+    {
+      "category": "accessory",
+      "name": "Stylish Cane",
+      "description": "Very stylish cane",
+      "quantity": 1
+    },
+    {
+      "category": "footwear",
+      "name": "Premium Orthopedic Slippers",
+      "quantity": 1
+    },
+    {
+      "category": "dental",
+      "name": "Opalescence Go",
+      "description": "Professional teeth whitening from dentists, contains peroxide, works for smokers",
+      "quantity": 1
+    }
+  ],
+  "constraints": {
+    "currency": "MAD",
+    "maxBudgetApprox": 7000,
+    "priority": "high",
+    "prepaid": true,
+    "unitEconomicsGuardrails": true
+  }
+}

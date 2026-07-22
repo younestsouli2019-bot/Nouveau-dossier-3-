@@ -1,0 +1,79 @@
+{
+  "batch": 5,
+  "batch_name": "health-superfoods",
+  "recipient": "Mr Younes Tsouli",
+  "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+  "budget": "3000 MAD",
+  "status": "sourcing",
+  "items": [
+    {
+      "name": "Superfood.ma — Stimulate Nitric Oxide Production Naturally Pack",
+      "brand": null,
+      "category": "supplement",
+      "quantity": 1,
+      "vendor_assigned": null,
+      "price_quoted": null,
+      "currency": "MAD",
+      "order_status": "pending",
+      "tracking_number": null,
+      "delivery_date": null,
+      "notes": null
+    },
+    {
+      "name": "Superfood.ma — Diabetes Pack",
+      "brand": null,
+      "category": "supplement",
+      "quantity": 1,
+      "vendor_assigned": null,
+      "price_quoted": null,
+      "currency": "MAD",
+      "order_status": "pending",
+      "tracking_number": null,
+      "delivery_date": null,
+      "notes": null
+    },
+    {
+      "name": "Natural alternatives to N-acétylcystéine (NAC)",
+      "brand": null,
+      "category": "health",
+      "quantity": 1,
+      "vendor_assigned": null,
+      "price_quoted": null,
+      "currency": "MAD",
+      "order_status": "pending",
+      "tracking_number": null,
+      "delivery_date": null,
+      "notes": null
+    },
+    {
+      "name": "Crest 3D Whitestrips Professional Effects",
+      "brand": null,
+      "category": "dental",
+      "quantity": 1,
+      "vendor_assigned": null,
+      "price_quoted": null,
+      "currency": "MAD",
+      "order_status": "pending",
+      "tracking_number": null,
+      "delivery_date": null,
+      "notes": null
+    },
+    {
+      "name": "Opalescence Go",
+      "brand": null,
+      "category": "dental",
+      "quantity": 1,
+      "vendor_assigned": null,
+      "price_quoted": null,
+      "currency": "MAD",
+      "order_status": "pending",
+      "tracking_number": null,
+      "delivery_date": null,
+      "notes": null
+    }
+  ],
+  "vendors_contacted": [],
+  "total_estimated": null,
+  "total_actual": null,
+  "created_at": "2026-07-22T09:43:06.004Z"
+}

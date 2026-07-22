@@ -1,0 +1,66 @@
+﻿{
+  "type": "owner_procurement_request",
+  "version": 1,
+  "requestedAt": "2026-06-16T19:00:00.000Z",
+  "status": "requested",
+  "owner": {
+    "name": "Mr Younes Tsouli",
+    "phone": "+212639158209",
+    "email": "younesdgc@gmail.com",
+    "shippingAddress": {
+      "line1": "Lot. Rita LOT C Im B",
+      "line2": "APT 17 BOUZNIKA",
+      "city": "Bouznika",
+      "region": "Ben Slimane",
+      "postalCode": "13100",
+      "country": "Morocco"
+    }
+  },
+  "requirements": {
+    "purpose": "health_wellness",
+    "notes": [
+      "Source from superfood.ma for nitric oxide + diabetes packs",
+      "Crest 3D Whitestrips and Opalescence Go from pharmacy/online",
+      "Natural alternatives to N-acétylcystéine (NAC)",
+      "Pre-paid by swarm — recipient does not disburse anything"
+    ]
+  },
+  "items": [
+    {
+      "category": "supplement",
+      "name": "Superfood.ma — Stimulate Nitric Oxide Production Naturally Pack",
+      "quantity": 1,
+      "source": "https://superfood.ma"
+    },
+    {
+      "category": "supplement",
+      "name": "Superfood.ma — Diabetes Pack",
+      "quantity": 1,
+      "source": "https://superfood.ma"
+    },
+    {
+      "category": "health",
+      "name": "Natural alternatives to N-acétylcystéine (NAC)",
+      "quantity": 1
+    },
+    {
+      "category": "dental",
+      "name": "Crest 3D Whitestrips Professional Effects",
+      "description": "Contains peroxide, works for smokers",
+      "quantity": 1
+    },
+    {
+      "category": "dental",
+      "name": "Opalescence Go",
+      "description": "Professional teeth whitening from dentists, contains peroxide, works for smokers",
+      "quantity": 1
+    }
+  ],
+  "constraints": {
+    "currency": "MAD",
+    "maxBudgetApprox": 3000,
+    "priority": "high",
+    "prepaid": true,
+    "unitEconomicsGuardrails": true
+  }
+}

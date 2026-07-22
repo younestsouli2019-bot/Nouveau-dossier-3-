@@ -1,0 +1,117 @@
+﻿{
+  "type": "owner_procurement_request",
+  "version": 1,
+  "requestedAt": "2026-06-16T19:00:00.000Z",
+  "status": "requested",
+  "owner": {
+    "name": "Mr Younes Tsouli",
+    "phone": "+212639158209",
+    "email": "younesdgc@gmail.com",
+    "shippingAddress": {
+      "line1": "Lot. Rita LOT C Im B",
+      "line2": "APT 17 BOUZNIKA",
+      "city": "Bouznika",
+      "region": "Ben Slimane",
+      "postalCode": "13100",
+      "country": "Morocco"
+    }
+  },
+  "requirements": {
+    "purpose": "wholesale_resale_stock",
+    "notes": [
+      "Source from Chinese manufacturers (Alibaba/AliExpress)",
+      "Target unit cost $10 or less per item",
+      "Minimum order quantities may apply",
+      "Pre-paid by swarm — recipient does not disburse anything"
+    ]
+  },
+  "items": [
+    {
+      "category": "electronics_wholesale",
+      "name": "Wireless Mouse",
+      "description": "Basic rechargeable models",
+      "maxUnitCost": 10,
+      "currency": "USD",
+      "quantity": 50
+    },
+    {
+      "category": "electronics_wholesale",
+      "name": "USB Sticks 32GB",
+      "description": "Flash drives, customizable",
+      "maxUnitCost": 10,
+      "currency": "USD",
+      "quantity": 50
+    },
+    {
+      "category": "electronics_wholesale",
+      "name": "Solar Power Banks 10,000mAh",
+      "description": "With built-in LED lights",
+      "maxUnitCost": 10,
+      "currency": "USD",
+      "quantity": 30
+    },
+    {
+      "category": "electronics_wholesale",
+      "name": "Bluetooth Earbuds",
+      "description": "Basic models with charging case",
+      "maxUnitCost": 10,
+      "currency": "USD",
+      "quantity": 50
+    },
+    {
+      "category": "electronics_wholesale",
+      "name": "USB-C Cables Braided",
+      "description": "1m and 2m lengths",
+      "maxUnitCost": 5,
+      "currency": "USD",
+      "quantity": 100
+    },
+    {
+      "category": "electronics_wholesale",
+      "name": "Wireless Charging Pads",
+      "description": "Single-device fast charging",
+      "maxUnitCost": 10,
+      "currency": "USD",
+      "quantity": 30
+    },
+    {
+      "category": "electronics_wholesale",
+      "name": "Bluetooth Speakers Mini",
+      "description": "Waterproof compact models",
+      "maxUnitCost": 10,
+      "currency": "USD",
+      "quantity": 25
+    },
+    {
+      "category": "electronics_wholesale",
+      "name": "Smartphone Stands",
+      "description": "Adjustable foldable designs",
+      "maxUnitCost": 5,
+      "currency": "USD",
+      "quantity": 50
+    },
+    {
+      "category": "electronics_wholesale",
+      "name": "LED Desk Lamps Portable",
+      "description": "Rechargeable USB, flexible neck",
+      "maxUnitCost": 10,
+      "currency": "USD",
+      "quantity": 25
+    },
+    {
+      "category": "electronics_wholesale",
+      "name": "Car Phone Holders",
+      "description": "Magnetic/suction cup, air vent mount",
+      "maxUnitCost": 8,
+      "currency": "USD",
+      "quantity": 50
+    }
+  ],
+  "constraints": {
+    "currency": "USD",
+    "maxBudgetApprox": 3000,
+    "priority": "low",
+    "prepaid": true,
+    "unitEconomicsGuardrails": true
+  }
+}

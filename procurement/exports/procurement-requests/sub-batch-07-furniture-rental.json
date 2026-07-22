@@ -1,0 +1,72 @@
+﻿{
+  "type": "owner_procurement_request",
+  "version": 1,
+  "requestedAt": "2026-06-16T19:00:00.000Z",
+  "status": "requested",
+  "owner": {
+    "name": "Mr Younes Tsouli",
+    "phone": "+212639158209",
+    "email": "younesdgc@gmail.com",
+    "shippingAddress": {
+      "line1": "Lot. Rita LOT C Im B",
+      "line2": "APT 17 BOUZNIKA",
+      "city": "Bouznika",
+      "region": "Ben Slimane",
+      "postalCode": "13100",
+      "country": "Morocco"
+    }
+  },
+  "requirements": {
+    "purpose": "furniture_rental_food",
+    "notes": [
+      "Mini-Bar and TV from integral-location.ma (rental)",
+      "Fresh vegetables and fish from local market",
+      "Pre-paid by swarm — recipient does not disburse anything"
+    ]
+  },
+  "items": [
+    {
+      "category": "rental",
+      "name": "Mini-Bar « ELEXIA »",
+      "reference": "RM004",
+      "dimensions": "L48*H52*P41 cm",
+      "unitPrice": "600.00 DH/jour",
+      "source": "https://www.integral-location.ma",
+      "rentalDuration": "1-2 jours",
+      "quantity": 1
+    },
+    {
+      "category": "rental",
+      "name": "Téléviseur SAMSUNG SMART TV UHD 65\"",
+      "unitPrice": "1,250.00 DH/jour",
+      "source": "https://www.integral-location.ma",
+      "rentalDuration": "1-2 jours",
+      "quantity": 1
+    },
+    {
+      "category": "kitchen",
+      "name": "Kit Pause Café Gold",
+      "unitPrice": "1,700.00 DH HT",
+      "source": "https://www.integral-location.ma",
+      "quantity": 1
+    },
+    {
+      "category": "food",
+      "name": "Pack de Légumes Frais Maroc",
+      "quantity": 1
+    },
+    {
+      "category": "food",
+      "name": "Fresh Fish Pack",
+      "minimumKg": 5,
+      "quantity": 1
+    }
+  ],
+  "constraints": {
+    "currency": "MAD",
+    "maxBudgetApprox": 8000,
+    "priority": "high",
+    "prepaid": true,
+    "unitEconomicsGuardrails": true
+  }
+}

@@ -1,0 +1,92 @@
+﻿{
+  "type": "owner_procurement_request",
+  "version": 1,
+  "requestedAt": "2026-06-16T19:00:00.000Z",
+  "status": "requested",
+  "owner": {
+    "name": "Mr Younes Tsouli",
+    "phone": "+212639158209",
+    "email": "younesdgc@gmail.com",
+    "shippingAddress": {
+      "line1": "Lot. Rita LOT C Im B",
+      "line2": "APT 17 BOUZNIKA",
+      "city": "Bouznika",
+      "region": "Ben Slimane",
+      "postalCode": "13100",
+      "country": "Morocco"
+    }
+  },
+  "requirements": {
+    "purpose": "miscellaneous_household",
+    "notes": ["Pre-paid by swarm — recipient does not disburse anything"]
+  },
+  "items": [
+    {
+      "category": "decoration",
+      "name": "Autocollants de dessin animé joueur de football version Q",
+      "description": "54 pièces, pour téléphones, ordinateurs, bouteilles, bagages",
+      "quantity": 1
+    },
+    {
+      "category": "decoration",
+      "name": "Autocollants thème football 50 pièces",
+      "description": "Pour téléphones, ordinateurs portables, bouteilles, valises",
+      "quantity": 1
+    },
+    {
+      "category": "decoration",
+      "name": "Autocollants thème football 50 pièces (multicolore)",
+      "description": "PRESQUE ÉPUISÉ",
+      "quantity": 1
+    },
+    {
+      "category": "storage",
+      "name": "Boîte de rangement murale sans perçage",
+      "description": "Poubelle/cendrier, conception divisée, récipient intérieur amovible, 4 pièces",
+      "quantity": 4
+    },
+    {
+      "category": "accessory",
+      "name": "Cendrier Créatif",
+      "color": "Noir",
+      "quantity": 1
+    },
+    {
+      "category": "electronics",
+      "name": "Mini Téléphone Portable 2G",
+      "description": "Double SIM double veille, compact, téléphone de secours",
+      "quantity": 1
+    },
+    {
+      "category": "tool",
+      "name": "Couteau de poche pliable",
+      "description": "Lame tranchante, fixation porte-clés, quotidien/plein air",
+      "quantity": 1
+    },
+    {
+      "category": "tool",
+      "name": "Artéfact d'ouverture de boîte impression 3D",
+      "description": "Poignée antidérapante, ouverture express, déballage colis",
+      "quantity": 2
+    },
+    {
+      "category": "decoration",
+      "name": "Papier peint motif marbré imperméable",
+      "description": "PVC auto-adhésif, 500x40cm, cuisine/salon/chambre",
+      "quantity": 3
+    },
+    {
+      "category": "accessory",
+      "name": "Accessoires pour caméras multiples",
+      "description": "4/5/15/25/30/55/75/95/110 pièces",
+      "quantity": 2
+    }
+  ],
+  "constraints": {
+    "currency": "MAD",
+    "maxBudgetApprox": 1500,
+    "priority": "low",
+    "prepaid": true,
+    "unitEconomicsGuardrails": true
+  }
+}

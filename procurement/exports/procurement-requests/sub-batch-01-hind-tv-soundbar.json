@@ -1,0 +1,46 @@
+{
+  "type": "owner_procurement_request",
+  "version": 1,
+  "requestedAt": "2026-06-16T19:00:00.000Z",
+  "status": "requested",
+  "owner": {
+    "name": "Mrs Hind Tsouli",
+    "phone": "+212602680629",
+    "email": "",
+    "shippingAddress": {
+      "line1": "Etage 2 JASMIN II IMM H3 APPT 21",
+      "line2": "SIDI-YAHYA-ZAIR",
+      "city": "Sidi Yahya Zaer",
+      "region": "Skhirat-Témara",
+      "postalCode": "12150",
+      "country": "Morocco"
+    }
+  },
+  "requirements": {
+    "purpose": "household_electronics",
+    "notes": ["Pre-paid by swarm — recipient does not disburse anything"]
+  },
+  "items": [
+    {
+      "category": "tv",
+      "name": "SAMSUNG UHD SMART 43\"",
+      "reference": "UA43U8000FUXM",
+      "brand": "SAMSUNG",
+      "quantity": 1
+    },
+    {
+      "category": "soundbar",
+      "name": "BARRE DE SON SAMSUNG 2.0",
+      "reference": "HW-B400F/MV",
+      "brand": "SAMSUNG",
+      "quantity": 1
+    }
+  ],
+  "constraints": {
+    "currency": "MAD",
+    "maxBudgetApprox": 7000,
+    "priority": "high",
+    "prepaid": true,
+    "unitEconomicsGuardrails": true
+  }
+}

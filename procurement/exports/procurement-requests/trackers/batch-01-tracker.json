@@ -1,0 +1,40 @@
+{
+  "batch": 1,
+  "batch_name": "hind-tv-soundbar",
+  "recipient": "Mrs Hind Tsouli",
+  "address": "Sidi Yahya Zaer, Skhirat-Témara, 12150",
+  "budget": "7000 MAD",
+  "status": "sourcing",
+  "items": [
+    {
+      "name": "SAMSUNG UHD SMART 43\"",
+      "brand": "SAMSUNG",
+      "category": "tv",
+      "quantity": 1,
+      "vendor_assigned": null,
+      "price_quoted": null,
+      "currency": "MAD",
+      "order_status": "pending",
+      "tracking_number": null,
+      "delivery_date": null,
+      "notes": null
+    },
+    {
+      "name": "BARRE DE SON SAMSUNG 2.0",
+      "brand": "SAMSUNG",
+      "category": "soundbar",
+      "quantity": 1,
+      "vendor_assigned": null,
+      "price_quoted": null,
+      "currency": "MAD",
+      "order_status": "pending",
+      "tracking_number": null,
+      "delivery_date": null,
+      "notes": null
+    }
+  ],
+  "vendors_contacted": [],
+  "total_estimated": null,
+  "total_actual": null,
+  "created_at": "2026-07-22T09:43:05.991Z"
+}

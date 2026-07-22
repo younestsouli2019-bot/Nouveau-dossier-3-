@@ -1,0 +1,92 @@
+{
+  "batch": 10,
+  "batch_name": "bachir-rabat",
+  "recipient": "M Bachir Tsouli",
+  "address": "45 Avenue Ibn Sina Agdal, Apt 4, Rabat, 10000",
+  "budget": "7000 MAD",
+  "status": "sourcing",
+  "items": [
+    {
+      "name": "Tablette CR 10.1\" Android 16 2-en-1",
+      "brand": null,
+      "category": "tablet",
+      "quantity": 1,
+      "vendor_assigned": null,
+      "price_quoted": null,
+      "currency": "MAD",
+      "order_status": "pending",
+      "tracking_number": null,
+      "delivery_date": null,
+      "notes": null
+    },
+    {
+      "name": "Paco Rabanne Perfume",
+      "brand": null,
+      "category": "fragrance",
+      "quantity": 1,
+      "vendor_assigned": null,
+      "price_quoted": null,
+      "currency": "MAD",
+      "order_status": "pending",
+      "tracking_number": null,
+      "delivery_date": null,
+      "notes": null
+    },
+    {
+      "name": "Mont Blanc Legend",
+      "brand": null,
+      "category": "fragrance",
+      "quantity": 1,
+      "vendor_assigned": null,
+      "price_quoted": null,
+      "currency": "MAD",
+      "order_status": "pending",
+      "tracking_number": null,
+      "delivery_date": null,
+      "notes": null
+    },
+    {
+      "name": "Stylish Cane",
+      "brand": null,
+      "category": "accessory",
+      "quantity": 1,
+      "vendor_assigned": null,
+      "price_quoted": null,
+      "currency": "MAD",
+      "order_status": "pending",
+      "tracking_number": null,
+      "delivery_date": null,
+      "notes": null
+    },
+    {
+      "name": "Premium Orthopedic Slippers",
+      "brand": null,
+      "category": "footwear",
+      "quantity": 1,
+      "vendor_assigned": null,
+      "price_quoted": null,
+      "currency": "MAD",
+      "order_status": "pending",
+      "tracking_number": null,
+      "delivery_date": null,
+      "notes": null
+    },
+    {
+      "name": "Opalescence Go",
+      "brand": null,
+      "category": "dental",
+      "quantity": 1,
+      "vendor_assigned": null,
+      "price_quoted": null,
+      "currency": "MAD",
+      "order_status": "pending",
+      "tracking_number": null,
+      "delivery_date": null,
+      "notes": null
+    }
+  ],
+  "vendors_contacted": [],
+  "total_estimated": null,
+  "total_actual": null,
+  "created_at": "2026-07-22T09:43:06.024Z"
+}

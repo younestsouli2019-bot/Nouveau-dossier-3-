@@ -1,0 +1,641 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-07-22",
+  "vendors": {
+    "electronics": [
+      {
+        "id": "v001",
+        "name": "OrgosTech",
+        "tiktok": "@orgostech",
+        "followers": 5398,
+        "specialty": "Informatique, Camera, PC, TVbox",
+        "phone": null,
+        "whatsapp": null,
+        "email": null,
+        "location": "Morocco",
+        "tags": ["tv", "laptop", "camera", "computer"],
+        "batches": ["01", "03"]
+      },
+      {
+        "id": "v002",
+        "name": "MOUNIR PHONE",
+        "tiktok": "@mouniir8",
+        "followers": 1728,
+        "specialty": "البيع بالجملة (Wholesale)",
+        "phone": "0666155803",
+        "whatsapp": "212666155803",
+        "email": null,
+        "location": "Morocco",
+        "tags": ["wholesale", "phone", "electronics"],
+        "batches": ["08"]
+      },
+      {
+        "id": "v003",
+        "name": "Electro Rachid",
+        "tiktok": "@electro76rachid",
+        "followers": 2336,
+        "specialty": "شارع الحسن الثاني 76 بن الطيب",
+        "phone": "0607751166",
+        "whatsapp": "212607751166",
+        "email": null,
+        "location": "Driouch",
+        "tags": ["electronics", "general"],
+        "batches": ["02"]
+      },
+      {
+        "id": "v004",
+        "name": "electro ragragui",
+        "tiktok": "@electroragragui",
+        "followers": 36100,
+        "specialty": "حواسيب، هواتف، أكسسوارات — توصيل مجاني، ضمان",
+        "phone": null,
+        "whatsapp": null,
+        "email": null,
+        "location": "Morocco (nationwide delivery)",
+        "tags": ["computer", "phone", "accessories", "warranty", "free-delivery"],
+        "batches": ["01", "02", "09"]
+      },
+      {
+        "id": "v005",
+        "name": "Omar Electroo44",
+        "tiktok": "@omar.electroo44",
+        "followers": 118,
+        "specialty": "Electro omar, livraison partout au Maroc",
+        "phone": "0760891357",
+        "whatsapp": "212760891357",
+        "email": null,
+        "location": "Tetouan",
+        "tags": ["electronics", "nationwide-delivery"],
+        "batches": ["02"]
+      },
+      {
+        "id": "v006",
+        "name": "electromove_",
+        "tiktok": "@electromove_",
+        "followers": 126,
+        "specialty": "Livraison partout au Maroc",
+        "phone": "0665179494",
+        "whatsapp": "212665179494",
+        "email": null,
+        "website": "electromove.ma",
+        "location": "Morocco",
+        "tags": ["electronics", "nationwide-delivery"],
+        "batches": ["02"]
+      },
+      {
+        "id": "v007",
+        "name": "electro issame",
+        "tiktok": "@electroissame",
+        "followers": 854,
+        "specialty": "السوق البلدي أولادتايمة",
+        "phone": null,
+        "whatsapp": null,
+        "email": null,
+        "location": "Oulad Taime",
+        "tags": ["electronics"],
+        "batches": []
+      },
+      {
+        "id": "v008",
+        "name": "PLANET ELECTRO",
+        "tiktok": "@planet.electro1",
+        "followers": 156,
+        "specialty": "بيع جميع الاجهزة الالكترونية بجملة وتقسيط",
+        "phone": "0684390026",
+        "whatsapp": "212684390026",
+        "email": null,
+        "location": "Khnichlet (القنيطرة)",
+        "tags": ["electronics", "wholesale", "installment"],
+        "batches": ["08"]
+      },
+      {
+        "id": "v009",
+        "name": "Flexrise SARL",
+        "tiktok": "@flexrisesarl",
+        "followers": 559,
+        "specialty": "Matériel informatique & Caméras, Meknès",
+        "phone": "0620390472",
+        "whatsapp": "212620390472",
+        "phone2": "0535459797",
+        "email": null,
+        "location": "Meknès, Mag N°4, Lot Kortoba S1",
+        "tags": ["computer", "camera", "IT-hardware"],
+        "batches": ["03"]
+      },
+      {
+        "id": "v010",
+        "name": "Ai7.store",
+        "tiktok": "@ai7store",
+        "followers": 5413,
+        "specialty": "Instagram - ai7.store",
+        "phone": "0664472999",
+        "whatsapp": "212664472999",
+        "email": null,
+        "location": "Morocco",
+        "tags": ["computer", "accessories"],
+        "batches": ["03"]
+      },
+      {
+        "id": "v011",
+        "name": "MR Phone",
+        "tiktok": "@mr.phone7762",
+        "followers": 4427,
+        "specialty": "Smartphones, PC, Accessoires — Achat, Vente, Reprise",
+        "phone": null,
+        "whatsapp": null,
+        "email": null,
+        "location": "Morocco",
+        "tags": ["smartphone", "pc", "accessories"],
+        "batches": ["10", "11"]
+      },
+      {
+        "id": "v012",
+        "name": "playstore.ma",
+        "tiktok": "@playstore.ma",
+        "followers": 12300,
+        "specialty": "Gaming",
+        "phone": "0212535525260",
+        "whatsapp": "212612029049",
+        "email": null,
+        "location": "Morocco",
+        "tags": ["gaming", "tech"],
+        "batches": ["11"]
+      },
+      {
+        "id": "v013",
+        "name": "Kamal phone",
+        "tiktok": "@kamalgerizmne",
+        "followers": 2416,
+        "specialty": "مدينة سلا, التوصيل جميع المدن",
+        "phone": "0681793843",
+        "whatsapp": "212681793843",
+        "email": null,
+        "location": "Salé",
+        "tags": ["phone", "nationwide-delivery"],
+        "batches": ["11"]
+      },
+      {
+        "id": "v014",
+        "name": "El alami_phone",
+        "tiktok": "@elalamiphone",
+        "followers": 3422,
+        "specialty": "بيع، شراء، إصلاح الهواتف النقالة",
+        "phone": "0713822132",
+        "whatsapp": "212713822132",
+        "email": null,
+        "location": "Morocco",
+        "tags": ["phone", "repair"],
+        "batches": ["11"]
+      }
+    ],
+    "wholesale_import": [
+      {
+        "id": "v015",
+        "name": "Senya-3442 (Huangchuxin)",
+        "tiktok": "@huangchuxin3",
+        "followers": 1535,
+        "specialty": "China 3C mobile phone parts wholesale factory",
+        "phone": null,
+        "whatsapp": "8613802916563",
+        "wechat": "8613802916563",
+        "email": null,
+        "location": "China",
+        "tags": ["wholesale", "china", "3c", "phone-parts"],
+        "batches": ["08"]
+      },
+      {
+        "id": "v016",
+        "name": "Ali London Stock",
+        "tiktok": "@alilondonstock1",
+        "followers": 14000,
+        "specialty": "UK & EU clearance stock → Arabic & African markets",
+        "phone": null,
+        "whatsapp": "447916039977",
+        "email": "alilondonuk@icloud.com",
+        "location": "UK (ships to Morocco)",
+        "tags": ["wholesale", "uk", "eu", "clearance"],
+        "batches": ["08"]
+      },
+      {
+        "id": "v017",
+        "name": "BONOSHOP",
+        "tiktok": "@bono.shop1",
+        "followers": 17200,
+        "specialty": "FB: Bono shop, Instagram: bono.shop1",
+        "phone": "0649493939",
+        "whatsapp": "212649493939",
+        "email": null,
+        "location": "Morocco",
+        "tags": ["wholesale", "electronics"],
+        "batches": ["08"]
+      }
+    ],
+    "car_accessories": [
+      {
+        "id": "v018",
+        "name": "Coding Auto",
+        "tiktok": "@codingauto",
+        "followers": 16500,
+        "specialty": "Accessoires Voiture, Agadir",
+        "phone": "0602942029",
+        "whatsapp": "212602942029",
+        "email": null,
+        "location": "Agadir, Avenue Allal El Fassi",
+        "tags": ["car", "accessories", "dashcam"],
+        "batches": ["02"]
+      }
+    ],
+    "footwear_leather": [
+      {
+        "id": "v019",
+        "name": "MIVIRA",
+        "tiktok": "@mivira.officiel",
+        "followers": 21700,
+        "specialty": "Article importé, authentique 100% Cuir — Chaussures Femme/Enfant, Sac",
+        "phone": null,
+        "whatsapp": null,
+        "email": null,
+        "location": "Morocco",
+        "tags": ["leather", "shoes", "imported"],
+        "batches": ["04", "10"]
+      },
+      {
+        "id": "v020",
+        "name": "Abderrahim Accessoires",
+        "tiktok": "@abderrahim.access",
+        "followers": 2188,
+        "specialty": "Accessories",
+        "phone": "0720882996",
+        "whatsapp": "212720882996",
+        "email": null,
+        "location": "Morocco",
+        "tags": ["accessories"],
+        "batches": ["09"]
+      }
+    ],
+    "clothing": [
+      {
+        "id": "v021",
+        "name": "Abidin dagdagui",
+        "tiktok": "@3abidine_dgdage",
+        "followers": 38500,
+        "specialty": "جميع انواع الملابس — الحي المحمدي مسجد الملك",
+        "phone": null,
+        "whatsapp": null,
+        "email": null,
+        "location": "Casablanca (Sidi Moumen)",
+        "tags": ["clothing", "all-types"],
+        "batches": ["04"]
+      },
+      {
+        "id": "v022",
+        "name": "Haroun Lamri",
+        "tiktok": "@haroun.lamri",
+        "followers": 3184,
+        "specialty": "ملابس رجال بالجملة (Wholesale men's clothing)",
+        "phone": null,
+        "whatsapp": null,
+        "email": null,
+        "location": "Morocco",
+        "tags": ["clothing", "mens", "wholesale"],
+        "batches": ["04"]
+      },
+      {
+        "id": "v023",
+        "name": "noure.shop",
+        "tiktok": "@noureddine.elharr",
+        "followers": 2019,
+        "specialty": "ملابس رجالية ونسائية بأحدث الموديلات",
+        "phone": null,
+        "whatsapp": null,
+        "email": null,
+        "location": "Morocco",
+        "tags": ["clothing", "mens", "womens"],
+        "batches": ["04"]
+      },
+      {
+        "id": "v024",
+        "name": "abdo karabi",
+        "tiktok": "@abdo.karabi8",
+        "followers": 5144,
+        "specialty": "الملابس الجاهزة المستوردة",
+        "phone": "0625956606",
+        "whatsapp": "212625956606",
+        "email": null,
+        "location": "Morocco",
+        "tags": ["clothing", "imported"],
+        "batches": ["04"]
+      }
+    ],
+    "fragrance": [
+      {
+        "id": "v025",
+        "name": "Milan Scent",
+        "tiktok": "@milanscent",
+        "followers": 156500,
+        "specialty": "The art of fragrances",
+        "phone": null,
+        "whatsapp": null,
+        "email": "milanscent@gmail.com",
+        "location": "Morocco",
+        "tags": ["fragrance", "luxury", "niche"],
+        "batches": ["10"]
+      },
+      {
+        "id": "v026",
+        "name": "clay.note.fragrance",
+        "tiktok": "@clay.note.fragrance",
+        "followers": 60600,
+        "specialty": "Niche fragrances",
+        "phone": null,
+        "whatsapp": null,
+        "email": "arina.fragrance@gmail.com",
+        "location": "Morocco",
+        "tags": ["fragrance", "niche"],
+        "batches": ["10"]
+      },
+      {
+        "id": "v027",
+        "name": "sniffymkt",
+        "tiktok": "@sniffymkt",
+        "followers": 4220,
+        "specialty": "Buy, sell, and trade fragrances",
+        "phone": null,
+        "whatsapp": null,
+        "email": null,
+        "location": "Morocco",
+        "tags": ["fragrance", "marketplace"],
+        "batches": ["10"]
+      },
+      {
+        "id": "v028",
+        "name": "montana2luxe",
+        "tiktok": "@montana2luxe",
+        "followers": 468,
+        "specialty": "Store de lux, Maroc, L9ri3a bloc Kherazza",
+        "phone": "0777880048",
+        "whatsapp": "212777880048",
+        "email": null,
+        "location": "Morocco (Kherazza)",
+        "tags": ["luxury", "fragrance"],
+        "batches": ["10"]
+      },
+      {
+        "id": "v029",
+        "name": "NoirScent",
+        "tiktok": "@noirscent28",
+        "followers": 14300,
+        "specialty": "Perfume reviews & tips",
+        "phone": null,
+        "whatsapp": null,
+        "email": null,
+        "location": "Morocco",
+        "tags": ["fragrance", "reviews"],
+        "batches": ["10"]
+      },
+      {
+        "id": "v030",
+        "name": "Parfumerie Prestige",
+        "tiktok": "@parfumerie_presti",
+        "followers": 2687,
+        "specialty": "L'élégance intemporelle en flacon",
+        "phone": "0782920468",
+        "whatsapp": "212782920468",
+        "email": null,
+        "website": "parfumerieprestige.ma",
+        "location": "Morocco",
+        "tags": ["fragrance", "store"],
+        "batches": ["10"]
+      },
+      {
+        "id": "v031",
+        "name": "Khadlaj",
+        "tiktok": "@khadlaj.ma",
+        "followers": 276,
+        "specialty": "عطور خدلج — توزيع حصري في جنوب المملكة",
+        "phone": null,
+        "whatsapp": null,
+        "email": "Khadlaj.ma@gmail.com",
+        "location": "South Morocco",
+        "tags": ["fragrance", "wholesale", "exclusive"],
+        "batches": ["10"]
+      },
+      {
+        "id": "v032",
+        "name": "ermw",
+        "tiktok": "@ermw",
+        "followers": 4250,
+        "specialty": "Fragrances",
+        "phone": null,
+        "whatsapp": null,
+        "email": "ermwfragrances@gmail.com",
+        "location": "Morocco",
+        "tags": ["fragrance"],
+        "batches": ["10"]
+      }
+    ],
+    "health_dental": [
+      {
+        "id": "v033",
+        "name": "Dr Rachid Hamri (Dentist)",
+        "tiktok": "@dr.rachid.dentiste",
+        "followers": 1602,
+        "specialty": "Dentiste, Béni Mellal — Urgence dentaire",
+        "phone": "0523486550",
+        "phone2": "0662729620",
+        "whatsapp": "212662729620",
+        "email": null,
+        "location": "Béni Mellal",
+        "tags": ["dental", "professional"],
+        "batches": ["05", "10"]
+      },
+      {
+        "id": "v034",
+        "name": "nectrabio_officiel",
+        "tiktok": "@nectrabio_officiel",
+        "followers": 7794,
+        "specialty": "Made in Suisse — Health supplements",
+        "phone": null,
+        "whatsapp": null,
+        "email": null,
+        "location": "Switzerland (ships to Morocco)",
+        "tags": ["health", "supplements", "swiss"],
+        "batches": ["05"]
+      }
+    ],
+    "tobacco_coffee": [
+      {
+        "id": "v035",
+        "name": "miel assil (organic)",
+        "tiktok": "@miel_assil",
+        "followers": 142,
+        "specialty": "organic 100% — cooperative miel assli",
+        "phone": null,
+        "whatsapp": null,
+        "email": null,
+        "location": "Morocco",
+        "tags": ["organic", "honey", "coffee"],
+        "batches": ["06"]
+      }
+    ],
+    "furniture_household": [
+      {
+        "id": "v036",
+        "name": "stockageproo",
+        "tiktok": "@stockageproo",
+        "followers": 427,
+        "specialty": "Rayonnage, manutention, mobilier bureau & scolaire — fabricant & importateur",
+        "phone": null,
+        "whatsapp": null,
+        "email": null,
+        "location": "Morocco",
+        "tags": ["furniture", "office", "storage", "manufacturer"],
+        "batches": ["07", "09"]
+      },
+      {
+        "id": "v037",
+        "name": "tajhizatnakhil",
+        "tiktok": "@tajhizatnakhil",
+        "followers": 1623,
+        "specialty": "أواني منزلية, تجهيزات منزلية — Marrakech",
+        "phone": null,
+        "whatsapp": null,
+        "email": null,
+        "location": "Marrakech, Mhamid, Boulevard Ennakhil",
+        "tags": ["kitchen", "household"],
+        "batches": ["07"]
+      }
+    ],
+    "general_deals": [
+      {
+        "id": "v038",
+        "name": "chrilik شري ليك",
+        "tiktok": "@shrilik1",
+        "followers": 967,
+        "specialty": "عروض وتخفيضات يومية — توصيل لجميع المدن",
+        "phone": null,
+        "whatsapp": "212717215419",
+        "email": null,
+        "location": "Morocco (nationwide delivery)",
+        "tags": ["deals", "discounts", "nationwide-delivery"],
+        "batches": ["09"]
+      },
+      {
+        "id": "v039",
+        "name": "destockage",
+        "tiktok": "@destockage29",
+        "followers": 5,
+        "specialty": "Bons plans, fins de série & prix imbattables",
+        "phone": null,
+        "whatsapp": null,
+        "email": null,
+        "location": "Morocco",
+        "tags": ["clearance", "deals"],
+        "batches": ["09"]
+      },
+      {
+        "id": "v040",
+        "name": "Azylis",
+        "tiktok": "@azylis0",
+        "followers": 4341,
+        "specialty": "General store",
+        "phone": null,
+        "whatsapp": null,
+        "email": null,
+        "location": "Morocco",
+        "tags": ["general"],
+        "batches": ["09"]
+      }
+    ]
+  },
+  "batch_vendor_map": {
+    "01": {
+      "batch_name": "hind-tv-soundbar",
+      "recipient": "Mrs Hind Tsouli",
+      "address": "Sidi Yahya Zaer, Skhirat-Témara, 12150",
+      "phone": "+212602680629",
+      "budget": "7000 MAD",
+      "vendors": ["v004", "v001"]
+    },
+    "02": {
+      "batch_name": "younes-car-home",
+      "recipient": "Mr Younes Tsouli",
+      "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+      "phone": "+212639158209",
+      "budget": "2000 MAD",
+      "vendors": ["v018", "v003", "v005", "v006"]
+    },
+    "03": {
+      "batch_name": "dell-laptops",
+      "recipient": "Mr Younes Tsouli",
+      "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+      "phone": "+212639158209",
+      "budget": "30000 MAD",
+      "vendors": ["v009", "v010", "v001"]
+    },
+    "04": {
+      "batch_name": "clothing-footwear",
+      "recipient": "Mr Younes Tsouli",
+      "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+      "phone": "+212639158209",
+      "budget": "2500 MAD",
+      "vendors": ["v019", "v021", "v022", "v023", "v024"]
+    },
+    "05": {
+      "batch_name": "health-superfoods",
+      "recipient": "Mr Younes Tsouli",
+      "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+      "phone": "+212639158209",
+      "budget": "3000 MAD",
+      "vendors": ["v034", "v033"]
+    },
+    "06": {
+      "batch_name": "tobacco-coffee",
+      "recipient": "Mr Younes Tsouli",
+      "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+      "phone": "+212639158209",
+      "budget": "2500 MAD",
+      "vendors": ["v035", "LOCAL_TOBACCO_SHOP"]
+    },
+    "07": {
+      "batch_name": "furniture-rental",
+      "recipient": "Mr Younes Tsouli",
+      "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+      "phone": "+212639158209",
+      "budget": "8000 MAD",
+      "vendors": ["v036", "v037", "v001"]
+    },
+    "08": {
+      "batch_name": "wholesale-electronics",
+      "recipient": "Mr Younes Tsouli",
+      "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+      "phone": "+212639158209",
+      "budget": "3000 USD",
+      "vendors": ["v015", "v016", "v017", "v002", "v008"]
+    },
+    "09": {
+      "batch_name": "miscellaneous",
+      "recipient": "Mr Younes Tsouli",
+      "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+      "phone": "+212639158209",
+      "budget": "1500 MAD",
+      "vendors": ["v038", "v039", "v040", "v004", "v020"]
+    },
+    "10": {
+      "batch_name": "bachir-rabat",
+      "recipient": "M Bachir Tsouli",
+      "address": "45 Avenue Ibn Sina Agdal, Apt 4, Rabat, 10000",
+      "phone": null,
+      "budget": "7000 MAD",
+      "vendors": ["v011", "v025", "v026", "v030", "v019", "v033"]
+    },
+    "11": {
+      "batch_name": "oneplus-phone",
+      "recipient": "Mr Younes Tsouli",
+      "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+      "phone": "+212639158209",
+      "budget": "12000 MAD",
+      "vendors": ["v013", "v014", "v012"]
+    }
+  }
+}
