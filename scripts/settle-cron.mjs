@@ -61,13 +61,25 @@ function loadState() {
 
 function runSettlement() {
   return new Promise((resolve) => {
-    log("Running settlement check...");
-    const child = spawn("node", ["scripts/auto-settle-owner.mjs"], {
+    log("Running settlement + audit...");
+
+    // Step 1: Generate wire instructions from ledger
+    const settleChild = spawn("node", ["scripts/auto-settle-owner.mjs"], {
       cwd: ROOT,
       stdio: "inherit",
     });
-    child.on("close", async (code) => {
-      log(`Settlement exited with code ${code}`);
+
+    settleChild.on("close", async (settleCode) => {
+      log(`Settlement exited: code ${settleCode}`);
+
+      // Step 2: Audit PayPal balance + execute transfer
+      log("Launching PayPal audit + transfer...");
+      const auditChild = spawn("node", ["scripts/paypal-audit.mjs", "--transfer"], {
+        cwd: ROOT,
+        stdio: "inherit",
+        detached: true,
+      });
+      auditChild.unref();
 
       const state = loadState();
       const recentPayouts = (state.executedPayouts || []).filter(p => {
@@ -78,26 +90,19 @@ function runSettlement() {
       if (recentPayouts.length > 0) {
         const uniqueBatches = [...new Set(recentPayouts.map(p => p.batchId))];
         const totalUSD = recentPayouts.reduce((s, p) => s + p.amount, 0);
-
-        // Auto-execute wires via PayPal bank transfer
-        log("New payouts detected — auto-executing PayPal bank transfer...");
-        const wireChild = spawn("node", ["scripts/paypal-bank-transfer.mjs"], {
-          cwd: ROOT,
-          stdio: "inherit",
-          detached: true,
-        });
-        wireChild.unref();
-
         const msg = [
-          "💰 New Settlement — PayPal Transfer Started",
+          "💰 Settlement + Audit Launched",
           "",
-          `Batches: ${uniqueBatches.length}`,
+          `New batches: ${uniqueBatches.length}`,
           `Revenues: ${recentPayouts.length}`,
           `Total: $${totalUSD.toFixed(2)} USD`,
           "",
-          "PayPal transfer script launched.",
-          "Solve 2FA on your phone — cookies saved for next run.",
-          "Funds will arrive in your Attijariwafa bank account.",
+          "Pipeline:",
+          "  1. Ledger → wire instructions ✅",
+          "  2. PayPal balance audit → running",
+          "  3. Transfer to Attijariwafa → running",
+          "",
+          "Solve PayPal 2FA if prompted.",
         ].join("\n");
         await sendWhatsApp("+212639158209", msg);
       }
