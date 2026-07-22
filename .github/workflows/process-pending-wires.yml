@@ -15,9 +15,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm ci
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: node scripts/process-pending-wires.mjs
         env:
           BASE44_FLOW_API_KEY: ${{ secrets.BASE44_FLOW_API_KEY }}
