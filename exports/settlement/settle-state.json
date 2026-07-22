@@ -1,0 +1,432 @@
+{
+  "executedPayouts": [
+    {
+      "earningId": "EARN_BANK_1781698021_0",
+      "amount": 425,
+      "batchId": "SETTLE_1784735054550_0",
+      "reference": "WIRES-SETTLE_1784735054550_0-1784735054552",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.557Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698021_1",
+      "amount": 875.5,
+      "batchId": "SETTLE_1784735054550_0",
+      "reference": "WIRES-SETTLE_1784735054550_0-1784735054552",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.557Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698021_2",
+      "amount": 1250,
+      "batchId": "SETTLE_1784735054550_0",
+      "reference": "WIRES-SETTLE_1784735054550_0-1784735054552",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.557Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698021_3",
+      "amount": 1620,
+      "batchId": "SETTLE_1784735054550_0",
+      "reference": "WIRES-SETTLE_1784735054550_0-1784735054552",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.557Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698021_4",
+      "amount": 3875.5,
+      "batchId": "SETTLE_1784735054550_0",
+      "reference": "WIRES-SETTLE_1784735054550_0-1784735054552",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.557Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698021_5",
+      "amount": 1755,
+      "batchId": "SETTLE_1784735054550_0",
+      "reference": "WIRES-SETTLE_1784735054550_0-1784735054552",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.557Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698021_6",
+      "amount": 1340.5,
+      "batchId": "SETTLE_1784735054550_0",
+      "reference": "WIRES-SETTLE_1784735054550_0-1784735054552",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.557Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698021_7",
+      "amount": 2450,
+      "batchId": "SETTLE_1784735054550_0",
+      "reference": "WIRES-SETTLE_1784735054550_0-1784735054552",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.557Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698021_8",
+      "amount": 2890,
+      "batchId": "SETTLE_1784735054550_0",
+      "reference": "WIRES-SETTLE_1784735054550_0-1784735054552",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.557Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698021_9",
+      "amount": 1950,
+      "batchId": "SETTLE_1784735054557_1",
+      "reference": "WIRES-SETTLE_1784735054557_1-1784735054560",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.563Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_0",
+      "amount": 425,
+      "batchId": "SETTLE_1784735054557_1",
+      "reference": "WIRES-SETTLE_1784735054557_1-1784735054560",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.563Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_1",
+      "amount": 875.5,
+      "batchId": "SETTLE_1784735054557_1",
+      "reference": "WIRES-SETTLE_1784735054557_1-1784735054560",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.563Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_2",
+      "amount": 1250,
+      "batchId": "SETTLE_1784735054557_1",
+      "reference": "WIRES-SETTLE_1784735054557_1-1784735054560",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.563Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_3",
+      "amount": 1620,
+      "batchId": "SETTLE_1784735054557_1",
+      "reference": "WIRES-SETTLE_1784735054557_1-1784735054560",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.563Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_4",
+      "amount": 3875.5,
+      "batchId": "SETTLE_1784735054557_1",
+      "reference": "WIRES-SETTLE_1784735054557_1-1784735054560",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.563Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_5",
+      "amount": 1755,
+      "batchId": "SETTLE_1784735054557_1",
+      "reference": "WIRES-SETTLE_1784735054557_1-1784735054560",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.563Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_6",
+      "amount": 1340.5,
+      "batchId": "SETTLE_1784735054557_1",
+      "reference": "WIRES-SETTLE_1784735054557_1-1784735054560",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.563Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_7",
+      "amount": 2450,
+      "batchId": "SETTLE_1784735054557_1",
+      "reference": "WIRES-SETTLE_1784735054557_1-1784735054560",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.563Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_8",
+      "amount": 2890,
+      "batchId": "SETTLE_1784735054563_2",
+      "reference": "WIRES-SETTLE_1784735054563_2-1784735054566",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.569Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_9",
+      "amount": 1950,
+      "batchId": "SETTLE_1784735054563_2",
+      "reference": "WIRES-SETTLE_1784735054563_2-1784735054566",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.569Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_0",
+      "amount": 425,
+      "batchId": "SETTLE_1784735054563_2",
+      "reference": "WIRES-SETTLE_1784735054563_2-1784735054566",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.569Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_1",
+      "amount": 875.5,
+      "batchId": "SETTLE_1784735054563_2",
+      "reference": "WIRES-SETTLE_1784735054563_2-1784735054566",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.569Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_2",
+      "amount": 1250,
+      "batchId": "SETTLE_1784735054563_2",
+      "reference": "WIRES-SETTLE_1784735054563_2-1784735054566",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.569Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_3",
+      "amount": 1620,
+      "batchId": "SETTLE_1784735054563_2",
+      "reference": "WIRES-SETTLE_1784735054563_2-1784735054566",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.569Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_4",
+      "amount": 3875.5,
+      "batchId": "SETTLE_1784735054563_2",
+      "reference": "WIRES-SETTLE_1784735054563_2-1784735054566",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.569Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_5",
+      "amount": 1755,
+      "batchId": "SETTLE_1784735054563_2",
+      "reference": "WIRES-SETTLE_1784735054563_2-1784735054566",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.569Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_6",
+      "amount": 1340.5,
+      "batchId": "SETTLE_1784735054563_2",
+      "reference": "WIRES-SETTLE_1784735054563_2-1784735054566",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.569Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_7",
+      "amount": 2450,
+      "batchId": "SETTLE_1784735054569_3",
+      "reference": "WIRES-SETTLE_1784735054569_3-1784735054572",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.575Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_8",
+      "amount": 2890,
+      "batchId": "SETTLE_1784735054569_3",
+      "reference": "WIRES-SETTLE_1784735054569_3-1784735054572",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.575Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_9",
+      "amount": 1950,
+      "batchId": "SETTLE_1784735054569_3",
+      "reference": "WIRES-SETTLE_1784735054569_3-1784735054572",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.575Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367936_0",
+      "amount": 425,
+      "batchId": "SETTLE_1784735054569_3",
+      "reference": "WIRES-SETTLE_1784735054569_3-1784735054572",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.575Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367936_1",
+      "amount": 875.5,
+      "batchId": "SETTLE_1784735054569_3",
+      "reference": "WIRES-SETTLE_1784735054569_3-1784735054572",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.575Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367936_2",
+      "amount": 1250,
+      "batchId": "SETTLE_1784735054569_3",
+      "reference": "WIRES-SETTLE_1784735054569_3-1784735054572",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.575Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367936_3",
+      "amount": 1620,
+      "batchId": "SETTLE_1784735054569_3",
+      "reference": "WIRES-SETTLE_1784735054569_3-1784735054572",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.575Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367936_4",
+      "amount": 3875.5,
+      "batchId": "SETTLE_1784735054569_3",
+      "reference": "WIRES-SETTLE_1784735054569_3-1784735054572",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.575Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367936_5",
+      "amount": 1755,
+      "batchId": "SETTLE_1784735054575_4",
+      "reference": "WIRES-SETTLE_1784735054575_4-1784735054578",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.581Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367936_6",
+      "amount": 1340.5,
+      "batchId": "SETTLE_1784735054575_4",
+      "reference": "WIRES-SETTLE_1784735054575_4-1784735054578",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.581Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367936_7",
+      "amount": 2450,
+      "batchId": "SETTLE_1784735054575_4",
+      "reference": "WIRES-SETTLE_1784735054575_4-1784735054578",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.581Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367936_8",
+      "amount": 2890,
+      "batchId": "SETTLE_1784735054575_4",
+      "reference": "WIRES-SETTLE_1784735054575_4-1784735054578",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.581Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367936_9",
+      "amount": 1950,
+      "batchId": "SETTLE_1784735054575_4",
+      "reference": "WIRES-SETTLE_1784735054575_4-1784735054578",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.581Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367952_0",
+      "amount": 425,
+      "batchId": "SETTLE_1784735054575_4",
+      "reference": "WIRES-SETTLE_1784735054575_4-1784735054578",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.581Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367952_1",
+      "amount": 875.5,
+      "batchId": "SETTLE_1784735054575_4",
+      "reference": "WIRES-SETTLE_1784735054575_4-1784735054578",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.581Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367952_2",
+      "amount": 1250,
+      "batchId": "SETTLE_1784735054575_4",
+      "reference": "WIRES-SETTLE_1784735054575_4-1784735054578",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.581Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367952_3",
+      "amount": 1620,
+      "batchId": "SETTLE_1784735054575_4",
+      "reference": "WIRES-SETTLE_1784735054575_4-1784735054578",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.581Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367952_4",
+      "amount": 3875.5,
+      "batchId": "SETTLE_1784735054581_5",
+      "reference": "WIRES-SETTLE_1784735054581_5-1784735054584",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.587Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367952_5",
+      "amount": 1755,
+      "batchId": "SETTLE_1784735054581_5",
+      "reference": "WIRES-SETTLE_1784735054581_5-1784735054584",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.587Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367952_6",
+      "amount": 1340.5,
+      "batchId": "SETTLE_1784735054581_5",
+      "reference": "WIRES-SETTLE_1784735054581_5-1784735054584",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.587Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367952_7",
+      "amount": 2450,
+      "batchId": "SETTLE_1784735054581_5",
+      "reference": "WIRES-SETTLE_1784735054581_5-1784735054584",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.587Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367952_8",
+      "amount": 2890,
+      "batchId": "SETTLE_1784735054581_5",
+      "reference": "WIRES-SETTLE_1784735054581_5-1784735054584",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.587Z"
+    },
+    {
+      "earningId": "EARN_BANK_1784367952_9",
+      "amount": 1950,
+      "batchId": "SETTLE_1784735054581_5",
+      "reference": "WIRES-SETTLE_1784735054581_5-1784735054584",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.587Z"
+    },
+    {
+      "earningId": "offline_Earning_REV_1768225534247",
+      "amount": 25,
+      "batchId": "SETTLE_1784735054581_5",
+      "reference": "WIRES-SETTLE_1784735054581_5-1784735054584",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.587Z"
+    },
+    {
+      "earningId": "offline_Earning_REV_1768225564250",
+      "amount": 40,
+      "batchId": "SETTLE_1784735054581_5",
+      "reference": "WIRES-SETTLE_1784735054581_5-1784735054584",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.587Z"
+    },
+    {
+      "earningId": "offline_Earning_REV_1768225594250",
+      "amount": 85,
+      "batchId": "SETTLE_1784735054581_5",
+      "reference": "WIRES-SETTLE_1784735054581_5-1784735054584",
+      "rail": "bank_wire",
+      "executedAt": "2026-07-22T15:44:14.587Z"
+    }
+  ],
+  "totalSettledUSD": 92307.5,
+  "totalSettledMAD": 282460.95000000007,
+  "lastRun": "2026-07-22T15:44:14.587Z",
+  "pendingPayouts": []
+}

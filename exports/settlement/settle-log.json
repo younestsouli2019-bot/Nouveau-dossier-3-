@@ -1,0 +1,407 @@
+[
+  {
+    "timestamp": "2026-07-22T15:38:27.756Z",
+    "level": "INFO",
+    "message": "=== Automated Owner Settlement Pipeline ==="
+  },
+  {
+    "timestamp": "2026-07-22T15:38:27.761Z",
+    "level": "INFO",
+    "message": "Owner: younestsouli2019@gmail.com | RIB: 007810000448500030594182"
+  },
+  {
+    "timestamp": "2026-07-22T15:38:27.763Z",
+    "level": "INFO",
+    "message": "Policy: 70% retained, 30% converted @ 10.2 MAD/USD"
+  },
+  {
+    "timestamp": "2026-07-22T15:38:27.778Z",
+    "level": "INFO",
+    "message": "Found 53 unsettled revenues: $92307.50 USD"
+  },
+  {
+    "timestamp": "2026-07-22T15:38:27.780Z",
+    "level": "INFO",
+    "message": "Split into 6 payout batch(es)"
+  },
+  {
+    "timestamp": "2026-07-22T15:38:28.440Z",
+    "level": "ERROR",
+    "message": "PayPal auth failed: PayPal token failed: 401 {\"error\":\"invalid_client\",\"error_description\":\"Client Authentication failed\"}"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:12.914Z",
+    "level": "INFO",
+    "message": "=== Automated Owner Settlement Pipeline ==="
+  },
+  {
+    "timestamp": "2026-07-22T15:42:12.919Z",
+    "level": "INFO",
+    "message": "Owner: younestsouli2019@gmail.com | RIB: 007810000448500030594182"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:12.920Z",
+    "level": "INFO",
+    "message": "Policy: 70% retained, 30% converted @ 10.2 MAD/USD"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:12.940Z",
+    "level": "INFO",
+    "message": "Found 53 unsettled revenues: $92307.50 USD"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:12.941Z",
+    "level": "INFO",
+    "message": "Split into 6 payout batch(es)"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:13.626Z",
+    "level": "INFO",
+    "message": "PayPal API token acquired"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:13.629Z",
+    "level": "INFO",
+    "message": "Processing batch 1/6: 9 revenues, $16481.50 USD"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:13.631Z",
+    "level": "INFO",
+    "message": "Executing PayPal payout: $4944.45 USD → younestsouli2019@gmail.com"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:13.634Z",
+    "level": "INFO",
+    "message": "Batch: SETTLE_1784734933631 | Ref: REV-SETTLE-1784734933631"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:14.172Z",
+    "level": "ERROR",
+    "message": "PayPal payout failed: PayPal payout failed: 403 {\"name\":\"AUTHORIZATION_ERROR\",\"message\":\"Authorization error occurred.\",\"debug_id\":\"5b6b0c5510bc1\",\"information_link\":\"https://developer.paypal.com/docs/api/payments.payouts-batch/#errors\",\"links\":[]}"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:14.173Z",
+    "level": "INFO",
+    "message": "Processing batch 2/6: 9 revenues, $15541.50 USD"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:14.175Z",
+    "level": "INFO",
+    "message": "Executing PayPal payout: $4662.45 USD → younestsouli2019@gmail.com"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:14.176Z",
+    "level": "INFO",
+    "message": "Batch: SETTLE_1784734934175 | Ref: REV-SETTLE-1784734934175"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:14.625Z",
+    "level": "ERROR",
+    "message": "PayPal payout failed: PayPal payout failed: 403 {\"name\":\"AUTHORIZATION_ERROR\",\"message\":\"Authorization error occurred.\",\"debug_id\":\"260dade92cc76\",\"information_link\":\"https://developer.paypal.com/docs/api/payments.payouts-batch/#errors\",\"links\":[]}"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:14.629Z",
+    "level": "INFO",
+    "message": "Processing batch 3/6: 9 revenues, $15981.50 USD"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:14.630Z",
+    "level": "INFO",
+    "message": "Executing PayPal payout: $4794.45 USD → younestsouli2019@gmail.com"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:14.631Z",
+    "level": "INFO",
+    "message": "Batch: SETTLE_1784734934630 | Ref: REV-SETTLE-1784734934630"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:14.967Z",
+    "level": "ERROR",
+    "message": "PayPal payout failed: PayPal payout failed: 403 {\"name\":\"AUTHORIZATION_ERROR\",\"message\":\"Authorization error occurred.\",\"debug_id\":\"2f74648d95c5a\",\"information_link\":\"https://developer.paypal.com/docs/api/payments.payouts-batch/#errors\",\"links\":[]}"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:14.968Z",
+    "level": "INFO",
+    "message": "Processing batch 4/6: 8 revenues, $15336.00 USD"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:14.969Z",
+    "level": "INFO",
+    "message": "Executing PayPal payout: $4600.80 USD → younestsouli2019@gmail.com"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:14.970Z",
+    "level": "INFO",
+    "message": "Batch: SETTLE_1784734934969 | Ref: REV-SETTLE-1784734934969"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:15.346Z",
+    "level": "ERROR",
+    "message": "PayPal payout failed: PayPal payout failed: 403 {\"name\":\"AUTHORIZATION_ERROR\",\"message\":\"Authorization error occurred.\",\"debug_id\":\"1996b2f28ba51\",\"information_link\":\"https://developer.paypal.com/docs/api/payments.payouts-batch/#errors\",\"links\":[]}"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:15.347Z",
+    "level": "INFO",
+    "message": "Processing batch 5/6: 9 revenues, $14556.00 USD"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:15.349Z",
+    "level": "INFO",
+    "message": "Executing PayPal payout: $4366.80 USD → younestsouli2019@gmail.com"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:15.349Z",
+    "level": "INFO",
+    "message": "Batch: SETTLE_1784734935349 | Ref: REV-SETTLE-1784734935349"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:15.724Z",
+    "level": "ERROR",
+    "message": "PayPal payout failed: PayPal payout failed: 403 {\"name\":\"AUTHORIZATION_ERROR\",\"message\":\"Authorization error occurred.\",\"debug_id\":\"1e57a6cc56aca\",\"information_link\":\"https://developer.paypal.com/docs/api/payments.payouts-batch/#errors\",\"links\":[]}"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:15.725Z",
+    "level": "INFO",
+    "message": "Processing batch 6/6: 9 revenues, $14411.00 USD"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:15.727Z",
+    "level": "INFO",
+    "message": "Executing PayPal payout: $4323.30 USD → younestsouli2019@gmail.com"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:15.729Z",
+    "level": "INFO",
+    "message": "Batch: SETTLE_1784734935727 | Ref: REV-SETTLE-1784734935727"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:16.221Z",
+    "level": "ERROR",
+    "message": "PayPal payout failed: PayPal payout failed: 403 {\"name\":\"AUTHORIZATION_ERROR\",\"message\":\"Authorization error occurred.\",\"debug_id\":\"1893b4f069fe1\",\"information_link\":\"https://developer.paypal.com/docs/api/payments.payouts-batch/#errors\",\"links\":[]}"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:16.223Z",
+    "level": "INFO",
+    "message": "=== Settlement Summary ==="
+  },
+  {
+    "timestamp": "2026-07-22T15:42:16.224Z",
+    "level": "INFO",
+    "message": "Revenues settled: 53"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:16.225Z",
+    "level": "INFO",
+    "message": "Total USD processed: $92307.50"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:16.227Z",
+    "level": "INFO",
+    "message": "Total settled to owner: $0.00 USD"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:16.229Z",
+    "level": "INFO",
+    "message": "Total MAD generated: 0.00 MAD"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:16.230Z",
+    "level": "INFO",
+    "message": "PayPal payouts sent to: younestsouli2019@gmail.com"
+  },
+  {
+    "timestamp": "2026-07-22T15:42:16.231Z",
+    "level": "INFO",
+    "message": "Next: Log into attijaripaypal.attijariwafa.com/PayPal to repatriate"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.525Z",
+    "level": "INFO",
+    "message": "=== Automated Owner Settlement Pipeline ==="
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.530Z",
+    "level": "INFO",
+    "message": "Owner: younestsouli2019@gmail.com | RIB: 007810000448500030594182 | IBAN: LU774080000041265646"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.546Z",
+    "level": "INFO",
+    "message": "Found 53 unsettled revenues: $92307.50 USD total, $27692.25 USD convertible (30%)"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.547Z",
+    "level": "INFO",
+    "message": "Split into 6 batch(es)"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.548Z",
+    "level": "INFO",
+    "message": "Rails available: bank_wire=true, paypal=true"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.550Z",
+    "level": "INFO",
+    "message": "Batch 1/6: 9 revenues, $16481.50 USD (30% = $4944.45 → 50433.39 MAD)"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.551Z",
+    "level": "INFO",
+    "message": "Attempting bank wire rail..."
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.555Z",
+    "level": "INFO",
+    "message": "Bank wire ready: WIRES-SETTLE_1784735054550_0-1784735054552 — $4944.45 USD → 50433.39 MAD"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.557Z",
+    "level": "INFO",
+    "message": "Batch 2/6: 9 revenues, $15541.50 USD (30% = $4662.45 → 47556.99 MAD)"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.559Z",
+    "level": "INFO",
+    "message": "Attempting bank wire rail..."
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.562Z",
+    "level": "INFO",
+    "message": "Bank wire ready: WIRES-SETTLE_1784735054557_1-1784735054560 — $4662.45 USD → 47556.99 MAD"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.563Z",
+    "level": "INFO",
+    "message": "Batch 3/6: 9 revenues, $15981.50 USD (30% = $4794.45 → 48903.39 MAD)"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.565Z",
+    "level": "INFO",
+    "message": "Attempting bank wire rail..."
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.568Z",
+    "level": "INFO",
+    "message": "Bank wire ready: WIRES-SETTLE_1784735054563_2-1784735054566 — $4794.45 USD → 48903.39 MAD"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.569Z",
+    "level": "INFO",
+    "message": "Batch 4/6: 8 revenues, $15336.00 USD (30% = $4600.80 → 46928.16 MAD)"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.571Z",
+    "level": "INFO",
+    "message": "Attempting bank wire rail..."
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.574Z",
+    "level": "INFO",
+    "message": "Bank wire ready: WIRES-SETTLE_1784735054569_3-1784735054572 — $4600.80 USD → 46928.16 MAD"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.575Z",
+    "level": "INFO",
+    "message": "Batch 5/6: 9 revenues, $14556.00 USD (30% = $4366.80 → 44541.36 MAD)"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.576Z",
+    "level": "INFO",
+    "message": "Attempting bank wire rail..."
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.579Z",
+    "level": "INFO",
+    "message": "Bank wire ready: WIRES-SETTLE_1784735054575_4-1784735054578 — $4366.80 USD → 44541.36 MAD"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.581Z",
+    "level": "INFO",
+    "message": "Batch 6/6: 9 revenues, $14411.00 USD (30% = $4323.30 → 44097.66 MAD)"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.582Z",
+    "level": "INFO",
+    "message": "Attempting bank wire rail..."
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.586Z",
+    "level": "INFO",
+    "message": "Bank wire ready: WIRES-SETTLE_1784735054581_5-1784735054584 — $4323.30 USD → 44097.66 MAD"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.589Z",
+    "level": "INFO",
+    "message": "=== Settlement Summary ==="
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.590Z",
+    "level": "INFO",
+    "message": "Revenues processed: 53"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.591Z",
+    "level": "INFO",
+    "message": "Total USD: $92307.50"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.593Z",
+    "level": "INFO",
+    "message": "Total settled: $92307.50 USD"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.594Z",
+    "level": "INFO",
+    "message": "Total MAD: 282460.95 MAD"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.595Z",
+    "level": "INFO",
+    "message": "Attijari portal: https://attijaripaypal.attijariwafa.com/PayPal"
+  },
+  {
+    "timestamp": "2026-07-22T15:44:14.596Z",
+    "level": "INFO",
+    "message": "RIB: 007810000448500030594182"
+  },
+  {
+    "timestamp": "2026-07-22T15:45:21.302Z",
+    "level": "INFO",
+    "message": "=== Automated Owner Settlement Pipeline ==="
+  },
+  {
+    "timestamp": "2026-07-22T15:45:21.309Z",
+    "level": "INFO",
+    "message": "Owner: younestsouli2019@gmail.com | RIB: 007810000448500030594182 | IBAN: LU774080000041265646"
+  },
+  {
+    "timestamp": "2026-07-22T15:45:21.325Z",
+    "level": "INFO",
+    "message": "No unsettled revenues found"
+  },
+  {
+    "timestamp": "2026-07-22T15:46:00.204Z",
+    "level": "INFO",
+    "message": "=== Automated Owner Settlement Pipeline ==="
+  },
+  {
+    "timestamp": "2026-07-22T15:46:00.211Z",
+    "level": "INFO",
+    "message": "Owner: younestsouli2019@gmail.com | RIB: 007810000448500030594182 | IBAN: LU774080000041265646"
+  },
+  {
+    "timestamp": "2026-07-22T15:50:23.892Z",
+    "level": "INFO",
+    "message": "=== Automated Owner Settlement Pipeline ==="
+  },
+  {
+    "timestamp": "2026-07-22T15:50:23.899Z",
+    "level": "INFO",
+    "message": "Owner: younestsouli2019@gmail.com | RIB: 007810000448500030594182 | IBAN: LU774080000041265646"
+  },
+  {
+    "timestamp": "2026-07-22T15:50:23.913Z",
+    "level": "INFO",
+    "message": "No unsettled revenues found"
+  }
+]

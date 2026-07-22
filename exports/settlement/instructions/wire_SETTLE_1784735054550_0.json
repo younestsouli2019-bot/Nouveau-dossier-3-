@@ -1,0 +1,54 @@
+{
+  "type": "bank_wire_settlement",
+  "rail": "bank_wire",
+  "batch_id": "SETTLE_1784735054550_0",
+  "reference": "WIRES-SETTLE_1784735054550_0-1784735054552",
+  "status": "ready_for_portal",
+  "created_at": "2026-07-22T15:44:14.552Z",
+  "source": {
+    "bank": "Banking Circle S.A.",
+    "address": "2, Boulevard de la Foire L-1528 LUXEMBOURG",
+    "iban": "LU774080000041265646",
+    "swift": "BCIRLULL",
+    "beneficiary": "Mr Younes Tsouli"
+  },
+  "destination": {
+    "bank": "Attijariwafa Bank",
+    "rib": "007810000448500030594182",
+    "swift": "BCMAMAMC",
+    "branch": "RABAT AGDAL, 83 AV. FAL OULD OUMEIR",
+    "beneficiary": "M TSOULI YOUNES",
+    "country": "MA",
+    "city": "RABAT"
+  },
+  "amount": {
+    "payout_usd": 4944.450000000001,
+    "total_revenue_usd": 16481.5,
+    "retained_usd": 11537.05,
+    "converted_usd": 4944.450000000001,
+    "converted_mad": 50433.39,
+    "fx_rate": 10.2
+  },
+  "attijari_portal": "https://attijaripaypal.attijariwafa.com/PayPal",
+  "attijari_steps": [
+    "1. Log into Attijari-PayPal portal",
+    "2. Navigate to Virements / Repatriation",
+    "3. Select incoming wire from Banking Circle",
+    "4. Confirm the 70/30 split (Office des Changes)",
+    "5. 70% → Compte en Devises (USD retained)",
+    "6. 30% → Compte Dirhams (converted to MAD)",
+    "7. Save transaction reference"
+  ],
+  "revenue_ids": [
+    "EARN_BANK_1781698021_0",
+    "EARN_BANK_1781698021_1",
+    "EARN_BANK_1781698021_2",
+    "EARN_BANK_1781698021_3",
+    "EARN_BANK_1781698021_4",
+    "EARN_BANK_1781698021_5",
+    "EARN_BANK_1781698021_6",
+    "EARN_BANK_1781698021_7",
+    "EARN_BANK_1781698021_8"
+  ],
+  "wallet": null
+}
