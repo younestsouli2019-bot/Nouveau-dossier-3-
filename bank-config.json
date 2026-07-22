@@ -1,0 +1,25 @@
+{
+  "owner": {
+    "name": "M TSOULI YOUNES",
+    "bank_name": "Attijariwafa bank",
+    "bank_country": "MA",
+    "currency": "MAD",
+    "swift_bic": "BCMAMAMC",
+    "rib": "007810000448500030594182",
+    "rib_fields": {
+      "code_banque": "007",
+      "code_ville": "810",
+      "numero_serie": "0004485000305941",
+      "cle_rib": "82"
+    },
+    "branch": "RABAT AGDAL FAL OULD OUMEIR",
+    "address": "83, AV. FAL OULD OUMEIR, RABAT"
+  },
+  "settlement": {
+    "method": "BANK_WIRE",
+    "provider": "SWIFT_MT103",
+    "auto_execute": true,
+    "max_per_wire_usd": 5000,
+    "currency_support": ["MAD", "USD", "EUR"]
+  }
+}
