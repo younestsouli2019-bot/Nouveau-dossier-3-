@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Procurement Dashboard — Swarm System</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+
+    .header { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-bottom: 1px solid #334155; padding: 20px 30px; }
+    .header h1 { font-size: 24px; font-weight: 700; color: #f8fafc; }
+    .header .subtitle { color: #94a3b8; font-size: 14px; margin-top: 4px; }
+
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; padding: 20px 30px; }
+    .stat { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; }
+    .stat .label { color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    .stat .value { font-size: 32px; font-weight: 700; color: #f8fafc; margin-top: 8px; }
+    .stat .value.green { color: #22c55e; }
+    .stat .value.blue { color: #3b82f6; }
+    .stat .value.amber { color: #f59e0b; }
+    .stat .value.red { color: #ef4444; }
+
+    .content { padding: 0 30px 30px; }
+
+    .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 0; }
+    .tab { padding: 10px 20px; cursor: pointer; border: none; background: none; color: #94a3b8; font-size: 14px; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .tab:hover { color: #e2e8f0; }
+    .tab.active { color: #3b82f6; border-bottom-color: #3b82f6; }
+
+    .batch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 16px; }
+
+    .batch-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; transition: all 0.2s; cursor: pointer; }
+    .batch-card:hover { border-color: #3b82f6; transform: translateY(-2px); box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1); }
+    .batch-card .card-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
+    .batch-card .card-header h3 { font-size: 16px; color: #f8fafc; }
+    .batch-card .card-header .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-sourcing { background: #7c3aed22; color: #a78bfa; border: 1px solid #7c3aed44; }
+    .badge-contacted { background: #3b82f622; color: #60a5fa; border: 1px solid #3b82f644; }
+    .badge-confirmed { background: #22c55e22; color: #4ade80; border: 1px solid #22c55e44; }
+    .badge-ordered { background: #f59e0b22; color: #fbbf24; border: 1px solid #f59e0b44; }
+    .badge-delivered { background: #22c55e22; color: #22c55e; border: 1px solid #22c55e44; }
+
+    .batch-card .card-body { padding: 16px; }
+    .batch-card .card-body .row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+    .batch-card .card-body .row .label { color: #94a3b8; }
+    .batch-card .card-body .row .value { color: #e2e8f0; font-weight: 500; }
+
+    .progress-bar { height: 6px; background: #334155; border-radius: 3px; margin-top: 12px; overflow: hidden; }
+    .progress-bar .fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+    .fill-green { background: linear-gradient(90deg, #22c55e, #4ade80); }
+    .fill-blue { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .fill-amber { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+
+    .vendor-list { margin-top: 12px; }
+    .vendor-chip { display: inline-block; padding: 4px 8px; margin: 2px; background: #334155; border-radius: 6px; font-size: 11px; color: #94a3b8; }
+
+    .detail-panel { display: none; background: #1e293b; border: 1px solid #334155; border-radius: 12px; margin-top: 20px; padding: 24px; }
+    .detail-panel.active { display: block; }
+    .detail-panel h2 { font-size: 20px; margin-bottom: 16px; }
+
+    .items-table { width: 100%; border-collapse: collapse; }
+    .items-table th { text-align: left; padding: 10px 12px; background: #0f172a; color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    .items-table td { padding: 10px 12px; border-bottom: 1px solid #334155; font-size: 13px; }
+    .items-table tr:hover { background: #334155; }
+
+    .action-btn { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+    .btn-primary { background: #3b82f6; color: white; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-success { background: #22c55e; color: white; }
+    .btn-success:hover { background: #16a34a; }
+    .btn-amber { background: #f59e0b; color: white; }
+    .btn-amber:hover { background: #d97706; }
+
+    @media (max-width: 768px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .batch-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Procurement Swarm Dashboard</h1>
+    <div class="subtitle">Owner Procurement Request Management — 11 Batches, 53 Items, 562 Units</div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="content">
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('batches')">Batches</button>
+      <button class="tab" onclick="showTab('vendors')">Vendors</button>
+      <button class="tab" onclick="showTab('items')">All Items</button>
+      <button class="tab" onclick="showTab('orders')">Purchase Orders</button>
+    </div>
+
+    <div id="tab-batches" class="batch-grid"></div>
+    <div id="tab-vendors" class="batch-grid" style="display:none"></div>
+    <div id="tab-items" style="display:none">
+      <table class="items-table" id="items-table">
+        <thead>
+          <tr>
+            <th>Batch</th>
+            <th>Item</th>
+            <th>Brand</th>
+            <th>Qty</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Vendor</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div id="tab-orders" class="batch-grid" style="display:none"></div>
+
+    <div class="detail-panel" id="detail-panel">
+      <div id="detail-content"></div>
+    </div>
+  </div>
+
+  <script>
+    const BATCHES = {
+      '01': { name: 'hind-tv-soundbar', recipient: 'Mrs Hind Tsouli', budget: '7,000 MAD', items: 2, vendors: 2 },
+      '02': { name: 'younes-car-home', recipient: 'Mr Younes Tsouli', budget: '2,000 MAD', items: 6, vendors: 4 },
+      '03': { name: 'dell-laptops', recipient: 'Mr Younes Tsouli', budget: '30,000 MAD', items: 2, vendors: 3 },
+      '04': { name: 'clothing-footwear', recipient: 'Mr Younes Tsouli', budget: '2,500 MAD', items: 4, vendors: 5 },
+      '05': { name: 'health-superfoods', recipient: 'Mr Younes Tsouli', budget: '3,000 MAD', items: 4, vendors: 2 },
+      '06': { name: 'tobacco-coffee', recipient: 'Mr Younes Tsouli', budget: '2,500 MAD', items: 6, vendors: 2 },
+      '07': { name: 'furniture-rental', recipient: 'Mr Younes Tsouli', budget: '8,000 MAD', items: 5, vendors: 3 },
+      '08': { name: 'wholesale-electronics', recipient: 'Mr Younes Tsouli', budget: '3,000 USD', items: 10, vendors: 5 },
+      '09': { name: 'miscellaneous', recipient: 'Mr Younes Tsouli', budget: '1,500 MAD', items: 10, vendors: 5 },
+      '10': { name: 'bachir-rabat', recipient: 'M Bachir Tsouli', budget: '7,000 MAD', items: 6, vendors: 6 },
+      '11': { name: 'oneplus-phone', recipient: 'Mr Younes Tsouli', budget: '12,000 MAD', items: 1, vendors: 3 }
+    };
+
+    const VENDORS = {
+      'v001': { name: 'OrgosTech', tiktok: '@orgostech', followers: 5398 },
+      'v002': { name: 'MOUNIR PHONE', tiktok: '@mouniir8', followers: 1728 },
+      'v004': { name: 'electro ragragui', tiktok: '@electroragragui', followers: 36100 },
+      'v009': { name: 'Flexrise SARL', tiktok: '@flexrisesarl', followers: 559 },
+      'v013': { name: 'Kamal phone', tiktok: '@kamalgerizmne', followers: 2416 },
+      'v015': { name: 'Senya-3442', tiktok: '@huangchuxin3', followers: 1535 },
+      'v018': { name: 'Coding Auto', tiktok: '@codingauto', followers: 16500 },
+      'v019': { name: 'MIVIRA', tiktok: '@mivira.officiel', followers: 21700 },
+      'v025': { name: 'Milan Scent', tiktok: '@milanscent', followers: 156500 },
+      'v030': { name: 'Parfumerie Prestige', tiktok: '@parfumerie_presti', followers: 2687 },
+      'v033': { name: 'Dr Rachid Hamri', tiktok: '@dr.rachid.dentiste', followers: 1602 }
+    };
+
+    let currentBatch = null;
+
+    function showTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`.tab[onclick="showTab('${tab}')"]`).classList.add('active');
+
+      document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
+      document.getElementById(`tab-${tab}`).style.display = 'block';
+      document.getElementById('detail-panel').classList.remove('active');
+    }
+
+    function renderStats() {
+      const totalItems = Object.values(BATCHES).reduce((s, b) => s + b.items, 0);
+      const totalVendors = 40;
+
+      document.getElementById('stats').innerHTML = `
+        <div class="stat"><div class="label">Batches</div><div class="value blue">11</div></div>
+        <div class="stat"><div class="label">Total Items</div><div class="value">${totalItems}</div></div>
+        <div class="stat"><div class="label">TikTok Vendors</div><div class="value green">${totalVendors}</div></div>
+        <div class="stat"><div class="label">Budget MAD</div><div class="value amber">75,500</div></div>
+        <div class="stat"><div class="label">Budget USD</div><div class="value amber">$3,000</div></div>
+        <div class="stat"><div class="label">Recipients</div><div class="value">3</div></div>
+      `;
+    }
+
+    function renderBatches() {
+      const grid = document.getElementById('tab-batches');
+      grid.innerHTML = Object.entries(BATCHES).map(([num, batch]) => `
+        <div class="batch-card" onclick="showBatchDetail('${num}')">
+          <div class="card-header">
+            <h3>Batch ${num}: ${batch.name}</h3>
+            <span class="badge badge-sourcing">SOURCING</span>
+          </div>
+          <div class="card-body">
+            <div class="row"><span class="label">Recipient</span><span class="value">${batch.recipient}</span></div>
+            <div class="row"><span class="label">Items</span><span class="value">${batch.items}</span></div>
+            <div class="row"><span class="label">Budget</span><span class="value">${batch.budget}</span></div>
+            <div class="row"><span class="label">Vendors</span><span class="value">${batch.vendors}</span></div>
+            <div class="progress-bar"><div class="fill fill-amber" style="width: 0%"></div></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderItems() {
+      const items = [
+        { batch: '01', name: 'Samsung UHD Smart 43"', brand: 'Samsung', qty: 1, category: 'TV', price: null, vendor: null, status: 'pending' },
+        { batch: '01', name: 'Barre de Son Samsung 2.0', brand: 'Samsung', qty: 1, category: 'Soundbar', price: null, vendor: null, status: 'pending' },
+        { batch: '03', name: 'Dell Precision 3541', brand: 'Dell', qty: 2, category: 'Laptop', price: null, vendor: null, status: 'pending' },
+        { batch: '08', name: 'Wireless Mouse', brand: '-', qty: 50, category: 'Electronics', price: null, vendor: null, status: 'pending' },
+        { batch: '08', name: 'USB Sticks 32GB', brand: '-', qty: 50, category: 'Electronics', price: null, vendor: null, status: 'pending' },
+        { batch: '08', name: 'Solar Power Banks', brand: '-', qty: 30, category: 'Electronics', price: null, vendor: null, status: 'pending' },
+        { batch: '08', name: 'Bluetooth Earbuds', brand: '-', qty: 50, category: 'Electronics', price: null, vendor: null, status: 'pending' },
+        { batch: '08', name: 'USB-C Cables', brand: '-', qty: 100, category: 'Electronics', price: null, vendor: null, status: 'pending' },
+        { batch: '10', name: 'Paco Rabanne Perfume', brand: 'Paco Rabanne', qty: 1, category: 'Fragrance', price: null, vendor: null, status: 'pending' },
+        { batch: '10', name: 'Mont Blanc Legend', brand: 'Mont Blanc', qty: 1, category: 'Fragrance', price: null, vendor: null, status: 'pending' },
+        { batch: '11', name: 'OnePlus 15 5G', brand: 'OnePlus', qty: 1, category: 'Smartphone', price: null, vendor: null, status: 'pending' }
+      ];
+
+      const tbody = document.querySelector('#items-table tbody');
+      tbody.innerHTML = items.map(item => `
+        <tr>
+          <td>${item.batch}</td>
+          <td>${item.name}</td>
+          <td>${item.brand}</td>
+          <td>${item.qty}</td>
+          <td>${item.category}</td>
+          <td>${item.price ? item.price + ' MAD' : '-'}</td>
+          <td>${item.vendor || '-'}</td>
+          <td><span class="badge badge-sourcing">${item.status.toUpperCase()}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function showBatchDetail(num) {
+      const batch = BATCHES[num];
+      const panel = document.getElementById('detail-panel');
+      const content = document.getElementById('detail-content');
+
+      content.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2>Batch ${num}: ${batch.name}</h2>
+          <button class="action-btn btn-primary" onclick="generatePO('${num}')">Generate PO</button>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div>
+            <h3 style="color: #94a3b8; font-size: 12px; text-transform: uppercase; margin-bottom: 8px;">Recipient</h3>
+            <p>${batch.recipient}</p>
+          </div>
+          <div>
+            <h3 style="color: #94a3b8; font-size: 12px; text-transform: uppercase; margin-bottom: 8px;">Budget</h3>
+            <p style="font-size: 20px; font-weight: bold; color: #fbbf24;">${batch.budget}</p>
+          </div>
+        </div>
+        <div style="margin-top: 20px;">
+          <h3 style="color: #94a3b8; font-size: 12px; text-transform: uppercase; margin-bottom: 8px;">Actions</h3>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="action-btn btn-primary" onclick="sendOutreach('${num}')">Send Outreach</button>
+            <button class="action-btn btn-amber" onclick="updateTracker('${num}')">Update Tracker</button>
+            <button class="action-btn btn-success" onclick="syncBase44('${num}')">Sync to Base44</button>
+          </div>
+        </div>
+      `;
+
+      panel.classList.add('active');
+      currentBatch = num;
+    }
+
+    function generatePO(num) {
+      alert(`Generating PO for batch ${num}...\nRun: node generate-po.mjs --batch=${num} --format=html`);
+    }
+
+    function sendOutreach(num) {
+      alert(`Sending outreach for batch ${num}...\nRun: node send-outreach.mjs --batch=${num} --build-only`);
+    }
+
+    function updateTracker(num) {
+      alert(`Updating tracker for batch ${num}...\nRun: node send-outreach.mjs --batch=${num} --status`);
+    }
+
+    function syncBase44(num) {
+      alert(`Syncing to Base44 for batch ${num}...\nRun: node base44-sync.mjs --batch=${num}`);
+    }
+
+    renderStats();
+    renderBatches();
+    renderItems();
+  </script>
+</body>
+</html>

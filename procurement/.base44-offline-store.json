@@ -1,0 +1,789 @@
+{
+  "entities": {
+    "ProcurementRequest": {
+      "procurement_request_batch_01": {
+        "type": "procurement_request",
+        "batchId": "01",
+        "batchName": "hind-tv-soundbar",
+        "status": "sourcing",
+        "recipient": {
+          "name": "Mrs Hind Tsouli",
+          "address": "Sidi Yahya Zaer, Skhirat-Témara, 12150",
+          "phone": "+212602680629"
+        },
+        "budget": {
+          "max": "7000 MAD",
+          "currency": "MAD",
+          "totalActual": 0
+        },
+        "items": [
+          {
+            "name": "SAMSUNG UHD SMART 43\"",
+            "brand": "SAMSUNG",
+            "category": "tv",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "BARRE DE SON SAMSUNG 2.0",
+            "brand": "SAMSUNG",
+            "category": "soundbar",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          }
+        ],
+        "vendorsContacted": [],
+        "createdAt": "2026-07-22T09:57:28.298Z",
+        "updatedAt": "2026-07-22T09:57:28.299Z",
+        "_offline": true,
+        "_syncedAt": "2026-07-22T09:57:28.980Z"
+      },
+      "procurement_request_batch_02": {
+        "type": "procurement_request",
+        "batchId": "02",
+        "batchName": "younes-car-home",
+        "status": "sourcing",
+        "recipient": {
+          "name": "Mr Younes Tsouli",
+          "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+          "phone": "+212639158209"
+        },
+        "budget": {
+          "max": "2000 MAD",
+          "currency": "MAD",
+          "totalActual": 0
+        },
+        "items": [
+          {
+            "name": "Caméra de tableau de bord avant/arrière",
+            "brand": "TOTNG",
+            "category": "electronics",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Brosse Électrique Rotative Polyvalente 5-en-1",
+            "brand": null,
+            "category": "cleaning",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Nettoyeur Haute Pression Lightning — Pistolet Mousseur",
+            "brand": null,
+            "category": "cleaning",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Protecteurs d'éclaboussures pour évier de cuisine",
+            "brand": null,
+            "category": "kitchen",
+            "quantity": 8,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          }
+        ],
+        "vendorsContacted": [],
+        "createdAt": "2026-07-22T09:57:29.117Z",
+        "updatedAt": "2026-07-22T09:57:29.118Z",
+        "_offline": true,
+        "_syncedAt": "2026-07-22T09:57:29.912Z"
+      },
+      "procurement_request_batch_03": {
+        "type": "procurement_request",
+        "batchId": "03",
+        "batchName": "dell-laptops",
+        "status": "sourcing",
+        "recipient": {
+          "name": "Mr Younes Tsouli",
+          "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+          "phone": "+212639158209"
+        },
+        "budget": {
+          "max": "30000 MAD",
+          "currency": "MAD",
+          "totalActual": 0
+        },
+        "items": [
+          {
+            "name": "Dell Precision 3541",
+            "brand": null,
+            "category": "laptop",
+            "quantity": 2,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          }
+        ],
+        "vendorsContacted": [],
+        "createdAt": "2026-07-22T09:57:30.035Z",
+        "updatedAt": "2026-07-22T09:57:30.036Z",
+        "_offline": true,
+        "_syncedAt": "2026-07-22T09:57:30.550Z"
+      },
+      "procurement_request_batch_04": {
+        "type": "procurement_request",
+        "batchId": "04",
+        "batchName": "clothing-footwear",
+        "status": "sourcing",
+        "recipient": {
+          "name": "Mr Younes Tsouli",
+          "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+          "phone": "+212639158209"
+        },
+        "budget": {
+          "max": "2500 MAD",
+          "currency": "MAD",
+          "totalActual": 0
+        },
+        "items": [
+          {
+            "name": "Kricely Trail Shoes",
+            "brand": null,
+            "category": "footwear",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Kricely Trail Shoes",
+            "brand": null,
+            "category": "footwear",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Brandit M-65 Giant Jacket",
+            "brand": null,
+            "category": "jacket",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Mil-Tec US Tactical Flight Jacket",
+            "brand": null,
+            "category": "jacket",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          }
+        ],
+        "vendorsContacted": [],
+        "createdAt": "2026-07-22T09:57:30.758Z",
+        "updatedAt": "2026-07-22T09:57:30.760Z",
+        "_offline": true,
+        "_syncedAt": "2026-07-22T09:57:31.353Z"
+      },
+      "procurement_request_batch_05": {
+        "type": "procurement_request",
+        "batchId": "05",
+        "batchName": "health-superfoods",
+        "status": "sourcing",
+        "recipient": {
+          "name": "Mr Younes Tsouli",
+          "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+          "phone": "+212639158209"
+        },
+        "budget": {
+          "max": "3000 MAD",
+          "currency": "MAD",
+          "totalActual": 0
+        },
+        "items": [
+          {
+            "name": "Superfood.ma — Stimulate Nitric Oxide Production Naturally Pack",
+            "brand": null,
+            "category": "supplement",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Superfood.ma — Diabetes Pack",
+            "brand": null,
+            "category": "supplement",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Natural alternatives to N-acétylcystéine (NAC)",
+            "brand": null,
+            "category": "health",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Crest 3D Whitestrips Professional Effects",
+            "brand": null,
+            "category": "dental",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Opalescence Go",
+            "brand": null,
+            "category": "dental",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          }
+        ],
+        "vendorsContacted": [],
+        "createdAt": "2026-07-22T09:57:31.485Z",
+        "updatedAt": "2026-07-22T09:57:31.486Z",
+        "_offline": true,
+        "_syncedAt": "2026-07-22T09:57:32.143Z"
+      },
+      "procurement_request_batch_06": {
+        "type": "procurement_request",
+        "batchId": "06",
+        "batchName": "tobacco-coffee",
+        "status": "sourcing",
+        "recipient": {
+          "name": "Mr Younes Tsouli",
+          "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+          "phone": "+212639158209"
+        },
+        "budget": {
+          "max": "2500 MAD",
+          "currency": "MAD",
+          "totalActual": 0
+        },
+        "items": [
+          {
+            "name": "Winston Filter Soft",
+            "brand": null,
+            "category": "tobacco",
+            "quantity": 20,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Panter Mignon",
+            "brand": null,
+            "category": "tobacco",
+            "quantity": 5,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Panter Café Crème Original",
+            "brand": null,
+            "category": "tobacco",
+            "quantity": 5,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Camel Yellow Soft Filters",
+            "brand": null,
+            "category": "tobacco",
+            "quantity": 5,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Café Pur Arabica 1KG Bali",
+            "brand": null,
+            "category": "coffee",
+            "quantity": 3,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          }
+        ],
+        "vendorsContacted": [],
+        "createdAt": "2026-07-22T09:57:32.285Z",
+        "updatedAt": "2026-07-22T09:57:32.286Z",
+        "_offline": true,
+        "_syncedAt": "2026-07-22T09:57:32.831Z"
+      },
+      "procurement_request_batch_07": {
+        "type": "procurement_request",
+        "batchId": "07",
+        "batchName": "furniture-rental",
+        "status": "sourcing",
+        "recipient": {
+          "name": "Mr Younes Tsouli",
+          "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+          "phone": "+212639158209"
+        },
+        "budget": {
+          "max": "8000 MAD",
+          "currency": "MAD",
+          "totalActual": 0
+        },
+        "items": [
+          {
+            "name": "Mini-Bar « ELEXIA »",
+            "brand": null,
+            "category": "rental",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Téléviseur SAMSUNG SMART TV UHD 65\"",
+            "brand": null,
+            "category": "rental",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Kit Pause Café Gold",
+            "brand": null,
+            "category": "kitchen",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Pack de Légumes Frais Maroc",
+            "brand": null,
+            "category": "food",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Fresh Fish Pack",
+            "brand": null,
+            "category": "food",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          }
+        ],
+        "vendorsContacted": [],
+        "createdAt": "2026-07-22T09:57:32.954Z",
+        "updatedAt": "2026-07-22T09:57:32.955Z",
+        "_offline": true,
+        "_syncedAt": "2026-07-22T09:57:33.756Z"
+      },
+      "procurement_request_batch_08": {
+        "type": "procurement_request",
+        "batchId": "08",
+        "batchName": "wholesale-electronics",
+        "status": "sourcing",
+        "recipient": {
+          "name": "Mr Younes Tsouli",
+          "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+          "phone": "+212639158209"
+        },
+        "budget": {
+          "max": "3000 USD",
+          "currency": "USD",
+          "totalActual": 0
+        },
+        "items": [
+          {
+            "name": "Wireless Mouse",
+            "brand": null,
+            "category": "electronics_wholesale",
+            "quantity": 50,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "USB Sticks 32GB",
+            "brand": null,
+            "category": "electronics_wholesale",
+            "quantity": 50,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Solar Power Banks 10,000mAh",
+            "brand": null,
+            "category": "electronics_wholesale",
+            "quantity": 30,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Bluetooth Earbuds",
+            "brand": null,
+            "category": "electronics_wholesale",
+            "quantity": 50,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "USB-C Cables Braided",
+            "brand": null,
+            "category": "electronics_wholesale",
+            "quantity": 100,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Wireless Charging Pads",
+            "brand": null,
+            "category": "electronics_wholesale",
+            "quantity": 30,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Bluetooth Speakers Mini",
+            "brand": null,
+            "category": "electronics_wholesale",
+            "quantity": 25,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Smartphone Stands",
+            "brand": null,
+            "category": "electronics_wholesale",
+            "quantity": 50,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "LED Desk Lamps Portable",
+            "brand": null,
+            "category": "electronics_wholesale",
+            "quantity": 25,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Car Phone Holders",
+            "brand": null,
+            "category": "electronics_wholesale",
+            "quantity": 50,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          }
+        ],
+        "vendorsContacted": [],
+        "createdAt": "2026-07-22T09:57:33.891Z",
+        "updatedAt": "2026-07-22T09:57:33.892Z",
+        "_offline": true,
+        "_syncedAt": "2026-07-22T09:57:34.476Z"
+      },
+      "procurement_request_batch_09": {
+        "type": "procurement_request",
+        "batchId": "09",
+        "batchName": "miscellaneous",
+        "status": "sourcing",
+        "recipient": {
+          "name": "Mr Younes Tsouli",
+          "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+          "phone": "+212639158209"
+        },
+        "budget": {
+          "max": "1500 MAD",
+          "currency": "MAD",
+          "totalActual": 0
+        },
+        "items": [
+          {
+            "name": "Autocollants de dessin animé joueur de football version Q",
+            "brand": null,
+            "category": "decoration",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Autocollants thème football 50 pièces",
+            "brand": null,
+            "category": "decoration",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Autocollants thème football 50 pièces (multicolore)",
+            "brand": null,
+            "category": "decoration",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Boîte de rangement murale sans perçage",
+            "brand": null,
+            "category": "storage",
+            "quantity": 4,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Cendrier Créatif",
+            "brand": null,
+            "category": "accessory",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Mini Téléphone Portable 2G",
+            "brand": null,
+            "category": "electronics",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Couteau de poche pliable",
+            "brand": null,
+            "category": "tool",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Artéfact d'ouverture de boîte impression 3D",
+            "brand": null,
+            "category": "tool",
+            "quantity": 2,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Papier peint motif marbré imperméable",
+            "brand": null,
+            "category": "decoration",
+            "quantity": 3,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Accessoires pour caméras multiples",
+            "brand": null,
+            "category": "accessory",
+            "quantity": 2,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          }
+        ],
+        "vendorsContacted": [],
+        "createdAt": "2026-07-22T09:57:34.611Z",
+        "updatedAt": "2026-07-22T09:57:34.613Z",
+        "_offline": true,
+        "_syncedAt": "2026-07-22T09:57:35.347Z"
+      },
+      "procurement_request_batch_10": {
+        "type": "procurement_request",
+        "batchId": "10",
+        "batchName": "bachir-rabat",
+        "status": "sourcing",
+        "recipient": {
+          "name": "M Bachir Tsouli",
+          "address": "45 Avenue Ibn Sina Agdal, Apt 4, Rabat, 10000",
+          "phone": null
+        },
+        "budget": {
+          "max": "7000 MAD",
+          "currency": "MAD",
+          "totalActual": 0
+        },
+        "items": [
+          {
+            "name": "Tablette CR 10.1\" Android 16 2-en-1",
+            "brand": null,
+            "category": "tablet",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Paco Rabanne Perfume",
+            "brand": null,
+            "category": "fragrance",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Mont Blanc Legend",
+            "brand": null,
+            "category": "fragrance",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Stylish Cane",
+            "brand": null,
+            "category": "accessory",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Premium Orthopedic Slippers",
+            "brand": null,
+            "category": "footwear",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          },
+          {
+            "name": "Opalescence Go",
+            "brand": null,
+            "category": "dental",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          }
+        ],
+        "vendorsContacted": [],
+        "createdAt": "2026-07-22T09:57:35.466Z",
+        "updatedAt": "2026-07-22T09:57:35.468Z",
+        "_offline": true,
+        "_syncedAt": "2026-07-22T09:57:36.059Z"
+      },
+      "procurement_request_batch_11": {
+        "type": "procurement_request",
+        "batchId": "11",
+        "batchName": "oneplus-phone",
+        "status": "sourcing",
+        "recipient": {
+          "name": "Mr Younes Tsouli",
+          "address": "Lot. Rita LOT C Im B, Apt 17, Bouznika, 13100",
+          "phone": "+212639158209"
+        },
+        "budget": {
+          "max": "12000 MAD",
+          "currency": "MAD",
+          "totalActual": 0
+        },
+        "items": [
+          {
+            "name": "OnePlus 15 5G",
+            "brand": "OnePlus",
+            "category": "smartphone",
+            "quantity": 1,
+            "priceQuoted": null,
+            "vendorAssigned": null,
+            "orderStatus": "pending",
+            "trackingNumber": null
+          }
+        ],
+        "vendorsContacted": [],
+        "createdAt": "2026-07-22T09:57:36.204Z",
+        "updatedAt": "2026-07-22T09:57:36.205Z",
+        "_offline": true,
+        "_syncedAt": "2026-07-22T09:57:36.786Z"
+      }
+    }
+  }
+}
