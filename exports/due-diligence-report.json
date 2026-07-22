@@ -1,0 +1,248 @@
+{
+  "report_date": "2026-07-22T18:00:00Z",
+  "prepared_by": "opencode-autonomous-agent",
+  "executive_summary": "NO PURCHASES HAVE BEEN MADE. System is in outreach phase only. 25 vendor messages sent, 0 replies received, 0 POs generated, 0 receipts exist.",
+
+  "procurement_status": {
+    "total_items": 53,
+    "total_batches": 11,
+    "items_with_costs": 0,
+    "items_purchased": 0,
+    "receipts_collected": 0,
+    "purchase_orders_generated": 0,
+    "vendor_replies_received": 0,
+    "vendor_messages_sent": 25
+  },
+
+  "batch_details": [
+    {
+      "batch": "01",
+      "name": "Hind TV + Soundbar",
+      "items": ["SAMSUNG UHD SMART 43\"", "BARRE DE SON SAMSUNG 2.0"],
+      "item_count": 2,
+      "outreach_sent": true,
+      "outreach_method": "TikTok DM (Arabic)",
+      "vendors_contacted": ["electro ragragui", "OrgosTech"],
+      "replies_received": 0,
+      "price_quotes": 0,
+      "temu_available": false,
+      "status": "AWAITING REPLY",
+      "risk": "HIGH — brand-name items, no Temu option, local-only"
+    },
+    {
+      "batch": "02",
+      "name": "Car & Home",
+      "items": ["Dash Cam 1080P", "Electric Rotary Brush", "Pressure Washer", "Kitchen Splash Guard x8"],
+      "item_count": 4,
+      "outreach_sent": true,
+      "outreach_method": "WhatsApp Arabic + Temu links",
+      "vendors_contacted": ["Coding Auto", "Electro Rachid", "Omar Electroo44", "electromove_"],
+      "replies_received": 0,
+      "price_quotes": 0,
+      "temu_available": true,
+      "status": "AWAITING REPLY",
+      "risk": "MEDIUM — Temu available as fallback"
+    },
+    {
+      "batch": "03",
+      "name": "Dell Laptops",
+      "items": ["Dell Precision 3541 (4TB NVMe) x2"],
+      "item_count": 1,
+      "outreach_sent": true,
+      "outreach_method": "WhatsApp Arabic",
+      "vendors_contacted": ["Flexrise SARL", "Ai7.store"],
+      "replies_received": 0,
+      "price_quotes": 0,
+      "temu_available": false,
+      "status": "AWAITING REPLY",
+      "risk": "HIGH — expensive item ($30K MAD budget), no Temu"
+    },
+    {
+      "batch": "04",
+      "name": "Clothing & Footwear",
+      "items": ["Kricely Trail Shoes EU49 x2", "Brandit M-65 Jacket 2XL", "Mil-Tec Flight Jacket 2XL"],
+      "item_count": 4,
+      "outreach_sent": true,
+      "outreach_method": "WhatsApp Arabic + Temu links",
+      "vendors_contacted": ["abdo karabi"],
+      "replies_received": 0,
+      "price_quotes": 0,
+      "temu_available": "partial",
+      "status": "AWAITING REPLY",
+      "risk": "MEDIUM"
+    },
+    {
+      "batch": "05",
+      "name": "Health & Dental",
+      "items": ["Nitric Oxide Supplement", "Diabetes Support", "NAC", "Crest 3D Whitestrips", "Opalescence Go"],
+      "item_count": 5,
+      "outreach_sent": true,
+      "outreach_method": "WhatsApp Arabic + Temu links",
+      "vendors_contacted": ["Dr Rachid Hamri"],
+      "replies_received": 0,
+      "price_quotes": 0,
+      "temu_available": true,
+      "status": "AWAITING REPLY",
+      "risk": "LOW — Temu available"
+    },
+    {
+      "batch": "06",
+      "name": "Tobacco & Coffee",
+      "items": ["Arabica Coffee 1KG x3", "Winston cigarettes", "Panter cigarettes", "Camel cigarettes", "Lighter"],
+      "item_count": 5,
+      "outreach_sent": false,
+      "outreach_method": "Temu links (coffee only)",
+      "vendors_contacted": [],
+      "replies_received": 0,
+      "price_quotes": 0,
+      "temu_available": "partial (coffee only)",
+      "status": "LOCAL ONLY — tobacco regulated",
+      "risk": "HIGH — tobacco cannot be ordered online"
+    },
+    {
+      "batch": "07",
+      "name": "Furniture & Rental",
+      "items": ["Semi-furnished apartment rental", "Office desk + chair", "Mattress double", "Kitchen table + 4 chairs", "Wardrobe"],
+      "item_count": 5,
+      "outreach_sent": false,
+      "outreach_method": "N/A — local services",
+      "vendors_contacted": [],
+      "replies_received": 0,
+      "price_quotes": 0,
+      "temu_available": false,
+      "status": "NOT STARTED — rental + furniture",
+      "risk": "HIGH — requires in-person visits"
+    },
+    {
+      "batch": "08",
+      "name": "Wholesale Electronics",
+      "items": ["Wireless Mouse x50", "USB 32GB x50", "Solar Power Bank x30", "Bluetooth Earbuds x50", "USB-C Cable x100", "Charging Pad x30", "Speaker x25", "Phone Stand x50", "LED Lamp x25", "Car Holder x50"],
+      "item_count": 10,
+      "outreach_sent": true,
+      "outreach_method": "WhatsApp Arabic + Temu links",
+      "vendors_contacted": ["MOUNIR PHONE", "Ali London Stock", "BONOSHOP", "PLANET ELECTRO"],
+      "replies_received": 0,
+      "price_quotes": 0,
+      "temu_available": true,
+      "status": "AWAITING REPLY",
+      "risk": "LOW — Temu available, $3K budget"
+    },
+    {
+      "batch": "09",
+      "name": "Miscellaneous",
+      "items": ["Football Stickers x3 sets", "Wall Organizer x4", "Ashtray", "Mini 2G Phone", "Pocket Knife", "Box Opener x2", "Marble Wallpaper x3", "Camera Kit x2"],
+      "item_count": 10,
+      "outreach_sent": true,
+      "outreach_method": "WhatsApp Arabic + Temu links",
+      "vendors_contacted": ["chrilik", "Abderrahim Accessoires"],
+      "replies_received": 0,
+      "price_quotes": 0,
+      "temu_available": true,
+      "status": "AWAITING REPLY",
+      "risk": "LOW"
+    },
+    {
+      "batch": "10",
+      "name": "Bachir Rabat",
+      "items": ["10.1\" Android Tablet", "Walking Cane", "Orthopedic Slippers", "Opalescence Go", "Paco Rabanne perfume", "Mont Blanc perfume"],
+      "item_count": 6,
+      "outreach_sent": true,
+      "outreach_method": "WhatsApp Arabic + Temu links",
+      "vendors_contacted": ["Parfumerie Prestige", "Dr Rachid Hamri"],
+      "replies_received": 0,
+      "price_quotes": 0,
+      "temu_available": "partial (no perfume on Temu)",
+      "status": "AWAITING REPLY",
+      "risk": "MEDIUM — perfume needs local sourcing"
+    },
+    {
+      "batch": "11",
+      "name": "OnePlus Phone",
+      "items": ["OnePlus 15 5G"],
+      "item_count": 1,
+      "outreach_sent": true,
+      "outreach_method": "WhatsApp Arabic + Temu/OnePlus links",
+      "vendors_contacted": ["Kamal phone", "El alami_phone", "playstore.ma"],
+      "replies_received": 0,
+      "price_quotes": 0,
+      "temu_available": false,
+      "status": "AWAITING REPLY",
+      "risk": "MEDIUM — $899-999, official store available"
+    }
+  ],
+
+  "settlement_status": {
+    "total_revenue_usd": 92307.50,
+    "total_settled_mad": 282460.95,
+    "batches_executed": 6,
+    "batches_confirmed": 0,
+    "wire_instructions_generated": 6,
+    "wire_instructions_confirmed": 0,
+    "bank_portal_action_required": true,
+    "attijari_portal_url": "https://attijaripaypal.attijariwafa.com/PayPal"
+  },
+
+  "messaging_status": {
+    "total_messages_sent": 112,
+    "vendor_outreach": 25,
+    "temu_links_clean": 41,
+    "system_notifications": 46,
+    "vendor_replies_received": 0,
+    "auto_followups_sent": 0
+  },
+
+  "escalation_items": [
+    {
+      "severity": "CRITICAL",
+      "issue": "ZERO PURCHASES MADE",
+      "detail": "53 items across 11 batches — none purchased. No vendor has replied with pricing. No purchase orders exist. No receipts to confirm.",
+      "action_required": "Either wait for vendor replies OR self-order from Temu links sent to your WhatsApp"
+    },
+    {
+      "severity": "CRITICAL",
+      "issue": "ZERO VENDOR REPLIES",
+      "detail": "25 outreach messages sent to 18+ vendors. 0 replies received. This is unusual — vendors may not be checking WhatsApp or the messages went to spam.",
+      "action_required": "Follow up via TikTok DM or call vendors directly"
+    },
+    {
+      "severity": "HIGH",
+      "issue": "BATCH 01 — SAMSUNG TV + SOUNDBAR",
+      "detail": "No Temu option for brand-name Samsung. Only TikTok DM vendors contacted (no phone numbers). No way to follow up.",
+      "action_required": "Source from Jumia.ma, Electro Planet, or BIM stores"
+    },
+    {
+      "severity": "HIGH",
+      "issue": "BATCH 07 — RENTAL + FURNITURE",
+      "detail": "Apartment rental and furniture require in-person visits. Cannot be sourced online.",
+      "action_required": "Visit Agdal/Souissi agencies in Rabat"
+    },
+    {
+      "severity": "HIGH",
+      "issue": "BATCH 06 — TOBACCO",
+      "detail": "Cigarettes regulated, cannot be ordered online. Must buy locally at tabagie.",
+      "action_required": "Buy at local tabagie in Rabat"
+    },
+    {
+      "severity": "MEDIUM",
+      "issue": "WIRE INSTRUCTIONS NOT EXECUTED",
+      "detail": "6 batches of bank wire instructions generated ($92K USD → 282K MAD). None confirmed. Funds not yet repatriated to Morocco.",
+      "action_required": "Log into Attijari-PayPal portal and execute wires"
+    },
+    {
+      "severity": "MEDIUM",
+      "issue": "NO COST DATA IN BATCH FILES",
+      "detail": "All 11 sub-batch JSON files have empty estimated_cost_usd fields. Cannot calculate true procurement budget.",
+      "action_required": "Fill in costs once pricing received from vendors or Temu"
+    }
+  ],
+
+  "recommendations": [
+    "1. SELF-ORDER FROM TEMU: 38 items available on Temu. Click the links sent to your WhatsApp and order directly.",
+    "2. FOLLOW UP VENDORS: DM the 4 TikTok-only vendors (electro ragragui, OrgosTech, abdo karabi, chrilik) since they have no phone numbers.",
+    "3. BATCH 01: Check Jumia.ma for Samsung 43\" UHD + Soundbar. Budget 7000 MAD.",
+    "4. BATCH 07: Visit rental agencies in Rabat Agdal/Souissi for apartment + furniture.",
+    "5. BATCH 06: Buy cigarettes at local tabagie — cannot be automated.",
+    "6. EXECUTE WIRES: Log into Attijari-PayPal portal to repatriate the 282K MAD.",
+    "7. FILL COST DATA: Once pricing received, update sub-batch JSON files with actual costs."
+  ]
+}
