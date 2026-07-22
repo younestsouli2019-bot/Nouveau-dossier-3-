@@ -72,8 +72,9 @@ async function autoFill(instruction) {
 
   const browser = await puppeteer.launch({
     headless: false,
+    executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
     defaultViewport: { width: 1280, height: 800 },
-    args: ["--no-sandbox", "--start-maximized"],
+    args: ["--no-sandbox", "--start-maximized", "--disable-blink-features=AutomationControlled"],
   });
 
   const page = await browser.newPage();

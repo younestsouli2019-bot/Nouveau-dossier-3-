@@ -78,15 +78,26 @@ function runSettlement() {
       if (recentPayouts.length > 0) {
         const uniqueBatches = [...new Set(recentPayouts.map(p => p.batchId))];
         const totalUSD = recentPayouts.reduce((s, p) => s + p.amount, 0);
+
+        // Auto-execute wires via PayPal bank transfer
+        log("New payouts detected — auto-executing PayPal bank transfer...");
+        const wireChild = spawn("node", ["scripts/paypal-bank-transfer.mjs"], {
+          cwd: ROOT,
+          stdio: "inherit",
+          detached: true,
+        });
+        wireChild.unref();
+
         const msg = [
-          "💰 New Settlement Executed",
+          "💰 New Settlement — PayPal Transfer Started",
           "",
           `Batches: ${uniqueBatches.length}`,
           `Revenues: ${recentPayouts.length}`,
           `Total: $${totalUSD.toFixed(2)} USD`,
           "",
-          "→ Log into Attijari-PayPal portal to repatriate:",
-          "  https://attijaripaypal.attijariwafa.com/PayPal",
+          "PayPal transfer script launched.",
+          "Solve 2FA on your phone — cookies saved for next run.",
+          "Funds will arrive in your Attijariwafa bank account.",
         ].join("\n");
         await sendWhatsApp("+212639158209", msg);
       }
