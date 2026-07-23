@@ -1,0 +1,39 @@
+{
+  "timestamp": "2026-07-23T17:52:52.296Z",
+  "reason": "All data in these files is SYNTHETIC (Math.random() generated, not from real transactions)",
+  "files": [
+    {
+      "path": ".base44-offline-store.json",
+      "earnings_count": 50,
+      "earnings_total": 92157.5,
+      "payouts_count": 1713,
+      "payouts_total": 35722.870000000854,
+      "evidence": "All 50 Earning records are duplicate sets (10 amounts x 5 copies). All PayoutBatch revenue_event_ids contain garbage (alternating \"3\" and \"1\"). No external transaction references."
+    },
+    {
+      "path": ".autonomous-offline-store.json",
+      "earnings_count": 3,
+      "earnings_total": 150,
+      "evidence": "3 self-referential test entries ($25, $40, $85). Payer = beneficiary (self-pay). No real transaction."
+    },
+    {
+      "path": "rwc-org/data/financial/settlement_ledger.json",
+      "transactions_count": 21,
+      "transactions_total": 5675,
+      "statuses": [
+        "IN_TRANSIT",
+        "WAITING_UPLOAD",
+        "INVOICES_GENERATED",
+        "prepared",
+        "INSTRUCTIONS_READY"
+      ],
+      "evidence": "All transactions in IN_TRANSIT, WAITING_UPLOAD, INVOICES_GENERATED, or INSTRUCTIONS_READY status. None show confirmed completion. No actual money moved."
+    }
+  ],
+  "totals": {
+    "earnings": 92307.5,
+    "payouts": 35722.870000000854,
+    "settlement": 5675
+  },
+  "total_synthetic": 133705.37000000087
+}

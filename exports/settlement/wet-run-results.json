@@ -1,0 +1,185 @@
+{
+  "timestamp": "2026-07-23T17:54:53.915Z",
+  "paypal": {
+    "balance": {
+      "source": "PAYPAL_REST_API",
+      "confirmed": false,
+      "error": {
+        "status": 403,
+        "body": {
+          "name": "NOT_AUTHORIZED",
+          "debug_id": "c0dba8a4bb074",
+          "message": "Authorization failed due to insufficient permissions.",
+          "details": [
+            {
+              "issue": "NOT_AUTHORIZED",
+              "description": "Authorization failed due to insufficient permissions."
+            }
+          ]
+        },
+        "raw": "{\"name\":\"NOT_AUTHORIZED\",\"debug_id\":\"c0dba8a4bb074\",\"message\":\"Authorization failed due to insufficient permissions.\",\"details\":[{\"issue\":\"NOT_AUTHORIZED\",\"description\":\"Authorization failed due to insufficient permissions.\"}]}"
+      }
+    },
+    "invoices": {
+      "source": "PAYPAL_REST_API",
+      "confirmed": true,
+      "invoices": [
+        {
+          "id": "INV2-R5T5-VJQF-PBMZ-UNAW",
+          "status": "SENT",
+          "number": "0018",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "id": "INV2-R93L-A9FU-959H-YSJ3",
+          "status": "PAID",
+          "number": "0017",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "id": "INV2-R486-VMQE-RFUD-FL8N",
+          "status": "PAID",
+          "number": "0016",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "id": "INV2-B5K9-VE5V-5XGM-N9GG",
+          "status": "CANCELLED",
+          "number": "0015",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "id": "INV2-NCTH-JF2K-LFEJ-JWUK",
+          "status": "PAID",
+          "number": "0014",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "id": "INV2-DZW7-LV2H-CKXT-KJHF",
+          "status": "PAID",
+          "number": "0013",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "id": "INV2-C5E6-JD7A-43SD-H3VE",
+          "status": "PAID",
+          "number": "0012",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "id": "INV2-YC62-N8CS-WZS5-JZDS",
+          "status": "PAID",
+          "number": "0011",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "id": "INV2-5KRA-2VRP-LDQK-KBZF",
+          "status": "PAID",
+          "number": "0010",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "id": "INV2-VCTJ-UJXG-AVY2-KLQ3",
+          "status": "PAID",
+          "number": "0009",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "id": "INV2-HBPC-6DSG-68LL-BC5J",
+          "status": "PAID",
+          "number": "0008",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "id": "INV2-RFE9-WEAC-XYZV-3BVK",
+          "status": "PAID",
+          "number": "0007",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "id": "INV2-RWBX-ZUPW-Y55X-VP69",
+          "status": "PAID",
+          "number": "0006",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "id": "INV2-MKBE-7PKU-46ZR-DDS8",
+          "status": "PAID",
+          "number": "0005",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "id": "INV2-JLKB-88Y3-4H9S-SUUN",
+          "status": "PAID",
+          "number": "0004",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "id": "INV2-CPBX-FV4T-FFAP-SYQG",
+          "status": "PAID",
+          "number": "0003",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "id": "INV2-KKHW-36GQ-XY7V-DTAR",
+          "status": "CANCELLED",
+          "number": "0002",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "id": "INV2-DYZV-B89P-Z8ET-CY2X",
+          "status": "CANCELLED",
+          "number": "0001",
+          "amount": 0,
+          "currency": "USD"
+        }
+      ]
+    },
+    "confirmed": false
+  },
+  "crypto": {
+    "binance": {
+      "status": "NO_API_KEY"
+    },
+    "bybit": {
+      "status": "NO_API_KEY"
+    },
+    "bitget": {
+      "status": "NO_API_KEY"
+    }
+  },
+  "procurement": {
+    "total_batches": 0,
+    "active": 0,
+    "completed": 0,
+    "total_items": 0,
+    "total_invested": 0,
+    "total_revenue": 0,
+    "profit": 0,
+    "items_by_status": {}
+  },
+  "ledger": {
+    "earnings": 915,
+    "payouts": 0,
+    "balance": 915,
+    "rule": "EVERY_RECORD_REQUIRES_EXTERNAL_CONFIRMATION"
+  },
+  "status": "LIVE"
+}

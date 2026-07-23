@@ -1,0 +1,146 @@
+{
+  "invoices": [
+    {
+      "id": "INV2-CPBX-FV4T-FFAP-SYQG",
+      "number": "0003",
+      "status": "PAID",
+      "amount": 200,
+      "currency": "USD",
+      "date": "2022-08-03",
+      "recipient": "sandra@ilado-paris.com",
+      "items": "Cours d'Anglais sur platforme Skyeng Osmi",
+      "payment_id": "REAL_PAYPAL_INVOICE"
+    },
+    {
+      "id": "INV2-JLKB-88Y3-4H9S-SUUN",
+      "number": "0004",
+      "status": "PAID",
+      "amount": 55,
+      "currency": "EUR",
+      "date": "2022-09-06",
+      "recipient": "jamesouaki@agecfinances.com",
+      "items": "Cours d'Anglais One On One En Ligne"
+    },
+    {
+      "id": "INV2-MKBE-7PKU-46ZR-DDS8",
+      "number": "0005",
+      "status": "PAID",
+      "amount": 55,
+      "currency": "EUR",
+      "date": "2022-10-02",
+      "recipient": "jamesouaki@agecfinances.com",
+      "items": "Cours d'Anglais One On One En Ligne"
+    },
+    {
+      "id": "INV2-RWBX-ZUPW-Y55X-VP69",
+      "number": "0006",
+      "status": "PAID",
+      "amount": 55,
+      "currency": "EUR",
+      "date": "2022-10-17",
+      "recipient": "jamesouaki@agecfinances.com",
+      "items": "Cours d'Anglais One On One En Ligne"
+    },
+    {
+      "id": "INV2-RFE9-WEAC-XYZV-3BVK",
+      "number": "0007",
+      "status": "PAID",
+      "amount": 55,
+      "currency": "EUR",
+      "date": "2022-11-06",
+      "recipient": "jamesouaki@agecfinances.com",
+      "items": "Cours d'Anglais One On One En Ligne"
+    },
+    {
+      "id": "INV2-HBPC-6DSG-68LL-BC5J",
+      "number": "0008",
+      "status": "PAID",
+      "amount": 55,
+      "currency": "EUR",
+      "date": "2022-11-20",
+      "recipient": "jamesouaki@agecfinances.com",
+      "items": "Cours d'Anglais One On One En Ligne"
+    },
+    {
+      "id": "INV2-VCTJ-UJXG-AVY2-KLQ3",
+      "number": "0009",
+      "status": "PAID",
+      "amount": 55,
+      "currency": "EUR",
+      "date": "2022-12-09",
+      "recipient": "jamesouaki@agecfinances.com",
+      "items": "Cours d'Anglais One On One En Ligne"
+    },
+    {
+      "id": "INV2-5KRA-2VRP-LDQK-KBZF",
+      "number": "0010",
+      "status": "PAID",
+      "amount": 55,
+      "currency": "EUR",
+      "date": "2022-12-30",
+      "recipient": "jamesouaki@agecfinances.com",
+      "items": "Cours d'Anglais One On One En Ligne"
+    },
+    {
+      "id": "INV2-YC62-N8CS-WZS5-JZDS",
+      "number": "0011",
+      "status": "PAID",
+      "amount": 55,
+      "currency": "EUR",
+      "date": "2023-01-17",
+      "recipient": "jamesouaki@agecfinances.com",
+      "items": "Cours d'Anglais One On One En Ligne"
+    },
+    {
+      "id": "INV2-C5E6-JD7A-43SD-H3VE",
+      "number": "0012",
+      "status": "PAID",
+      "amount": 55,
+      "currency": "EUR",
+      "date": "2023-02-03",
+      "recipient": "jamesouaki@agecfinances.com",
+      "items": "Cours d'Anglais One On One En Ligne"
+    },
+    {
+      "id": "INV2-DZW7-LV2H-CKXT-KJHF",
+      "number": "0013",
+      "status": "PAID",
+      "amount": 55,
+      "currency": "EUR",
+      "date": "2023-02-21",
+      "recipient": "jamesouaki@agecfinances.com",
+      "items": "Cours d'Anglais One On One En Ligne"
+    },
+    {
+      "id": "INV2-NCTH-JF2K-LFEJ-JWUK",
+      "number": "0014",
+      "status": "PAID",
+      "amount": 55,
+      "currency": "EUR",
+      "date": "2023-03-11",
+      "recipient": "jamesouaki@agecfinances.com",
+      "items": "Cours Anglais"
+    },
+    {
+      "id": "INV2-R486-VMQE-RFUD-FL8N",
+      "number": "0016",
+      "status": "PAID",
+      "amount": 55,
+      "currency": "EUR",
+      "date": "2023-03-29",
+      "recipient": "jamesouaki@agecfinances.com",
+      "items": "Cours d'Anglais One On One En Ligne"
+    },
+    {
+      "id": "INV2-R93L-A9FU-959H-YSJ3",
+      "number": "0017",
+      "status": "PAID",
+      "amount": 55,
+      "currency": "EUR",
+      "date": "2023-04-23",
+      "recipient": "jamesouaki@agecfinances.com",
+      "items": "Cours d'Anglais One On One En Ligne"
+    }
+  ],
+  "verified_at": "2026-07-23T17:52:52.316Z"
+}
