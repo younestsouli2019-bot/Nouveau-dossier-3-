@@ -1,7 +1,7 @@
 {
-  "report_date": "2026-07-22T18:00:00Z",
+  "report_date": "2026-07-22T21:20:00Z",
   "prepared_by": "opencode-autonomous-agent",
-  "executive_summary": "NO PURCHASES HAVE BEEN MADE. System is in outreach phase only. 25 vendor messages sent, 0 replies received, 0 POs generated, 0 receipts exist.",
+  "executive_summary": "CRITICAL: PayPal account balance is $0.00 USD. Only 1 transaction visible: $10.00 payment to PIPO (SG) PTE LTD on 05/07/2026. The $92,307.50 in expected revenues does NOT appear in this PayPal account. No disputes, no holds. NO PURCHASES MADE — 53 items across 11 batches unsourced. 25 vendor messages sent, 0 replies received.",
 
   "procurement_status": {
     "total_items": 53,
@@ -173,13 +173,21 @@
 
   "settlement_status": {
     "total_revenue_usd": 92307.50,
-    "total_settled_mad": 282460.95,
-    "batches_executed": 6,
+    "total_settled_mad": 0,
+    "paypal_balance_usd": 0.00,
+    "paypal_account_type": "Merchant Express Panel (MEP)",
+    "paypal_linked_business": "real-world.learnworlds.com",
+    "paypal_transactions_visible": 1,
+    "paypal_only_transaction": "2026-07-05: $10.00 payment to PIPO (SG) PTE LTD * TRAE (Completed)",
+    "paypal_disputes": 0,
+    "paypal_holds": "None detected",
+    "batches_executed": 0,
     "batches_confirmed": 0,
     "wire_instructions_generated": 6,
     "wire_instructions_confirmed": 0,
-    "bank_portal_action_required": true,
-    "attijari_portal_url": "https://attijaripaypal.attijariwafa.com/PayPal"
+    "bank_portal_action_required": false,
+    "attijari_portal_url": "https://attijaripaypal.attijariwafa.com/PayPal",
+    "critical_finding": "REVENUE NOT IN PAYPAL — $92,307.50 expected but $0.00 available. Funds may be in different account, not yet received, or in processing elsewhere."
   },
 
   "messaging_status": {
@@ -192,6 +200,12 @@
   },
 
   "escalation_items": [
+    {
+      "severity": "CRITICAL",
+      "issue": "PAYPAL BALANCE: $0.00 USD — REVENUE NOT RECEIVED",
+      "detail": "PayPal account shows $0.00 available balance. Only 1 transaction visible: $10.00 payment to PIPO (SG) PTE LTD on 05/07/2026. The $92,307.50 in expected revenues does not appear anywhere in this account. Account is a Merchant Express Panel (MEP) linked to real-world.learnworlds.com. Resolution Center shows 0 disputes, $0.00 disputed amount.",
+      "action_required": "Verify correct PayPal account is linked. Check if revenues were received into a different PayPal account. Contact PayPal support to trace incoming payments."
+    },
     {
       "severity": "CRITICAL",
       "issue": "ZERO PURCHASES MADE",
@@ -237,12 +251,21 @@
   ],
 
   "recommendations": [
-    "1. SELF-ORDER FROM TEMU: 38 items available on Temu. Click the links sent to your WhatsApp and order directly.",
-    "2. FOLLOW UP VENDORS: DM the 4 TikTok-only vendors (electro ragragui, OrgosTech, abdo karabi, chrilik) since they have no phone numbers.",
-    "3. BATCH 01: Check Jumia.ma for Samsung 43\" UHD + Soundbar. Budget 7000 MAD.",
-    "4. BATCH 07: Visit rental agencies in Rabat Agdal/Souissi for apartment + furniture.",
-    "5. BATCH 06: Buy cigarettes at local tabagie — cannot be automated.",
-    "6. EXECUTE WIRES: Log into Attijari-PayPal portal to repatriate the 282K MAD.",
-    "7. FILL COST DATA: Once pricing received, update sub-batch JSON files with actual costs."
-  ]
+    "1. VERIFY PAYPAL ACCOUNT: The current PayPal account (real-world.learnworlds.com MEP) has $0.00 balance. Confirm this is the correct account where revenues should appear. Check if you have another PayPal account.",
+    "2. CONTACT PAYPAL SUPPORT: Call PayPal to trace $92,307.50 in expected incoming payments. Ask about pending holds, processing delays, or if funds were auto-withdrawn.",
+    "3. SELF-ORDER FROM TEMU: 38 items available on Temu. Click the links sent to your WhatsApp and order directly.",
+    "4. FOLLOW UP VENDORS: DM the 4 TikTok-only vendors (electro ragragui, OrgosTech, abdo karabi, chrilik) since they have no phone numbers.",
+    "5. BATCH 01: Check Jumia.ma for Samsung 43\" UHD + Soundbar. Budget 7000 MAD.",
+    "6. BATCH 07: Visit rental agencies in Rabat Agdal/Souissi for apartment + furniture.",
+    "7. BATCH 06: Buy cigarettes at local tabagie — cannot be automated.",
+    "8. FILL COST DATA: Once pricing received, update sub-batch JSON files with actual costs."
+  ],
+  "investigation_findings": {
+    "paypal_mep_dashboard": "Available balance: $0.00 USD. Recent activity: 1 transaction — $10.00 payment to PIPO (SG) PTE LTD on 05/07/2026.",
+    "resolution_center": "0 open cases, 0 disputes, $0.00 disputed amount. Clean record.",
+    "activity_page": "Redirected to login — cookies expired for this section. Cannot view full transaction history.",
+    "linked_banks": "Not accessible — redirects to MEP dashboard. Bank accounts not visible.",
+    "balance_display_element": "data-testid='balance-display' shows '0.00 USD — Available balance'",
+    "conclusion": "The $92,307.50 in expected revenues has NOT been received into this PayPal account. Either: (a) wrong PayPal account linked, (b) revenues pending in PayPal's processing, (c) revenues were auto-withdrawn to a linked bank account, or (d) revenue tracking system is reporting incorrect amounts."
+  }
 }

@@ -1,0 +1,21 @@
+{
+  "checks": [
+    {
+      "timestamp": "2026-07-22T21:50:29.126Z",
+      "balance": null,
+      "loginRequired": true
+    },
+    {
+      "timestamp": "2026-07-23T10:49:16.795Z",
+      "balance": null,
+      "loginRequired": true
+    },
+    {
+      "timestamp": "2026-07-23T10:54:07.809Z",
+      "balance": null,
+      "loginRequired": true
+    }
+  ],
+  "lastBalance": 0,
+  "lastCheck": "2026-07-23T10:54:07.809Z"
+}
