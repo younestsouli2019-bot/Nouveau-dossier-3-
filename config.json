@@ -1,0 +1,58 @@
+{
+  "paths": {
+    "root": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)",
+    "exports": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\exports",
+    "settlement": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\exports\\settlement",
+    "swarmWa": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\swarm-wa",
+    "scripts": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\scripts"
+  },
+  "chrome": {
+    "executablePath": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "userDataDir": "C:\\Users\\Dell\\AppData\\Local\\Google\\Chrome\\User Data",
+    "profileDirectory": "Default"
+  },
+  "owner": {
+    "phone": "+212639158209",
+    "name": "Younes Tsouli",
+    "bank": {
+      "name": "Attijariwafa Bank",
+      "branch": "RABAT AGDAL",
+      "address": "83 AV. FAL OULD OUMEIR",
+      "rib": "007810000448500030594182",
+      "swift": "BCMAMAMC",
+      "currency": "MAD"
+    }
+  },
+  "paypal": {
+    "cookieFile": "exports/bank-sessions/paypal-cookies.json",
+    "mepDashboardUrl": "https://www.paypal.com/mep/dashboard",
+    "signinUrl": "https://www.paypal.com/signin",
+    "cookieMaxAgeHours": 20
+  },
+  "settlement": {
+    "fxRate": 10.2,
+    "retentionPct": 0.70,
+    "conversionPct": 0.30,
+    "minTransferUSD": 50
+  },
+  "daemons": {
+    "whatsappPort": 3000,
+    "balanceMonitorIntervalMs": 600000,
+    "watchdogHealthCheckMs": 60000,
+    "watchdogMaxRestarts": 20,
+    "sessionBackupIntervalMs": 3600000,
+    "gitAutoPushIntervalMs": 1800000
+  },
+  "git": {
+    "freshRepo": "C:\\Users\\Dell\\AppData\\Local\\Temp\\opencode\\fresh-repo",
+    "remoteUrl": "https://github.com/younestsouli2019-bot/Nouveau-dossier-3-.git"
+  },
+  "base44": {
+    "agentFlowAi": {
+      "appId": "6888ac155ebf84dd9855ea98"
+    },
+    "agentSwarm": {
+      "appId": "689afeabf1db9c30efe0bd7e"
+    }
+  }
+}

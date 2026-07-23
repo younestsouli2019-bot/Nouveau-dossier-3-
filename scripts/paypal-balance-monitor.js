@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * PayPal Balance Monitor
+ * PayPal Balance Monitor v2
  * 
- * Periodically checks PayPal balance via Puppeteer.
- * Alerts owner via WhatsApp when balance changes from $0.
+ * Auto re-auth: when cookies expire, launches Chrome for manual login,
+ * saves new cookies, resumes monitoring.
  * 
  * Usage:
  *   node paypal-balance-monitor.js              # One-time check
@@ -20,6 +20,7 @@ const EXPORTS = path.join(ROOT, 'exports', 'settlement');
 const COOKIE_FILE = path.join(ROOT, 'exports', 'bank-sessions', 'paypal-cookies.json');
 const MONITOR_LOG = path.join(EXPORTS, 'balance-monitor-log.json');
 const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const PHONE = '+212639158209';
 
 function loadJson(fp) { try { return JSON.parse(fs.readFileSync(fp, 'utf8')); } catch { return null; } }
 function saveJson(fp, data) { fs.writeFileSync(fp, JSON.stringify(data, null, 2)); }
@@ -28,27 +29,45 @@ function logBalance(entry) {
   const log = loadJson(MONITOR_LOG) || { checks: [], lastBalance: 0 };
   log.checks.push(entry);
   if (log.checks.length > 500) log.checks = log.checks.slice(-500);
-  log.lastBalance = entry.balance || 0;
+  log.lastBalance = entry.balance ?? 0;
   log.lastCheck = entry.timestamp;
+  log.consecutiveFailures = entry.loginRequired ? (log.consecutiveFailures || 0) + 1 : 0;
   saveJson(MONITOR_LOG, log);
   return log;
 }
 
-async function sendWhatsAppAlert(message) {
+async function sendWhatsApp(message) {
   return new Promise((resolve) => {
-    const data = JSON.stringify({ phone: '+212639158209', message });
+    const data = JSON.stringify({ phone: PHONE, message });
     const req = http.request({
       hostname: 'localhost', port: 3000, path: '/send-message', method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) }
     }, (res) => {
       let body = '';
       res.on('data', c => body += c);
-      res.on('end', () => { console.log('WhatsApp alert sent:', res.statusCode); resolve(true); });
+      res.on('end', () => resolve(res.statusCode === 200));
     });
-    req.on('error', (e) => { console.log('WhatsApp alert failed:', e.message); resolve(false); });
+    req.on('error', () => resolve(false));
     req.write(data);
     req.end();
   });
+}
+
+async function waitForManualLogin(page, timeoutMs = 300000) {
+  console.log('Please log in to PayPal in the browser window...');
+  await sendWhatsApp('🔑 PayPal cookies expired. A Chrome window opened — please log in to PayPal. You have 5 minutes.');
+  
+  try {
+    await page.waitForFunction(() => {
+      const url = window.location.href;
+      return !url.includes('signin') && !url.includes('login') && url.includes('paypal.com');
+    }, { timeout: timeoutMs });
+    console.log('Login detected!');
+    return true;
+  } catch {
+    console.log('Login timeout');
+    return false;
+  }
 }
 
 async function checkBalance() {
@@ -63,12 +82,16 @@ async function checkBalance() {
   const page = await browser.newPage();
 
   // Load cookies
+  let cookiesLoaded = false;
   const cookieData = loadJson(COOKIE_FILE);
   if (cookieData?.cookies?.length) {
     const age = Date.now() - new Date(cookieData.savedAt).getTime();
-    if (age < 24 * 60 * 60 * 1000) {
+    if (age < 20 * 60 * 60 * 1000) {
       await page.setCookie(...cookieData.cookies);
-      console.log('Loaded cookies');
+      console.log('Loaded cookies (age: ' + Math.round(age / 3600000) + 'h)');
+      cookiesLoaded = true;
+    } else {
+      console.log('Cookies too old (' + Math.round(age / 3600000) + 'h), will re-auth');
     }
   }
 
@@ -83,17 +106,34 @@ async function checkBalance() {
 
     const url = page.url();
     if (url.includes('signin') || url.includes('login')) {
-      loginRequired = true;
-      console.log('LOGIN REQUIRED — cookies expired');
-    } else {
-      // Extract balance from data-testid="balance-display"
+      // Auto re-auth: wait for manual login
+      const loggedIn = await waitForManualLogin(page);
+      if (loggedIn) {
+        // Save new cookies
+        const cookies = await browser.cookies();
+        const dir = path.dirname(COOKIE_FILE);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        saveJson(COOKIE_FILE, { savedAt: new Date().toISOString(), cookies });
+        console.log('New cookies saved (' + cookies.length + ')');
+        await sendWhatsApp('✅ PayPal re-authenticated. Balance monitor resumed.');
+        
+        // Navigate back to dashboard
+        await page.goto('https://www.paypal.com/mep/dashboard', {
+          waitUntil: 'domcontentloaded', timeout: 30000
+        });
+        await new Promise(r => setTimeout(r, 8000));
+      } else {
+        loginRequired = true;
+      }
+    }
+
+    if (!loginRequired) {
       balance = await page.evaluate(() => {
         const el = document.querySelector('[data-testid="balance-display"]');
         if (el) {
           const m = el.textContent.match(/([\d,]+\.?\d*)\s*USD/);
           if (m) return parseFloat(m[1].replace(/,/g, ''));
         }
-        // Fallback: text search
         const text = document.body.innerText;
         const lines = text.split('\n');
         for (let i = 0; i < lines.length; i++) {
@@ -106,7 +146,6 @@ async function checkBalance() {
         }
         return null;
       });
-
       console.log('Balance:', balance !== null ? '$' + balance.toFixed(2) : 'unknown');
     }
 
@@ -118,11 +157,7 @@ async function checkBalance() {
   await browser.close();
 
   // Log
-  const entry = {
-    timestamp: new Date().toISOString(),
-    balance: balance,
-    loginRequired,
-  };
+  const entry = { timestamp: new Date().toISOString(), balance, loginRequired };
   const log = logBalance(entry);
 
   // Alert if balance changed from 0
@@ -132,15 +167,16 @@ async function checkBalance() {
       const prev = prevChecks[prevChecks.length - 2];
       if (prev.balance === 0 && balance > 0) {
         console.log(`\n🚨 BALANCE CHANGED: $0.00 → $${balance.toFixed(2)} USD`);
-        await sendWhatsAppAlert(
-          `💰 PayPal Balance Alert!\n\nBalance changed: $0.00 → $${balance.toFixed(2)} USD\n\nFunds have arrived! Settlement pipeline can now execute bank transfers.\n\nRunning auto-settlement now...`
+        await sendWhatsApp(
+          `💰 PayPal Balance Alert!\n\nBalance changed: $0.00 → $${balance.toFixed(2)} USD\n\nFunds have arrived! Settlement pipeline can now execute bank transfers.`
         );
       }
     }
   }
 
-  if (loginRequired) {
-    console.log('Cookies expired. Run paypal-login-and-read.js to re-authenticate.');
+  // Alert if repeated login failures
+  if (loginRequired && log.consecutiveFailures >= 3) {
+    await sendWhatsApp(`⚠️ PayPal monitor: ${log.consecutiveFailures} consecutive login failures. Cookies may be permanently expired. Please re-authenticate.`);
   }
 
   return { balance, loginRequired };
@@ -150,8 +186,8 @@ async function main() {
   const isDaemon = process.argv.includes('--daemon');
 
   if (isDaemon) {
-    console.log('=== PayPal Balance Monitor (Daemon) ===');
-    console.log('Checking every 10 minutes. Ctrl+C to stop.\n');
+    console.log('=== PayPal Balance Monitor v2 (Daemon) ===');
+    console.log('Auto re-auth enabled. Checking every 10 minutes.\n');
 
     while (true) {
       try {
@@ -159,7 +195,6 @@ async function main() {
       } catch(e) {
         console.log('Check error:', e.message);
       }
-      console.log('\nNext check in 10 minutes...\n');
       await new Promise(r => setTimeout(r, 600000));
     }
   } else {

@@ -39,6 +39,20 @@ const DAEMONS = [
     args: ['--daemon'],
     healthUrl: null,
   },
+  {
+    name: 'wa-session-backup',
+    script: 'wa-session-backup.js',
+    cwd: path.join(ROOT, 'scripts'),
+    args: ['--daemon'],
+    healthUrl: null,
+  },
+  {
+    name: 'git-auto-push',
+    script: 'git-auto-push.js',
+    cwd: path.join(ROOT, 'scripts'),
+    args: ['--daemon'],
+    healthUrl: null,
+  },
 ];
 
 const MAX_RESTARTS = 20;
