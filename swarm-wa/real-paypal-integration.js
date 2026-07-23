@@ -299,21 +299,28 @@ class RealPayPalIntegration {
         }
     }
 
-    async listInvoices(status = 'DRAFT', pageSize = 20) {
-        this.log(`Listing PayPal invoices (status: ${status})...`);
+    async listInvoices(status = null, pageSize = 20) {
+        this.log(`Listing PayPal invoices (status: ${status || 'ALL'})...`);
         try {
-            const result = await this.request('GET',
-                `/v2/invoicing/invoices?status=${status}&page_size=${pageSize}`
-            );
-            const invoices = (result.items || []).map(inv => ({
-                id: inv.id,
-                status: inv.status,
-                number: inv.detail ? inv.detail.invoice_number : null,
-                amount: inv.total_amount ? parseFloat(inv.total_amount.value) : 0,
-                currency: inv.total_amount ? inv.total_amount.currency_code : 'USD',
-                recipient: inv.primary_recipients && inv.primary_recipients[0]
-                    ? inv.primary_recipients[0].email_address : null
-            }));
+            const url = status
+                ? `/v2/invoicing/invoices?status=${status}&page_size=${pageSize}`
+                : `/v2/invoicing/invoices?page_size=${pageSize}`;
+            const result = await this.request('GET', url);
+            const invoices = (result.items || []).map(inv => {
+                const amt = inv.amount || inv.total_amount || {};
+                const recip = inv.primary_recipients && inv.primary_recipients[0];
+                const email = recip ? (recip.billing_info ? recip.billing_info.email_address : recip.email_address) : null;
+                return {
+                    id: inv.id,
+                    status: inv.status,
+                    number: inv.detail ? inv.detail.invoice_number : null,
+                    amount: amt.value ? parseFloat(amt.value) : 0,
+                    currency: amt.currency_code || inv.detail ? inv.detail.currency_code : 'USD',
+                    recipient: email,
+                    date: inv.detail ? inv.detail.invoice_date : null,
+                    paid_amount: inv.payments && inv.payments.paid_amount ? parseFloat(inv.payments.paid_amount.value) : null
+                };
+            });
             this.log(`Found ${invoices.length} invoices`);
             return { source: 'PAYPAL_REST_API', confirmed: true, invoices };
         } catch (err) {
