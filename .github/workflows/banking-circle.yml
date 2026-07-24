@@ -1,0 +1,106 @@
+name: Banking Circle
+on:
+  schedule:
+    - cron: '0 8 * * *'   # Daily 08:00 UTC
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no live wires)'
+        required: false
+        default: 'true'
+        type: choice
+        options: ['true', 'false']
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Procure / Diagnose
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+          path: .runner
+      - name: Apply runner overrides
+        run: |
+          mkdir -p swarm
+          cp -r .runner/swarm-overrides/scripts/* swarm/scripts/ 2>/dev/null || true
+          cp -r .runner/swarm-overrides/src/* swarm/src/ 2>/dev/null || true
+          ls swarm/scripts/ swarm/src/ 2>&1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Banking Circle diagnostic
+        working-directory: swarm
+        run: |
+          mkdir -p exports/reports
+          timeout 30 node ./scripts/banking-circle-procure.mjs 2>&1 | tee exports/reports/banking_circle_procure_last.json || true
+        env:
+          BANKING_CIRCLE_CLIENT_ID: ${{ secrets.BANKING_CIRCLE_CLIENT_ID }}
+          BANKING_CIRCLE_CLIENT_SECRET: ${{ secrets.BANKING_CIRCLE_CLIENT_SECRET }}
+          BANKING_CIRCLE_ACCOUNT_ID: ${{ secrets.BANKING_CIRCLE_ACCOUNT_ID }}
+          BANKING_CIRCLE_BENEFICIARY_ID: ${{ secrets.BANKING_CIRCLE_BENEFICIARY_ID }}
+          BANKING_CIRCLE_FX_PAIR: ${{ secrets.BANKING_CIRCLE_FX_PAIR || 'EUR/MAD' }}
+          BANKING_CIRCLE_ENV: ${{ secrets.BANKING_CIRCLE_ENV || 'sandbox' }}
+          BANKING_CIRCLE_API_BASE: ${{ secrets.BANKING_CIRCLE_API_BASE }}
+          BASE44_FLOW_API_URL: https://agent-flow-ai-9855ea98.base44.app/api
+          BASE44_FLOW_API_KEY: ${{ secrets.BASE44_FLOW_API_KEY }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: banking-circle-diagnostic-${{ github.run_id }}
+          path: swarm/exports/reports/banking_circle_procure_last.json
+
+  execute:
+    name: Execute EUR->MAD wires
+    needs: check
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+          path: .runner
+      - name: Apply runner overrides
+        run: |
+          mkdir -p swarm
+          cp -r .runner/swarm-overrides/scripts/* swarm/scripts/ 2>/dev/null || true
+          cp -r .runner/swarm-overrides/src/* swarm/src/ 2>/dev/null || true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install swarm deps
+        working-directory: swarm
+        run: |
+          if [ -f package.json ]; then npm ci --no-audit --prefer-offline || true; fi
+      - name: Execute wires
+        working-directory: swarm
+        run: |
+          mkdir -p exports/banking_circle
+          timeout 60 node ./scripts/banking-circle-execute.mjs 2>&1 | tee exports/banking_circle/execute_$(date -u +%Y%m%dT%H%M%SZ).json || true
+        env:
+          BANKING_CIRCLE_CLIENT_ID: ${{ secrets.BANKING_CIRCLE_CLIENT_ID }}
+          BANKING_CIRCLE_CLIENT_SECRET: ${{ secrets.BANKING_CIRCLE_CLIENT_SECRET }}
+          BANKING_CIRCLE_ACCOUNT_ID: ${{ secrets.BANKING_CIRCLE_ACCOUNT_ID }}
+          BANKING_CIRCLE_BENEFICIARY_ID: ${{ secrets.BANKING_CIRCLE_BENEFICIARY_ID }}
+          BANKING_CIRCLE_FX_PAIR: ${{ secrets.BANKING_CIRCLE_FX_PAIR || 'EUR/MAD' }}
+          BANKING_CIRCLE_ENV: ${{ secrets.BANKING_CIRCLE_ENV || 'sandbox' }}
+          BANKING_CIRCLE_API_BASE: ${{ secrets.BANKING_CIRCLE_API_BASE }}
+          BASE44_FLOW_API_URL: https://agent-flow-ai-9855ea98.base44.app/api
+          BASE44_FLOW_API_KEY: ${{ secrets.BASE44_FLOW_API_KEY }}
+          OWNER_BENEFICIARY_NAME: M TSOULI YOUNES
+          OWNER_BANK_NAME: Attijariwafa Bank
+          OWNER_BANK_RIB: '007810000448500030594182'
+          OWNER_IBAN: 'MA64007810000448500030594182'
+          OWNER_SWIFT: BCMAMAMC
+          OWNER_BANK_COUNTRY: MA
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: banking-circle-execute-${{ github.run_id }}
+          path: swarm/exports/banking_circle/
