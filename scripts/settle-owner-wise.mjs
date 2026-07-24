@@ -37,10 +37,19 @@ function getOwnerSpec(currency) {
     if (!sortCode || !accountNumber) throw new Error('Missing OWNER_SORT_CODE/OWNER_ACCOUNT_NUMBER for GBP');
     return { currency: 'GBP', name, type: 'sort_code', details: { sortCode, accountNumber } };
   }
-  // USD default
+
+  // SWIFT (recommended for non-US accounts / Morocco)
+  const swift = String(process.env.OWNER_SWIFT_BIC || process.env.OWNER_SWIFT || '').trim();
+  const swiftAccount = normDigits(process.env.OWNER_ACCOUNT_NUMBER);
+  const bankCountry = String(process.env.OWNER_BANK_COUNTRY || 'MA').toUpperCase();
+  if (swift && swiftAccount) {
+    return { currency: ccy, name, type: 'swift', details: { swift, accountNumber: swiftAccount, country: bankCountry, legalType: 'PRIVATE' } };
+  }
+
+  // US ABA fallback
   const abartn = normDigits(process.env.OWNER_ROUTING_NUMBER);
   const accountNumber = normDigits(process.env.OWNER_ACCOUNT_NUMBER);
-  if (!abartn || !accountNumber) throw new Error('Missing OWNER_ROUTING_NUMBER/OWNER_ACCOUNT_NUMBER for USD');
+  if (!abartn || !accountNumber) throw new Error('Missing OWNER_ROUTING_NUMBER/OWNER_ACCOUNT_NUMBER for USD (or set OWNER_SWIFT/OWNER_SWIFT_BIC for SWIFT)');
   const accountType = String(process.env.OWNER_ACCOUNT_TYPE || 'CHECKING').toUpperCase();
   return { currency: 'USD', name, type: 'aba', details: { abartn, accountNumber, accountType, legalType: 'PRIVATE' } };
 }
@@ -65,6 +74,7 @@ async function findOrCreateRecipient(spec) {
     if (spec.type === 'iban') return a.details?.iban === spec.details.iban;
     if (spec.type === 'sort_code') return a.details?.sortCode === spec.details.sortCode && a.details?.accountNumber === spec.details.accountNumber;
     if (spec.type === 'aba') return a.details?.abartn === spec.details.abartn && a.details?.accountNumber === spec.details.accountNumber;
+    if (spec.type === 'swift') return a.details?.swift === spec.details.swift && a.details?.accountNumber === spec.details.accountNumber;
     return false;
   });
   if (existing) return existing.id;
@@ -80,14 +90,13 @@ async function findOrCreateRecipient(spec) {
   return created.id;
 }
 
-async function createQuote(amount, currency) {
+async function createQuote(amount, sourceCurrency, targetCurrency) {
   return wiseRequest(`/v3/quotes`, {
     method: 'POST',
     body: JSON.stringify({
-      sourceCurrency: currency,
-      targetCurrency: currency,
+      sourceCurrency,
+      targetCurrency,
       sourceAmount: amount,
-      targetAmount: amount,
       profile: parseInt(process.env.WISE_PROFILE_ID),
     }),
   });
@@ -161,7 +170,8 @@ async function main() {
     console.log(`Wire ${i + 1}: $${batch.total.toFixed(2)} — ${ref}`);
 
     try {
-      const quote = await createQuote(batch.total, spec.currency);
+      const sourceCcy = String(process.env.WISE_SOURCE_CURRENCY || spec.currency).toUpperCase();
+      const quote = await createQuote(batch.total, sourceCcy, spec.currency);
       const transfer = await createTransfer(quote.id, recipientId, ref);
       console.log(`  Transfer ID: ${transfer.id} | Status: ${transfer.status}`);
       results.push({ batch: i + 1, amount: batch.total, transferId: transfer.id, status: transfer.status });

@@ -133,9 +133,19 @@ function getOwnerSpecFromEnv(currency) {
     if (!sortCode || !accountNumber) throw new Error('Missing OWNER_SORT_CODE/OWNER_ACCOUNT_NUMBER for GBP');
     return { currency: 'GBP', name, type: 'sort_code', details: { sortCode, accountNumber } };
   }
+
+  // SWIFT (recommended for non-US accounts / Morocco)
+  const swift = String(process.env.OWNER_SWIFT_BIC || process.env.OWNER_SWIFT || '').trim();
+  const swiftAccount = normDigits(process.env.OWNER_ACCOUNT_NUMBER);
+  const bankCountry = String(process.env.OWNER_BANK_COUNTRY || 'MA').toUpperCase();
+  if (swift && swiftAccount) {
+    return { currency: ccy, name, type: 'swift', details: { swift, accountNumber: swiftAccount, country: bankCountry, legalType: 'PRIVATE' } };
+  }
+
+  // US ABA fallback
   const abartn = normDigits(process.env.OWNER_ROUTING_NUMBER);
   const accountNumber = normDigits(process.env.OWNER_ACCOUNT_NUMBER);
-  if (!abartn || !accountNumber) throw new Error('Missing OWNER_ROUTING_NUMBER/OWNER_ACCOUNT_NUMBER for USD');
+  if (!abartn || !accountNumber) throw new Error('Missing OWNER_ROUTING_NUMBER/OWNER_ACCOUNT_NUMBER for USD (or set OWNER_SWIFT/OWNER_SWIFT_BIC for SWIFT)');
   return { currency: 'USD', name, type: 'aba', details: { abartn, accountNumber, accountType: String(process.env.OWNER_ACCOUNT_TYPE || 'CHECKING').toUpperCase(), legalType: 'PRIVATE' } };
 }
 
@@ -156,10 +166,15 @@ async function findOrCreateRecipient(spec) {
   return created.id;
 }
 
-async function executeWire(amount, currency, reference, recipientId) {
+async function executeWire(amount, sourceCurrency, targetCurrency, reference, recipientId) {
   const quote = await wiseReq('/v3/quotes', {
     method: 'POST',
-    body: JSON.stringify({ sourceCurrency: currency, targetCurrency: currency, sourceAmount: amount, targetAmount: amount, profile: parseInt(process.env.WISE_PROFILE_ID) }),
+    body: JSON.stringify({
+      sourceCurrency,
+      targetCurrency,
+      sourceAmount: amount,
+      profile: parseInt(process.env.WISE_PROFILE_ID),
+    }),
   });
   const transfer = await wiseReq('/v1/transfers', {
     method: 'POST',
@@ -268,16 +283,17 @@ async function main() {
       }
 
       const amt = b.total_amount || 0;
-      const ccy = b.currency || 'MAD';
+      const sourceCcy = String(b.currency || 'USD').toUpperCase();
+      const targetCcy = String(process.env.OWNER_BANK_CURRENCY || sourceCcy).toUpperCase();
       const ref = `Auto-settle ${b.batch_id} — ${new Date().toISOString().slice(0, 10)}`;
 
-      console.log(`  ${b.batch_id}: $${amt.toFixed(2)} ${ccy}`);
+      console.log(`  ${b.batch_id}: ${amt.toFixed(2)} ${sourceCcy} → ${targetCcy}`);
 
       await updateBatch(agent, b.batch_id, { status: 'processing' });
 
       try {
         if (hasWise) {
-          const spec = getOwnerSpecFromEnv(ccy);
+          const spec = getOwnerSpecFromEnv(targetCcy);
           let recipientId;
           try {
             recipientId = await findOrCreateRecipient(spec);
@@ -302,13 +318,13 @@ async function main() {
             }
             throw e;
           }
-          const result = await executeWire(amt, ccy, ref, recipientId);
+          const result = await executeWire(amt, sourceCcy, targetCcy, ref, recipientId);
           console.log(`    OK → Transfer ${result.transferId} [${result.status}]`);
           await updateBatch(agent, b.batch_id, {
             status: 'processing',
             processed_at: new Date().toISOString(),
             gateway_ref: `wise:${result.transferId}`,
-            notes: `${b.notes || ''} — Submitted via Wise. Awaiting manual receipt confirmation.`,
+            notes: `${b.notes || ''} — Submitted via Wise. Will auto-confirm when Wise reports completion.`,
           });
           totalExecuted += amt;
           log.push({ agent: agent.name, batch_id: b.batch_id, amount: amt, transferId: result.transferId, status: result.status, ok: true });

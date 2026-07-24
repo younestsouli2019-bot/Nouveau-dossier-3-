@@ -61,6 +61,9 @@ settlements/reconciliation-*.json
 settlements/processed-batches.json
 dist_rwc/
 
+# Local bank configuration (contains sensitive owner account info)
+bank-config.json
+
 # Temp files
 *.zip
 *.tmp

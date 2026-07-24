@@ -1,0 +1,21 @@
+{
+  "owner": {
+    "name": "OWNER FULL NAME",
+    "bank_name": "Attijariwafa bank",
+    "bank_country": "MA",
+    "currency": "MAD",
+    "swift_bic": "BCMAMAMC",
+    "rib": "007810000000000000000000",
+    "branch": "RABAT ...",
+    "address": "..."
+  },
+  "settlement": {
+    "method": "BANK_WIRE",
+    "provider": "WISE",
+    "auto_execute": true,
+    "auto_confirm_wise": true,
+    "max_per_wire_source": 5000,
+    "source_currency": "USD"
+  }
+}
+
