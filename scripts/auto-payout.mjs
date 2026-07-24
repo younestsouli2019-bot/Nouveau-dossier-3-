@@ -38,9 +38,10 @@ function isRecent(dateLike) {
 
 function isLiveRevenueEvent(event) {
   const status = String(event.status || '').toLowerCase();
-  const blocked = new Set(['cancelled', 'failed', 'reversed', 'voided', 'test']);
+  // Live evidence must be an externally confirmed cash event, not a forecast.
+  const allowed = new Set(['paid', 'completed', 'settled', 'received']);
   return !event.is_sample &&
-    !blocked.has(status) &&
+    allowed.has(status) &&
     (event.amount || 0) > 0 &&
     isRecent(event.occurred_at || event.created_date);
 }
@@ -59,6 +60,20 @@ async function createBatch(data) {
   return res.json();
 }
 
+async function updateEntity(entity, id, patch) {
+  const url = `https://${AGENT.name}-${AGENT.appId.slice(-8)}.base44.app/api/entities/${entity}/${id}`;
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: { api_key: AGENT.key, 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Base44 update ${entity}/${id} ${res.status}: ${text}`);
+  }
+  return res.json();
+}
+
 async function main() {
   console.log(`=== AUTO-PAYOUT MONITOR ===`);
   console.log(`Threshold: $${THRESHOLD} | Method: ${PAYOUT_METHOD}`);
@@ -73,6 +88,16 @@ async function main() {
 
   const liveEvents = events.filter(isLiveRevenueEvent);
   console.log(`Live revenue evidence (last ${LIVE_REVENUE_LOOKBACK_DAYS}d): ${liveEvents.length}`);
+
+  // Live-only payout = payout from unbatched live revenue events, not from seeded stream balances.
+  const unbatchedLiveEvents = liveEvents.filter((e) => {
+    const ps = String(e.payout_status || '').toLowerCase();
+    return ps !== 'batched' && ps !== 'settled' && ps !== 'paid_out';
+  });
+  const liveEventTotal = unbatchedLiveEvents.reduce((s, e) => s + (e.amount || 0), 0);
+  if (LIVE_ONLY_PAYOUTS && !ALLOW_BALANCE_ONLY_PAYOUT) {
+    console.log(`Unbatched live events: ${unbatchedLiveEvents.length} | Total: $${liveEventTotal.toFixed(2)}`);
+  }
 
   let totalAvailable = 0;
   const eligibleStreams = [];
@@ -102,7 +127,7 @@ async function main() {
   console.log(`\nTotal available: $${totalAvailable.toFixed(2)}`);
   console.log(`Eligible streams (>= $${THRESHOLD}): ${eligibleStreams.length}`);
 
-  if (LIVE_ONLY_PAYOUTS && !ALLOW_BALANCE_ONLY_PAYOUT && liveEvents.length === 0) {
+  if (LIVE_ONLY_PAYOUTS && !ALLOW_BALANCE_ONLY_PAYOUT && unbatchedLiveEvents.length === 0) {
     console.log('\nNo recent live revenue events found. LIVE_ONLY_PAYOUTS blocks balance-only automatic payouts.');
     const fs = await import('fs/promises');
     await fs.mkdir('dist_rwc', { recursive: true });
@@ -112,6 +137,7 @@ async function main() {
       totalAvailable,
       threshold: THRESHOLD,
       liveEvents: liveEvents.length,
+      unbatchedLiveEvents: unbatchedLiveEvents.length,
       lookbackDays: LIVE_REVENUE_LOOKBACK_DAYS,
       eligibleStreams: eligibleStreams.map(s => ({ name: s.name, amount: s.available_for_payout })),
       rejectedStreams,
@@ -137,26 +163,73 @@ async function main() {
     return;
   }
 
-  for (const stream of eligibleStreams) {
-    const amount = stream.available_for_payout;
-    const batchId = `BATCH_AUTO_${PAYOUT_METHOD}_${Date.now()}_${stream.id || stream.name.replace(/\s/g, '_')}`;
+  // Create payout batches.
+  // - Live-only: one batch per currency based on unbatched live events only.
+  // - Balance-only (explicit override): legacy behavior per stream.
+  if (LIVE_ONLY_PAYOUTS && !ALLOW_BALANCE_ONLY_PAYOUT) {
+    const byCurrency = new Map();
+    for (const e of unbatchedLiveEvents) {
+      const ccy = String(e.currency || 'USD').toUpperCase();
+      if (!byCurrency.has(ccy)) byCurrency.set(ccy, []);
+      byCurrency.get(ccy).push(e);
+    }
 
-    console.log(`\nCreating payout batch: ${batchId}`);
-    console.log(`  Amount: $${amount.toFixed(2)} ${stream.currency || 'USD'}`);
-    console.log(`  Source: ${stream.name}`);
+    for (const [ccy, evs] of byCurrency.entries()) {
+      const amount = evs.reduce((s, e) => s + (e.amount || 0), 0);
+      if (amount < THRESHOLD) continue;
+      const batchId = `BATCH_LIVE_${PAYOUT_METHOD}_${Date.now()}_${ccy}`;
+      const previewIds = evs.slice(0, 15).map((e) => e.external_id || e.id).filter(Boolean).join(', ');
+      const more = evs.length > 15 ? ` (+${evs.length - 15} more)` : '';
 
-    try {
+      console.log(`\nCreating LIVE payout batch: ${batchId}`);
+      console.log(`  Amount: $${amount.toFixed(2)} ${ccy}`);
+      console.log(`  Events: ${previewIds}${more}`);
+
       const result = await createBatch({
         batch_id: batchId,
         status: 'pending',
         total_amount: amount,
-        currency: stream.currency || 'USD',
+        currency: ccy,
         payout_method: PAYOUT_METHOD,
-        notes: `Auto-payout from ${stream.name} — ${RECIPIENT_EMAIL} (${RECIPIENT_NAME}) — LIVE_EVIDENCE=${liveEvents.length} — LOOKBACK_DAYS=${LIVE_REVENUE_LOOKBACK_DAYS}`,
+        notes: `LIVE_ONLY payout — ${RECIPIENT_EMAIL} (${RECIPIENT_NAME}) — LIVE_EVIDENCE=${evs.length} — LOOKBACK_DAYS=${LIVE_REVENUE_LOOKBACK_DAYS}`,
       });
       console.log(`  Created: ${result.id}`);
-    } catch (e) {
-      console.error(`  FAILED: ${e.message}`);
+
+      // Mark events as batched to prevent double payout.
+      for (const e of evs) {
+        try {
+          await updateEntity('RevenueEvent', e.id, {
+            payout_status: 'batched',
+            payout_batch_id: batchId,
+            batched_at: new Date().toISOString(),
+          });
+        } catch (err) {
+          console.error(`  WARN: Failed to tag RevenueEvent ${e.id} as batched: ${err.message}`);
+        }
+      }
+    }
+  } else {
+    for (const stream of eligibleStreams) {
+      const amount = stream.available_for_payout;
+      const batchId = `BATCH_AUTO_${PAYOUT_METHOD}_${Date.now()}_${stream.id || stream.name.replace(/\s/g, '_')}`;
+
+      console.log(`\nCreating payout batch: ${batchId}`);
+      console.log(`  Amount: $${amount.toFixed(2)} ${stream.currency || 'USD'}`);
+      console.log(`  Source: ${stream.name}`);
+
+      try {
+        const result = await createBatch({
+          batch_id: batchId,
+          status: 'pending',
+          total_amount: amount,
+          currency: stream.currency || 'USD',
+          payout_method: PAYOUT_METHOD,
+          notes: `Auto-payout from ${stream.name} — ${RECIPIENT_EMAIL} (${RECIPIENT_NAME}) — LIVE_EVIDENCE=${liveEvents.length} — LOOKBACK_DAYS=${LIVE_REVENUE_LOOKBACK_DAYS}`,
+        });
+        console.log(`  Created: ${result.id}`);
+      } catch (e) {
+        console.error(`  FAILED: ${e.message}`);
+      }
     }
   }
 
@@ -170,6 +243,8 @@ async function main() {
     method: PAYOUT_METHOD,
     recipient: RECIPIENT_EMAIL,
     liveEvents: liveEvents.length,
+    unbatchedLiveEvents: unbatchedLiveEvents.length,
+    liveEventTotal,
     lookbackDays: LIVE_REVENUE_LOOKBACK_DAYS,
     timestamp: new Date().toISOString(),
   }, null, 2));

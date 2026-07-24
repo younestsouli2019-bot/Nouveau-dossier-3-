@@ -62,6 +62,14 @@ This protects against accidentally executing old or unverified pending batches.
 - `BASE44_FLOW_API_KEY`
 - `BASE44_SWARM_API_KEY`
 
+### PayPal (live revenue ingestion)
+
+To generate **real RevenueEvent evidence** (so payouts can be created from real income, not balances), the workflows ingest PAID PayPal invoices:
+
+- `PAYPAL_CLIENT_ID`
+- `PAYPAL_CLIENT_SECRET`
+- optional: `PAYPAL_API_BASE_URL` (default `https://api-m.paypal.com`)
+
 ### Wise
 
 - `WISE_API_KEY`
