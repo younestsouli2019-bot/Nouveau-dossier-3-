@@ -8,6 +8,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { hasConfirmedReceipt, normalizeTracker, summarizeTracker } from './tracker-utils.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASE = join(__dirname, '..', '..');
@@ -80,7 +81,7 @@ function saveOfflineStore(store) {
 function loadTracker(batchNum) {
   const padded = batchNum.toString().padStart(2, '0');
   const file = join(BASE, 'exports', 'procurement-requests', 'trackers', `batch-${padded}-tracker.json`);
-  return JSON.parse(readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
+  return normalizeTracker(JSON.parse(readFileSync(file, 'utf8').replace(/^\uFEFF/, '')));
 }
 
 function loadBatch(batchNum) {
@@ -103,6 +104,7 @@ function loadBatch(batchNum) {
 
 function buildProcurementRequestEntity(batchNum, tracker, batchData) {
   const batchInfo = VENDOR_DB.batch_vendor_map[batchNum.toString().padStart(2, '0')];
+  const summary = summarizeTracker(tracker);
 
   return {
     type: 'procurement_request',
@@ -117,7 +119,8 @@ function buildProcurementRequestEntity(batchNum, tracker, batchData) {
     budget: {
       max: tracker.budget,
       currency: tracker.items[0]?.currency || 'MAD',
-      totalActual: calculateTotal(tracker.items)
+      totalActual: calculateTotal(tracker.items),
+      receiptTotal: summary.receiptAmount,
     },
     items: tracker.items.map(item => ({
       name: item.name,
@@ -127,9 +130,24 @@ function buildProcurementRequestEntity(batchNum, tracker, batchData) {
       priceQuoted: item.price_quoted,
       vendorAssigned: item.vendor_assigned,
       orderStatus: item.order_status,
-      trackingNumber: item.tracking_number
+      trackingNumber: item.tracking_number,
+      deliveryDate: item.delivery_date,
+      receiptReference: item.receipt_reference,
+      receiptAmount: item.receipt_amount,
+      receivedBy: item.received_by,
+      receiptDocumentUrl: item.receipt_document_url,
+      receiptConfirmed: hasConfirmedReceipt(item),
     })),
     vendorsContacted: tracker.vendors_contacted,
+    metrics: {
+      totalItems: summary.total,
+      confirmedItems: summary.confirmed,
+      orderedItems: summary.ordered,
+      shippedItems: summary.shipped,
+      deliveredItems: summary.delivered,
+      receiptConfirmedItems: summary.receiptConfirmed,
+      inTransitItems: summary.inTransit,
+    },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -193,12 +211,14 @@ async function syncStatus(batchNum) {
   const total = tracker.items.length;
   const ordered = tracker.items.filter(i => i.order_status === 'ordered').length;
   const delivered = tracker.items.filter(i => i.order_status === 'delivered').length;
+  const receipts = tracker.items.filter((i) => hasConfirmedReceipt(i)).length;
 
   console.log(`\nBatch ${batchNum.toString().padStart(2, '0')}: ${tracker.batch_name}`);
   console.log(`  Items: ${total}`);
   console.log(`  Confirmed: ${confirmed}/${total}`);
   console.log(`  Ordered: ${ordered}/${total}`);
   console.log(`  Delivered: ${delivered}/${total}`);
+  console.log(`  Receipts Logged: ${receipts}/${total}`);
   console.log(`  Vendors contacted: ${tracker.vendors_contacted.length}`);
   console.log(`  Total cost: ${calculateTotal(tracker.items)} ${tracker.items[0]?.currency || 'MAD'}`);
 }

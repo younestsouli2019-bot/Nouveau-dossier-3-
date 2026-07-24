@@ -8,6 +8,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { normalizeTracker, parsePositiveMoney } from './tracker-utils.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASE = join(__dirname, '..', '..');
@@ -15,7 +16,7 @@ const BASE = join(__dirname, '..', '..');
 function loadTracker(batchNum) {
   const padded = batchNum.toString().padStart(2, '0');
   const file = join(BASE, 'exports', 'procurement-requests', 'trackers', `batch-${padded}-tracker.json`);
-  return JSON.parse(readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
+  return normalizeTracker(JSON.parse(readFileSync(file, 'utf8').replace(/^\uFEFF/, '')));
 }
 
 function loadBatch(batchNum) {
@@ -63,7 +64,7 @@ function generateJSON(batchNum, tracker, batchData) {
 
   const po = {
     po_number: poNumber,
-    batch: batchNum.toString().padStart(2, '0),
+    batch: batchNum.toString().padStart(2, '0'),
     batch_name: tracker.batch_name,
     status: 'draft',
     created_at: new Date().toISOString(),
@@ -89,13 +90,19 @@ function generateJSON(batchNum, tracker, batchData) {
       vendor: item.vendor_assigned,
       order_status: item.order_status,
       tracking: item.tracking_number,
+      receipt_reference: item.receipt_reference,
+      receipt_amount: parsePositiveMoney(item.receipt_amount),
+      received_by: item.received_by,
+      receipt_document_url: item.receipt_document_url,
       notes: item.notes
     })),
     vendors: [...new Set(confirmedItems.map(i => i.vendor_assigned).filter(Boolean))],
     delivery: {
       address: tracker.address,
       expected_date: null,
-      tracking_numbers: confirmedItems.map(i => i.tracking_number).filter(Boolean)
+      tracking_numbers: confirmedItems.map(i => i.tracking_number).filter(Boolean),
+      delivered_items: confirmedItems.filter((i) => i.order_status === 'delivered').length,
+      receipt_confirmed_items: confirmedItems.filter((i) => i.receipt_reference && i.received_by).length,
     },
     total_actual: subtotal,
     total_estimated: tracker.total_estimated
@@ -119,6 +126,7 @@ function generateHTML(batchNum, tracker, batchData, po) {
         <td>${item.vendor || '-'}</td>
         <td>${item.order_status}</td>
         <td>${item.tracking || '-'}</td>
+        <td>${item.receipt_reference ? `${item.receipt_reference}${item.receipt_amount ? ` (${item.receipt_amount} ${item.currency})` : ''}` : '-'}</td>
       </tr>`).join('');
 
   return `<!DOCTYPE html>
@@ -179,6 +187,8 @@ function generateHTML(batchNum, tracker, batchData, po) {
           <strong>${po.delivery.address}</strong><br>
           Expected: ${po.delivery.expected_date || 'TBD'}<br>
           Tracking: ${po.delivery.tracking_numbers.join(', ') || 'None'}
+          <br>Delivered Items: ${po.delivery.delivered_items}
+          <br>Receipts Logged: ${po.delivery.receipt_confirmed_items}
         </p>
       </div>
     </div>
@@ -194,6 +204,7 @@ function generateHTML(batchNum, tracker, batchData, po) {
           <th>Vendor</th>
           <th>Status</th>
           <th>Tracking</th>
+          <th>Receipt</th>
         </tr>
       </thead>
       <tbody>

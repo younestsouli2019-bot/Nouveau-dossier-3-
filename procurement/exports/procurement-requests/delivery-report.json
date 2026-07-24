@@ -1,12 +1,16 @@
 {
-  "generated_at": "2026-07-22T09:55:01.819Z",
+  "generated_at": "2026-07-24T06:27:12.770Z",
   "summary": {
     "total_items": 53,
     "confirmed": 0,
     "ordered": 0,
+    "shipped": 0,
     "delivered": 0,
+    "receipt_confirmed": 0,
     "cost_mad": 0,
-    "cost_usd": 0
+    "cost_usd": 0,
+    "receipt_mad": 0,
+    "receipt_usd": 0
   },
   "batches": [
     {
@@ -19,10 +23,13 @@
       "ordered": 0,
       "shipped": 0,
       "delivered": 0,
+      "receiptConfirmed": 0,
       "totalCost": 0,
+      "receiptAmount": 0,
       "currency": "MAD",
       "vendorsContacted": 0,
-      "progress": 0
+      "progress": 0,
+      "trackerStatus": "sourcing"
     },
     {
       "batch": "02",
@@ -34,10 +41,13 @@
       "ordered": 0,
       "shipped": 0,
       "delivered": 0,
+      "receiptConfirmed": 0,
       "totalCost": 0,
+      "receiptAmount": 0,
       "currency": "MAD",
       "vendorsContacted": 0,
-      "progress": 0
+      "progress": 0,
+      "trackerStatus": "sourcing"
     },
     {
       "batch": "03",
@@ -49,10 +59,13 @@
       "ordered": 0,
       "shipped": 0,
       "delivered": 0,
+      "receiptConfirmed": 0,
       "totalCost": 0,
+      "receiptAmount": 0,
       "currency": "MAD",
       "vendorsContacted": 0,
-      "progress": 0
+      "progress": 0,
+      "trackerStatus": "sourcing"
     },
     {
       "batch": "04",
@@ -64,10 +77,13 @@
       "ordered": 0,
       "shipped": 0,
       "delivered": 0,
+      "receiptConfirmed": 0,
       "totalCost": 0,
+      "receiptAmount": 0,
       "currency": "MAD",
       "vendorsContacted": 0,
-      "progress": 0
+      "progress": 0,
+      "trackerStatus": "sourcing"
     },
     {
       "batch": "05",
@@ -79,10 +95,13 @@
       "ordered": 0,
       "shipped": 0,
       "delivered": 0,
+      "receiptConfirmed": 0,
       "totalCost": 0,
+      "receiptAmount": 0,
       "currency": "MAD",
       "vendorsContacted": 0,
-      "progress": 0
+      "progress": 0,
+      "trackerStatus": "sourcing"
     },
     {
       "batch": "06",
@@ -94,10 +113,13 @@
       "ordered": 0,
       "shipped": 0,
       "delivered": 0,
+      "receiptConfirmed": 0,
       "totalCost": 0,
+      "receiptAmount": 0,
       "currency": "MAD",
       "vendorsContacted": 0,
-      "progress": 0
+      "progress": 0,
+      "trackerStatus": "sourcing"
     },
     {
       "batch": "07",
@@ -109,10 +131,13 @@
       "ordered": 0,
       "shipped": 0,
       "delivered": 0,
+      "receiptConfirmed": 0,
       "totalCost": 0,
+      "receiptAmount": 0,
       "currency": "MAD",
       "vendorsContacted": 0,
-      "progress": 0
+      "progress": 0,
+      "trackerStatus": "sourcing"
     },
     {
       "batch": "08",
@@ -124,10 +149,13 @@
       "ordered": 0,
       "shipped": 0,
       "delivered": 0,
+      "receiptConfirmed": 0,
       "totalCost": 0,
+      "receiptAmount": 0,
       "currency": "USD",
       "vendorsContacted": 0,
-      "progress": 0
+      "progress": 0,
+      "trackerStatus": "sourcing"
     },
     {
       "batch": "09",
@@ -139,10 +167,13 @@
       "ordered": 0,
       "shipped": 0,
       "delivered": 0,
+      "receiptConfirmed": 0,
       "totalCost": 0,
+      "receiptAmount": 0,
       "currency": "MAD",
       "vendorsContacted": 0,
-      "progress": 0
+      "progress": 0,
+      "trackerStatus": "sourcing"
     },
     {
       "batch": "10",
@@ -154,10 +185,13 @@
       "ordered": 0,
       "shipped": 0,
       "delivered": 0,
+      "receiptConfirmed": 0,
       "totalCost": 0,
+      "receiptAmount": 0,
       "currency": "MAD",
       "vendorsContacted": 0,
-      "progress": 0
+      "progress": 0,
+      "trackerStatus": "sourcing"
     },
     {
       "batch": "11",
@@ -169,10 +203,13 @@
       "ordered": 0,
       "shipped": 0,
       "delivered": 0,
+      "receiptConfirmed": 0,
       "totalCost": 0,
+      "receiptAmount": 0,
       "currency": "MAD",
       "vendorsContacted": 0,
-      "progress": 0
+      "progress": 0,
+      "trackerStatus": "sourcing"
     }
   ]
 }
