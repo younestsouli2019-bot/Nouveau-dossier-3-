@@ -5,11 +5,14 @@
  * 1. Load processed-set to avoid re-processing
  * 2. Query Base44 for pending BANK_WIRE PayoutBatches
  * 3. Execute via Wise API OR generate SWIFT MT103 instructions
- * 4. Update batch status in Base44 + persist processed-set
+ * 4. Update batch status in Base44 to `processing` (submitted/in transit) + persist processed-set
  * 5. Notify owner via webhook
  * 6. Log results
  *
- * Zero manual intervention. Owner hands-free policy.
+ * NOTE: Receipt confirmation is intentionally manual:
+ * - `processing` = submitted (in transit)
+ * - `completed` = receipt confirmed
+ * Use: node scripts/confirm-bank-wire-receipt.mjs --batch=... --receipt-ref=... --received-by=...
  */
 
 import fs from 'node:fs';
@@ -210,8 +213,8 @@ async function notifyOwner(summary) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        text: `✅ Bank Wire Settlement Complete\n` +
-              `Total: $${summary.totalExecuted.toFixed(2)}\n` +
+        text: `✅ Bank Wire Submitted (Awaiting Confirmation)\n` +
+              `Total submitted: $${summary.totalExecuted.toFixed(2)}\n` +
               `Batches: ${summary.log.length}\n` +
               `Failed: $${summary.totalFailed.toFixed(2)}\n` +
               `Time: ${summary.timestamp}`,
@@ -286,7 +289,12 @@ async function main() {
               const filePath = path.join(dir, `mt103_${b.batch_id}.txt`);
               fs.writeFileSync(filePath, mt103, 'utf8');
               console.log(`    MT103 fallback → ${filePath}`);
-              await updateBatch(agent, b.batch_id, { status: 'completed', processed_at: new Date().toISOString(), gateway_ref: `mt103:${path.basename(filePath)}` });
+              await updateBatch(agent, b.batch_id, {
+                status: 'processing',
+                processed_at: new Date().toISOString(),
+                gateway_ref: `mt103:${path.basename(filePath)}`,
+                notes: `${b.notes || ''} — Submitted via MT103. Awaiting manual receipt confirmation.`,
+              });
               totalExecuted += amt;
               log.push({ agent: agent.name, batch_id: b.batch_id, amount: amt, mode: 'mt103_instruction', ok: true });
               processed.add(batchKey);
@@ -296,7 +304,12 @@ async function main() {
           }
           const result = await executeWire(amt, ccy, ref, recipientId);
           console.log(`    OK → Transfer ${result.transferId} [${result.status}]`);
-          await updateBatch(agent, b.batch_id, { status: 'completed', processed_at: new Date().toISOString(), gateway_ref: `wise:${result.transferId}` });
+          await updateBatch(agent, b.batch_id, {
+            status: 'processing',
+            processed_at: new Date().toISOString(),
+            gateway_ref: `wise:${result.transferId}`,
+            notes: `${b.notes || ''} — Submitted via Wise. Awaiting manual receipt confirmation.`,
+          });
           totalExecuted += amt;
           log.push({ agent: agent.name, batch_id: b.batch_id, amount: amt, transferId: result.transferId, status: result.status, ok: true });
           processed.add(batchKey);
@@ -307,7 +320,12 @@ async function main() {
           const filePath = path.join(dir, `mt103_${b.batch_id}.txt`);
           fs.writeFileSync(filePath, mt103, 'utf8');
           console.log(`    MT103 → ${filePath}`);
-          await updateBatch(agent, b.batch_id, { status: 'completed', processed_at: new Date().toISOString(), gateway_ref: `mt103:${path.basename(filePath)}` });
+          await updateBatch(agent, b.batch_id, {
+            status: 'processing',
+            processed_at: new Date().toISOString(),
+            gateway_ref: `mt103:${path.basename(filePath)}`,
+            notes: `${b.notes || ''} — Submitted via MT103. Awaiting manual receipt confirmation.`,
+          });
           totalExecuted += amt;
           log.push({ agent: agent.name, batch_id: b.batch_id, amount: amt, mode: 'mt103_instruction', ok: true });
           processed.add(batchKey);

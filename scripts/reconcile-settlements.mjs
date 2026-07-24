@@ -68,6 +68,7 @@ async function main() {
     const completed = bankWire.filter(b => b.status === 'completed');
     const failed = bankWire.filter(b => b.status === 'failed' || b.status === 'failed_cancelled');
     const processing = bankWire.filter(b => b.status === 'processing');
+    const inTransit = processing.filter(b => Boolean(b.gateway_ref || b.processed_at));
 
     report.agents[agent.name] = {
       totalBatches: bankWire.length,
@@ -75,13 +76,16 @@ async function main() {
       completed: completed.length,
       failed: failed.length,
       processing: processing.length,
+      inTransit: inTransit.length,
       pendingAmount: pending.reduce((s, b) => s + (b.total_amount || 0), 0),
-      completedAmount: completed.reduce((s, b) => s + (b.total_amount || 0), 0),
+      confirmedAmount: completed.reduce((s, b) => s + (b.total_amount || 0), 0),
       failedAmount: failed.reduce((s, b) => s + (b.total_amount || 0), 0),
+      inTransitAmount: inTransit.reduce((s, b) => s + (b.total_amount || 0), 0),
       pendingBatches: pending.map(b => ({ batch_id: b.batch_id, amount: b.total_amount, currency: b.currency })),
+      inTransitBatches: inTransit.map(b => ({ batch_id: b.batch_id, amount: b.total_amount, currency: b.currency, gateway_ref: b.gateway_ref })),
     };
 
-    console.log(`  ${agent.name}: ${bankWire.length} total | ${pending.length} pending | ${completed.length} completed | ${failed.length} failed`);
+    console.log(`  ${agent.name}: ${bankWire.length} total | ${pending.length} pending | ${inTransit.length} in-transit | ${completed.length} confirmed | ${failed.length} failed`);
   }
 
   const outDir = path.resolve('settlements');

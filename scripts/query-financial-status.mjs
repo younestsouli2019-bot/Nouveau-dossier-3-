@@ -54,6 +54,16 @@ async function main() {
         console.log(`    Total withdrawals (last ${data.count}): $${total.toFixed(2)}`);
       }
       if (entity === 'PayoutBatch' && data.records?.length) {
+        const bankWire = data.records.filter((b) => String(b.batch_id || '').includes('BANK_WIRE'));
+        const inTransit = bankWire.filter((b) => b.status === 'processing' && (b.gateway_ref || b.processed_at));
+        const confirmed = bankWire.filter((b) => b.status === 'completed');
+        const inTransitAmt = inTransit.reduce((s, b) => s + (b.total_amount || 0), 0);
+        const confirmedAmt = confirmed.reduce((s, b) => s + (b.total_amount || 0), 0);
+
+        if (bankWire.length) {
+          console.log(`    BANK_WIRE in-transit: ${inTransit.length} ($${inTransitAmt.toFixed(2)})`);
+          console.log(`    BANK_WIRE confirmed:  ${confirmed.length} ($${confirmedAmt.toFixed(2)})`);
+        }
         for (const r of data.records.slice(0, 3)) {
           console.log(`    Batch ${r.batch_id}: $${r.total_amount} ${r.currency} [${r.status}]`);
         }
