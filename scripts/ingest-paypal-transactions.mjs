@@ -1,31 +1,36 @@
 #!/usr/bin/env node
 /**
- * Ingest REAL PayPal revenue into Base44 as RevenueEvent records.
+ * Ingest REAL PayPal completed credit transactions into Base44 RevenueEvent.
  *
- * Live-only:
- * - Reads PayPal invoices from the live PayPal API
- * - Creates RevenueEvent only for invoices with status=PAID
- * - No simulation, no projections
- *
- * Required env:
- * - PAYPAL_CLIENT_ID
- * - PAYPAL_CLIENT_SECRET
- * - BASE44_SWARM_API_KEY
- *
- * Optional:
- * - PAYPAL_API_BASE_URL (default: https://api-m.paypal.com)
- * - PAYPAL_PAGE_SIZE (default: 50)
+ * This covers direct-to-owner PayPal routes that are not invoice based.
  */
 
 import https from 'node:https';
-import { writeResult, AGENT, base44Create, existingExternalIds, must, parseAmount } from './revenue-ingestion-utils.mjs';
+import {
+  AGENT,
+  base44Create,
+  existingExternalIds,
+  isoDate,
+  must,
+  parseAmount,
+  writeResult,
+} from './revenue-ingestion-utils.mjs';
 
 const PAYPAL_BASE = (process.env.PAYPAL_API_BASE_URL || 'https://api-m.paypal.com').trim();
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID || '';
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET || '';
-const PAGE_SIZE = parseInt(process.env.PAYPAL_PAGE_SIZE || '50', 10);
+const LOOKBACK_DAYS = parseInt(process.env.PAYPAL_TX_LOOKBACK_DAYS || '45', 10);
+const PAGE_SIZE = parseInt(process.env.PAYPAL_TX_PAGE_SIZE || '100', 10);
 
-function paypalRequest(method, path, body = null, headers = {}) {
+function startDateIso(days) {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+}
+
+function endDateIso() {
+  return new Date().toISOString();
+}
+
+function paypalRequest(method, path, headers = {}) {
   return new Promise((resolve, reject) => {
     const url = new URL(path, PAYPAL_BASE);
     const req = https.request({
@@ -48,7 +53,6 @@ function paypalRequest(method, path, body = null, headers = {}) {
       });
     });
     req.on('error', reject);
-    if (body) req.write(JSON.stringify(body));
     req.end();
   });
 }
@@ -85,21 +89,35 @@ async function getPayPalAccessToken() {
   });
 }
 
-function normalizeInvoice(inv) {
-  // PayPal v2 invoice list item format
-  const amount = inv.payments?.paid_amount?.value ?? inv.amount?.value ?? inv.amount?.total?.value ?? inv.amount?.total ?? '0';
-  const currency = inv.payments?.paid_amount?.currency_code ?? inv.amount?.currency_code ?? inv.amount?.currency ?? inv.amount?.currency_code ?? 'USD';
-  const invoiceDate = inv.detail?.invoice_date || inv.invoice_date || null;
-  const created = inv.create_time || inv.created_date || inv.createTime || null;
-  const occurredAt = invoiceDate ? `${invoiceDate}T00:00:00.000Z` : (created || new Date().toISOString());
+function isCreditTransaction(tx) {
+  const info = tx.transaction_info || {};
+  const amount = parseAmount(info.transaction_amount?.value);
+  const status = String(info.transaction_status || '').toUpperCase();
+  const eventCode = String(info.transaction_event_code || '').toUpperCase();
+  const terminalStatuses = new Set(['S', 'SUCCESS', 'COMPLETED']);
+  const excludedEventCodes = new Set([
+    'T0006', 'T0400', 'T1107', 'T1110', 'T1201', 'T1202', 'T2000',
+  ]);
+  return amount > 0 &&
+    terminalStatuses.has(status) &&
+    !excludedEventCodes.has(eventCode);
+}
 
+function normalizeTransaction(tx) {
+  const info = tx.transaction_info || {};
+  const payer = tx.payer_info || {};
+  const amount = parseAmount(info.transaction_amount?.value);
+  const currency = String(info.transaction_amount?.currency_code || 'USD').toUpperCase();
+  const externalId = info.transaction_id;
   return {
-    id: inv.id,
-    status: inv.status,
-    amount: parseAmount(amount),
-    currency: String(currency || 'USD').toUpperCase(),
-    number: inv.detail?.invoice_number || inv.invoice_number || null,
-    occurred_at: occurredAt,
+    externalId: `paypal:txn:${externalId}`,
+    txId: externalId,
+    eventCode: info.transaction_event_code || 'paypal_credit',
+    status: 'completed',
+    amount,
+    currency,
+    occurred_at: isoDate(info.transaction_initiation_date || info.transaction_updated_date),
+    counterparty: payer.email_address || payer.account_id || null,
   };
 }
 
@@ -109,59 +127,64 @@ async function main() {
   must(AGENT.key, 'BASE44_SWARM_API_KEY');
 
   const token = await getPayPalAccessToken();
-  const invoices = await paypalRequest(
+  const query = new URLSearchParams({
+    start_date: startDateIso(LOOKBACK_DAYS),
+    end_date: endDateIso(),
+    fields: 'all',
+    page_size: String(PAGE_SIZE),
+    page: '1',
+  });
+  const result = await paypalRequest(
     'GET',
-    `/v2/invoicing/invoices?page_size=${PAGE_SIZE}`,
-    null,
+    `/v1/reporting/transactions?${query}`,
     { Authorization: `Bearer ${token}`, Accept: 'application/json' },
   );
 
-  const items = Array.isArray(invoices.items) ? invoices.items : [];
-  const paid = items.filter((i) => String(i.status || '').toUpperCase() === 'PAID').map(normalizeInvoice)
-    .filter((i) => i.amount > 0 && i.id);
-
+  const rows = Array.isArray(result.transaction_details) ? result.transaction_details : [];
+  const credits = rows.filter(isCreditTransaction).map(normalizeTransaction);
   const existingExternal = await existingExternalIds(500);
 
   let created = 0;
   let skipped = 0;
   const createdIds = [];
 
-  for (const inv of paid) {
-    const externalId = `paypal:invoice:${inv.id}`;
-    if (existingExternal.has(externalId)) {
+  for (const tx of credits) {
+    if (!tx.txId || existingExternal.has(tx.externalId)) {
       skipped++;
       continue;
     }
     const payload = {
-      name: `PayPal invoice PAID ${inv.number || inv.id}`,
+      name: `PayPal credit ${tx.txId}`,
       provider: 'paypal',
-      event_type: 'invoice_paid',
-      external_id: externalId,
-      status: 'paid',
-      amount: inv.amount,
-      currency: inv.currency,
-      occurred_at: inv.occurred_at,
+      event_type: tx.eventCode,
+      external_id: tx.externalId,
+      status: tx.status,
+      amount: tx.amount,
+      currency: tx.currency,
+      occurred_at: tx.occurred_at,
       is_sample: false,
       payout_status: 'unbatched',
+      notes: `Direct PayPal credit${tx.counterparty ? ` from ${tx.counterparty}` : ''}`,
     };
     const res = await base44Create('RevenueEvent', payload);
     created++;
     createdIds.push(res.id);
   }
 
-  await writeResult('ingest-paypal-result.json', {
+  await writeResult('ingest-paypal-transactions-result.json', {
     provider: 'paypal',
     route: 'PAYPAL',
-    scanned: items.length,
-    paidFound: paid.length,
+    scanned: rows.length,
+    creditsFound: credits.length,
     created,
     skipped,
     createdIds,
+    lookbackDays: LOOKBACK_DAYS,
     timestamp: new Date().toISOString(),
   });
 
-  console.log(`PayPal invoices scanned: ${items.length}`);
-  console.log(`Paid invoices: ${paid.length}`);
+  console.log(`PayPal transactions scanned: ${rows.length}`);
+  console.log(`Completed credits: ${credits.length}`);
   console.log(`Created RevenueEvent: ${created}`);
   console.log(`Skipped existing: ${skipped}`);
 }
@@ -170,3 +193,4 @@ main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
+

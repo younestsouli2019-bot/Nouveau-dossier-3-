@@ -64,11 +64,23 @@ This protects against accidentally executing old or unverified pending batches.
 
 ### PayPal (live revenue ingestion)
 
-To generate **real RevenueEvent evidence** (so payouts can be created from real income, not balances), the workflows ingest PAID PayPal invoices:
+To generate **real RevenueEvent evidence** (so payouts can be created from real income, not balances), the workflows ingest:
+
+- PAID PayPal invoices
+- completed PayPal credit transactions
 
 - `PAYPAL_CLIENT_ID`
 - `PAYPAL_CLIENT_SECRET`
 - optional: `PAYPAL_API_BASE_URL` (default `https://api-m.paypal.com`)
+
+### Plaid (optional live bank-credit ingestion)
+
+If owner-route revenue evidence should also be pulled from linked bank accounts:
+
+- `PLAID_CLIENT_ID`
+- `PLAID_SECRET`
+- `PLAID_ACCESS_TOKEN`
+- optional: `PLAID_ENV`
 
 ### Wise
 
