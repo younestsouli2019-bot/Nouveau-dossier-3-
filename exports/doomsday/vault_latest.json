@@ -1,0 +1,67 @@
+{
+  "timestamp": "2026-07-24T10:21:09.145Z",
+  "snapshot_dir": "exports/doomsday/snapshot_2026-07-24_10-21-05",
+  "manifest_sha256": "d6f640d4188e2fe2f80ed2bba2728411dc308bc81c6511c2d987a44de5a5f032",
+  "sections": {
+    "base44": {
+      "flow": {
+        "source": "agent-flow-ai",
+        "entities": {
+          "PayoutBatch": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          },
+          "RevenueEvent": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          },
+          "RevenueStream": {
+            "error": "fetch_failed"
+          },
+          "Analytics": {
+            "count": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          },
+          "Task": {
+            "error": "fetch_failed"
+          }
+        }
+      },
+      "swarm": {
+        "source": "agent-swarm",
+        "entities": {
+          "RevenueStream": {
+            "error": "fetch_failed"
+          },
+          "PayoutBatch": {
+            "error": "fetch_failed"
+          },
+          "Task": {
+            "error": "fetch_failed"
+          }
+        }
+      }
+    },
+    "exports": {
+      "count": 14
+    },
+    "workflows": {
+      "count": 10
+    },
+    "scripts": {
+      "count": 30
+    },
+    "docs": {
+      "count": 1
+    },
+    "swarm_overrides": {
+      "count": 2
+    }
+  },
+  "file_count": 57,
+  "zip": "exports/doomsday/snapshot_2026-07-24_10-21-05.zip",
+  "encrypted": false
+}

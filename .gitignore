@@ -69,3 +69,14 @@ _job_logs/
 .tmp_extract_out.json
 ci-full-logs.txt
 ci-logs.bin
+# Doomsday vault - large snapshot dirs go in cloud, not git
+exports/doomsday/snapshot_*/
+exports/doomsday/*.zip
+exports/doomsday/*.zip.enc
+exports/doomsday/cloud_upload_last.json
+
+# Doomsday vault - large snapshots in cloud, not git
+exports/doomsday/snapshot_*/
+exports/doomsday/*.zip
+exports/doomsday/*.zip.enc
+exports/doomsday/cloud_upload_last.json
