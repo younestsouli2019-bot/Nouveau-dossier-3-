@@ -25,6 +25,32 @@ async function createBatch(data) {
   return res.json();
 }
 
+async function listRecipients(limit = 50) {
+  const url = `https://${AGENT.name}-${AGENT.appId.slice(-8)}.base44.app/api/entities/PayoutRecipient?limit=${limit}&sort_by=-created_date`;
+  const res = await fetch(url, { headers: { api_key: AGENT.key } });
+  if (!res.ok) return [];
+  const data = await res.json();
+  return Array.isArray(data) ? data : [data];
+}
+
+async function createPayoutItem(payload) {
+  const url = `https://${AGENT.name}-${AGENT.appId.slice(-8)}.base44.app/api/entities/PayoutItem`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { api_key: AGENT.key, 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Base44 API error ${res.status}: ${text}`);
+  }
+  return res.json();
+}
+
+function genItemId() {
+  return `PI-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 async function main() {
   const amount = parseFloat(process.env.AMOUNT || '0');
   const currency = process.env.CURRENCY || 'USD';
@@ -68,6 +94,33 @@ async function main() {
   const result = await createBatch(payload);
   console.log('\nPayout batch created:');
   console.log(JSON.stringify(result, null, 2));
+
+  // Create a matching PayoutItem for dashboard visibility (AgentSwarm UI reads PayoutItem).
+  try {
+    const recipients = await listRecipients(50);
+    const preferred = recipients.find((r) => r.is_default && String(r.currency || '').toUpperCase() === String(currency || '').toUpperCase())
+      || recipients.find((r) => r.is_default)
+      || recipients[0];
+
+    if (preferred && payoutMethod === 'BANK_WIRE') {
+      const item = await createPayoutItem({
+        item_id: genItemId(),
+        batch_id: batchId,
+        recipient_name: preferred.name,
+        recipient: preferred.account_identifier,
+        recipient_type: 'bank_account',
+        bank_name: preferred.bank_name,
+        amount,
+        currency: String(currency).toUpperCase(),
+        status: 'pending',
+        error_message: null,
+      });
+      console.log('\nPayout item created (for dashboard):');
+      console.log(JSON.stringify(item, null, 2));
+    }
+  } catch (e) {
+    console.warn(`\nWARN: unable to create PayoutItem: ${e.message}`);
+  }
 
   const fs = await import('fs/promises');
   await fs.mkdir('dist_rwc', { recursive: true });

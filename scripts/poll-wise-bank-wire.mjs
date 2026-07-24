@@ -73,6 +73,28 @@ async function updateBatch(agent, batchId, patch) {
   return true;
 }
 
+async function listPayoutItems(agent, limit = 200) {
+  const url = `https://${agent.name}-${agent.appId.slice(-8)}.base44.app/api/entities/PayoutItem?limit=${limit}&sort_by=-created_date`;
+  const res = await withRetry(() => fetch(url, { headers: { api_key: agent.key } }), `fetch PayoutItem ${agent.name}`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
+
+async function updatePayoutItem(agent, id, patch) {
+  const url = `https://${agent.name}-${agent.appId.slice(-8)}.base44.app/api/entities/PayoutItem/${id}`;
+  const res = await withRetry(() => fetch(url, {
+    method: 'PUT',
+    headers: { api_key: agent.key, 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  }), `update PayoutItem ${id}`);
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`Base44 PayoutItem update failed ${res.status}: ${t}`);
+  }
+  return true;
+}
+
 function classifyWiseStatus(status) {
   const s = String(status || '').toLowerCase();
   // Treat these as "submitted/in transit"
@@ -95,6 +117,7 @@ async function main() {
   let failed = 0;
 
   for (const agent of AGENTS) {
+    const payoutItems = await listPayoutItems(agent, 250);
     const batches = await fetchRecentBatches(agent);
     const candidates = batches.filter((b) =>
       b.status === 'processing' &&
@@ -129,6 +152,16 @@ async function main() {
           received_by: 'WiseAuto',
           notes: `${b.notes || ''} — Auto-confirmed by Wise status=${status} at ${confirmedAt}`.trim(),
         });
+
+        // Keep PayoutStatus dashboard consistent when PayoutItem is used.
+        for (const it of payoutItems.filter((x) => x.batch_id === b.batch_id)) {
+          await updatePayoutItem(agent, it.id, {
+            status: 'success',
+            external_transaction_id: it.external_transaction_id || `wise:${transferId}`,
+            processed_at: it.processed_at || confirmedAt,
+            error_message: null,
+          });
+        }
         promoted++;
         console.log(`  ${b.batch_id}: completed (Wise status=${status})`);
       } else if (cls === 'failed') {
@@ -136,6 +169,14 @@ async function main() {
           status: 'failed',
           notes: `${b.notes || ''} — Wise transfer ${transferId} failed status=${status}`.trim(),
         });
+
+        for (const it of payoutItems.filter((x) => x.batch_id === b.batch_id)) {
+          await updatePayoutItem(agent, it.id, {
+            status: 'failed',
+            external_transaction_id: it.external_transaction_id || `wise:${transferId}`,
+            error_message: `Wise transfer failed status=${status}`,
+          });
+        }
         failed++;
         console.log(`  ${b.batch_id}: failed (Wise status=${status})`);
       } else {
@@ -157,4 +198,3 @@ main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
-

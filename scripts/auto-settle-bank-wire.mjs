@@ -116,6 +116,90 @@ async function updateBatch(agent, batchId, patch) {
   }
 }
 
+async function fetchPayoutRecipients(agent) {
+  const url = `https://${agent.name}-${agent.appId.slice(-8)}.base44.app/api/entities/PayoutRecipient?limit=50&sort_by=-created_date`;
+  const res = await withRetry(() => fetch(url, { headers: { api_key: agent.key } }), `fetch PayoutRecipient ${agent.name}`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
+
+async function listPayoutItems(agent, limit = 200) {
+  const url = `https://${agent.name}-${agent.appId.slice(-8)}.base44.app/api/entities/PayoutItem?limit=${limit}&sort_by=-created_date`;
+  const res = await withRetry(() => fetch(url, { headers: { api_key: agent.key } }), `fetch PayoutItem ${agent.name}`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
+
+async function createPayoutItem(agent, payload) {
+  const url = `https://${agent.name}-${agent.appId.slice(-8)}.base44.app/api/entities/PayoutItem`;
+  const res = await withRetry(() => fetch(url, {
+    method: 'POST',
+    headers: { api_key: agent.key, 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }), `create PayoutItem ${agent.name}`);
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`Base44 PayoutItem create failed ${res.status}: ${t}`);
+  }
+  return res.json();
+}
+
+async function updatePayoutItem(agent, id, patch) {
+  const url = `https://${agent.name}-${agent.appId.slice(-8)}.base44.app/api/entities/PayoutItem/${id}`;
+  const res = await withRetry(() => fetch(url, {
+    method: 'PUT',
+    headers: { api_key: agent.key, 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  }), `update PayoutItem ${id}`);
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`Base44 PayoutItem update failed ${res.status}: ${t}`);
+  }
+  return true;
+}
+
+function genItemId() {
+  return `PI-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+async function ensurePayoutItemForBatch(agent, batch, targetCurrency, transferIdOrNull) {
+  // Only for agent-swarm: this is where the Payout Status Dashboard lives.
+  if (agent.name !== 'agent-swarm') return;
+
+  const recipients = await fetchPayoutRecipients(agent);
+  const preferred = recipients.find((r) => r.is_default && String(r.currency || '').toUpperCase() === String(targetCurrency || '').toUpperCase())
+    || recipients.find((r) => r.is_default)
+    || recipients[0];
+  if (!preferred) return;
+
+  const items = await listPayoutItems(agent, 250);
+  const existing = items.find((i) => i.batch_id === batch.batch_id);
+
+  const patch = {
+    recipient_type: 'bank_account',
+    recipient_name: preferred.name,
+    recipient: preferred.account_identifier,
+    bank_name: preferred.bank_name,
+    amount: batch.total_amount,
+    currency: String(targetCurrency || batch.currency || 'USD').toUpperCase(),
+    status: 'processing',
+    processed_at: new Date().toISOString(),
+  };
+  if (transferIdOrNull) patch.external_transaction_id = `wise:${transferIdOrNull}`;
+
+  if (existing) {
+    await updatePayoutItem(agent, existing.id, patch);
+  } else {
+    await createPayoutItem(agent, {
+      item_id: genItemId(),
+      batch_id: batch.batch_id,
+      ...patch,
+    });
+  }
+}
+
 // ── Wise API helpers ──
 
 async function wiseReq(endpoint, opts = {}) {
@@ -341,6 +425,8 @@ async function main() {
             gateway_ref: `wise:${result.transferId}`,
             notes: `${b.notes || ''} — Submitted via Wise. Will auto-confirm when Wise reports completion.`,
           });
+
+          await ensurePayoutItemForBatch(agent, b, targetCcy, result.transferId);
           totalExecuted += amt;
           log.push({ agent: agent.name, batch_id: b.batch_id, amount: amt, transferId: result.transferId, status: result.status, ok: true });
           processed.add(batchKey);
