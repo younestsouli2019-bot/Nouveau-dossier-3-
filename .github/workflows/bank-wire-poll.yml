@@ -1,0 +1,30 @@
+name: Bank Wire Poll
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Poll Wise completions
+        run: node scripts/poll-wise-bank-wire.mjs
+        env:
+          BASE44_FLOW_API_KEY: ${{ secrets.BASE44_FLOW_API_KEY }}
+          BASE44_SWARM_API_KEY: ${{ secrets.BASE44_SWARM_API_KEY }}
+          WISE_API_KEY: ${{ secrets.WISE_API_KEY }}
+          WISE_ENVIRONMENT: live
+      - name: Validate in-transit backlog
+        run: node scripts/validate-bank-wire-intransit.mjs --days=2
+        env:
+          BASE44_FLOW_API_KEY: ${{ secrets.BASE44_FLOW_API_KEY }}
+          BASE44_SWARM_API_KEY: ${{ secrets.BASE44_SWARM_API_KEY }}
+

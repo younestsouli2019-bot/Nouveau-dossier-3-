@@ -9,10 +9,11 @@
  * 5. Notify owner via webhook
  * 6. Log results
  *
- * NOTE: Receipt confirmation is intentionally manual:
+ * Confirmation model:
  * - `processing` = submitted (in transit)
- * - `completed` = receipt confirmed
- * Use: node scripts/confirm-bank-wire-receipt.mjs --batch=... --receipt-ref=... --received-by=...
+ * - `completed` = confirmed
+ * - automatic close path: `poll-wise-bank-wire.mjs` when Wise reports completion
+ * - manual fallback: `confirm-bank-wire-receipt.mjs` for non-Wise / statement-based confirmation
  */
 
 import fs from 'node:fs';
