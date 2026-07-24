@@ -1,0 +1,191 @@
+{
+  "generated_at": "2026-07-24T08:03:32.337148Z",
+  "total_instructions": 4,
+  "total_usd": 149253.0,
+  "instructions": [
+    {
+      "type": "attijari_recovery_wire",
+      "batch_id": "BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_001",
+      "label": "PayPal Bridge Recovery 1",
+      "wire_ref": "RECOVERY-001-1784880212",
+      "created_at": "2026-07-24T08:03:32.337148Z",
+      "revenue": {
+        "total_usd": 37313.25,
+        "fx_rate": 10.2,
+        "total_mad": 380595.14999999997,
+        "retained_usd": 26119.274999999998,
+        "retained_note": "70% Retention (Office des Changes - Compte en Devises)",
+        "converted_usd": 11193.975,
+        "converted_mad": 114178.545,
+        "converted_note": "30% Mandatory Conversion (Compte Dirhams)"
+      },
+      "destination": {
+        "beneficiary_name": "M TSOULI YOUNES",
+        "bank_name": "Attijariwafa Bank",
+        "rib": "007810000448500030594182",
+        "iban": "MA64007810000448500030594182",
+        "swift": "BCMAMAMC",
+        "branch": "RABAT AGDAL, 83 AV. FAL OULD OUMEIR",
+        "country": "MA",
+        "city": "RABAT",
+        "currency": "MAD",
+        "fx_rate": 10.2,
+        "retention_pct": 0.7,
+        "conversion_pct": 0.3
+      },
+      "execution": {
+        "method": "ATTIJARI_ONLINE_PORTAL",
+        "portal_url": "https://www.attijariwafabank.com",
+        "steps": [
+          "Log into Attijariwafa Bank online portal",
+          "Navigate to Wire Transfer / Virement",
+          "Enter beneficiary: M TSOULI YOUNES",
+          "Enter RIB: 007810000448500030594182",
+          "Enter SWIFT: BCMAMAMC",
+          "Enter amount MAD: 114178.54 (30% converted portion)",
+          "Reference: RECOVERY-001",
+          "Submit transfer",
+          "Capture transaction reference"
+        ]
+      }
+    },
+    {
+      "type": "attijari_recovery_wire",
+      "batch_id": "BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_002",
+      "label": "PayPal Bridge Recovery 2",
+      "wire_ref": "RECOVERY-002-1784880212",
+      "created_at": "2026-07-24T08:03:32.337148Z",
+      "revenue": {
+        "total_usd": 37313.25,
+        "fx_rate": 10.2,
+        "total_mad": 380595.14999999997,
+        "retained_usd": 26119.274999999998,
+        "retained_note": "70% Retention (Office des Changes - Compte en Devises)",
+        "converted_usd": 11193.975,
+        "converted_mad": 114178.545,
+        "converted_note": "30% Mandatory Conversion (Compte Dirhams)"
+      },
+      "destination": {
+        "beneficiary_name": "M TSOULI YOUNES",
+        "bank_name": "Attijariwafa Bank",
+        "rib": "007810000448500030594182",
+        "iban": "MA64007810000448500030594182",
+        "swift": "BCMAMAMC",
+        "branch": "RABAT AGDAL, 83 AV. FAL OULD OUMEIR",
+        "country": "MA",
+        "city": "RABAT",
+        "currency": "MAD",
+        "fx_rate": 10.2,
+        "retention_pct": 0.7,
+        "conversion_pct": 0.3
+      },
+      "execution": {
+        "method": "ATTIJARI_ONLINE_PORTAL",
+        "portal_url": "https://www.attijariwafabank.com",
+        "steps": [
+          "Log into Attijariwafa Bank online portal",
+          "Navigate to Wire Transfer / Virement",
+          "Enter beneficiary: M TSOULI YOUNES",
+          "Enter RIB: 007810000448500030594182",
+          "Enter SWIFT: BCMAMAMC",
+          "Enter amount MAD: 114178.54 (30% converted portion)",
+          "Reference: RECOVERY-002",
+          "Submit transfer",
+          "Capture transaction reference"
+        ]
+      }
+    },
+    {
+      "type": "attijari_recovery_wire",
+      "batch_id": "BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_003",
+      "label": "PayPal Bridge Recovery 3",
+      "wire_ref": "RECOVERY-003-1784880212",
+      "created_at": "2026-07-24T08:03:32.337148Z",
+      "revenue": {
+        "total_usd": 37313.25,
+        "fx_rate": 10.2,
+        "total_mad": 380595.14999999997,
+        "retained_usd": 26119.274999999998,
+        "retained_note": "70% Retention (Office des Changes - Compte en Devises)",
+        "converted_usd": 11193.975,
+        "converted_mad": 114178.545,
+        "converted_note": "30% Mandatory Conversion (Compte Dirhams)"
+      },
+      "destination": {
+        "beneficiary_name": "M TSOULI YOUNES",
+        "bank_name": "Attijariwafa Bank",
+        "rib": "007810000448500030594182",
+        "iban": "MA64007810000448500030594182",
+        "swift": "BCMAMAMC",
+        "branch": "RABAT AGDAL, 83 AV. FAL OULD OUMEIR",
+        "country": "MA",
+        "city": "RABAT",
+        "currency": "MAD",
+        "fx_rate": 10.2,
+        "retention_pct": 0.7,
+        "conversion_pct": 0.3
+      },
+      "execution": {
+        "method": "ATTIJARI_ONLINE_PORTAL",
+        "portal_url": "https://www.attijariwafabank.com",
+        "steps": [
+          "Log into Attijariwafa Bank online portal",
+          "Navigate to Wire Transfer / Virement",
+          "Enter beneficiary: M TSOULI YOUNES",
+          "Enter RIB: 007810000448500030594182",
+          "Enter SWIFT: BCMAMAMC",
+          "Enter amount MAD: 114178.54 (30% converted portion)",
+          "Reference: RECOVERY-003",
+          "Submit transfer",
+          "Capture transaction reference"
+        ]
+      }
+    },
+    {
+      "type": "attijari_recovery_wire",
+      "batch_id": "BATCH_RECOVERY_BANK_WIRE_1784880181_PAYPAL_BRIDGE_004",
+      "label": "PayPal Bridge Recovery 4",
+      "wire_ref": "RECOVERY-004-1784880212",
+      "created_at": "2026-07-24T08:03:32.337148Z",
+      "revenue": {
+        "total_usd": 37313.25,
+        "fx_rate": 10.2,
+        "total_mad": 380595.14999999997,
+        "retained_usd": 26119.274999999998,
+        "retained_note": "70% Retention (Office des Changes - Compte en Devises)",
+        "converted_usd": 11193.975,
+        "converted_mad": 114178.545,
+        "converted_note": "30% Mandatory Conversion (Compte Dirhams)"
+      },
+      "destination": {
+        "beneficiary_name": "M TSOULI YOUNES",
+        "bank_name": "Attijariwafa Bank",
+        "rib": "007810000448500030594182",
+        "iban": "MA64007810000448500030594182",
+        "swift": "BCMAMAMC",
+        "branch": "RABAT AGDAL, 83 AV. FAL OULD OUMEIR",
+        "country": "MA",
+        "city": "RABAT",
+        "currency": "MAD",
+        "fx_rate": 10.2,
+        "retention_pct": 0.7,
+        "conversion_pct": 0.3
+      },
+      "execution": {
+        "method": "ATTIJARI_ONLINE_PORTAL",
+        "portal_url": "https://www.attijariwafabank.com",
+        "steps": [
+          "Log into Attijariwafa Bank online portal",
+          "Navigate to Wire Transfer / Virement",
+          "Enter beneficiary: M TSOULI YOUNES",
+          "Enter RIB: 007810000448500030594182",
+          "Enter SWIFT: BCMAMAMC",
+          "Enter amount MAD: 114178.54 (30% converted portion)",
+          "Reference: RECOVERY-004",
+          "Submit transfer",
+          "Capture transaction reference"
+        ]
+      }
+    }
+  ]
+}
