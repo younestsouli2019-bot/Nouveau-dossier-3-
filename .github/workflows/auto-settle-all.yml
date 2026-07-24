@@ -38,6 +38,9 @@ jobs:
           BASE44_SWARM_API_KEY: ${{ secrets.BASE44_SWARM_API_KEY }}
           PAYOUT_THRESHOLD: '100'
           PAYOUT_METHOD: BANK_WIRE
+          LIVE_ONLY_PAYOUTS: 'true'
+          ALLOW_BALANCE_ONLY_PAYOUT: 'false'
+          LIVE_REVENUE_LOOKBACK_DAYS: '45'
           RECIPIENT_NAME: ${{ secrets.OWNER_BENEFICIARY_NAME || 'Younes Tsouli' }}
           RECIPIENT_EMAIL: ${{ secrets.OWNER_PAYPAL_EMAIL || 'younestsouli2019@gmail.com' }}
 
@@ -49,6 +52,7 @@ jobs:
           SWARM_LIVE: 'true'
           BANK_WIRE_ENABLE: 'true'
           BANK_WIRE_PROVIDER: WISE
+          REQUIRE_LIVE_BATCH_PROVENANCE: 'true'
           WISE_API_KEY: ${{ secrets.WISE_API_KEY }}
           WISE_PROFILE_ID: ${{ secrets.WISE_PROFILE_ID }}
           WISE_ENVIRONMENT: live

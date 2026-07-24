@@ -360,6 +360,11 @@ Référence: ${packet.reference}
 
 // ─── Main Pipeline ──────────────────────────────────────────────────────────
 async function main() {
+  if (process.env.ALLOW_OFFLINE_LEDGER !== 'true') {
+    log("Offline-ledger Attijari wire automation is disabled in live mode. Use Base44-driven bank wire scripts instead.", "ERROR");
+    process.exit(1);
+  }
+
   log("Starting automated Attijari wire pipeline");
   
   const state = loadState();

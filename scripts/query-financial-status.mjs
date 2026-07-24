@@ -46,8 +46,12 @@ async function main() {
       }
       console.log(`  ${entity}: ${data.count} records`);
       if (entity === 'RevenueEvent' && data.records?.length) {
+        const blockedStatuses = new Set(['cancelled', 'failed', 'reversed', 'voided', 'test']);
+        const liveEvents = data.records.filter((r) => !r.is_sample && !blockedStatuses.has(String(r.status || '').toLowerCase()) && (r.amount || 0) > 0);
         const total = data.records.reduce((s, r) => s + (r.amount || 0), 0);
+        const liveTotal = liveEvents.reduce((s, r) => s + (r.amount || 0), 0);
         console.log(`    Total (last ${data.count}): $${total.toFixed(2)}`);
+        console.log(`    Live events: ${liveEvents.length} ($${liveTotal.toFixed(2)})`);
       }
       if (entity === 'TransactionLog' && data.records?.length) {
         const total = data.records.reduce((s, r) => s + (r.amount || 0), 0);
@@ -70,11 +74,14 @@ async function main() {
       }
       if (entity === 'RevenueStream' && data.records?.length) {
         let totalAvail = 0;
+        let activeLiveStreams = 0;
         for (const r of data.records) {
           totalAvail += r.available_for_payout || 0;
+          if (String(r.status || '').toLowerCase() === 'active' && !r.is_sample) activeLiveStreams++;
           console.log(`    ${r.name}: $${(r.available_for_payout || 0).toFixed(2)} available [${r.payout_status}]`);
         }
         console.log(`    Total available: $${totalAvail.toFixed(2)}`);
+        console.log(`    Active non-sample streams: ${activeLiveStreams}`);
       }
     }
     console.log('');

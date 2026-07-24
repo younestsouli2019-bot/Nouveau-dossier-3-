@@ -35,6 +35,26 @@ So in this repo:
 - `completed` = confirmed by Wise completion polling
 - `failed` = transfer failed or rejected
 
+## Live-only revenue rule
+
+This branch is now hardened for **live revenue only**:
+
+- automatic payout creation does **not** trust `available_for_payout` alone
+- `auto-payout.mjs` requires recent non-sample, non-cancelled `RevenueEvent` evidence
+- if there are zero recent live events, it **skips** payout creation even when balances are large
+
+This prevents old seeded balances, demo balances, or synthetic bookkeeping from producing real bank wires.
+
+### Provenance markers
+
+To ensure bank-wire execution only touches verified payout batches:
+
+- auto-created live payout batches include `LIVE_EVIDENCE=...` in `notes`
+- manual payout batches must include `REAL_REVENUE_REF=...` in `notes`
+- `auto-settle-bank-wire.mjs` skips pending BANK_WIRE batches that do not contain one of those provenance markers
+
+This protects against accidentally executing old or unverified pending batches.
+
 ## Required GitHub secrets
 
 ### Base44
@@ -152,4 +172,3 @@ This automation uses Wise completion as the final automated confirmation signal.
 That is the strongest hands-free signal available here, but it is still not the same as a direct Attijari statement API confirmation.
 
 If a future bank statement integration is added, it should replace or augment `poll-wise-bank-wire.mjs`.
-

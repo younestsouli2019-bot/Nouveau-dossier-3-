@@ -29,6 +29,7 @@ const WISE_API = process.env.WISE_ENVIRONMENT === 'live'
   : 'https://api.sandbox.transferwise.tech';
 
 const PROCESSED_FILE = path.resolve('settlements', 'processed-batches.json');
+const REQUIRE_LIVE_BATCH_PROVENANCE = process.env.REQUIRE_LIVE_BATCH_PROVENANCE !== 'false';
 
 // ── Helpers ──
 
@@ -69,17 +70,30 @@ function normDigits(v) { return String(v || '').replace(/\D+/g, '').trim(); }
 
 // ── Base44 helpers ──
 
+function hasLiveBatchProvenance(batch) {
+  const notes = String(batch.notes || '');
+  return notes.includes('LIVE_EVIDENCE=') || notes.includes('REAL_REVENUE_REF=');
+}
+
 async function fetchPendingBatches(agent) {
   const url = `https://${agent.name}-${agent.appId.slice(-8)}.base44.app/api/entities/PayoutBatch?limit=50&sort_by=-created_date`;
   const res = await withRetry(() => fetch(url, { headers: { api_key: agent.key } }), `fetch ${agent.name}`);
   if (!res.ok) return [];
   const data = await res.json();
-  return (Array.isArray(data) ? data : []).filter(b =>
+  const pending = (Array.isArray(data) ? data : []).filter(b =>
     b.status === 'pending' && (
       b.payout_method === 'BANK_WIRE' ||
       String(b.batch_id || '').includes('BANK_WIRE')
     )
   );
+
+  if (!REQUIRE_LIVE_BATCH_PROVENANCE) return pending;
+  const verified = pending.filter(hasLiveBatchProvenance);
+  const skipped = pending.length - verified.length;
+  if (skipped > 0) {
+    console.warn(`  Skipping ${skipped} pending BANK_WIRE batch(es) without live provenance markers in notes`);
+  }
+  return verified;
 }
 
 async function updateBatch(agent, batchId, patch) {

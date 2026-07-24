@@ -14,6 +14,9 @@ const THRESHOLD = parseFloat(process.env.PAYOUT_THRESHOLD || '100');
 const PAYOUT_METHOD = process.env.PAYOUT_METHOD || 'BANK_WIRE';
 const RECIPIENT_NAME = process.env.RECIPIENT_NAME || 'Younes Tsouli';
 const RECIPIENT_EMAIL = process.env.RECIPIENT_EMAIL || 'younestsouli2019@gmail.com';
+const LIVE_ONLY_PAYOUTS = process.env.LIVE_ONLY_PAYOUTS !== 'false';
+const ALLOW_BALANCE_ONLY_PAYOUT = process.env.ALLOW_BALANCE_ONLY_PAYOUT === 'true';
+const LIVE_REVENUE_LOOKBACK_DAYS = parseInt(process.env.LIVE_REVENUE_LOOKBACK_DAYS || '45', 10);
 
 async function fetchEntities(entity) {
   const url = `https://${AGENT.name}-${AGENT.appId.slice(-8)}.base44.app/api/entities/${entity}?limit=50&sort_by=-created_date`;
@@ -21,6 +24,25 @@ async function fetchEntities(entity) {
   if (!res.ok) return [];
   const data = await res.json();
   return Array.isArray(data) ? data : [data];
+}
+
+function daysAgo(days) {
+  return Date.now() - (days * 24 * 60 * 60 * 1000);
+}
+
+function isRecent(dateLike) {
+  if (!dateLike) return false;
+  const ts = new Date(dateLike).getTime();
+  return Number.isFinite(ts) && ts >= daysAgo(LIVE_REVENUE_LOOKBACK_DAYS);
+}
+
+function isLiveRevenueEvent(event) {
+  const status = String(event.status || '').toLowerCase();
+  const blocked = new Set(['cancelled', 'failed', 'reversed', 'voided', 'test']);
+  return !event.is_sample &&
+    !blocked.has(status) &&
+    (event.amount || 0) > 0 &&
+    isRecent(event.occurred_at || event.created_date);
 }
 
 async function createBatch(data) {
@@ -42,15 +64,35 @@ async function main() {
   console.log(`Threshold: $${THRESHOLD} | Method: ${PAYOUT_METHOD}`);
   console.log(`Recipient: ${RECIPIENT_NAME} (${RECIPIENT_EMAIL})\n`);
 
-  const streams = await fetchEntities('RevenueStream');
+  const [streams, events] = await Promise.all([
+    fetchEntities('RevenueStream'),
+    fetchEntities('RevenueEvent'),
+  ]);
   console.log(`Found ${streams.length} revenue streams`);
+  console.log(`Found ${events.length} revenue events`);
+
+  const liveEvents = events.filter(isLiveRevenueEvent);
+  console.log(`Live revenue evidence (last ${LIVE_REVENUE_LOOKBACK_DAYS}d): ${liveEvents.length}`);
 
   let totalAvailable = 0;
   const eligibleStreams = [];
+  const rejectedStreams = [];
 
   for (const stream of streams) {
     const avail = stream.available_for_payout || 0;
     totalAvailable += avail;
+    const isActive = String(stream.status || '').toLowerCase() === 'active';
+    const isSample = Boolean(stream.is_sample);
+
+    if (!isActive || isSample) {
+      rejectedStreams.push({
+        name: stream.name,
+        amount: avail,
+        reason: !isActive ? 'not_active' : 'sample_stream',
+      });
+      continue;
+    }
+
     if (avail >= THRESHOLD) {
       eligibleStreams.push(stream);
       console.log(`  [ELIGIBLE] ${stream.name}: $${avail.toFixed(2)} available`);
@@ -59,6 +101,24 @@ async function main() {
 
   console.log(`\nTotal available: $${totalAvailable.toFixed(2)}`);
   console.log(`Eligible streams (>= $${THRESHOLD}): ${eligibleStreams.length}`);
+
+  if (LIVE_ONLY_PAYOUTS && !ALLOW_BALANCE_ONLY_PAYOUT && liveEvents.length === 0) {
+    console.log('\nNo recent live revenue events found. LIVE_ONLY_PAYOUTS blocks balance-only automatic payouts.');
+    const fs = await import('fs/promises');
+    await fs.mkdir('dist_rwc', { recursive: true });
+    await fs.writeFile('dist_rwc/auto-payout-result.json', JSON.stringify({
+      action: 'skip',
+      reason: 'no_live_revenue_evidence',
+      totalAvailable,
+      threshold: THRESHOLD,
+      liveEvents: liveEvents.length,
+      lookbackDays: LIVE_REVENUE_LOOKBACK_DAYS,
+      eligibleStreams: eligibleStreams.map(s => ({ name: s.name, amount: s.available_for_payout })),
+      rejectedStreams,
+      timestamp: new Date().toISOString(),
+    }, null, 2));
+    return;
+  }
 
   if (eligibleStreams.length === 0) {
     console.log('\nNo streams meet payout threshold. Skipping.');
@@ -69,6 +129,9 @@ async function main() {
       reason: 'no_eligible_streams',
       totalAvailable,
       threshold: THRESHOLD,
+      liveEvents: liveEvents.length,
+      lookbackDays: LIVE_REVENUE_LOOKBACK_DAYS,
+      rejectedStreams,
       timestamp: new Date().toISOString(),
     }, null, 2));
     return;
@@ -89,7 +152,7 @@ async function main() {
         total_amount: amount,
         currency: stream.currency || 'USD',
         payout_method: PAYOUT_METHOD,
-        notes: `Auto-payout from ${stream.name} — ${RECIPIENT_EMAIL} (${RECIPIENT_NAME})`,
+        notes: `Auto-payout from ${stream.name} — ${RECIPIENT_EMAIL} (${RECIPIENT_NAME}) — LIVE_EVIDENCE=${liveEvents.length} — LOOKBACK_DAYS=${LIVE_REVENUE_LOOKBACK_DAYS}`,
       });
       console.log(`  Created: ${result.id}`);
     } catch (e) {
@@ -102,9 +165,12 @@ async function main() {
   await fs.writeFile('dist_rwc/auto-payout-result.json', JSON.stringify({
     action: 'payout_created',
     eligibleStreams: eligibleStreams.map(s => ({ name: s.name, amount: s.available_for_payout })),
+    rejectedStreams,
     totalPayout: eligibleStreams.reduce((s, r) => s + (r.available_for_payout || 0), 0),
     method: PAYOUT_METHOD,
     recipient: RECIPIENT_EMAIL,
+    liveEvents: liveEvents.length,
+    lookbackDays: LIVE_REVENUE_LOOKBACK_DAYS,
     timestamp: new Date().toISOString(),
   }, null, 2));
   console.log('\nDone.');

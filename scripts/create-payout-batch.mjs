@@ -6,6 +6,7 @@
  * Env vars:
  *   AMOUNT, CURRENCY, PAYOUT_METHOD (default: BANK_WIRE)
  *   RECIPIENT_NAME, RECIPIENT_EMAIL, RECIPIENT_TYPE (default: owner)
+ *   REVENUE_REFERENCE, MANUAL_REASON
  */
 
 const AGENT = { name: 'agent-swarm', appId: '689afeabf1db9c30efe0bd7e', key: process.env.BASE44_SWARM_API_KEY || 'e599b5b131574c1bae885fc013620739' };
@@ -31,9 +32,19 @@ async function main() {
   const recipientName = process.env.RECIPIENT_NAME || 'Younes Tsouli';
   const recipientEmail = process.env.RECIPIENT_EMAIL || 'younestsouli2019@gmail.com';
   const recipientType = process.env.RECIPIENT_TYPE || 'owner';
+  const revenueReference = process.env.REVENUE_REFERENCE || '';
+  const manualReason = process.env.MANUAL_REASON || '';
 
   if (!amount || amount <= 0) {
     console.error('ERROR: Set AMOUNT env var to the payout amount');
+    process.exit(1);
+  }
+  if (!revenueReference.trim()) {
+    console.error('ERROR: Set REVENUE_REFERENCE to the real income source or audit reference');
+    process.exit(1);
+  }
+  if (!manualReason.trim()) {
+    console.error('ERROR: Set MANUAL_REASON to explain the live payout justification');
     process.exit(1);
   }
 
@@ -44,13 +55,15 @@ async function main() {
     total_amount: amount,
     currency,
     payout_method: payoutMethod,
-    notes: `Recipient: ${recipientEmail} (${recipientType}) — Revenue settlement: owner direct payout`,
+    notes: `Recipient: ${recipientEmail} (${recipientType}) — Revenue settlement: owner direct payout — REAL_REVENUE_REF=${revenueReference} — Reason: ${manualReason}`,
   };
 
   console.log(`Creating payout batch: ${batchId}`);
   console.log(`  Amount: $${amount.toFixed(2)} ${currency}`);
   console.log(`  Method: ${payoutMethod}`);
   console.log(`  Recipient: ${recipientName} (${recipientEmail})`);
+  console.log(`  Revenue ref: ${revenueReference}`);
+  console.log(`  Reason: ${manualReason}`);
 
   const result = await createBatch(payload);
   console.log('\nPayout batch created:');

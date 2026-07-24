@@ -117,6 +117,11 @@ async function createTransfer(quoteId, recipientId, reference) {
 async function main() {
   console.log('=== WISE BANK WIRE SETTLEMENT ===\n');
 
+  if (process.env.ALLOW_OFFLINE_LEDGER !== 'true') {
+    console.error('Offline-ledger settlement is disabled in live mode. Use auto-settle-bank-wire.mjs for live Base44 payout batches, or set ALLOW_OFFLINE_LEDGER=true for explicit legacy/manual use.');
+    process.exit(1);
+  }
+
   // Validate env
   const checks = ['WISE_API_KEY', 'WISE_PROFILE_ID', 'OWNER_BENEFICIARY_NAME', 'OWNER_ACCOUNT_NUMBER'];
   for (const k of checks) {

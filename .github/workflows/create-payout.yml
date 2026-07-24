@@ -16,6 +16,14 @@ on:
         required: false
         default: 'BANK_WIRE'
         type: string
+      revenue_reference:
+        description: 'Real revenue or ledger audit reference'
+        required: true
+        type: string
+      manual_reason:
+        description: 'Why this live manual payout is required'
+        required: true
+        type: string
       recipient_name:
         description: 'Recipient name'
         required: false
@@ -46,6 +54,8 @@ jobs:
           AMOUNT: ${{ github.event.inputs.amount }}
           CURRENCY: ${{ github.event.inputs.currency }}
           PAYOUT_METHOD: ${{ github.event.inputs.payout_method }}
+          REVENUE_REFERENCE: ${{ github.event.inputs.revenue_reference }}
+          MANUAL_REASON: ${{ github.event.inputs.manual_reason }}
           RECIPIENT_NAME: ${{ github.event.inputs.recipient_name }}
           RECIPIENT_EMAIL: ${{ github.event.inputs.recipient_email }}
           BASE44_SWARM_API_KEY: ${{ secrets.BASE44_SWARM_API_KEY }}

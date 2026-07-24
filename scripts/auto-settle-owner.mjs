@@ -255,6 +255,11 @@ async function executePayPalPayout(token, payoutAmount, batchId, revenues, total
 async function main() {
   const isCron = process.argv.includes("--cron");
 
+  if (process.env.ALLOW_OFFLINE_LEDGER !== 'true') {
+    log('Offline-ledger owner settlement is disabled in live mode. Use Base44-driven bank wire scripts instead.', 'ERROR');
+    process.exit(1);
+  }
+
   log("=== Automated Owner Settlement Pipeline ===");
   log(`Owner: ${OWNER.paypalEmail} | RIB: ${OWNER.rib} | IBAN: ${OWNER.bankIban}`);
 
