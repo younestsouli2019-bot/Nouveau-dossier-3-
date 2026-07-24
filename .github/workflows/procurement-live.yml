@@ -1,0 +1,46 @@
+name: Procurement Live Execute
+on:
+  schedule:
+    - cron: '0 9 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      send_enabled:
+        description: 'Send outreach messages for queued procurement requests'
+        required: false
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
+      dry_run:
+        description: 'If sending is enabled, dry-run sends instead of live send'
+        required: false
+        default: 'true'
+        type: choice
+        options: ['true', 'false']
+
+permissions:
+  contents: read
+
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Execute procurement live pipeline
+        run: node procurement/exports/procurement-requests/live-execute.mjs
+        env:
+          BASE44_SWARM_API_KEY: ${{ secrets.BASE44_SWARM_API_KEY }}
+          PROCUREMENT_LIVE_ONLY: 'true'
+          PROCUREMENT_SEND_ENABLED: ${{ github.event.inputs.send_enabled || 'false' }}
+          PROCUREMENT_DRY_RUN: ${{ github.event.inputs.dry_run || 'true' }}
+          WHATSAPP_API_URL: ${{ secrets.WHATSAPP_API_URL }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: procurement-live-${{ github.run_id }}
+          path: |
+            procurement/exports/procurement-requests/outreach-queue.json
+            procurement/exports/procurement-requests/delivery-report.json
+

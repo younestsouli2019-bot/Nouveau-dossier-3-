@@ -16,15 +16,16 @@ const BASE = join(__dirname, '..', '..');
 const BASE44_CONFIG = {
   'agent-flow-ai': {
     appId: '6888ac155ebf84dd9855ea98',
-    apiKey: '5b4be0fada884ca28142a3279e9880f6',
-    baseUrl: 'https://app.base44.com/api/apps'
+    apiKey: process.env.BASE44_FLOW_API_KEY || '5b4be0fada884ca28142a3279e9880f6',
+    hostName: 'agent-flow-ai'
   },
   'agent-swarm': {
     appId: '689afeabf1db9c30efe0bd7e',
-    apiKey: 'e599b5b131574c1bae885fc013620739',
-    baseUrl: 'https://app.base44.com/api/apps'
+    apiKey: process.env.BASE44_SWARM_API_KEY || 'e599b5b131574c1bae885fc013620739',
+    hostName: 'agent-swarm'
   }
 };
+const PROCUREMENT_LIVE_ONLY = process.env.PROCUREMENT_LIVE_ONLY !== 'false';
 
 const VENDOR_DB = JSON.parse(
   readFileSync(join(BASE, 'exports', 'procurement-requests', 'vendor-database.json'), 'utf8')
@@ -35,9 +36,9 @@ async function base44Request(appName, method, path, body = null) {
   const config = BASE44_CONFIG[appName];
   if (!config) throw new Error(`Unknown app: ${appName}`);
 
-  const url = `${config.baseUrl}/${config.appId}${path}`;
+  const url = `https://${config.hostName}-${config.appId.slice(-8)}.base44.app/api${path}`;
   const headers = {
-    'Authorization': `Bearer ${config.apiKey}`,
+    'api_key': config.apiKey,
     'Content-Type': 'application/json'
   };
 
@@ -49,15 +50,12 @@ async function base44Request(appName, method, path, body = null) {
     const text = await response.text();
 
     if (!response.ok) {
-      if (response.status === 403 || response.status === 404) {
-        return null; // Will trigger offline fallback
-      }
       throw new Error(`HTTP ${response.status}: ${text}`);
     }
 
     return JSON.parse(text);
   } catch (error) {
-    if (error.message.includes('App not found') || error.message.includes('auth_required')) {
+    if (!PROCUREMENT_LIVE_ONLY && (error.message.includes('App not found') || error.message.includes('auth_required') || error.message.includes('HTTP 403') || error.message.includes('HTTP 404'))) {
       console.log(`  ⚠️ Base44 app "${appName}" unavailable — using offline store`);
       return null;
     }
@@ -153,6 +151,24 @@ function buildProcurementRequestEntity(batchNum, tracker, batchData) {
   };
 }
 
+function buildProcurementTaskEntity(batchNum, tracker, batchData, procurementEntity) {
+  return {
+    title: `Procurement batch ${batchNum.toString().padStart(2, '0')} — ${tracker.batch_name}`,
+    type: 'procurement_execution',
+    priority: 'high',
+    status: 'pending',
+    description: `Execute procurement batch ${batchNum.toString().padStart(2, '0')} for ${tracker.recipient}. Vendors contacted: ${tracker.vendors_contacted.length}. Address: ${tracker.address}`,
+    due_date: new Date().toISOString(),
+    result_data: {
+      procurement_request: procurementEntity,
+      source_batch_name: batchData.batch_name || tracker.batch_name || null,
+      source_items_count: procurementEntity.items.length,
+      synced_at: new Date().toISOString(),
+    },
+    is_sample: false,
+  };
+}
+
 function calculateTotal(items) {
   return items.reduce((sum, item) => {
     return sum + ((item.price_quoted || 0) * item.quantity);
@@ -165,6 +181,7 @@ async function syncToBase44(batchNum, dryRun = false) {
   const tracker = loadTracker(batchNum);
   const batchData = loadBatch(batchNum);
   const entity = buildProcurementRequestEntity(batchNum, tracker, batchData);
+  const taskEntity = buildProcurementTaskEntity(batchNum, tracker, batchData, entity);
 
   console.log(`Recipient: ${entity.recipient.name}`);
   console.log(`Items: ${entity.items.length}`);
@@ -176,13 +193,34 @@ async function syncToBase44(batchNum, dryRun = false) {
     return;
   }
 
-  // Try online first
-  const onlineResult = await base44Request('agent-swarm', 'POST', '/entities/ProcurementRequest', entity);
+  // Try procurement-specific entity first, then Task fallback if schema is absent.
+  try {
+    const onlineResult = await base44Request('agent-swarm', 'POST', '/entities/ProcurementRequest', entity);
+    if (onlineResult) {
+      console.log('✅ Synced to Base44 ProcurementRequest');
+      console.log(`Entity ID: ${onlineResult._id || onlineResult.id || 'unknown'}`);
+      return onlineResult;
+    }
+  } catch (error) {
+    if (!String(error.message || '').includes('Entity schema ProcurementRequest not found')) {
+      throw error;
+    }
+    console.log('ℹ️ ProcurementRequest schema missing in live app — falling back to Task entity');
+  }
 
-  if (onlineResult) {
-    console.log('✅ Synced to Base44 online');
-    console.log(`Entity ID: ${onlineResult._id || 'unknown'}`);
-    return onlineResult;
+  try {
+    const taskResult = await base44Request('agent-swarm', 'POST', '/entities/Task', taskEntity);
+    if (taskResult) {
+      console.log('✅ Synced procurement batch to Base44 Task');
+      console.log(`Task ID: ${taskResult.id || taskResult._id || 'unknown'}`);
+      return taskResult;
+    }
+  } catch (error) {
+    if (PROCUREMENT_LIVE_ONLY) throw error;
+  }
+
+  if (PROCUREMENT_LIVE_ONLY) {
+    throw new Error('Procurement live sync failed and offline fallback is disabled in PROCUREMENT_LIVE_ONLY mode');
   }
 
   // Fall back to offline store
@@ -228,18 +266,18 @@ const args = process.argv.slice(2);
 const batchArg = args.find(a => a.startsWith('--batch='));
 const actionArg = args.find(a => a.startsWith('--action='));
 const dryRun = args.includes('--dry-run');
-const batchNum = batchArg ? parseInt(batchArg.split('=')[1]) : null;
+const action = actionArg?.split('=')[1] || 'sync';
+const batchNum = batchArg ? parseInt(batchArg.split('=')[1]) : (action === 'sync-all' || action === 'status' ? 0 : null);
 
-if (!batchNum) {
+if (batchNum === null || Number.isNaN(batchNum)) {
   console.log('Usage:');
   console.log('  node base44-sync.mjs --batch=01                    # Sync batch');
   console.log('  node base44-sync.mjs --batch=01 --dry-run          # Preview');
   console.log('  node base44-sync.mjs --batch=01 --action=status    # Status');
-  console.log('  node base44-sync.mjs --batch=01 --action=sync-all  # Sync all batches');
+  console.log('  node base44-sync.mjs --action=sync-all             # Sync all batches');
+  console.log('  node base44-sync.mjs --action=status               # Status all batches');
   process.exit(0);
 }
-
-const action = actionArg?.split('=')[1] || 'sync';
 
 if (action === 'status') {
   if (batchNum === 0) {

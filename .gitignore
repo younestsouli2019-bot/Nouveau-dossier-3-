@@ -64,6 +64,10 @@ dist_rwc/
 # Local bank configuration (contains sensitive owner account info)
 bank-config.json
 
+# Procurement execution artifacts (generated, not source)
+procurement/exports/procurement-requests/send-queue.json
+procurement/exports/procurement-requests/outreach-queue.json
+
 # Temp files
 *.zip
 *.tmp
