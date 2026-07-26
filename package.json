@@ -13,9 +13,18 @@
     "payout:create": "node scripts/create-payout-batch.mjs",
     "agent:unfreeze": "node scripts/unfreeze-agent.mjs",
     "wise:settle": "node scripts/settle-owner-wise.mjs",
-    "wires:pending": "node scripts/process-pending-wires.mjs"
+    "wires:pending": "node scripts/process-pending-wires.mjs",
+    "feed:attijari": "node scripts/attijari-autofill.mjs --list && node scripts/attijari-autofill.mjs",
+    "feed:attijari:setup": "node scripts/attijari-autofill.mjs --setup",
+    "portal:instructions": "node scripts/generate-portal-instructions.mjs",
+    "bc:direct-wire": "node scripts/banking-circle-direct-wire.mjs",
+    "seed:offline-ledger": "node scripts/seed-offline-ledger-recovery.mjs"
+  },
+  "optionalDependencies": {
+    "puppeteer-core": "^23.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
   }
 }
+
