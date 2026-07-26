@@ -123,5 +123,260 @@
     "timestamp": "2026-07-26T19:34:38.269Z",
     "level": "INFO",
     "message": "No new revenues available for wiring"
+  },
+  {
+    "timestamp": "2026-07-26T19:36:40.640Z",
+    "level": "INFO",
+    "message": "Starting automated Attijari wire pipeline"
+  },
+  {
+    "timestamp": "2026-07-26T19:36:40.655Z",
+    "level": "INFO",
+    "message": "No new revenues available for wiring"
+  },
+  {
+    "timestamp": "2026-07-26T19:38:44.467Z",
+    "level": "INFO",
+    "message": "Starting automated Attijari wire pipeline"
+  },
+  {
+    "timestamp": "2026-07-26T19:38:44.481Z",
+    "level": "INFO",
+    "message": "No new revenues available for wiring"
+  },
+  {
+    "timestamp": "2026-07-26T19:39:31.241Z",
+    "level": "INFO",
+    "message": "Starting automated Attijari wire pipeline"
+  },
+  {
+    "timestamp": "2026-07-26T19:39:31.256Z",
+    "level": "INFO",
+    "message": "No new revenues available for wiring"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.792Z",
+    "level": "INFO",
+    "message": "Starting automated Attijari wire pipeline"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.807Z",
+    "level": "INFO",
+    "message": "Found 4 new revenue(s) totaling 149253 USD"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.808Z",
+    "level": "INFO",
+    "message": "Grouped into 4 wire batch(es)"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.809Z",
+    "level": "INFO",
+    "message": "Processing batch BATCH_1785094819809_0: 1 revenues, 37313.25 USD"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.811Z",
+    "level": "INFO",
+    "message": "Executing wire: BATCH_1785094819809_0 - 37313.25 USD → 114178.54 MAD"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.812Z",
+    "level": "INFO",
+    "message": "Wire packet saved: /workspace/exports/bank-wire/auto_wire_packet_BATCH_1785094819809_0.json"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.813Z",
+    "level": "INFO",
+    "message": "Manual instructions saved: /workspace/exports/bank-wire/auto_wire_instructions_BATCH_1785094819809_0.txt"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.815Z",
+    "level": "INFO",
+    "message": "Copy-paste card saved: /workspace/exports/bank-wire/auto_wire_card_BATCH_1785094819809_0.txt"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.817Z",
+    "level": "INFO",
+    "message": "Amount: 114178.54 MAD (37313.25 USD @ 10.2)"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.818Z",
+    "level": "INFO",
+    "message": "Batch BATCH_1785094819809_0 executed - Reference: WIRES-BATCH_1785094819809_0-1785094819810"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.819Z",
+    "level": "INFO",
+    "message": "Processing batch BATCH_1785094819819_1: 1 revenues, 37313.25 USD"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.820Z",
+    "level": "INFO",
+    "message": "Executing wire: BATCH_1785094819819_1 - 37313.25 USD → 114178.54 MAD"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.822Z",
+    "level": "INFO",
+    "message": "Wire packet saved: /workspace/exports/bank-wire/auto_wire_packet_BATCH_1785094819819_1.json"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.822Z",
+    "level": "INFO",
+    "message": "Manual instructions saved: /workspace/exports/bank-wire/auto_wire_instructions_BATCH_1785094819819_1.txt"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.824Z",
+    "level": "INFO",
+    "message": "Copy-paste card saved: /workspace/exports/bank-wire/auto_wire_card_BATCH_1785094819819_1.txt"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.825Z",
+    "level": "INFO",
+    "message": "Amount: 114178.54 MAD (37313.25 USD @ 10.2)"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.826Z",
+    "level": "INFO",
+    "message": "Batch BATCH_1785094819819_1 executed - Reference: WIRES-BATCH_1785094819819_1-1785094819820"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.827Z",
+    "level": "INFO",
+    "message": "Processing batch BATCH_1785094819827_2: 1 revenues, 37313.25 USD"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.828Z",
+    "level": "INFO",
+    "message": "Executing wire: BATCH_1785094819827_2 - 37313.25 USD → 114178.54 MAD"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.830Z",
+    "level": "INFO",
+    "message": "Wire packet saved: /workspace/exports/bank-wire/auto_wire_packet_BATCH_1785094819827_2.json"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.830Z",
+    "level": "INFO",
+    "message": "Manual instructions saved: /workspace/exports/bank-wire/auto_wire_instructions_BATCH_1785094819827_2.txt"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.831Z",
+    "level": "INFO",
+    "message": "Copy-paste card saved: /workspace/exports/bank-wire/auto_wire_card_BATCH_1785094819827_2.txt"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.833Z",
+    "level": "INFO",
+    "message": "Amount: 114178.54 MAD (37313.25 USD @ 10.2)"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.834Z",
+    "level": "INFO",
+    "message": "Batch BATCH_1785094819827_2 executed - Reference: WIRES-BATCH_1785094819827_2-1785094819828"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.835Z",
+    "level": "INFO",
+    "message": "Processing batch BATCH_1785094819835_3: 1 revenues, 37313.25 USD"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.836Z",
+    "level": "INFO",
+    "message": "Executing wire: BATCH_1785094819835_3 - 37313.25 USD → 114178.54 MAD"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.838Z",
+    "level": "INFO",
+    "message": "Wire packet saved: /workspace/exports/bank-wire/auto_wire_packet_BATCH_1785094819835_3.json"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.838Z",
+    "level": "INFO",
+    "message": "Manual instructions saved: /workspace/exports/bank-wire/auto_wire_instructions_BATCH_1785094819835_3.txt"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.839Z",
+    "level": "INFO",
+    "message": "Copy-paste card saved: /workspace/exports/bank-wire/auto_wire_card_BATCH_1785094819835_3.txt"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.840Z",
+    "level": "INFO",
+    "message": "Amount: 114178.54 MAD (37313.25 USD @ 10.2)"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.842Z",
+    "level": "INFO",
+    "message": "Batch BATCH_1785094819835_3 executed - Reference: WIRES-BATCH_1785094819835_3-1785094819836"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.843Z",
+    "level": "INFO",
+    "message": "=== Wire Execution Summary ==="
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.844Z",
+    "level": "INFO",
+    "message": "Total batches: 4"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.845Z",
+    "level": "INFO",
+    "message": "Total revenues processed: 4"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.846Z",
+    "level": "INFO",
+    "message": "Total USD wired: 204547.5"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.847Z",
+    "level": "INFO",
+    "message": "Total MAD generated: 2086384.50"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:19.848Z",
+    "level": "INFO",
+    "message": "Wire instructions generated - ready for execution via Attijari portal"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:21.435Z",
+    "level": "INFO",
+    "message": "Starting automated Attijari wire pipeline"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:21.451Z",
+    "level": "INFO",
+    "message": "No new revenues available for wiring"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:34.070Z",
+    "level": "INFO",
+    "message": "Starting automated Attijari wire pipeline"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:34.086Z",
+    "level": "INFO",
+    "message": "No new revenues available for wiring"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:35.940Z",
+    "level": "INFO",
+    "message": "Starting automated Attijari wire pipeline"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:35.956Z",
+    "level": "INFO",
+    "message": "No new revenues available for wiring"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:48.093Z",
+    "level": "INFO",
+    "message": "Starting automated Attijari wire pipeline"
+  },
+  {
+    "timestamp": "2026-07-26T19:40:48.110Z",
+    "level": "INFO",
+    "message": "No new revenues available for wiring"
   }
 ]

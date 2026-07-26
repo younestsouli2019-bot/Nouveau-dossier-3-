@@ -210,9 +210,37 @@
       "batchId": "BATCH_1785094471051_1",
       "reference": "WIRES-BATCH_1785094471051_1-1785094471052",
       "executedAt": "2026-07-26T19:34:31.057Z"
+    },
+    {
+      "earningId": "offline_Earning_BATCH_RECOVERY_BANK_WIRE_1784880181_PAYPAL_BRIDGE_004",
+      "amount": 37313.25,
+      "batchId": "BATCH_1785094819809_0",
+      "reference": "WIRES-BATCH_1785094819809_0-1785094819810",
+      "executedAt": "2026-07-26T19:40:19.818Z"
+    },
+    {
+      "earningId": "offline_Earning_BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_003",
+      "amount": 37313.25,
+      "batchId": "BATCH_1785094819819_1",
+      "reference": "WIRES-BATCH_1785094819819_1-1785094819820",
+      "executedAt": "2026-07-26T19:40:19.826Z"
+    },
+    {
+      "earningId": "offline_Earning_BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_002",
+      "amount": 37313.25,
+      "batchId": "BATCH_1785094819827_2",
+      "reference": "WIRES-BATCH_1785094819827_2-1785094819828",
+      "executedAt": "2026-07-26T19:40:19.834Z"
+    },
+    {
+      "earningId": "offline_Earning_BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_001",
+      "amount": 37313.25,
+      "batchId": "BATCH_1785094819835_3",
+      "reference": "WIRES-BATCH_1785094819835_3-1785094819836",
+      "executedAt": "2026-07-26T19:40:19.842Z"
     }
   ],
   "pendingWires": [],
-  "totalExecutedUSD": 55294.5,
-  "lastRun": "2026-07-26T19:34:31.058Z"
+  "totalExecutedUSD": 204547.5,
+  "lastRun": "2026-07-26T19:40:19.843Z"
 }

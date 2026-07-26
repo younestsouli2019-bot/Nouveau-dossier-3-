@@ -62098,6 +62098,94 @@
             "payout_batch_id": null,
             "bank_wire_type": "owner_bank_request"
           }
+        },
+        {
+          "id": "offline_Earning_BATCH_RECOVERY_BANK_WIRE_1784880181_PAYPAL_BRIDGE_004",
+          "created_date": "2026-07-26T19:40:19.073Z",
+          "updated_date": "2026-07-26T19:40:19.073Z",
+          "earning_id": "REV_RECOVERY_004_1785094819075",
+          "amount": 37313.25,
+          "currency": "USD",
+          "occurred_at": "2026-07-24T08:00:00.000Z",
+          "source": "paypal_bridge_recovery",
+          "beneficiary": "Owner",
+          "status": "completed",
+          "settlement_id": null,
+          "metadata": {
+            "payer_name": "M TSOULI YOUNES",
+            "payer_email": "younestsouli2019@gmail.com",
+            "payer_company": "Owner (Bridge Recovery)",
+            "purpose": "PayPal Bridge Recovery Batch 1 — funds available 2026-07-24",
+            "reference": "BATCH_RECOVERY_BANK_WIRE_004",
+            "base44_batch_id": "BATCH_RECOVERY_BANK_WIRE_1784880181_PAYPAL_BRIDGE_004",
+            "base44_row_id": "6a631c356bfb3b57987c5f9c"
+          }
+        },
+        {
+          "id": "offline_Earning_BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_003",
+          "created_date": "2026-07-26T19:40:19.075Z",
+          "updated_date": "2026-07-26T19:40:19.075Z",
+          "earning_id": "REV_RECOVERY_003_1785094819076",
+          "amount": 37313.25,
+          "currency": "USD",
+          "occurred_at": "2026-07-24T08:00:00.000Z",
+          "source": "paypal_bridge_recovery",
+          "beneficiary": "Owner",
+          "status": "completed",
+          "settlement_id": null,
+          "metadata": {
+            "payer_name": "M TSOULI YOUNES",
+            "payer_email": "younestsouli2019@gmail.com",
+            "payer_company": "Owner (Bridge Recovery)",
+            "purpose": "PayPal Bridge Recovery Batch 2 — funds available 2026-07-24",
+            "reference": "BATCH_RECOVERY_BANK_WIRE_003",
+            "base44_batch_id": "BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_003",
+            "base44_row_id": "6a631c35b892d5b277f7db9a"
+          }
+        },
+        {
+          "id": "offline_Earning_BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_002",
+          "created_date": "2026-07-26T19:40:19.075Z",
+          "updated_date": "2026-07-26T19:40:19.075Z",
+          "earning_id": "REV_RECOVERY_002_1785094819077",
+          "amount": 37313.25,
+          "currency": "USD",
+          "occurred_at": "2026-07-24T08:00:00.000Z",
+          "source": "paypal_bridge_recovery",
+          "beneficiary": "Owner",
+          "status": "completed",
+          "settlement_id": null,
+          "metadata": {
+            "payer_name": "M TSOULI YOUNES",
+            "payer_email": "younestsouli2019@gmail.com",
+            "payer_company": "Owner (Bridge Recovery)",
+            "purpose": "PayPal Bridge Recovery Batch 3 — funds available 2026-07-24",
+            "reference": "BATCH_RECOVERY_BANK_WIRE_002",
+            "base44_batch_id": "BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_002",
+            "base44_row_id": "6a631c316d7f18b542d9030f"
+          }
+        },
+        {
+          "id": "offline_Earning_BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_001",
+          "created_date": "2026-07-26T19:40:19.075Z",
+          "updated_date": "2026-07-26T19:40:19.075Z",
+          "earning_id": "REV_RECOVERY_001_1785094819078",
+          "amount": 37313.25,
+          "currency": "USD",
+          "occurred_at": "2026-07-24T08:00:00.000Z",
+          "source": "paypal_bridge_recovery",
+          "beneficiary": "Owner",
+          "status": "completed",
+          "settlement_id": null,
+          "metadata": {
+            "payer_name": "M TSOULI YOUNES",
+            "payer_email": "younestsouli2019@gmail.com",
+            "payer_company": "Owner (Bridge Recovery)",
+            "purpose": "PayPal Bridge Recovery Batch 4 — funds available 2026-07-24",
+            "reference": "BATCH_RECOVERY_BANK_WIRE_001",
+            "base44_batch_id": "BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_001",
+            "base44_row_id": "6a631c3113d3de8694fac433"
+          }
         }
       ]
     }
