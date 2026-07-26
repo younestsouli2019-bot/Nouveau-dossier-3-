@@ -1,0 +1,214 @@
+{
+  "type": "attijari_auto_wire_packet",
+  "provider": "ATTIJARIWAFA_BANK",
+  "batch_id": "BATCH_1785094471044_0",
+  "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+  "created_at": "2026-07-26T19:34:31.045Z",
+  "expected_confirmation_by": "2026-07-27T07:34:31.045Z",
+  "revenues": [
+    {
+      "id": "EARN_BANK_1781698021_0",
+      "amount": 425,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:07:01.002567"
+    },
+    {
+      "id": "EARN_BANK_1781698021_1",
+      "amount": 875.5,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:07:01.002625"
+    },
+    {
+      "id": "EARN_BANK_1781698021_2",
+      "amount": 1250,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:07:01.002649"
+    },
+    {
+      "id": "EARN_BANK_1781698021_3",
+      "amount": 1620,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:07:01.002668"
+    },
+    {
+      "id": "EARN_BANK_1781698021_4",
+      "amount": 3875.5,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:07:01.002684"
+    },
+    {
+      "id": "EARN_BANK_1781698021_5",
+      "amount": 1755,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:07:01.002701"
+    },
+    {
+      "id": "EARN_BANK_1781698021_6",
+      "amount": 1340.5,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:07:01.002720"
+    },
+    {
+      "id": "EARN_BANK_1781698021_7",
+      "amount": 2450,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:07:01.002736"
+    },
+    {
+      "id": "EARN_BANK_1781698021_8",
+      "amount": 2890,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:07:01.002754"
+    },
+    {
+      "id": "EARN_BANK_1781698021_9",
+      "amount": 1950,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:07:01.002772"
+    },
+    {
+      "id": "EARN_BANK_1781698942_0",
+      "amount": 425,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:22:22.983788"
+    },
+    {
+      "id": "EARN_BANK_1781698942_1",
+      "amount": 875.5,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:22:22.983860"
+    },
+    {
+      "id": "EARN_BANK_1781698942_2",
+      "amount": 1250,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:22:22.983894"
+    },
+    {
+      "id": "EARN_BANK_1781698942_3",
+      "amount": 1620,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:22:22.983930"
+    },
+    {
+      "id": "EARN_BANK_1781698942_4",
+      "amount": 3875.5,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:22:22.984000"
+    },
+    {
+      "id": "EARN_BANK_1781698942_5",
+      "amount": 1755,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:22:22.984034"
+    },
+    {
+      "id": "EARN_BANK_1781698942_6",
+      "amount": 1340.5,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:22:22.984067"
+    },
+    {
+      "id": "EARN_BANK_1781698942_7",
+      "amount": 2450,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:22:22.984097"
+    },
+    {
+      "id": "EARN_BANK_1781698942_8",
+      "amount": 2890,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:22:22.984125"
+    },
+    {
+      "id": "EARN_BANK_1781698942_9",
+      "amount": 1950,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T13:22:22.984159"
+    },
+    {
+      "id": "EARN_BANK_1781716455_0",
+      "amount": 425,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T18:14:15.549591"
+    },
+    {
+      "id": "EARN_BANK_1781716455_1",
+      "amount": 875.5,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T18:14:15.549696"
+    },
+    {
+      "id": "EARN_BANK_1781716455_2",
+      "amount": 1250,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T18:14:15.549747"
+    },
+    {
+      "id": "EARN_BANK_1781716455_3",
+      "amount": 1620,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T18:14:15.549791"
+    },
+    {
+      "id": "EARN_BANK_1781716455_4",
+      "amount": 3875.5,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T18:14:15.549834"
+    },
+    {
+      "id": "EARN_BANK_1781716455_5",
+      "amount": 1755,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T18:14:15.549880"
+    },
+    {
+      "id": "EARN_BANK_1781716455_6",
+      "amount": 1340.5,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T18:14:15.549923"
+    }
+  ],
+  "wire": {
+    "total_revenue_usd": 48004.5,
+    "grossUSD": 48004.5,
+    "grossMAD": 489645.89999999997,
+    "retainedUSD": 33603.15,
+    "retainedNote": "70% Retention (Office des Changes - Compte en Devises)",
+    "convertedUSD": 14401.35,
+    "convertedMAD": 146893.77,
+    "convertedNote": "30% Mandatory Conversion (Compte Dirhams)",
+    "fxRate": 10.2
+  },
+  "destination": {
+    "beneficiaryName": "M TSOULI YOUNES",
+    "bankName": "Attijariwafa Bank",
+    "rib": "007810000448500030594182",
+    "swift": "BCMAMAMC",
+    "branch": "RABAT AGDAL, 83 AV. FAL OULD OUMEIR",
+    "country": "MA",
+    "city": "RABAT",
+    "currency": "MAD",
+    "account_label": "Owner Revenue Account"
+  },
+  "execution": {
+    "method": "ATTIJARI_ONLINE_PORTAL",
+    "portal_url": "https://www.attijariwafabank.com",
+    "steps": [
+      "Log into Attijariwafa Bank online portal",
+      "Navigate to Wire Transfer / Virement",
+      "Enter beneficiary: M TSOULI YOUNES",
+      "Enter RIB: 007810000448500030594182",
+      "Enter SWIFT: BCMAMAMC",
+      "Enter amount: 146893.77 MAD",
+      "Enter reference: WIRES-BATCH_1785094471044_0-1785094471045",
+      "Submit transfer",
+      "Capture transaction reference"
+    ]
+  },
+  "confirm_command": "node scripts/confirm-auto-wire.mjs BATCH_1785094471044_0 --transaction-id=<ATTIJARI_REF> --amount=146893.77",
+  "status": "pending_execution",
+  "executed_at": null,
+  "confirmed_at": null,
+  "transaction_id": null
+}

@@ -1,0 +1,70 @@
+{
+  "type": "attijari_auto_wire_packet",
+  "provider": "ATTIJARIWAFA_BANK",
+  "batch_id": "BATCH_1785094471051_1",
+  "reference": "WIRES-BATCH_1785094471051_1-1785094471052",
+  "created_at": "2026-07-26T19:34:31.052Z",
+  "expected_confirmation_by": "2026-07-27T07:34:31.052Z",
+  "revenues": [
+    {
+      "id": "EARN_BANK_1781716455_7",
+      "amount": 2450,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T18:14:15.549966"
+    },
+    {
+      "id": "EARN_BANK_1781716455_8",
+      "amount": 2890,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T18:14:15.550012"
+    },
+    {
+      "id": "EARN_BANK_1781716455_9",
+      "amount": 1950,
+      "currency": "USD",
+      "occurred_at": "2026-06-17T18:14:15.550056"
+    }
+  ],
+  "wire": {
+    "total_revenue_usd": 7290,
+    "grossUSD": 7290,
+    "grossMAD": 74358,
+    "retainedUSD": 5103,
+    "retainedNote": "70% Retention (Office des Changes - Compte en Devises)",
+    "convertedUSD": 2187,
+    "convertedMAD": 22307.399999999998,
+    "convertedNote": "30% Mandatory Conversion (Compte Dirhams)",
+    "fxRate": 10.2
+  },
+  "destination": {
+    "beneficiaryName": "M TSOULI YOUNES",
+    "bankName": "Attijariwafa Bank",
+    "rib": "007810000448500030594182",
+    "swift": "BCMAMAMC",
+    "branch": "RABAT AGDAL, 83 AV. FAL OULD OUMEIR",
+    "country": "MA",
+    "city": "RABAT",
+    "currency": "MAD",
+    "account_label": "Owner Revenue Account"
+  },
+  "execution": {
+    "method": "ATTIJARI_ONLINE_PORTAL",
+    "portal_url": "https://www.attijariwafabank.com",
+    "steps": [
+      "Log into Attijariwafa Bank online portal",
+      "Navigate to Wire Transfer / Virement",
+      "Enter beneficiary: M TSOULI YOUNES",
+      "Enter RIB: 007810000448500030594182",
+      "Enter SWIFT: BCMAMAMC",
+      "Enter amount: 22307.40 MAD",
+      "Enter reference: WIRES-BATCH_1785094471051_1-1785094471052",
+      "Submit transfer",
+      "Capture transaction reference"
+    ]
+  },
+  "confirm_command": "node scripts/confirm-auto-wire.mjs BATCH_1785094471051_1 --transaction-id=<ATTIJARI_REF> --amount=22307.40",
+  "status": "pending_execution",
+  "executed_at": null,
+  "confirmed_at": null,
+  "transaction_id": null
+}

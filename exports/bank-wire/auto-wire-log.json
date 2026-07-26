@@ -1,0 +1,127 @@
+[
+  {
+    "timestamp": "2026-07-26T19:34:31.024Z",
+    "level": "INFO",
+    "message": "Starting automated Attijari wire pipeline"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.042Z",
+    "level": "INFO",
+    "message": "Found 30 new revenue(s) totaling 55294.5 USD"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.042Z",
+    "level": "INFO",
+    "message": "Grouped into 2 wire batch(es)"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.044Z",
+    "level": "INFO",
+    "message": "Processing batch BATCH_1785094471044_0: 27 revenues, 48004.5 USD"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.045Z",
+    "level": "INFO",
+    "message": "Executing wire: BATCH_1785094471044_0 - 48004.5 USD → 146893.77 MAD"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.046Z",
+    "level": "INFO",
+    "message": "Wire packet saved: /workspace/exports/bank-wire/auto_wire_packet_BATCH_1785094471044_0.json"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.047Z",
+    "level": "INFO",
+    "message": "Manual instructions saved: /workspace/exports/bank-wire/auto_wire_instructions_BATCH_1785094471044_0.txt"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.048Z",
+    "level": "INFO",
+    "message": "Copy-paste card saved: /workspace/exports/bank-wire/auto_wire_card_BATCH_1785094471044_0.txt"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.049Z",
+    "level": "INFO",
+    "message": "Amount: 146893.77 MAD (48004.5 USD @ 10.2)"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.050Z",
+    "level": "INFO",
+    "message": "Batch BATCH_1785094471044_0 executed - Reference: WIRES-BATCH_1785094471044_0-1785094471045"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.051Z",
+    "level": "INFO",
+    "message": "Processing batch BATCH_1785094471051_1: 3 revenues, 7290 USD"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.052Z",
+    "level": "INFO",
+    "message": "Executing wire: BATCH_1785094471051_1 - 7290 USD → 22307.40 MAD"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.054Z",
+    "level": "INFO",
+    "message": "Wire packet saved: /workspace/exports/bank-wire/auto_wire_packet_BATCH_1785094471051_1.json"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.054Z",
+    "level": "INFO",
+    "message": "Manual instructions saved: /workspace/exports/bank-wire/auto_wire_instructions_BATCH_1785094471051_1.txt"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.055Z",
+    "level": "INFO",
+    "message": "Copy-paste card saved: /workspace/exports/bank-wire/auto_wire_card_BATCH_1785094471051_1.txt"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.056Z",
+    "level": "INFO",
+    "message": "Amount: 22307.40 MAD (7290 USD @ 10.2)"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.057Z",
+    "level": "INFO",
+    "message": "Batch BATCH_1785094471051_1 executed - Reference: WIRES-BATCH_1785094471051_1-1785094471052"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.058Z",
+    "level": "INFO",
+    "message": "=== Wire Execution Summary ==="
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.059Z",
+    "level": "INFO",
+    "message": "Total batches: 2"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.060Z",
+    "level": "INFO",
+    "message": "Total revenues processed: 30"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.061Z",
+    "level": "INFO",
+    "message": "Total USD wired: 55294.5"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.062Z",
+    "level": "INFO",
+    "message": "Total MAD generated: 564003.90"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:31.063Z",
+    "level": "INFO",
+    "message": "Wire instructions generated - ready for execution via Attijari portal"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:38.253Z",
+    "level": "INFO",
+    "message": "Starting automated Attijari wire pipeline"
+  },
+  {
+    "timestamp": "2026-07-26T19:34:38.269Z",
+    "level": "INFO",
+    "message": "No new revenues available for wiring"
+  }
+]

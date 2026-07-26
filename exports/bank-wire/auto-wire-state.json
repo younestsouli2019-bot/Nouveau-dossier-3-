@@ -1,0 +1,218 @@
+{
+  "lastProcessedIndex": 0,
+  "executedWires": [
+    {
+      "earningId": "EARN_BANK_1781698021_0",
+      "amount": 425,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698021_1",
+      "amount": 875.5,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698021_2",
+      "amount": 1250,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698021_3",
+      "amount": 1620,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698021_4",
+      "amount": 3875.5,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698021_5",
+      "amount": 1755,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698021_6",
+      "amount": 1340.5,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698021_7",
+      "amount": 2450,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698021_8",
+      "amount": 2890,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698021_9",
+      "amount": 1950,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_0",
+      "amount": 425,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_1",
+      "amount": 875.5,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_2",
+      "amount": 1250,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_3",
+      "amount": 1620,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_4",
+      "amount": 3875.5,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_5",
+      "amount": 1755,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_6",
+      "amount": 1340.5,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_7",
+      "amount": 2450,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_8",
+      "amount": 2890,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781698942_9",
+      "amount": 1950,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_0",
+      "amount": 425,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_1",
+      "amount": 875.5,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_2",
+      "amount": 1250,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_3",
+      "amount": 1620,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_4",
+      "amount": 3875.5,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_5",
+      "amount": 1755,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_6",
+      "amount": 1340.5,
+      "batchId": "BATCH_1785094471044_0",
+      "reference": "WIRES-BATCH_1785094471044_0-1785094471045",
+      "executedAt": "2026-07-26T19:34:31.050Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_7",
+      "amount": 2450,
+      "batchId": "BATCH_1785094471051_1",
+      "reference": "WIRES-BATCH_1785094471051_1-1785094471052",
+      "executedAt": "2026-07-26T19:34:31.057Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_8",
+      "amount": 2890,
+      "batchId": "BATCH_1785094471051_1",
+      "reference": "WIRES-BATCH_1785094471051_1-1785094471052",
+      "executedAt": "2026-07-26T19:34:31.057Z"
+    },
+    {
+      "earningId": "EARN_BANK_1781716455_9",
+      "amount": 1950,
+      "batchId": "BATCH_1785094471051_1",
+      "reference": "WIRES-BATCH_1785094471051_1-1785094471052",
+      "executedAt": "2026-07-26T19:34:31.057Z"
+    }
+  ],
+  "pendingWires": [],
+  "totalExecutedUSD": 55294.5,
+  "lastRun": "2026-07-26T19:34:31.058Z"
+}
