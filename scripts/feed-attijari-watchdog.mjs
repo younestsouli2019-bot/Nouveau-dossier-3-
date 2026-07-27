@@ -2,6 +2,9 @@
 /**
  * FEED-ATTIJARI WATCHDOG: Auto-restart the daemon if it dies, auto-retry
  * failed steps, alert on persistent failures.
+ * (loads .env automatically via scripts/env.mjs)
+ */
+import './env.mjs';
  *
  * Behavior:
  *   - Every 30s: check if feed-attijari-daemon process is alive

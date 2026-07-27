@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 /**
  * AUTONOMOUS DAEMON: Continuously run the full feed-attijari pipeline.
+ * (loads .env automatically via scripts/env.mjs)
+ */
+import './env.mjs';
  *
  * Loop (every N seconds, default 60):
  *   1. Check for any of:

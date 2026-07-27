@@ -1,20 +1,9 @@
 #!/usr/bin/env node
 /**
  * Wire Confirmation — post-wire verification.
- *
- * After `auto-settle-bank-wire.mjs` submits a transfer, the batch is set to
- * `processing` with `gateway_ref=wise:<transferId>`. This script verifies the
- * transfer actually exists in Wise, and is not in a failed/bounced state, then
- * records `verified_at` on the batch so we have a hard "wire was real" signal.
- *
- * Use after settlement to certify the wire is real (independent of
- * `poll-wise-bank-wire.mjs` which auto-closes batches on completion).
- *
- * Usage:
- *   node scripts/wire-confirm.mjs
- *   node scripts/wire-confirm.mjs --limit=50
+ * (loads .env automatically via scripts/env.mjs)
  */
-
+import './env.mjs';
 import fs from 'node:fs';
 
 const AGENTS = [

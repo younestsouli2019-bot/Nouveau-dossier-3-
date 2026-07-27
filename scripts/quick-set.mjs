@@ -2,12 +2,9 @@
 /**
  * QUICK-SET: Push the recovery batches through the full pipeline in one shot.
  * Useful for one-off runs; the daemon handles the looping case.
- *
- *   node scripts/quick-set.mjs                    # full pipeline
- *   node scripts/quick-set.mjs --bc=ID,SECRET,ACC # set BC creds inline
- *   node scripts/quick-set.mjs --wise=K,P         # set Wise creds inline
+ * (loads .env automatically via scripts/env.mjs)
  */
-
+import './env.mjs';
 import { spawnSync } from 'node:child_process';
 
 function parseArgs(argv) {

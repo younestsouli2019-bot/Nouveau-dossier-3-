@@ -1,22 +1,9 @@
 #!/usr/bin/env node
 /**
  * Supervisor Loop — non-stop orchestrator for the bank-wire pipeline.
- *
- * Runs every 15 minutes. Inspects swarm state, then:
- *  1. Checks the circuit-breaker state (`.autonomous-state.json`).
- *  2. Counts pending BANK_WIRE batches.
- *  3. Decides which GitHub workflow to trigger next via `gh workflow run`.
- *  4. Records its own heartbeat for deadman-watch.
- *
- * Triggers (when circuit closed and work is pending):
- *  - bank-wire-settle.yml       — when pending batches > 0
- *  - bank-wire-poll.yml         — when any batch is `processing` with a Wise ref
- *  - revenue-monitor.yml        — when no recent payout batches in last 12h
- *  - financial-status.yml       — after every run (for owner visibility)
- *
- * All dispatch is rate-limited (max one trigger per workflow per loop tick).
+ * (loads .env automatically via scripts/env.mjs)
  */
-
+import './env.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';

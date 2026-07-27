@@ -1,19 +1,9 @@
 #!/usr/bin/env node
 /**
  * Bank Wire Deadman Switch.
- *
- * Alerts if no successful bank wire (BANK_WIRE batch with status=completed)
- * has been observed within the lookback window.
- *
- * On miss:
- *  - Updates .autonomous-state.json with deadman state
- *  - Posts to OWNER_NOTIFICATION_WEBHOOK (if set)
- *  - Triggers a "Bank Wire Settlement" workflow as a recovery action
- *
- * Usage:
- *   node scripts/bank-wire-deadman.mjs --hours=24
+ * (loads .env automatically via scripts/env.mjs)
  */
-
+import './env.mjs';
 import fs from 'node:fs';
 import { execSync } from 'node:child_process';
 
