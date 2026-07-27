@@ -304,7 +304,7 @@ async function main() {
 
       console.log(`  ${b.batch_id}: ${amt.toFixed(2)} ${sourceCcy} → ${targetCcy}`);
 
-      await updateBatch(agent, b.batch_id, { status: 'processing' });
+      await updateBatch(agent, b.id, { status: 'processing' });
 
       try {
         if (hasWise) {
@@ -320,7 +320,7 @@ async function main() {
               const filePath = path.join(dir, `mt103_${b.batch_id}.txt`);
               fs.writeFileSync(filePath, mt103, 'utf8');
               console.log(`    MT103 fallback → ${filePath}`);
-              await updateBatch(agent, b.batch_id, {
+              await updateBatch(agent, b.id, {
                 status: 'processing',
                 processed_at: new Date().toISOString(),
                 gateway_ref: `mt103:${path.basename(filePath)}`,
@@ -335,7 +335,7 @@ async function main() {
           }
           const result = await executeWire(amt, sourceCcy, targetCcy, ref, recipientId);
           console.log(`    OK → Transfer ${result.transferId} [${result.status}]`);
-          await updateBatch(agent, b.batch_id, {
+          await updateBatch(agent, b.id, {
             status: 'processing',
             processed_at: new Date().toISOString(),
             gateway_ref: `wise:${result.transferId}`,
@@ -351,7 +351,7 @@ async function main() {
           const filePath = path.join(dir, `mt103_${b.batch_id}.txt`);
           fs.writeFileSync(filePath, mt103, 'utf8');
           console.log(`    MT103 → ${filePath}`);
-          await updateBatch(agent, b.batch_id, {
+          await updateBatch(agent, b.id, {
             status: 'processing',
             processed_at: new Date().toISOString(),
             gateway_ref: `mt103:${path.basename(filePath)}`,
@@ -363,7 +363,7 @@ async function main() {
         }
       } catch (e) {
         console.error(`    FAILED: ${e.message}`);
-        await updateBatch(agent, b.batch_id, { status: 'failed', notes: `${b.notes || ''} — ${e.message}` });
+        await updateBatch(agent, b.id, { status: 'failed', notes: `${b.notes || ''} — ${e.message}` });
         totalFailed += amt;
         log.push({ agent: agent.name, batch_id: b.batch_id, amount: amt, error: e.message, ok: false });
       }
