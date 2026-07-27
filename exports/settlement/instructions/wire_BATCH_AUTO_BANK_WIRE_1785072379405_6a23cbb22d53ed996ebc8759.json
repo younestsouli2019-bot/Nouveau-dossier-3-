@@ -2,9 +2,9 @@
   "type": "bank_wire_settlement",
   "rail": "bank_wire",
   "batch_id": "BATCH_AUTO_BANK_WIRE_1785072379405_6a23cbb22d53ed996ebc8759",
-  "reference": "WIRE-BATCH_AUTO_BANK_WIRE_1785072379405_6a23cbb22d53ed996ebc8759-1785141373664",
+  "reference": "WIRE-BATCH_AUTO_BANK_WIRE_1785072379405_6a23cbb22d53ed996ebc8759-1785144909837",
   "status": "ready_for_portal",
-  "created_at": "2026-07-27T08:36:13.664Z",
+  "created_at": "2026-07-27T09:35:09.837Z",
   "source": {
     "bank": "PayPal",
     "address": "PayPal Balance",
