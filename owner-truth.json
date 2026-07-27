@@ -1,0 +1,61 @@
+{
+  "$schema": "owner-truth-v1",
+  "_comment": "SINGLE SOURCE OF TRUTH. All env vars, policy docs, and code must derive from here.",
+  "owner": {
+    "id": "younes-tsouli",
+    "displayName": "Younes Tsouli",
+    "legalName": "Younes Tsouli"
+  },
+  "paymentDestinations": {
+    "paypal": {
+      "email": "younestsouli2019@gmail.com",
+      "label": "Owner PayPal (PRIMARY)",
+      "primary": true
+    },
+    "bank": {
+      "iban": "007810000448500030594182",
+      "swift": "BCMAMAMC",
+      "bankName": "Attijariwafa Bank",
+      "country": "MA",
+      "currency": "MAD",
+      "beneficiaryName": "Younes Tsouli",
+      "label": "Owner Bank (PRIMARY)",
+      "primary": true
+    },
+    "payoneer": {
+      "email": "younesdgc@gmail.com",
+      "label": "Owner Payoneer (RESTRICTED)",
+      "restricted": true,
+      "restrictionReason": "Payoneer API access restricted"
+    },
+    "crypto": {
+      "trc20": null,
+      "erc20": null,
+      "label": "Owner Crypto (NOT YET CONFIGURED)",
+      "configured": false
+    }
+  },
+  "allowedRecipients": {
+    "paypal": ["younestsouli2019@gmail.com"],
+    "payoneer": ["younesdgc@gmail.com"],
+    "bankWire": ["007810000448500030594182"],
+    "iban": ["007810000448500030594182"]
+  },
+  "forbiddenDestinations": {
+    "providers": ["wise", "revolut", "skrill", "neteller"],
+    "patterns": ["escrow", "platform_wallet", "holding_account", "intermediary"],
+    "reason": "SBDS-1.0: Direct-to-owner settlement only. No third-party custody."
+  },
+  "settlementPolicy": {
+    "version": "SBDS-1.0",
+    "principle": "Direct-to-owner settlement only",
+    "allowedFlows": [
+      "Client -> Owner PayPal -> confirmed -> service delivered",
+      "Client -> Owner Bank -> confirmed -> service delivered"
+    ],
+    "forbiddenFlows": [
+      "Client -> Platform wallet/escrow -> Swarm -> Owner",
+      "Client -> Agent account -> later payout"
+    ]
+  }
+}

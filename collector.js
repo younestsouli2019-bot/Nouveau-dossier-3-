@@ -36,6 +36,18 @@ import csv from 'csv-parse/sync';
 import xlsx from 'xlsx';
 import plaid from 'plaid';
 
+import swarmMemory from './src/swarm-memory.mjs';
+import ownerRouteValidator from './src/owner-route-validator.mjs';
+
+dotenv.config();
+
+const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
+
+const swarmMemoryReady = swarmMemory.init();
+const ownerRouteReady = ownerRouteValidator.init().catch(err => {
+  logger.warn({ err: err.message }, 'OwnerRouteValidator init failed - SBDS enforcement degraded');
+});
+
 // =============================================================================
 // COMPREHENSIVE PAYMENT PROCESSOR CONFIGURATION
 // =============================================================================
@@ -239,7 +251,21 @@ class RouteManager {
 
   async selectOptimalRoute(amount, currency, recipient, requirements = {}) {
     this.logger.info({ amount, currency }, 'Selecting optimal payment route');
-    
+
+    try {
+      await ownerRouteReady;
+      const txResult = ownerRouteValidator.validateTransaction({
+        destination: recipient,
+        paymentMethod: requirements.paymentMethod || 'paypal',
+      });
+      if (!txResult.valid) {
+        this.logger.error({ violations: txResult.violations }, 'SBDS VIOLATION in route selection');
+        throw new Error(`SBDS BLOCKED: ${txResult.violations.map(v => v.type).join(', ')}`);
+      }
+    } catch (err) {
+      if (err.message.startsWith('SBDS')) throw err;
+    }
+
     const availableRoutes = [];
     
     for (const route of this.routes) {
@@ -399,6 +425,7 @@ class RouteManager {
       }
     } finally {
       release();
+      this.persistHealth().catch(() => {});
     }
   }
 
@@ -433,6 +460,7 @@ class RouteManager {
       }
     } finally {
       release();
+      this.persistHealth().catch(() => {});
     }
   }
 
@@ -455,6 +483,31 @@ class RouteManager {
     }
     
     return status;
+  }
+
+  async persistHealth() {
+    const status = await this.getRouteStatus();
+    await swarmMemory.set('route:health', status, { namespace: 'routes', ttl: 3600000 });
+    return status;
+  }
+
+  async restoreHealth() {
+    const cached = swarmMemory.get('route:health');
+    if (!cached) return false;
+    for (const entry of cached) {
+      const route = this.routes.find(r => r.name === entry.name);
+      if (route) {
+        route.health = entry.health;
+        route.successCount = entry.successCount;
+        route.failureCount = entry.failureCount;
+        route.lastSuccess = entry.lastSuccess;
+        route.lastFailure = entry.lastFailure;
+        if (!entry.healthy) {
+          this.routeHealth.set(entry.name, { healthy: false, timestamp: Date.now() });
+        }
+      }
+    }
+    return true;
   }
 }
 
