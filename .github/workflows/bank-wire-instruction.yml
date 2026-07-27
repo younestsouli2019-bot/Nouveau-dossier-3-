@@ -33,14 +33,23 @@ on:
         default: 'Revenue settlement — owner direct payout'
         type: string
 
+concurrency:
+  group: bank-wire-instruction
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
 jobs:
   generate:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
       - uses: actions/setup-node@v4
         with:
           node-version: '20'

@@ -1,0 +1,43 @@
+name: Wire Confirm
+on:
+  schedule:
+    - cron: '15,45 * * * *'   # every 30 min offset from poll
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Batch limit to inspect'
+        required: false
+        default: '50'
+        type: string
+
+concurrency:
+  group: wire-confirm
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  confirm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Post-wire verification
+        env:
+          BASE44_FLOW_API_KEY: ${{ secrets.BASE44_FLOW_API_KEY }}
+          BASE44_SWARM_API_KEY: ${{ secrets.BASE44_SWARM_API_KEY }}
+          WISE_API_KEY: ${{ secrets.WISE_API_KEY }}
+          WISE_ENVIRONMENT: live
+        run: node scripts/wire-confirm.mjs --limit=${{ github.event.inputs.limit || '50' }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wire-confirm-${{ github.run_id }}
+          path: dist_rwc/wire-confirm-result.json

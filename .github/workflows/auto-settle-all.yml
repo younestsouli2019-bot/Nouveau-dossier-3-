@@ -4,19 +4,33 @@ on:
     - cron: '0 */6 * * *'
   workflow_dispatch:
 
+concurrency:
+  group: auto-settle-all
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
 jobs:
   pipeline:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: production
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Step 0 — Validate Wise + Owner Bank Config
+      - name: Step 0 — Circuit breaker
+        run: node scripts/circuit-breaker.mjs
+        env:
+          CIRCUIT_BREAKER_THRESHOLD: '5'
+
+      - name: Step 0b — Validate Wise + Owner Bank Config
         run: node scripts/validate-wise-owner-config.mjs
         env:
           WISE_API_KEY: ${{ secrets.WISE_API_KEY }}
@@ -104,6 +118,20 @@ jobs:
         env:
           OWNER_NOTIFICATION_WEBHOOK: ${{ secrets.OWNER_NOTIFICATION_WEBHOOK }}
 
+      - name: Step 6 — Chain poll to confirm any in-transit wires
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run bank-wire-poll.yml
+
+      - name: Step 7 — Chain deadman-watch
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run bank-wire-deadman.yml
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -113,4 +141,5 @@ jobs:
             dist_rwc/auto-settle-result.json
             dist_rwc/financial-status.json
             dist_rwc/reconciliation.json
+            dist_rwc/supervisor-heartbeat.json
             settlements/processed-batches.json

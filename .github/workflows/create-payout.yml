@@ -35,14 +35,23 @@ on:
         default: 'younestsouli2019@gmail.com'
         type: string
 
+concurrency:
+  group: create-payout
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
 jobs:
   create:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
       - uses: actions/setup-node@v4
         with:
           node-version: '20'

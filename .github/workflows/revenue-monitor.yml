@@ -4,18 +4,31 @@ on:
     - cron: '0 */4 * * *'
   workflow_dispatch:
 
+concurrency:
+  group: revenue-monitor
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
 jobs:
   monitor:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
+      - name: Circuit breaker check
+        run: node scripts/circuit-breaker.mjs
+        env:
+          CIRCUIT_BREAKER_THRESHOLD: '5'
       - name: Validate Wise + Owner Bank Config
         run: node scripts/validate-wise-owner-config.mjs
         env:

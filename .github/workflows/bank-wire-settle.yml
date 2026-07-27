@@ -15,17 +15,30 @@ on:
         default: '5000'
         type: string
 
+concurrency:
+  group: bank-wire-settle
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
 jobs:
   settle:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Circuit breaker check
+        run: node scripts/circuit-breaker.mjs
+        env:
+          CIRCUIT_BREAKER_THRESHOLD: '5'
       - name: Validate Wise + Owner Bank Config
         run: node scripts/validate-wise-owner-config.mjs
         env:
@@ -72,8 +85,19 @@ jobs:
           BASE44_SWARM_API_KEY: ${{ secrets.BASE44_SWARM_API_KEY }}
           WISE_API_KEY: ${{ secrets.WISE_API_KEY }}
           WISE_ENVIRONMENT: live
+      - name: Notify owner + chain deadman-watch
+        if: always()
+        env:
+          OWNER_NOTIFICATION_WEBHOOK: ${{ secrets.OWNER_NOTIFICATION_WEBHOOK }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node scripts/notify-owner.mjs
+          gh workflow run bank-wire-deadman.yml || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: wise-settle-${{ github.run_id }}
-          path: settlements/wise/wise-settle-*.json
+          path: |
+            settlements/wise/wise-settle-*.json
+            dist_rwc/auto-settle-result.json
+            dist_rwc/supervisor-heartbeat.json

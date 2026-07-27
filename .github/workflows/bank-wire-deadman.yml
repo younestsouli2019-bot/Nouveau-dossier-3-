@@ -1,0 +1,50 @@
+name: Bank Wire Deadman
+on:
+  schedule:
+    - cron: '0 */4 * * *'   # every 4h
+  workflow_dispatch:
+    inputs:
+      hours:
+        description: 'Lookback hours without a successful wire'
+        required: false
+        default: '24'
+        type: string
+      recover:
+        description: 'Auto-trigger bank-wire-settle on alert'
+        required: false
+        default: 'true'
+        type: choice
+        options: ['true', 'false']
+
+concurrency:
+  group: bank-wire-deadman
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deadman:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run deadman check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE44_FLOW_API_KEY: ${{ secrets.BASE44_FLOW_API_KEY }}
+          BASE44_SWARM_API_KEY: ${{ secrets.BASE44_SWARM_API_KEY }}
+          OWNER_NOTIFICATION_WEBHOOK: ${{ secrets.OWNER_NOTIFICATION_WEBHOOK }}
+        run: node scripts/bank-wire-deadman.mjs --hours=${{ github.event.inputs.hours || '24' }} --recover=${{ github.event.inputs.recover || 'true' }}
+        continue-on-error: true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deadman-${{ github.run_id }}
+          path: .autonomous-state.json
