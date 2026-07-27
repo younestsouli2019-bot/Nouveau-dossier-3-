@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-07-27 — "Crypto Rail"
+
+### Added
+- `scripts/crypto-payout.mjs` — `executeCryptoPayout()` rail function for the auto-settle pipeline. Supports **EVM (BSC, Ethereum, Polygon, Arbitrum, Base, Optimism)**, **TRON (TRC20 USDT)**, and **Solana (SPL USDC/USDT + native SOL)**. Token registry covers USDT, USDC, BUSD, DAI per chain.
+- Wired crypto rail (rail 3) into `scripts/auto-settle-owner.mjs` as the final fallback after bank wire + PayPal. Gated by `CRYPTO_ENABLE=true` + `OWNER_CRYPTO_ADDRESS` + `CRYPTO_OWNER_PRIVATE_KEY`. Dry-run mode (`CRYPTO_DRY_RUN=true`) builds the transaction but does not broadcast.
+- `scripts/setup-crypto.mjs` — autonomous credential self-setup (mirrors `setup-wise.mjs`): validates env, probes each RPC, derives owner address, writes `dist_rwc/crypto-setup.json`. Run with `npm run setup:crypto`.
+- `.github/workflows/crypto-payout.yml` — scheduled rail execution every 6h (`15 */6 * * *`) plus manual `workflow_dispatch` for one-shot payouts. Conditionally installs `ethers`, `tronweb`, and `@solana/web3.js` based on the selected chain.
+- `OWNER_CRYPTO_WHITELIST` env var — optional destination allow-list that gates every send on top of `EMERGENCY_PAYMENT_LOCK`.
+- Per-chain RPC overrides: `RPC_BSC`, `RPC_ETH`, `RPC_POLYGON`, `RPC_ARBITRUM`, `RPC_BASE`, `RPC_OPTIMISM`, `RPC_TRON`, `RPC_SOLANA`. Defaults use public endpoints; production should point to Alchemy/QuickNode/Infura.
+- New `npm` scripts: `setup:crypto`, `crypto:payout`, `crypto:chains`.
+
+### Security
+- Crypto rail honors `EMERGENCY_PAYMENT_LOCK` (refuses every send when set).
+- Optional `OWNER_CRYPTO_WHITELIST` blocks broadcasts to non-whitelisted addresses.
+- Private keys are loaded from env only (never read from disk).
+- Per-chain chain-id verification before broadcast.
+- Dry-run is the default; the rail is `CRYPTO_ENABLE=false` until the owner explicitly flips it.
+
+### Notes
+- The `executeCryptoPayout()` function was previously documented as rail 3 in `auto-settle-owner.mjs` (header comment) but had no implementation. This release closes that gap.
+- The existing `L2/` Ecosystems Monitor remains a read-only scanner (no signing); this release does not turn it into a payout engine.
+
 ## [3.0.0] - 2026-07-26 — "Autonomous Feed-Attijari"
 
 ### Added

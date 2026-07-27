@@ -19,6 +19,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import "dotenv/config";
+import { executeCryptoPayout } from "./crypto-payout.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -32,6 +33,10 @@ const OWNER = {
   beneficiaryName: process.env.OWNER_BENEFICIARY_NAME || "Mr Younes Tsouli",
   bankName: process.env.BANK_NAME_BC || "Banking Circle S.A.",
   bankAddress: process.env.BANK_ADDRESS_BC || "2, Boulevard de la Foire L-1528 LUXEMBOURG",
+  // Crypto deposit address (owner wallet that receives USDT/USDC/NATIVE)
+  cryptoAddress: process.env.OWNER_CRYPTO_ADDRESS || "",
+  cryptoChain: (process.env.OWNER_CRYPTO_CHAIN || "bsc").toLowerCase(),
+  cryptoToken: (process.env.OWNER_CRYPTO_TOKEN || "USDT").toUpperCase(),
 };
 
 const POLICY = {
@@ -296,8 +301,11 @@ async function main() {
   // Try payment rails in order
   const bankWireEnabled = process.env.BANK_WIRE_ENABLE === "true" && process.env.BANK_WIRE_PROVIDER === "LIVE";
   const paypalEnabled = !!process.env.PAYPAL_CLIENT_ID;
+  const cryptoEnabled = process.env.CRYPTO_ENABLE === "true"
+    && !!OWNER.cryptoAddress
+    && !!process.env.CRYPTO_OWNER_PRIVATE_KEY;
 
-  log(`Rails available: bank_wire=${bankWireEnabled}, paypal=${paypalEnabled}`);
+  log(`Rails available: bank_wire=${bankWireEnabled}, paypal=${paypalEnabled}, crypto=${cryptoEnabled} (chain=${OWNER.cryptoChain}, token=${OWNER.cryptoToken}, to=${OWNER.cryptoAddress || "<unset>"})`);
 
   for (let i = 0; i < batches.length; i++) {
     const batch = batches[i];
@@ -330,6 +338,36 @@ async function main() {
         log(`PayPal payout executed: $${result.amount.toFixed(2)} USD → ${OWNER.paypalEmail}`);
       } catch (err) {
         log(`PayPal failed: ${err.message}`, "WARN");
+      }
+    }
+
+    // Final fallback: Crypto (USDT/USDC/NATIVE on the configured chain)
+    if (!result && cryptoEnabled && batchConverted >= POLICY.minPayoutUSD) {
+      try {
+        log(`Attempting crypto rail (${OWNER.cryptoChain}/${OWNER.cryptoToken})...`);
+        const cryptoResult = await executeCryptoPayout({
+          chain: OWNER.cryptoChain,
+          token: OWNER.cryptoToken,
+          to: OWNER.cryptoAddress,
+          amount: batchConverted,
+          batchId,
+          reference: `CRYPTO-${batchId}`,
+        });
+        result = {
+          rail: "crypto",
+          batchId,
+          reference: cryptoResult.reference,
+          amount: batchConverted,
+          currency: "USD",
+          chain: cryptoResult.chain,
+          token: cryptoResult.token,
+          txHash: cryptoResult.txHash,
+          explorerUrl: cryptoResult.explorerUrl,
+          status: cryptoResult.status,
+        };
+        log(`Crypto payout: ${batchConverted} ${cryptoResult.token} on ${cryptoResult.chain} → ${OWNER.cryptoAddress} (tx=${cryptoResult.txHash || "dry-run"})`);
+      } catch (err) {
+        log(`Crypto failed: ${err.message}`, "WARN");
       }
     }
 

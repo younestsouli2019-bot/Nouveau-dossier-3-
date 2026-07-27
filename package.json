@@ -31,6 +31,9 @@
     "deadman:check": "node --import ./scripts/env.mjs scripts/bank-wire-deadman.mjs --hours=24",
     "wire:confirm": "node --import ./scripts/env.mjs scripts/wire-confirm.mjs",
     "circuit:check": "node --import ./scripts/env.mjs scripts/circuit-breaker.mjs",
+    "setup:crypto": "node --import ./scripts/env.mjs scripts/setup-crypto.mjs",
+    "crypto:payout": "node --import ./scripts/env.mjs scripts/crypto-payout.mjs",
+    "crypto:chains": "node --import ./scripts/env.mjs scripts/crypto-payout.mjs --list-chains",
     "deploy": "pwsh -File deploy-feed-attijari.ps1"
   },
   "optionalDependencies": {

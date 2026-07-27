@@ -1,0 +1,134 @@
+name: Crypto Payout (Rail 3)
+
+# Runs the crypto settlement rail on a cron + on manual dispatch.
+# Reads the same unsettled-revenue ledger as the bank-wire / PayPal rails
+# and falls back to crypto when those rails are unavailable or below threshold.
+
+on:
+  schedule:
+    - cron: '15 */6 * * *'   # 00:15, 06:15, 12:15, 18:15 UTC — offset from bank wire
+  workflow_dispatch:
+    inputs:
+      chain:
+        description: 'Chain (bsc, eth, polygon, arbitrum, base, optimism, tron, solana)'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Force dry-run mode (true/false)'
+        required: false
+        default: ''
+
+concurrency:
+  group: crypto-payout
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  crypto-payout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Install ethers (EVM) — only when an EVM chain is selected.
+      - name: Install ethers (EVM dependency)
+        run: |
+          if [ -n "${{ secrets.CRYPTO_OWNER_PRIVATE_KEY }}" ] || [ "${{ github.event.inputs.chain }}" = "bsc" ] || [ "${{ github.event.inputs.chain }}" = "eth" ] || [ "${{ github.event.inputs.chain }}" = "polygon" ] || [ "${{ github.event.inputs.chain }}" = "arbitrum" ] || [ "${{ github.event.inputs.chain }}" = "base" ] || [ "${{ github.event.inputs.chain }}" = "optimism" ]; then
+            npm install --no-save ethers@^6
+          fi
+        env:
+          CRYPTO_OWNER_PRIVATE_KEY: ${{ secrets.CRYPTO_OWNER_PRIVATE_KEY }}
+
+      # Install tronweb for TRON rail.
+      - name: Install tronweb (TRON dependency)
+        if: github.event.inputs.chain == 'tron' || env.CRYPTO_CHAIN == 'tron'
+        run: npm install --no-save tronweb
+
+      # Install @solana/web3.js for Solana rail.
+      - name: Install @solana/web3.js (Solana dependency)
+        if: github.event.inputs.chain == 'solana' || env.CRYPTO_CHAIN == 'solana'
+        run: npm install --no-save @solana/web3.js @solana/spl-token
+
+      - name: Circuit breaker check
+        run: node scripts/circuit-breaker.mjs
+        env:
+          CIRCUIT_BREAKER_THRESHOLD: '5'
+
+      # List available chains (dry, no secrets).
+      - name: List supported chains
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.chain == ''
+        run: node scripts/crypto-payout.mjs --list-chains
+
+      # Single-shot CLI invocation (manual dispatch with --chain/--to/--amount).
+      - name: Manual crypto payout
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.chain != ''
+        run: |
+          node scripts/crypto-payout.mjs \
+            --chain=${{ github.event.inputs.chain }} \
+            --token=${OWNER_CRYPTO_TOKEN} \
+            --to=${OWNER_CRYPTO_ADDRESS} \
+            --amount=${AMOUNT:-1} \
+            ${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}
+        env:
+          OWNER_CRYPTO_TOKEN: ${{ secrets.OWNER_CRYPTO_TOKEN }}
+          OWNER_CRYPTO_ADDRESS: ${{ secrets.OWNER_CRYPTO_ADDRESS }}
+          AMOUNT: '1'
+          CRYPTO_OWNER_PRIVATE_KEY: ${{ secrets.CRYPTO_OWNER_PRIVATE_KEY }}
+          RPC_BSC: ${{ secrets.RPC_BSC }}
+          RPC_ETH: ${{ secrets.RPC_ETH }}
+          RPC_POLYGON: ${{ secrets.RPC_POLYGON }}
+          RPC_ARBITRUM: ${{ secrets.RPC_ARBITRUM }}
+          RPC_BASE: ${{ secrets.RPC_BASE }}
+          RPC_OPTIMISM: ${{ secrets.RPC_OPTIMISM }}
+          RPC_TRON: ${{ secrets.RPC_TRON }}
+          RPC_SOLANA: ${{ secrets.RPC_SOLANA }}
+          CRON_OWNER_PRIVATE_KEY: ${{ secrets.CRON_OWNER_PRIVATE_KEY }}
+          SOL_OWNER_PRIVATE_KEY: ${{ secrets.SOL_OWNER_PRIVATE_KEY }}
+          CRYPTO_DRY_RUN: ${{ github.event.inputs.dry_run || 'true' }}
+
+      # Scheduled run: use the full auto-settle pipeline with crypto rail enabled.
+      - name: Scheduled crypto settlement
+        if: github.event_name == 'schedule'
+        run: node scripts/auto-settle-owner.mjs
+        env:
+          ALLOW_OFFLINE_LEDGER: 'true'
+          CRYPTO_ENABLE: 'true'
+          CRYPTO_DRY_RUN: 'true'
+          OWNER_CRYPTO_CHAIN: ${{ secrets.OWNER_CRYPTO_CHAIN }}
+          OWNER_CRYPTO_TOKEN: ${{ secrets.OWNER_CRYPTO_TOKEN }}
+          OWNER_CRYPTO_ADDRESS: ${{ secrets.OWNER_CRYPTO_ADDRESS }}
+          OWNER_CRYPTO_WHITELIST: ${{ secrets.OWNER_CRYPTO_WHITELIST }}
+          CRYPTO_OWNER_PRIVATE_KEY: ${{ secrets.CRYPTO_OWNER_PRIVATE_KEY }}
+          CRON_OWNER_PRIVATE_KEY: ${{ secrets.CRON_OWNER_PRIVATE_KEY }}
+          SOL_OWNER_PRIVATE_KEY: ${{ secrets.SOL_OWNER_PRIVATE_KEY }}
+          RPC_BSC: ${{ secrets.RPC_BSC }}
+          RPC_ETH: ${{ secrets.RPC_ETH }}
+          RPC_POLYGON: ${{ secrets.RPC_POLYGON }}
+          RPC_ARBITRUM: ${{ secrets.RPC_ARBITRUM }}
+          RPC_BASE: ${{ secrets.RPC_BASE }}
+          RPC_OPTIMISM: ${{ secrets.RPC_OPTIMISM }}
+          RPC_TRON: ${{ secrets.RPC_TRON }}
+          RPC_SOLANA: ${{ secrets.RPC_SOLANA }}
+          BASE44_FLOW_API_KEY: ${{ secrets.BASE44_FLOW_API_KEY }}
+          BASE44_SWARM_API_KEY: ${{ secrets.BASE44_SWARM_API_KEY }}
+          EMERGENCY_PAYMENT_LOCK: 'false'
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: crypto-payout-${{ github.run_id }}
+          path: |
+            exports/settlement/crypto-payout-log.json
+            exports/settlement/crypto-payout-state.json
+            exports/settlement/settle-state.json
+            exports/settlement/settle-log.json
