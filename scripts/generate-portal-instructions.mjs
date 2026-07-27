@@ -15,8 +15,11 @@ import { writeFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
-const FLOW = { name: 'agent-flow-ai', appId: '6888ac155ebf84dd9855ea98', key: process.env.BASE44_FLOW_API_KEY || '5b4be0fada884ca28142a3279e9880f6' };
 const INSTRUCTIONS_DIR = 'exports/settlement/instructions';
+const AGENTS = [
+  { name: 'agent-flow-ai', appId: '6888ac155ebf84dd9855ea98', key: process.env.BASE44_FLOW_API_KEY || '5b4be0fada884ca28142a3279e9880f6' },
+  { name: 'agent-swarm',  appId: '689afeabf1db9c30efe0bd7e',   key: process.env.BASE44_SWARM_API_KEY || 'e599b5b131574c1bae885fc013620739' },
+];
 const OWNER = {
   bank: 'Attijariwafa Bank',
   rib: '007810000448500030594182',
@@ -40,12 +43,24 @@ function parseArgs(argv) {
   return out;
 }
 
-async function fetchRecoveryBatches() {
-  const url = `https://${FLOW.name}-${FLOW.appId.slice(-8)}.base44.app/api/entities/PayoutBatch?limit=200&sort_by=-created_date`;
-  const res = await fetch(url, { headers: { api_key: FLOW.key } });
-  if (!res.ok) return [];
-  const data = await res.json();
-  return Array.isArray(data) ? data : [];
+async function fetchPendingBatches() {
+  const all = [];
+  for (const agent of AGENTS) {
+    for (let skip = 0; skip < 2000; skip += 50) {
+      const url = `https://${agent.name}-${agent.appId.slice(-8)}.base44.app/api/entities/PayoutBatch?limit=50&sort_by=-created_date&skip=${skip}`;
+      const r = await fetch(url, { headers: { api_key: agent.key } });
+      if (!r.ok) break;
+      const rows = await r.json();
+      if (rows.length === 0) break;
+      all.push(...rows);
+      if (rows.length < 50) break;
+    }
+  }
+  // Only batches with BANK_WIRE in batch_id AND live provenance in notes
+  return all.filter((b) =>
+    String(b.batch_id || '').includes('BANK_WIRE') &&
+    String(b.notes || '').includes('LIVE_EVIDENCE'),
+  );
 }
 
 function buildInstruction(batch, idx) {
@@ -94,8 +109,8 @@ async function main() {
   const targetBatch = args.batch;
   if (!existsSync(INSTRUCTIONS_DIR)) await mkdir(INSTRUCTIONS_DIR, { recursive: true });
 
-  const all = await fetchRecoveryBatches();
-  const rec = all.filter((b) => String(b.batch_id || '').includes('RECOVERY_BANK_WIRE'));
+  const all = await fetchPendingBatches();
+  const rec = all.filter((b) => String(b.batch_id || '').includes('BANK_WIRE'));
   const targets = targetBatch ? rec.filter((b) => b.batch_id === targetBatch) : rec;
   if (targets.length === 0) {
     console.error('No RECOVERY_BANK_WIRE batches found.');
