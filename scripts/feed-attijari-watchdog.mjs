@@ -5,7 +5,7 @@
  * (loads .env automatically via scripts/env.mjs)
  */
 import './env.mjs';
- *
+/**
  * Behavior:
  *   - Every 30s: check if feed-attijari-daemon process is alive
  *   - If dead: start it

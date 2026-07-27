@@ -102,6 +102,10 @@ if [ "$mode" = "from-env" ]; then
       echo "SKIP     $key (not set in $env_file)"
     fi
   done
+elif [ "$mode" = "dry-run" ]; then
+  for key in "${SECRETS[@]}"; do
+    set_secret "$key" "<value>"
+  done
 else
   for key in "${SECRETS[@]}"; do
     read -r -s -p "  $key = " val

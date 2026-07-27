@@ -4,7 +4,7 @@
  * (loads .env automatically via scripts/env.mjs)
  */
 import './env.mjs';
- *
+/**
  * Loop (every N seconds, default 60):
  *   1. Check for any of:
  *      - WISE_API_KEY + WISE_PROFILE_ID           → run auto-settle-bank-wire.mjs
