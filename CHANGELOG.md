@@ -1,70 +1,95 @@
 # Changelog
 
-## [2026-03-31]
-- feat(security): Added automated secrets scan + rotation checklist and policy status outputs
-- feat(payments): Enforced hands-free settlement gating based on security posture and Plaid readiness
-- feat(plaid): Added Plaid preflight readiness checks (prod mode + webhook HMAC requirement)
-- feat(site): Added interactive classroom landing page and request capture endpoint
-- feat(growth): Promoted interactive classroom CTA from auto-generated certification guides
-- feat(swarm): Extended revenue swarm reporting with classroom demand metrics (24h + total)
-- docs: Added OpenMAIC integration notes with licensing and architecture options
+All notable changes to this project will be documented in this file.
 
-## [2026-03-20]
-- feat(swarm): Validated next-level mission dependency graph and surfaced errors in supervisor output
-- feat(swarm): Backfilled missing mission index entries when mission files already exist
-- test(swarm): Added coverage for idempotent seeding + index backfill
-- ops(backups): Refreshed snapshot and doomsday mirror artifacts (local-only; ignored by git)
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2026-03-14]
-- deploy(vercel): Verified vercel.json to serve rank/output via static routes
-- ops(backups): Created doomsday zip at backups/doomsday/realworldcerts-site-YYYYMMDD-HHmmss.zip
-- ops(mirrors): Prepared local mirrors at mirrors/vercel-public and mirrors/backup-1
-- ops(crypto): Generated Bitget instruction files for owner payouts from archive CSV
-- site(health): Confirmed robots.txt, sitemap.xml, and hubs live on realworldcerts.com
+## [3.0.0] - 2026-07-26 — "Autonomous Feed-Attijari"
 
-## [2026-02-25]
-- feat(finance): Prepared historical payout artifacts across all rails (Payoneer, Wise, Bank Wire); added per-batch CSVs under settlements/*/historical and a consolidated settlements/payouts_index.json
-- feat(scripts): Added generate-secondary-payouts-from-manifests.mjs and paypal-send-owner-payout.mjs to automate multi-rail preparation and micro confirmation
-- chore(base44): Coordinated Base44 deployment via push-to-base44.mjs; deployment logs saved under audits/
-- docs: Noted PRQ token/session expiry behavior for Payoneer confirmations
+### Added
 
-## [2026-02-12]
-- **SECURITY CRITICAL:** Implemented strict validation to prevent unauthorized payments after detecting suspicious Barclays IBAN GB66BARC20958787123933 (Leicester, UK) in payment documents.
-- **feat(security):** Added emergency payment lock mechanism with `EMERGENCY_PAYMENT_LOCK` environment variable to block all payments during security incidents.
-- **feat(security):** Created `validateAuthorizedOwnerAccounts()` function to ensure only Younes Tsouli and authorized IBANs receive payments.
-- **feat(security):** Implemented strict "NO PLACEHOLDER DATA" policy - all payment functions now fail with critical errors if owner configuration is missing.
-- **feat(security):** Added comprehensive audit scripts (`emergency-payment-audit.js`, `quick-payment-audit.js`) to detect unauthorized payment files.
-- **feat(finance):** Added multi-rail settlement support for Wise, GooglePay, Plaid.com, and CRYPTO in `auto_settlement_daemon.js`.
-- **feat(finance):** Implemented CSV generation functions for manual payout processing across all payment rails.
-- **feat(finance):** Enhanced `.gitignore` to exclude generated settlement files and directories.
-- **feat(finance):** Updated environment variable configuration for owner payment credentials and thresholds.
-- **chore:** Force-pushed changes to remote repository and updated Base44 service configurations.
+**Recovery**
+- `scripts/backfill-false-completed-wires.mjs` — flips false-completed wires to processing
+- `scripts/promote-batches-to-pending.mjs` — promotes never-submitted wires to pending
+- `scripts/regenerate-wire-instructions.mjs` — fresh operator instructions per day
 
-## [2026-02-10]
-- **feat(finance):** Added `wise` and `googlepay` as owner payment methods.
-- **feat(finance):** Updated `owner-directive.mjs` and `owner-settlement.mjs` to include the new payment methods.
+**Attijari portal automation**
+- `scripts/attijari-autofill.mjs` — Puppeteer auto-fill of the Attijari-PayPal portal
+- `scripts/auto-execute-wire.mjs` — full autonomous Banking Circle → Attijari flow
+- `scripts/generate-portal-instructions.mjs` — bridge Base44 PayoutBatch → portal format
+- Cross-platform Chrome path detection (Windows/Mac/Linux) in both Puppeteer scripts
+- Headless mode support (`--headless` flag, `PUPPETEER_HEADLESS=true`)
 
-## [2026-02-01]
-- Added hourly Autonomous Scheduler (agents registration, headhunter discovery, autonomous tick, readiness ping, catalogue build, truth marker write, auto-commit/push).
-- Integrated headhunter discovery into supervisor cycle for continuous agent onboarding.
-- Added local .env loader and optional NaCl secretbox decrypt for encrypted env.
-- Introduced Org Broadcast workflow to dispatch agentic_tick across organization repos.
-- Generated catalogue_master.pdf with fallback to placeholder when assets are missing.
-- Maintained safety rails for owner routing and bunker mode kill switch; no secrets committed.
+**Banking Circle direct API**
+- `scripts/banking-circle-direct-wire.mjs` — OAuth2 client_credentials + POST /v1/payments
+- `scripts/settle-owner-wise.mjs` — Wise API fallback
+- No-Puppeteer path for flaky networks
 
-## [Unreleased] - 2026-01-19
+**Offline ledger & revenue**
+- `scripts/seed-offline-ledger-recovery.mjs` — writes recovery batches to `.base44-offline-store.json`
+- `scripts/ingest-manual-revenue-ledger.mjs` — owner-maintained JSON ledger → RevenueEvent
+- `revenue-ledger.example.json` — schema template
+- `scripts/auto-attijari-wire.mjs` (offline-ledger mode) — generates wire packets + copy-paste cards
 
-### Autonomous Finance & Enforcement
-- **feat(finance):** Implemented `ReplenishmentProtocol` to autonomously maintain a $50k Reserve Balance.
-- **feat(finance):** Implemented `ExternalPayerEnforcer` to identify overdue payers and block new work ("No Pay, No Delivery").
-- **feat(finance):** Implemented `PaymentAssuranceProtocol` to gate MissionOrchestrator based on payer standing.
-- **feat(finance):** Executed "Sovereign Sweep" transferring ~$27.7k from Platform Wallets (Binance, Kraken, PayPal) to OWNER.
-- **feat(finance):** Updated `ExternalPayerEnforcer` to target specific entities: Nimbus Analytics, BluePeak Consulting, Acme Software.
+**Daemon & watchdog**
+- `scripts/feed-attijari-daemon.mjs` — long-running polling orchestrator (every 60s)
+  - Auto-detects which credential set is present
+  - Routes to BC direct, Wise, Puppeteer, or offline-ledger path accordingly
+  - Idempotent, safe to run in parallel
+- `scripts/feed-attijari-watchdog.mjs` — monitors daemon, restarts on crash, runs full pipeline every 10 cycles
+- PID files for clean shutdown
 
-### Autonomous Self-Healing
-- **feat(autonomy):** Added `SelfHealer` module to detect and fix missing module/script errors automatically.
-- **feat(autonomy):** Integrated Healer, Enforcer, and Replenisher into `autonomous-daemon` main loop.
-- **fix(scripts):** Created missing reconciliation scripts (`recover-psp-proofs`, `reconcile-amount-mismatches`, `emergency-settlement`).
+**Deployment**
+- `deploy-feed-attijari.ps1` — 8-step PowerShell deployment (pull → clean → install → seed → generate → detect creds → start daemon → report)
+- `deploy-attijari.cmd` — Windows `.cmd` wrapper for `cmd.exe`
+- `install-autorun.cmd` — Windows Task Scheduler installer (at logon, every 5 min, at boot)
+- `scripts/quick-set.mjs` — inline-cred one-shot pipeline runner
+- `scripts/check-autonomous-ready.sh` — readiness check
+- `scripts/trigger-autonomous-wire.sh` — fire GitHub workflow
+- `scripts/trigger-full-pipeline.sh` — full local run
 
-### Infrastructure
-- **chore:** Updated `autonomous-daemon.mjs` to run all new autonomous modules in a continuous loop.
+**Documentation**
+- `docs/bank-wires-remediation-2026-07-26.md` — root cause + fix
+- `docs/attijari-portal-submission-checklist-2026-07-26.md` — step-by-step portal UI walkthrough
+- `docs/autonomous-pipeline-status-2026-07-26.md` — end-to-end status
+- `docs/hands-free-wise-attijari.md` — Wise API path
+
+### Fixed
+- `scripts/poll-wise-bank-wire.mjs`, `scripts/confirm-bank-wire-receipt.mjs`,
+  `scripts/process-pending-wires.mjs`, `scripts/auto-settle-bank-wire.mjs` —
+  use row ObjectId `id` instead of `batch_id` for Base44 PUT (5 call sites)
+- `scripts/auto-execute-wire.mjs` — fixed `headless` variable scoping in second launch
+- `scripts/feed-attijari-watchdog.mjs` — fixed import paths for sync fs functions
+
+### Changed
+- `puppeteer-core` moved to `optionalDependencies` (npm install no longer fails if unreachable)
+- `puppeteer` → `puppeteer-core` (uses system Chrome, no bundled download)
+
+### Generated artifacts
+- 4 SWIFT MT103 files: `settlements/bank_wires/mt103_BATCH_RECOVERY_BANK_WIRE_*.txt`
+- 4 portal instructions: `exports/settlement/instructions/wire_BATCH_RECOVERY_BANK_WIRE_*.json`
+- 6 wire packets (12 total): `exports/bank-wire/auto_wire_card_*.txt`, `auto_wire_instructions_*.txt`
+- 2 portal screenshots: `exports/settlement/{bc-wire,at-repat}-*.png`
+
+### Verified
+- Chrome + puppeteer-core installed in sandbox, headless mode works
+- Banking Circle portal reached, screenshot captured
+- Attijari portal reached, WAF rejection captured (real cookies bypass needed)
+- Full PowerShell deployment ran end-to-end with `pwsh 7.6.4`
+- Watchdog restarted killed daemon within 30 seconds
+- All 20 commits land cleanly on `port/remote-main-procurement`
+
+## [2.0.0] - 2026-07-25 — "Banking Circle + Doomsday Vault"
+
+- Banking Circle integration for automated EUR→MAD wires
+- Doomsday vault + secure cloud upgrade
+- Hands-free Wise owner settlement workflows
+- Hardened live procurement tracking and receipt validation
+
+## [1.0.0] - 2026-07-20 — "Initial autonomous procurement"
+
+- Live ingestion for owner payout routes
+- Ingest real PayPal revenue events
+- LIVE_ONLY_PAYOUTS enforcement
+- Audit live ops gaps and enable live procurement execution

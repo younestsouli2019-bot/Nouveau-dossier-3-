@@ -1,7 +1,7 @@
 {
   "name": "nouveau-dossier-3",
-  "version": "2.0.0",
-  "description": "Autonomous revenue collection, settlement, and financial operations",
+  "version": "3.0.0",
+  "description": "Autonomous revenue collection, settlement, and financial operations — Feed-Attijari edition",
   "type": "module",
   "scripts": {
     "auto-settle": "node scripts/auto-settle-bank-wire.mjs",
@@ -16,15 +16,35 @@
     "wires:pending": "node scripts/process-pending-wires.mjs",
     "feed:attijari": "node scripts/attijari-autofill.mjs --list && node scripts/attijari-autofill.mjs",
     "feed:attijari:setup": "node scripts/attijari-autofill.mjs --setup",
+    "feed:attijari:daemon": "node scripts/feed-attijari-daemon.mjs",
+    "feed:attijari:watchdog": "node scripts/feed-attijari-watchdog.mjs",
+    "feed:attijari:install-autorun": "install-autorun.cmd",
     "portal:instructions": "node scripts/generate-portal-instructions.mjs",
     "bc:direct-wire": "node scripts/banking-circle-direct-wire.mjs",
-    "seed:offline-ledger": "node scripts/seed-offline-ledger-recovery.mjs"
+    "seed:offline-ledger": "node scripts/seed-offline-ledger-recovery.mjs",
+    "quick-set": "node scripts/quick-set.mjs",
+    "deploy": "pwsh -File deploy-feed-attijari.ps1"
   },
   "optionalDependencies": {
     "puppeteer-core": "^23.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "keywords": [
+    "attijari",
+    "banking-circle",
+    "wise",
+    "paypal",
+    "autonomous",
+    "settlement",
+    "swift-mt103",
+    "puppeteer",
+    "self-healing"
+  ],
+  "author": "M TSOULI YOUNES <younestsouli2019@gmail.com>",
+  "license": "UNLICENSED",
+  "private": true
 }
+
 
