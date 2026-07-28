@@ -51,4 +51,8 @@ prompt
 
 server.log
 # Skills directory
-/skills/
+/skills/.swarm/
+.swarm/**
+.base44-offline-store.json
+*.tmp
+node_modules/
