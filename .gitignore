@@ -56,10 +56,46 @@ server.log
 .base44-offline-store.json
 *.tmp
 node_modules/
-# OAuth / API secrets - NEVER commit
+
+# ==============================
+# SECURITY: NEVER COMMIT SECRETS
+# ==============================
+# Keys & Credentials
+.keys/
+*.key
+*.pem
+*.p12
+*.pfx
+*.cert
+.credentials
+*.credentials
+.credentials.json
+
+# Cloud & OAuth secrets
 client_secret_*.json
 *_secret_*.json
+oauth_*.json
 service_account_*.json
-*.credentials.json
-credentials.json
+google_*.json
+aws*.json
+
+# API keys
+*.apikey
+apikey.*
+*.secret
 secrets.json
+secrets.yaml
+secrets.yml
+
+# Auth tokens
+*.token
+*.tokens
+.github_pat_*
+*.ghp_*
+*.gho_*
+
+# Config with secrets
+config.local.*
+*.config.local
+local.json
+appsettings.local.json
