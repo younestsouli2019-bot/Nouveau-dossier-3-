@@ -56,3 +56,10 @@ server.log
 .base44-offline-store.json
 *.tmp
 node_modules/
+# OAuth / API secrets - NEVER commit
+client_secret_*.json
+*_secret_*.json
+service_account_*.json
+*.credentials.json
+credentials.json
+secrets.json
