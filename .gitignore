@@ -108,3 +108,11 @@ config.local.*
 *.config.local
 local.json
 appsettings.local.json
+
+# ChariBaaS auto-setup generated
+.env.charibaas
+.charibaas-config.json
+docker-compose.charibaas.yml
+charibaas.tf
+src/charibaas-bootstrap.*
+.swarm/charibaas-*
