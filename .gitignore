@@ -58,7 +58,11 @@ server.log
 # Audit & sensitive data
 data/finance/audit/
 archive/chat-export*
+chat-export-*.json
 *.credentials
+
+# Local backups
+backups/
 *.tmp
 node_modules/
 
