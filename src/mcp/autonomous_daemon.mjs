@@ -79,9 +79,10 @@ async function saveState() {
 
 function startProcess(name, command, args) {
   log(`Starting ${name}: ${command} ${args.join(' ')}`);
-  const proc = spawn(command, args, {
-    cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], shell: true, windowsHide: true,
-  });
+  const useShell = process.platform === 'win32';
+  const proc = useShell
+    ? spawn(command + ' ' + args.map(a => a.includes(' ') ? `"${a}"` : a).join(' '), [], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], shell: true, windowsHide: true })
+    : spawn(command, args, { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
   proc.stdout.on('data', d => log(`[${name}:out] ${d.toString().trim()}`));
   proc.stderr.on('data', d => log(`[${name}:err] ${d.toString().trim()}`));
   proc.on('exit', (code) => {
@@ -150,12 +151,25 @@ async function executeBaasPayout(amountMAD) {
       const data = resp.ok ? await resp.json() : null;
       const settled = resp.status === 200 || resp.status === 201;
       log(`[payout] attempt ${attempt}/${MAX_RETRIES}: ${settled ? 'SETTLED' : 'FAILED'} ${amountMAD} MAD`);
+
       if (settled) {
+        const threat = await contingencyEngine.monitorTransaction({
+          id: `payout-${Date.now()}`,
+          amount: amountMAD,
+          destination: attijari.iban,
+          paymentMethod: 'baas',
+        }).catch(() => null);
+        if (threat) log(`[contingency] payout flagged: ${threat.threatType}`);
+
         pipelineHealth.baas = { ok: true, lastOk: new Date().toISOString(), failures: 0 };
         state.payouts.push({ amount: amountMAD, iban: attijari.iban, at: new Date().toISOString(), id: data?.transfer_id });
         state.totalRevenueMAD = Math.max(0, state.totalRevenueMAD - amountMAD);
         await saveState();
         return { status: 'SETTLED', data };
+      }
+
+      if (resp.status === 401 || resp.status === 403) {
+        await contingencyEngine.monitorAuthFailure('baas-api').catch(() => {});
       }
       return { status: 'FAILED', data };
     } catch (err) {
@@ -194,6 +208,9 @@ async function checkStripe() {
         signal: AbortSignal.timeout(10000),
       });
       if (!resp.ok) {
+        if (resp.status === 401 || resp.status === 403) {
+          await contingencyEngine.monitorAuthFailure('stripe-api').catch(() => {});
+        }
         pipelineHealth.stripe = { ok: false, failures: (pipelineHealth.stripe.failures || 0) + 1, reason: `HTTP ${resp.status}` };
         return null;
       }
@@ -296,15 +313,84 @@ function startWatchdogServer() {
       return;
     }
 
+    if (url.pathname === '/watchdog/breach' && req.method === 'POST') {
+      let body;
+      try { body = JSON.parse(await readBody(req)); } catch { body = {}; }
+      const threat = await contingencyEngine.raiseThreat({
+        type: body.type || 'MANUAL_TEST',
+        severity: body.severity || 'MEDIUM',
+        detail: body.detail || 'Triggered via watchdog API',
+        payload: body.payload || {},
+      }).catch(e => ({ error: e.message }));
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ threat, status: threat.threatLevel === 'RED' ? 'LOCKDOWN' : threat.threatLevel === 'ORANGE' ? 'ELEVATED' : 'THREAT_RAISED' }));
+      return;
+    }
+
+    if (url.pathname === '/watchdog/thaw' && req.method === 'POST') {
+      let body;
+      try { body = JSON.parse(await readBody(req)); } catch { body = {}; }
+      if (!body.token) { res.writeHead(400); res.end(JSON.stringify({ error: 'token required' })); return; }
+      const thawed = await contingencyEngine.thaw(body.token, body.reason || 'Manual thaw via watchdog').catch(e => ({ error: e.message }));
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(thawed));
+      return;
+    }
+
+    if (url.pathname === '/watchdog/reset-circuit' && req.method === 'POST') {
+      let body;
+      try { body = JSON.parse(await readBody(req)); } catch { body = {}; }
+      const name = body.name || 'all';
+      if (name === 'all') {
+        await contingencyEngine.circuitBreaker.resetAll();
+      } else {
+        await contingencyEngine.circuitBreaker.reset(name);
+      }
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ reset: name, circuits: contingencyEngine.circuitBreaker.summary() }));
+      return;
+    }
+
+    if (url.pathname === '/watchdog/status' && req.method === 'GET') {
+      const h = await contingencyEngine.health().catch(() => ({ error: 'health check failed' }));
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(h));
+      return;
+    }
+
     res.writeHead(404);
     res.end('Not found');
   });
 
   server.listen(DAEMON_PORT, () => {
     log(`[watchdog] HTTP endpoint on :${DAEMON_PORT}`);
-    log(`[watchdog] GET /watchdog       — pipeline health status`);
-    log(`[watchdog] POST /watchdog/retry — force poll cycle`);
+    log(`[watchdog] GET /watchdog           — pipeline health + contingency`);
+    log(`[watchdog] GET /watchdog/status    — contingency detail`);
+    log(`[watchdog] POST /watchdog/retry    — force poll cycle`);
+    log(`[watchdog] POST /watchdog/breach   — raise threat (JSON body)`);
+    log(`[watchdog] POST /watchdog/thaw     — thaw global freeze (JSON: {token, reason})`);
+    log(`[watchdog] POST /watchdog/reset-circuit — reset circuit (JSON: {name: \"all\"|\"authSystem\"})`);
   });
+}
+
+async function loadCharibaasEnv() {
+  const envPath = path.join(ROOT, '.env.charibaas');
+  try {
+    const content = await fs.readFile(envPath, 'utf-8');
+    let loaded = 0;
+    for (const line of content.split('\n')) {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('#')) {
+        const eqIdx = trimmed.indexOf('=');
+        if (eqIdx > 0) {
+          const k = trimmed.slice(0, eqIdx).trim();
+          const v = trimmed.slice(eqIdx + 1).trim();
+          if (!process.env[k]) { process.env[k] = v; loaded++; }
+        }
+      }
+    }
+    log(`[env] loaded ${loaded} vars from .env.charibaas`);
+  } catch {}
 }
 
 async function loadVault() {
@@ -320,11 +406,11 @@ async function loadVault() {
       const key = name.toUpperCase();
       try {
         const result = await new Promise((resolve, reject) => {
-          const proc = spawn('powershell', [
-            '-ExecutionPolicy', 'Bypass',
-            '-File', script,
-            '-GetSecret', name,
-          ], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], shell: true, windowsHide: true });
+          const psArgs = ['-ExecutionPolicy', 'Bypass', '-File', script, '-GetSecret', name];
+          const useShell = process.platform === 'win32';
+          const proc = useShell
+            ? spawn('powershell -ExecutionPolicy Bypass -File "' + script + '" -GetSecret ' + name, [], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], shell: true, windowsHide: true })
+            : spawn('powershell', psArgs, { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
           let out = '';
           proc.stdout.on('data', d => out += d.toString());
           proc.on('close', code => code === 0 ? resolve(out.trim()) : reject(new Error(`exit ${code}`)));
@@ -348,6 +434,14 @@ async function main() {
 
   await contingencyEngine.init().catch(e => log(`[contingency] init error: ${e.message}`));
   await loadVault();
+  await loadCharibaasEnv();
+  const bootstrapPath = path.join(ROOT, 'src', 'charibaas-bootstrap.mjs');
+  try {
+    await fs.access(bootstrapPath);
+    const { initChariBaaS } = await import(bootstrapPath);
+    initChariBaaS().catch(e => log(`[charibaas] bootstrap init deferred: ${e.message}`));
+    log('[charibaas] bootstrap loaded');
+  } catch {}
   await loadTruth();
   await loadState();
   if (!state.startedAt) { state.startedAt = new Date().toISOString(); await saveState(); }

@@ -14,7 +14,10 @@ export class DiscoveryAgent {
 
   async exec(cmd, args = [], opts = {}) {
     return new Promise((resolve) => {
-      const proc = spawn(cmd, args, { cwd: this.root, shell: true, windowsHide: true, ...opts });
+      const useShell = process.platform === 'win32';
+      const proc = useShell
+        ? spawn(cmd + ' ' + args.map(a => a.includes(' ') ? `"${a}"` : a).join(' '), [], { cwd: this.root, shell: true, windowsHide: true, ...opts })
+        : spawn(cmd, args, { cwd: this.root, ...opts });
       let stdout = '', stderr = '';
       proc.stdout.on('data', d => stdout += d.toString());
       proc.stderr.on('data', d => stderr += d.toString());

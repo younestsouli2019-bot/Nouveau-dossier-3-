@@ -326,7 +326,10 @@ def get_client():
 
   async exec(cmd, args = [], opts = {}) {
     return new Promise(resolve => {
-      const proc = spawn(cmd, args, { ...opts, shell: true, windowsHide: true });
+      const useShell = process.platform === 'win32';
+      const proc = useShell
+        ? spawn(cmd + ' ' + args.map(a => a.includes(' ') ? `"${a}"` : a).join(' '), [], { ...opts, shell: true, windowsHide: true })
+        : spawn(cmd, args, { ...opts });
       let stdout = '', stderr = '';
       proc.stdout.on('data', d => stdout += d.toString());
       proc.stderr.on('data', d => stderr += d.toString());

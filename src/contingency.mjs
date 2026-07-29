@@ -207,6 +207,15 @@ class CircuitBreaker {
     return { circuit: circuitName, previousState: prevState, newState: 'CLOSED' };
   }
 
+  async resetAll() {
+    const results = [];
+    for (const name of Object.keys(this.circuits)) {
+      results.push(await this.reset(name));
+    }
+    await this.engine.log('[CB] All circuits reset to CLOSED');
+    return results;
+  }
+
   isAllowed(circuitName) {
     const circuit = this.circuits[circuitName];
     if (!circuit) return true;
@@ -781,12 +790,11 @@ class ContingencyEngine {
   }
 
   async thaw(token, reason) {
+    const result = await this.recoveryOrchestrator.thaw(reason, token);
     this.state.lockdownToken = null;
-    await this._persist();
-    await this.circuitBreaker.globalThaw(reason);
     this.state.threatLevel = 'YELLOW';
     await this._persist();
-    return { thawed: true, reason };
+    return { thawed: true, reason, circuits: result.circuits };
   }
 
   async health() {
