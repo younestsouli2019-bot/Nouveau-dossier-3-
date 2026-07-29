@@ -54,6 +54,11 @@ server.log
 /skills/.swarm/
 .swarm/**
 .base44-offline-store.json
+
+# Audit & sensitive data
+data/finance/audit/
+archive/chat-export*
+*.credentials
 *.tmp
 node_modules/
 
