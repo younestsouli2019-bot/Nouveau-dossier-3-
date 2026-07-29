@@ -276,10 +276,46 @@ function startWatchdogServer() {
   });
 }
 
+async function loadVault() {
+  const vaultDir = path.join(ROOT, '.swarm', 'vault');
+  try {
+    const files = await fs.readdir(vaultDir);
+    const encFiles = files.filter(f => f.endsWith('.enc'));
+    if (encFiles.length === 0) { log('[vault] no secrets found in .swarm/vault/'); return; }
+
+    const script = path.join(__dirname, 'swarm-vault.ps1');
+    for (const file of encFiles) {
+      const name = path.basename(file, '.enc');
+      const key = name.toUpperCase();
+      try {
+        const result = await new Promise((resolve, reject) => {
+          const proc = spawn('powershell', [
+            '-ExecutionPolicy', 'Bypass',
+            '-File', script,
+            '-GetSecret', name,
+          ], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], shell: true, windowsHide: true });
+          let out = '';
+          proc.stdout.on('data', d => out += d.toString());
+          proc.on('close', code => code === 0 ? resolve(out.trim()) : reject(new Error(`exit ${code}`)));
+        });
+        if (result && !result.startsWith('NOT_FOUND')) {
+          process.env[key] = result;
+          log(`[vault] loaded ${key} (${result.slice(0, 8)}...)`);
+        }
+      } catch (err) {
+        log(`[vault] ${key}: ${err.message}`);
+      }
+    }
+  } catch (err) {
+    if (err.code !== 'ENOENT') log(`[vault] read error: ${err.message}`);
+  }
+}
+
 async function main() {
   log('=== AUTONOMOUS PAYOUT DAEMON v2 (Watchdog) ===');
   log(`PID: ${process.pid}  CWD: ${ROOT}`);
 
+  await loadVault();
   await loadTruth();
   await loadState();
   if (!state.startedAt) { state.startedAt = new Date().toISOString(); await saveState(); }
@@ -295,6 +331,7 @@ async function main() {
   log('=== RUNNING ===');
   log(`Poll:  every ${POLL_INTERVAL_MS / 1000}s`);
   log(`Watchdog: http://localhost:${DAEMON_PORT}/watchdog`);
+  log(`Vault:  ${Object.keys(process.env).filter(k => ['STRIPE_SECRET_KEY','CHARI_BAAS_SECRET_KEY','BAAS_WALLET_ID'].includes(k) && process.env[k] !== 'PLACEHOLDER').length}/3 keys loaded`);
 }
 
 main().catch(err => {
