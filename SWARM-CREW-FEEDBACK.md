@@ -44,6 +44,8 @@ The crew has analyzed the current SWARM architecture and revenue engine. Here ar
 
 ## 📦 PROCUREMENT AGENT FEEDBACK
 
+> **IDENTITY NOTICE**: "Yacine Tsouli" listed below is a procurement delivery recipient (family member) — NOT the verified owner. Only Younes Tsouli (CIN A337773) may authorize payouts or access owner accounts. See `owner-truth.json` → `knownParties` for full identity policy.
+
 ### Current Orders
 - **Bachir**: Health packs (Deadline: June 20) ⚠️ URGENT
 - **Younes**: 33 items (~70,441 DH)

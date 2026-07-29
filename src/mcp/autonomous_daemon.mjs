@@ -43,8 +43,23 @@ async function loadJSON(filepath) {
 
 async function loadTruth() {
   truth = await loadJSON(TRUTH_PATH);
-  if (truth?.paymentDestinations?.bankAccounts?.ma_attijariwafa) {
-    pipelineHealth.attijari = { ok: true, lastOk: new Date().toISOString(), reason: 'configured' };
+  const ownerId = truth?.owner?.identity?.nationalId;
+  const ownerName = truth?.owner?.legalName;
+
+  if (!ownerId) {
+    pipelineHealth.attijari = { ok: false, reason: 'owner identity (CIN) not set in owner-truth.json' };
+  } else if (!ownerName) {
+    pipelineHealth.attijari = { ok: false, reason: 'owner legalName not set in owner-truth.json' };
+  } else if (truth?.paymentDestinations?.bankAccounts?.ma_attijariwafa) {
+    const attijari = truth.paymentDestinations.bankAccounts.ma_attijariwafa;
+    if (attijari.accountHolder !== ownerName) {
+      pipelineHealth.attijari = {
+        ok: false,
+        reason: `IDENTITY MISMATCH: accountHolder "${attijari.accountHolder}" !== verified owner "${ownerName}" (CIN ${ownerId})`,
+      };
+    } else {
+      pipelineHealth.attijari = { ok: true, lastOk: new Date().toISOString(), reason: `identity verified (CIN ${ownerId})` };
+    }
   } else {
     pipelineHealth.attijari = { ok: false, reason: 'missing in owner-truth.json' };
   }

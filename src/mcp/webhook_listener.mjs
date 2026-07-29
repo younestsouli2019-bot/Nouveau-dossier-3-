@@ -92,8 +92,20 @@ async function persistState() {
 
 async function triggerBaasPayout(amountMAD, balanceMAD, reason) {
   const truth = await loadOwnerTruth();
+
+  const ownerId = truth.owner?.identity?.nationalId;
+  if (!ownerId) throw new Error('IDENTITY BLOCKED: owner identity (CIN) not configured in owner-truth.json');
+
+  const ownerName = truth.owner?.legalName || 'Younes Tsouli';
   const attijari = truth.paymentDestinations?.bankAccounts?.ma_attijariwafa;
   if (!attijari) throw new Error('Attijariwafa account not found in owner-truth.json');
+
+  if (attijari.accountHolder !== ownerName) {
+    throw new Error(
+      `IDENTITY BLOCKED: payout destination account holder "${attijari.accountHolder}" ` +
+      `does not match verified owner "${ownerName}" (CIN ${ownerId}). Payout refused.`
+    );
+  }
 
   const payload = {
     swarm_ledger_balance_mad: balanceMAD,

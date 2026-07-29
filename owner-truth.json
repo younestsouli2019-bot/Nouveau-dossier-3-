@@ -4,7 +4,15 @@
   "owner": {
     "id": "younes-tsouli",
     "displayName": "Younes Tsouli",
-    "legalName": "Younes Tsouli"
+    "legalName": "Younes Tsouli",
+    "identity": {
+      "nationalId": "A337773",
+      "nationalIdType": "CIN (Carte d'Identit\u00e9 Nationale - Morocco)",
+      "nationality": "Moroccan",
+      "verified": true,
+      "verificationDate": "2026-07-28",
+      "notes": "Sole owner and beneficiary. All payout destinations below belong to this verified identity. Any deviation must be blocked."
+    }
   },
   "paymentDestinations": {
     "paypal": {
@@ -82,6 +90,28 @@
         "local": true
       }
     }
+  },
+  "knownParties": {
+    "yacine_tsouli": {
+      "name": "Yacine Tsouli",
+      "relation": "family_member (brother)",
+      "role": "procurement_recipient / household_supply",
+      "NOT_OWNER": true,
+      "cannotAuthorizePayouts": true,
+      "cannotAccessOwnerAccounts": true,
+      "notes": "Listed in procurement as delivery recipient only. Has NO authority over owner accounts, payout decisions, or system configuration."
+    }
+  },
+  "identityPolicy": {
+    "version": "IDV-1.0",
+    "ownerVerifiedBy": "CIN A337773",
+    "rules": [
+      "ONLY owner.identity.nationalId==A337773 may authorize payouts",
+      "ONLY accounts listed under paymentDestinations are valid (all belong to holder of CIN A337773)",
+      "Any recipient with family name Tsouli but NOT matching CIN A337773 is explicitly NOT the owner",
+      "knownParties entries with NOT_OWNER=true must never resolve as payout destinations"
+    ],
+    "enforcement": "HARD_STOP on any payout to an account not listed in allowedRecipients or matching a knownParties entry flagged NOT_OWNER"
   },
   "allowedRecipients": {
     "paypal": ["younestsouli2019@gmail.com"],

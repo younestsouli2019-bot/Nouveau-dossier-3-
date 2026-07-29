@@ -26,11 +26,87 @@ class OwnerRouteValidator {
   #validateTruthIntegrity() {
     const t = this.#truth;
     if (!t.owner?.id) throw new Error('owner-truth.json: owner.id missing');
+    if (!t.owner?.identity?.nationalId) throw new Error('owner-truth.json: owner.identity.nationalId missing');
     if (!t.paymentDestinations?.paypal?.email) throw new Error('owner-truth.json: paypal email missing');
     if (!t.paymentDestinations?.bankAccounts) throw new Error('owner-truth.json: bankAccounts missing');
     if (!t.allowedRecipients?.paypal?.length) throw new Error('owner-truth.json: allowedRecipients.paypal empty');
     const bankCount = Object.keys(t.paymentDestinations.bankAccounts).length;
     if (bankCount < 1) throw new Error('owner-truth.json: no bank accounts configured');
+    if (t.knownParties) {
+      for (const [key, party] of Object.entries(t.knownParties)) {
+        if (party.NOT_OWNER && party.cannotAuthorizePayouts !== true) {
+          throw new Error(`owner-truth.json: knownParties.${key} flagged NOT_OWNER but cannotAuthorizePayouts not set to true`);
+        }
+      }
+    }
+  }
+
+  verifyOwnerIdentity(claim) {
+    this.#ensureInit();
+    const ownerId = this.#truth.owner.identity;
+    if (!claim || !claim.nationalId) {
+      return { verified: false, reason: 'no identity claim provided', ownerId: ownerId.nationalId };
+    }
+    const match = String(claim.nationalId).toUpperCase() === ownerId.nationalId;
+    if (!match) {
+      return {
+        verified: false,
+        reason: `claimed nationalId "${claim.nationalId}" does not match verified owner CIN ${ownerId.nationalId}`,
+        ownerId: ownerId.nationalId,
+        claimId: claim.nationalId,
+      };
+    }
+    if (claim.name && claim.name.toLowerCase() !== this.#truth.owner.legalName.toLowerCase()) {
+      return {
+        verified: false,
+        reason: `claimed name "${claim.name}" does not match verified owner "${this.#truth.owner.legalName}"`,
+        ownerId: ownerId.nationalId,
+        claimName: claim.name,
+        expectedName: this.#truth.owner.legalName,
+      };
+    }
+    return { verified: true, ownerId: ownerId.nationalId, ownerName: this.#truth.owner.legalName };
+  }
+
+  assertOwnerIdentity(claim) {
+    const result = this.verifyOwnerIdentity(claim);
+    if (!result.verified) {
+      throw new Error(`IDENTITY BLOCKED: ${result.reason}. Only holder of CIN ${result.ownerId} (${this.#truth.owner.legalName}) may authorize payouts.`);
+    }
+    return result;
+  }
+
+  validateParty(name) {
+    this.#ensureInit();
+    if (!this.#truth.knownParties) return { known: false, ownerMatch: false, blocked: false };
+    const lower = String(name).toLowerCase();
+    for (const [key, party] of Object.entries(this.#truth.knownParties)) {
+      if (lower.includes(party.name.toLowerCase()) || lower.includes(key.toLowerCase())) {
+        return {
+          known: true,
+          key,
+          name: party.name,
+          relation: party.relation,
+          isOwner: false,
+          blocked: party.NOT_OWNER === true && party.cannotAuthorizePayouts === true,
+          reason: party.NOT_OWNER ? `${party.name} is ${party.relation}, NOT the verified owner` : undefined,
+        };
+      }
+    }
+    const ownerLower = this.#truth.owner.legalName.toLowerCase();
+    const ownerMatch = lower === ownerLower || lower.includes(ownerLower.split(' ')[0]) && lower.includes(ownerLower.split(' ')[1]);
+    return { known: false, ownerMatch, blocked: false };
+  }
+
+  assertPayoutParty(name) {
+    const party = this.validateParty(name);
+    if (party.blocked) {
+      throw new Error(
+        `IDENTITY BLOCKED: "${name}" matched ${party.name} (${party.relation}). ` +
+        `${party.name} is NOT the verified owner (CIN ${this.#truth.owner.identity.nationalId}) and cannot receive payouts.`
+      );
+    }
+    return party;
   }
 
   validateDestination(destination, method = 'paypal') {
