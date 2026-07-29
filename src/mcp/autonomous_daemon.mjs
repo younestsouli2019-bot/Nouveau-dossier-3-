@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'fs/promises';
 import path from 'path';
+import http from 'http';
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 
@@ -9,16 +10,26 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const TRUTH_PATH = path.join(ROOT, 'owner-truth.json');
 const MEMORY_PATH = path.join(ROOT, '.swarm', 'daemon-state.json');
 const LOG_PATH = path.join(ROOT, '.swarm', 'daemon.log');
+const DAEMON_PORT = 9888;
 
 const POLL_INTERVAL_MS = parseInt(process.env.DAEMON_POLL_INTERVAL || '300000', 10);
 const HEALTH_CHECK_MS = 30_000;
 const THRESHOLD_MAD = parseInt(process.env.MILESTONE_THRESHOLD_MAD || '5000', 10);
 const PAYOUT_PCT = parseInt(process.env.MILESTONE_PAYOUT_PCT || '80', 10) / 100;
+const MAX_RETRIES = 3;
+const CIRCUIT_BREAKER_THRESHOLD = 5;
 
 let services = {};
 let cycleCount = 0;
 let state = { totalRevenueMAD: 0, payouts: [], events: [], startedAt: null };
 let truth = null;
+
+const pipelineHealth = {
+  stripe: { ok: false, lastOk: null, failures: 0, reason: 'not_checked' },
+  baas: { ok: false, lastOk: null, failures: 0, reason: 'not_checked' },
+  attijari: { ok: false, reason: 'not_checked' },
+  daemon: { uptime: 0, started: new Date().toISOString(), cycles: 0 },
+};
 
 async function log(msg) {
   const line = `[${new Date().toISOString()}] ${msg}`;
@@ -32,7 +43,11 @@ async function loadJSON(filepath) {
 
 async function loadTruth() {
   truth = await loadJSON(TRUTH_PATH);
-  if (!truth) log('WARN: owner-truth.json not found');
+  if (truth?.paymentDestinations?.bankAccounts?.ma_attijariwafa) {
+    pipelineHealth.attijari = { ok: true, lastOk: new Date().toISOString(), reason: 'configured' };
+  } else {
+    pipelineHealth.attijari = { ok: false, reason: 'missing in owner-truth.json' };
+  }
 }
 
 async function loadState() {
@@ -53,7 +68,7 @@ function startProcess(name, command, args) {
   proc.stdout.on('data', d => log(`[${name}:out] ${d.toString().trim()}`));
   proc.stderr.on('data', d => log(`[${name}:err] ${d.toString().trim()}`));
   proc.on('exit', (code) => {
-    log(`[${name}] exited code=${code}`);
+    log(`[${name}] exited code=${code} — restarting in 5s`);
     delete services[name];
     setTimeout(() => bootService(name), 5000);
   });
@@ -82,15 +97,12 @@ async function executeBaasPayout(amountMAD) {
   const baasKey = process.env.CHARI_BAAS_SECRET_KEY;
   const walletId = process.env.BAAS_WALLET_ID;
   if (!baasKey || !walletId || baasKey.includes('PLACEHOLDER')) {
-    log(`[payout] SKIP: BaaS credentials not configured`);
+    pipelineHealth.baas = { ok: false, reason: 'credentials not set or placeholder' };
     return { status: 'SKIPPED', reason: 'no creds' };
   }
 
   const attijari = truth?.paymentDestinations?.bankAccounts?.ma_attijariwafa;
-  if (!attijari) {
-    log(`[payout] SKIP: Attijari account not found in owner-truth.json`);
-    return { status: 'SKIPPED', reason: 'no attijari config' };
-  }
+  if (!attijari) return { status: 'SKIPPED', reason: 'no attijari' };
 
   const ref = `SWARM_AUTO_${Date.now()}`;
   const payload = {
@@ -108,31 +120,34 @@ async function executeBaasPayout(amountMAD) {
     metadata: { automation_layer: 'Daemon_v1' },
   };
 
-  const env = process.env.BAAS_ENV === 'production' ? 'https://api.baas.ma/v1' : 'https://sandbox.baas.ma/v1';
+  const baseUrl = process.env.BAAS_ENV === 'production' ? 'https://api.baas.ma/v1' : 'https://sandbox.baas.ma/v1';
 
-  try {
-    const resp = await fetch(`${env}/transfers`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${baasKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(15000),
-    });
-    const data = resp.ok ? await resp.json() : null;
-    const settled = resp.status === 200 || resp.status === 201;
-    log(`[payout] ${settled ? 'SETTLED' : 'FAILED'} ${amountMAD} MAD -> ${attijari.iban}${data ? ' id=' + (data.transfer_id || '?') : ''}`);
-    if (settled) {
-      state.payouts.push({ amount: amountMAD, iban: attijari.iban, at: new Date().toISOString(), id: data?.transfer_id });
-      state.totalRevenueMAD -= amountMAD;
-      await saveState();
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const resp = await fetch(`${baseUrl}/transfers`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${baasKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(15000),
+      });
+      const data = resp.ok ? await resp.json() : null;
+      const settled = resp.status === 200 || resp.status === 201;
+      log(`[payout] attempt ${attempt}/${MAX_RETRIES}: ${settled ? 'SETTLED' : 'FAILED'} ${amountMAD} MAD`);
+      if (settled) {
+        pipelineHealth.baas = { ok: true, lastOk: new Date().toISOString(), failures: 0 };
+        state.payouts.push({ amount: amountMAD, iban: attijari.iban, at: new Date().toISOString(), id: data?.transfer_id });
+        state.totalRevenueMAD = Math.max(0, state.totalRevenueMAD - amountMAD);
+        await saveState();
+        return { status: 'SETTLED', data };
+      }
+      return { status: 'FAILED', data };
+    } catch (err) {
+      log(`[payout] attempt ${attempt}/${MAX_RETRIES} error: ${err.message}`);
+      if (attempt < MAX_RETRIES) await new Promise(r => setTimeout(r, attempt * 2000));
     }
-    return { status: settled ? 'SETTLED' : 'FAILED', data };
-  } catch (err) {
-    log(`[payout] NETWORK_ERROR: ${err.message}`);
-    return { status: 'NETWORK_ERROR', error: err.message };
   }
+  pipelineHealth.baas = { ok: false, lastOk: pipelineHealth.baas.lastOk || null, failures: (pipelineHealth.baas.failures || 0) + 1, reason: 'network after retries' };
+  return { status: 'NETWORK_ERROR' };
 }
 
 async function evaluateAndPayout(balanceMAD, source) {
@@ -140,49 +155,65 @@ async function evaluateAndPayout(balanceMAD, source) {
   const cooldownMs = 60 * 60 * 1000;
 
   if (balanceMAD < THRESHOLD_MAD) return { action: 'below_threshold', balance: balanceMAD };
-
-  if (Date.now() - lastPayout < cooldownMs) {
-    log(`[eval] Balance ${balanceMAD} MAD >= ${THRESHOLD_MAD} MAD but cooldown active`);
-    return { action: 'cooldown', balance: balanceMAD };
-  }
+  if (Date.now() - lastPayout < cooldownMs) return { action: 'cooldown', balance: balanceMAD };
 
   const amount = Math.floor(balanceMAD * PAYOUT_PCT * 100) / 100;
-  if (amount < 100) {
-    log(`[eval] Payout amount ${amount} MAD too small`);
-    return { action: 'too_small', balance: balanceMAD };
-  }
+  if (amount < 100) return { action: 'too_small', balance: balanceMAD };
 
   log(`[eval] TRIGGER: ${amount} MAD -> Attijari (source=${source})`);
   return await executeBaasPayout(amount);
 }
 
+async function checkStripe() {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key || key.includes('PLACEHOLDER') || key.length < 20) {
+    pipelineHealth.stripe = { ok: false, reason: 'STRIPE_SECRET_KEY not set or placeholder' };
+    return null;
+  }
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const resp = await fetch('https://api.stripe.com/v1/balance', {
+        headers: { Authorization: `Bearer ${key}` },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!resp.ok) {
+        pipelineHealth.stripe = { ok: false, failures: (pipelineHealth.stripe.failures || 0) + 1, reason: `HTTP ${resp.status}` };
+        return null;
+      }
+      const d = await resp.json();
+      pipelineHealth.stripe = { ok: true, lastOk: new Date().toISOString(), failures: 0 };
+      return d;
+    } catch (err) {
+      log(`[stripe] attempt ${attempt}/${MAX_RETRIES}: ${err.message}`);
+      if (attempt < MAX_RETRIES) await new Promise(r => setTimeout(r, attempt * 2000));
+    }
+  }
+  pipelineHealth.stripe = { ok: false, failures: (pipelineHealth.stripe.failures || 0) + 1, reason: 'network after retries' };
+  return null;
+}
+
 async function pollRevenue() {
   cycleCount++;
+  pipelineHealth.daemon.cycles = cycleCount;
   const now = new Date().toISOString();
   const ev = { timestamp: now, cycle: cycleCount, sources: {} };
 
-  try {
-    const stripeKey = process.env.STRIPE_SECRET_KEY;
-    if (stripeKey?.length > 20 && !stripeKey.includes('PLACEHOLDER')) {
-      const resp = await fetch('https://api.stripe.com/v1/balance', {
-        headers: { Authorization: `Bearer ${stripeKey}` },
-        signal: AbortSignal.timeout(10000),
-      });
-      if (resp.ok) {
-        const d = await resp.json();
-        const available = (d.available?.[0]?.amount || 0) / 100;
-        const currency = d.available?.[0]?.currency || 'usd';
-        const fx = { usd: 10, eur: 10.8, gbp: 12.5, mad: 1 };
-        const madTotal = available * (fx[currency] || 10);
-        ev.sources.stripe = { available, currency, madTotal };
-        log(`[poll] Stripe: ${available} ${currency} = ${madTotal} MAD`);
-        state.totalRevenueMAD = Math.max(state.totalRevenueMAD, madTotal);
-        const result = await evaluateAndPayout(state.totalRevenueMAD, 'stripe');
-        ev.payoutResult = result;
-      }
+  const stripeData = await checkStripe();
+  if (stripeData) {
+    const available = (stripeData.available?.[0]?.amount || 0) / 100;
+    const currency = stripeData.available?.[0]?.currency || 'usd';
+    const fx = { usd: 10, eur: 10.8, gbp: 12.5, mad: 1 };
+    const madTotal = available * (fx[currency] || 10);
+    ev.sources.stripe = { available, currency, madTotal };
+    log(`[poll] Stripe OK: ${available} ${currency} = ${madTotal} MAD`);
+    state.totalRevenueMAD = Math.max(state.totalRevenueMAD, madTotal);
+    const result = await evaluateAndPayout(state.totalRevenueMAD, 'stripe');
+    ev.payoutResult = result;
+    if (result.action === 'below_threshold') {
+      log(`[poll] Balance ${state.totalRevenueMAD} MAD < threshold ${THRESHOLD_MAD} MAD, waiting`);
     }
-  } catch (err) {
-    log(`[poll] Stripe error: ${err.message}`);
+  } else {
+    log(`[poll] Stripe SKIP: ${pipelineHealth.stripe.reason || 'unknown'}`);
   }
 
   state.lastPoll = now;
@@ -191,8 +222,62 @@ async function pollRevenue() {
   await saveState();
 }
 
+function readBody(req) {
+  return new Promise((resolve) => {
+    const chunks = [];
+    req.on('data', c => chunks.push(c));
+    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+  });
+}
+
+function startWatchdogServer() {
+  const server = http.createServer(async (req, res) => {
+    const url = new URL(req.url, `http://localhost:${DAEMON_PORT}`);
+
+    if (url.pathname === '/watchdog' && req.method === 'GET') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        status: Object.values(pipelineHealth).every(h => h.ok !== false) ? 'ALL_OK' : 'DEGRADED',
+        uptime: Math.floor((Date.now() - new Date(pipelineHealth.daemon.started).getTime()) / 1000),
+        pipeline: pipelineHealth,
+        ledger: {
+          totalRevenueMAD: state.totalRevenueMAD,
+          payouts: state.payouts?.length || 0,
+          lastPoll: state.lastPoll,
+          cooldownActive: state.payouts?.length > 0 && (Date.now() - new Date(state.payouts[state.payouts.length - 1].at).getTime()) < 3600000,
+        },
+        services: Object.fromEntries(Object.entries(services).map(([k, v]) => [k, { pid: v.proc.pid, uptime: Math.floor((Date.now() - v.startedAt) / 1000) }])),
+        config: {
+          pollInterval: POLL_INTERVAL_MS / 1000 + 's',
+          threshold: `${THRESHOLD_MAD} MAD`,
+          payoutPct: `${PAYOUT_PCT * 100}%`,
+          baasEnv: process.env.BAAS_ENV || 'sandbox',
+        },
+      }));
+      return;
+    }
+
+    if (url.pathname === '/watchdog/retry' && req.method === 'POST') {
+      log('[watchdog] Manual retry triggered');
+      pollRevenue().catch(e => log(`[watchdog] retry error: ${e.message}`));
+      res.writeHead(200);
+      res.end(JSON.stringify({ triggered: true }));
+      return;
+    }
+
+    res.writeHead(404);
+    res.end('Not found');
+  });
+
+  server.listen(DAEMON_PORT, () => {
+    log(`[watchdog] HTTP endpoint on :${DAEMON_PORT}`);
+    log(`[watchdog] GET /watchdog       — pipeline health status`);
+    log(`[watchdog] POST /watchdog/retry — force poll cycle`);
+  });
+}
+
 async function main() {
-  log('=== AUTONOMOUS PAYOUT DAEMON v1 ===');
+  log('=== AUTONOMOUS PAYOUT DAEMON v2 (Watchdog) ===');
   log(`PID: ${process.pid}  CWD: ${ROOT}`);
 
   await loadTruth();
@@ -200,6 +285,7 @@ async function main() {
   if (!state.startedAt) { state.startedAt = new Date().toISOString(); await saveState(); }
 
   bootService('webhook');
+  startWatchdogServer();
 
   setInterval(healthCheck, HEALTH_CHECK_MS);
   setInterval(pollRevenue, POLL_INTERVAL_MS);
@@ -208,10 +294,7 @@ async function main() {
 
   log('=== RUNNING ===');
   log(`Poll:  every ${POLL_INTERVAL_MS / 1000}s`);
-  log(`Thresh: ${THRESHOLD_MAD} MAD  Payout: ${PAYOUT_PCT * 100}%`);
-  log(`Webhook listener: PID ${services.webhook?.proc?.pid || 'N/A'}`);
-  log(`State: ${MEMORY_PATH}`);
-  log(`Log:   ${LOG_PATH}`);
+  log(`Watchdog: http://localhost:${DAEMON_PORT}/watchdog`);
 }
 
 main().catch(err => {
