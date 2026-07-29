@@ -4,6 +4,7 @@ import path from 'path';
 import http from 'http';
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
+import contingencyEngine from '../contingency.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -29,6 +30,7 @@ const pipelineHealth = {
   baas: { ok: false, lastOk: null, failures: 0, reason: 'not_checked' },
   attijari: { ok: false, reason: 'not_checked' },
   daemon: { uptime: 0, started: new Date().toISOString(), cycles: 0 },
+  contingency: { ok: true, threatLevel: 'GREEN', openCircuits: 0, reason: 'not_initialized' },
 };
 
 async function log(msg) {
@@ -250,11 +252,25 @@ function startWatchdogServer() {
     const url = new URL(req.url, `http://localhost:${DAEMON_PORT}`);
 
     if (url.pathname === '/watchdog' && req.method === 'GET') {
+      const contingencyHealth = await contingencyEngine.health().catch(() => ({
+        threatLevel: 'ERROR', healthy: false, openCircuits: [],
+      }));
+      pipelineHealth.contingency = {
+        ok: contingencyHealth.healthy,
+        threatLevel: contingencyHealth.threatLevel || 'GREEN',
+        openCircuits: contingencyHealth.openCircuits?.length || 0,
+        reason: contingencyHealth.openCircuits?.length > 0
+          ? `${contingencyHealth.openCircuits.length} circuit(s) OPEN`
+          : `threat_level_${(contingencyHealth.threatLevel || 'GREEN').toLowerCase()}`,
+      };
+
       res.writeHead(200, { 'Content-Type': 'application/json' });
+      const allOk = Object.values(pipelineHealth).every(h => h.ok !== false);
       res.end(JSON.stringify({
-        status: Object.values(pipelineHealth).every(h => h.ok !== false) ? 'ALL_OK' : 'DEGRADED',
+        status: allOk && pipelineHealth.contingency.ok ? 'ALL_OK' : pipelineHealth.contingency.ok ? 'DEGRADED' : 'LOCKDOWN',
         uptime: Math.floor((Date.now() - new Date(pipelineHealth.daemon.started).getTime()) / 1000),
         pipeline: pipelineHealth,
+        contingency: contingencyHealth,
         ledger: {
           totalRevenueMAD: state.totalRevenueMAD,
           payouts: state.payouts?.length || 0,
@@ -327,9 +343,10 @@ async function loadVault() {
 }
 
 async function main() {
-  log('=== AUTONOMOUS PAYOUT DAEMON v2 (Watchdog) ===');
+  log('=== AUTONOMOUS PAYOUT DAEMON v2 (Watchdog + Contingency) ===');
   log(`PID: ${process.pid}  CWD: ${ROOT}`);
 
+  await contingencyEngine.init().catch(e => log(`[contingency] init error: ${e.message}`));
   await loadVault();
   await loadTruth();
   await loadState();

@@ -158,6 +158,71 @@
       "default": "us_citibank"
     }
   },
+  "contingency": {
+    "version": "CNT-1.0",
+    "policy": "Anticipate, mitigate, resolve. Automated circuit breakers prevent cascading failure. Escalation ensures human-in-loop for irreversible actions.",
+    "threatLevels": {
+      "GREEN": { "label": "Normal", "response": "Standard monitoring, all circuits closed" },
+      "YELLOW": { "label": "Elevated", "response": "Increased monitoring, rate limiting active, log all anomalies" },
+      "ORANGE": { "label": "High", "response": "Large payouts frozen, require manual auth, notify owner" },
+      "RED": { "label": "Critical", "response": "All outbound frozen, forensic snapshot, legal protocols activated" }
+    },
+    "circuitBreakers": {
+      "outboundPayouts": { "threshold": 3, "windowMinutes": 60, "cooldownMs": 300000, "action": "block_new_payouts" },
+      "newDestinations": { "threshold": 2, "windowMinutes": 1440, "cooldownMs": 600000, "action": "require_manual_auth" },
+      "authSystem": { "threshold": 5, "windowMinutes": 15, "cooldownMs": 900000, "action": "freeze_auth" },
+      "balanceManagement": { "thresholdPct": 30, "cooldownMs": 300000, "action": "freeze_balance" }
+    },
+    "escalationContacts": {
+      "primary": { "name": "Younes Tsouli", "contact": "younestsouli2019@gmail.com", "method": "email+sms", "responseSLAminutes": 5 },
+      "legal": { "name": "Legal Counsel", "contact": "TBD — insert lawyer contact", "method": "email+phone", "responseSLAminutes": 60 },
+      "technical": { "name": "System Administrator", "contact": "TBD — insert sysadmin", "method": "email", "responseSLAminutes": 15 }
+    },
+    "emergencyProcedures": {
+      "breachLockdown": {
+        "trigger": "Any CRITICAL severity threat",
+        "actions": [
+          "Trip all circuit breakers (GLOBAL FREEZE)",
+          "Take forensic snapshot of all state",
+          "Rotate all credentials in vault",
+          "Generate incident report with evidence",
+          "Notify owner via all channels",
+          "Review audit log for unauthorized transactions"
+        ]
+      },
+      "assetSeizure": {
+        "trigger": "Legal freeze order or account seizure by authority",
+        "actions": [
+          "Do NOT resist legal order — comply fully",
+          "Preserve all transaction records for compliance",
+          "Contact legal counsel immediately",
+          "Activate backup payout routes on non-frozen accounts if available",
+          "Document every interaction with authorities"
+        ]
+      },
+      "fundRecall": {
+        "trigger": "Funds sent to wrong destination",
+        "actions": [
+          "Trip outboundPayouts circuit breaker immediately",
+          "Take forensic snapshot",
+          "Contact destination institution within recall window",
+          "Generate incident report for insurance/legal"
+        ]
+      }
+    },
+    "backupPayoutMethods": [
+      { "method": "crypto_usdt_erc20", "destination": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7", "note": "Crypto fallback — available even if bank accounts frozen", "requiresManualAuth": true },
+      { "method": "paypal", "destination": "younestsouli2019@gmail.com", "note": "PayPal — available if bank transfer system down", "requiresManualAuth": false },
+      { "method": "manual_bank_wire", "destination": "any_owner_account", "note": "Manual wire via banking portal — requires human operator", "requiresManualAuth": true }
+    ],
+    "legalJurisdictions": [
+      { "country": "Morocco", "regulator": "Bank Al-Maghrib", "contact": "https://www.bkam.ma", "notes": "Primary jurisdiction for Attijariwafa MAD accounts" },
+      { "country": "United States", "regulator": "FinCEN / Federal Reserve", "contact": "https://www.fincen.gov", "notes": "Citibank USD account jurisdiction" },
+      { "country": "United Kingdom", "regulator": "FCA", "contact": "https://www.fca.org.uk", "notes": "Barclays GBP account jurisdiction" },
+      { "country": "Luxembourg", "regulator": "CSSF", "contact": "https://www.cssf.lu", "notes": "Banking Circle EUR account jurisdiction" },
+      { "country": "Japan", "regulator": "FSA", "contact": "https://www.fsa.go.jp", "notes": "MUFG JPY account jurisdiction" }
+    ]
+  },
   "baasGateway": {
     "provider": "ChariBaaS",
     "licensedBy": "Bank Al-Maghrib",
