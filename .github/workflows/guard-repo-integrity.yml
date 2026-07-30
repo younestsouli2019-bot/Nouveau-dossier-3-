@@ -1,0 +1,47 @@
+name: Guard Repo Integrity
+on:
+  push:
+    branches: [main, master, squashed-main]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: "0 */6 * * *"
+permissions:
+  contents: read
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: false
+      - name: Check for dangling gitlinks
+        run: |
+          set -euo pipefail
+          DANGLING=$(git ls-files --stage | grep '^160000' || true)
+          if [ -n "$DANGLING" ]; then
+            echo "::error::Dangling gitlinks detected:"
+            echo "$DANGLING"
+            exit 1
+          fi
+          echo "No dangling gitlinks found."
+      - name: Check for deprecated @v4 actions
+        run: |
+          set -euo pipefail
+          V4_REFS=$(grep -r 'actions/.*@v4' .github/workflows/ 2>/dev/null || true)
+          if [ -n "$V4_REFS" ]; then
+            echo "::error::Deprecated @v4 actions found:"
+            echo "$V4_REFS"
+            exit 1
+          fi
+          echo "No deprecated @v4 actions found."
+      - name: Scan for leaked credentials
+        run: |
+          set -euo pipefail
+          git fetch --depth=1 origin refs/heads/main:refs/remotes/origin/main 2>/dev/null || true
+          LEAKS=$(git diff --name-only origin/main..HEAD 2>/dev/null | grep -iE '(secret|key|token|password|credential|\.env$)' || true)
+          if [ -n "$LEAKS" ]; then
+            echo "::warning::Files with potential secrets in diff:"
+            echo "$LEAKS"
+          fi
+          echo "Credential scan complete."

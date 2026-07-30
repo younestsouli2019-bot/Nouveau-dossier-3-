@@ -14,8 +14,8 @@ jobs:
       SMTP_FROM: ${{ secrets.SMTP_FROM }}
       SMTP_TEST_TO: ${{ secrets.SMTP_TEST_TO }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: "18"
       - name: Generate email queue from payer actions

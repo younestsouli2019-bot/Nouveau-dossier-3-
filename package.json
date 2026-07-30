@@ -1,9 +1,28 @@
 {
   "name": "charibaas-client",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
+  "description": "ChariBaaS autonomous AI agentic swarm — crowdsourcing HIT revenue automation",
+  "scripts": {
+    "site:smoke": "node ./scripts/site-smoke-test.mjs",
+    "owner:crypto:withdraw": "node ./scripts/execute-crypto-withdraw.mjs",
+    "vercel:prepare": "node \"Nouveau dossier (3)/scripts/generate-vercel-output.mjs\"",
+    "reconcile:payouts": "node ./scripts/reconcile_payouts.mjs",
+    "swarm:add:agents": "node ./src/charibaas/orchestrator.mjs --add-agents",
+    "swarm:headhunter:once": "node \"Nouveau dossier (3)/scripts/headhunter-once.mjs\"",
+    "autonomous:once": "node ./src/mcp/autonomous_daemon.mjs --once",
+    "live:readiness:ping": "node ./src/mcp/webhook_listener.mjs --ping",
+    "catalogue:ultimate": "node \"Nouveau dossier (3)/scripts/generate-catalogue-ultimate.mjs\"",
+    "catalogue:pdfkit": "node \"Nouveau dossier (3)/scripts/generate-catalogue-pdfkit.mjs\"",
+    "revenue:engines": "node ./src/revenue-engines/registry.mjs run-all"
+  },
   "dependencies": {
     "chari-baas-client": "^1.0.0"
+  },
+  "optionalDependencies": {
+    "ccxt": "^4.0.0",
+    "ethers": "^6.0.0",
+    "dotenv": "^16.0.0"
   }
 }

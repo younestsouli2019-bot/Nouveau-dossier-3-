@@ -15,7 +15,7 @@ jobs:
     environment: prod
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Render .env file
         run: |
@@ -53,7 +53,7 @@ jobs:
     environment: staging
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Render .env file
         run: |
           echo "OWNER=${{ github.repository_owner }}" > .env

@@ -7,7 +7,7 @@ jobs:
   broadcast:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup gh auth using bot/App token
         env:
           ORG_TOKEN: ${{ secrets.ORG_APP_TOKEN || secrets.ORG_BOT_PAT || secrets.ORG_PAT }}
