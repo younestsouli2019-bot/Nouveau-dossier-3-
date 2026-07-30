@@ -1,24 +1,140 @@
 {
+  "$schema": "./mirror-sites.schema.json",
+  "created": "2026-07-30T00:00:00.000Z",
+  "updated": "2026-07-30T00:00:00.000Z",
+  "defaultEncryption": {
+    "algorithm": "aes-256-gcm",
+    "keyDerivation": "PBKDF2-HMAC-SHA256",
+    "iterations": 600000,
+    "authTagLength": 16,
+    "integrity": "HMAC-SHA256"
+  },
   "mirrors": [
     {
       "id": "mirror-01",
       "url": "https://mirror1.realworldcerts.com",
+      "label": "Primary CDN (US-East/EU-West)",
+      "provider": "Cloudflare",
       "status": "active",
-      "last_sync": null,
-      "regions": [
-        "US-East",
-        "EU-West"
-      ]
+      "lastSync": null,
+      "regions": ["US-East", "EU-West"],
+      "capabilities": ["cdn", "ssl", "waf", "ddos-protection"],
+      "healthEndpoint": "https://mirror1.realworldcerts.com/health",
+      "syncSchedule": {
+        "cron": "*/30 * * * *",
+        "intervalMinutes": 30,
+        "retentionDays": 90,
+        "compression": "brotli"
+      },
+      "encryption": {
+        "atRest": true,
+        "inTransit": true,
+        "keyRef": "env://SECURE_CLOUD_KEY_MIRROR_01"
+      },
+      "backup": {
+        "enabled": true,
+        "target": "s3://rwc-backup-us-east-1",
+        "scheduleCron": "0 3 * * *"
+      }
     },
     {
       "id": "mirror-02",
       "url": "https://mirror2.realworldcerts.com",
+      "label": "Secondary CDN (APAC/Middle-East)",
+      "provider": "BunnyCDN",
       "status": "active",
-      "last_sync": null,
-      "regions": [
-        "APAC",
-        "Middle-East"
-      ]
+      "lastSync": null,
+      "regions": ["APAC", "Middle-East"],
+      "capabilities": ["cdn", "ssl", "edge-rules"],
+      "healthEndpoint": "https://mirror2.realworldcerts.com/health",
+      "syncSchedule": {
+        "cron": "*/30 * * * *",
+        "intervalMinutes": 30,
+        "retentionDays": 90,
+        "compression": "gzip"
+      },
+      "encryption": {
+        "atRest": true,
+        "inTransit": true,
+        "keyRef": "env://SECURE_CLOUD_KEY_MIRROR_02"
+      },
+      "backup": {
+        "enabled": true,
+        "target": "s3://rwc-backup-ap-southeast-1",
+        "scheduleCron": "0 5 * * *"
+      }
+    },
+    {
+      "id": "mirror-gh-pages",
+      "url": "https://realworldcerts.com",
+      "label": "GitHub Pages (Origin/Zero-Cost)",
+      "provider": "GitHub Pages",
+      "status": "active",
+      "lastSync": null,
+      "regions": ["Global"],
+      "capabilities": ["static-hosting", "custom-domain", "ssl", "zero-cost"],
+      "healthEndpoint": "https://realworldcerts.com/healthz",
+      "syncSchedule": {
+        "cron": "@push",
+        "intervalMinutes": null,
+        "retentionDays": null,
+        "compression": "none"
+      },
+      "encryption": {
+        "atRest": false,
+        "inTransit": true,
+        "keyRef": null
+      },
+      "backup": {
+        "enabled": true,
+        "target": "git://origin/gh-pages-backup",
+        "scheduleCron": "0 2 * * 0"
+      }
+    },
+    {
+      "id": "mirror-encrypted-backup",
+      "url": null,
+      "label": "Encrypted Cold Storage (Disaster Recovery)",
+      "provider": "Infomaniak / Scaleway",
+      "status": "standby",
+      "lastSync": null,
+      "regions": ["EU-Central"],
+      "capabilities": ["object-storage", "encryption-at-rest", "geo-redundant"],
+      "healthEndpoint": null,
+      "syncSchedule": {
+        "cron": "0 4 * * *",
+        "intervalMinutes": 1440,
+        "retentionDays": 365,
+        "compression": "zstd"
+      },
+      "encryption": {
+        "atRest": true,
+        "inTransit": true,
+        "keyRef": "env://SECURE_CLOUD_KEY_COLD_STORAGE"
+      },
+      "backup": {
+        "enabled": true,
+        "target": "s3://rwc-disaster-recovery-eu-central",
+        "scheduleCron": "0 6 * * 6"
+      }
     }
-  ]
+  ],
+  "routing": {
+    "strategy": "geo-latency",
+    "fallbackOrder": ["mirror-01", "mirror-02", "mirror-gh-pages"],
+    "healthCheckIntervalMs": 30000,
+    "maxFailoverTimeMs": 5000
+  },
+  "restoreDrill": {
+    "enabled": true,
+    "scheduleCron": "0 8 * * 1",
+    "requireProof": true,
+    "proofDir": "data/swarm/continuity",
+    "autoRestoreThreshold": "RED",
+    "playbooks": {
+      "partial_outage": "restore_single_mirror",
+      "full_outage": "restore_all_mirrors",
+      "data_corruption": "restore_from_encrypted_backup"
+    }
+  }
 }

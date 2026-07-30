@@ -48,6 +48,17 @@
       "description": "Reconcile offline earnings store against settlement records; flag failed_recoverable items",
       "command": "node",
       "args": ["scripts/reconcile_payouts.mjs"]
+    },
+    "secure-cloud": {
+      "name": "Secure Cloud (Encrypted Mirror Infrastructure)",
+      "description": "Encrypted cloud mirror orchestration, health monitoring, restore drills, continuity backup for realworldcerts.com CDN infrastructure",
+      "command": "node",
+      "args": ["src/secure-cloud.mjs"],
+      "env": {
+        "SECURE_CLOUD_KEY_MIRROR_01": "${SECURE_CLOUD_KEY_MIRROR_01:-}",
+        "SECURE_CLOUD_KEY_MIRROR_02": "${SECURE_CLOUD_KEY_MIRROR_02:-}",
+        "SECURE_CLOUD_KEY_COLD_STORAGE": "${SECURE_CLOUD_KEY_COLD_STORAGE:-}"
+      }
     }
   }
 }

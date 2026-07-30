@@ -3,7 +3,7 @@
   "title": "Continuity - Encrypted cloud mirror + restore drill",
   "channel": "infrastructure",
   "priority": "critical",
-  "status": "active",
+  "status": "deployed",
   "data": {
     "mission_parameters": "{\"task\":\"continuity\",\"objectives\":[\"encrypted_cloud_mirror\",\"restore_drill\",\"key_separation\"],\"dependent_on\":[\"INF-001\"],\"guardrails\":{\"no_secrets_in_repo\":true,\"require_restore_proof\":true},\"deliverables\":[\"data/swarm/mission-plan.json includes continuity mission ready state\",\"restore proof stored under data/swarm/continuity\"]}"
   },

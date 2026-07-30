@@ -18,3 +18,12 @@
 - authSystem: 5/15min threshold
 - balanceManagement: 30% drop threshold
 - CRITICAL threats trigger automatic global freeze
+
+## Secure Cloud & Continuity
+- All site assets in content/ MUST be mirrored to at least 2 active CDN nodes
+- Mirror health is checked every 30s; failover triggers at 5s timeout
+- Encrypted cold storage backup runs nightly (zstd compressed, aes-256-gcm encrypted)
+- Restore drills execute every Monday 08:00 UTC; proof stored in data/swarm/continuity/
+- RED-level outage auto-triggers restore from encrypted backup via secure-cloud module
+- Encryption keys stored in environment variables (never in repo)
+- Circuit breaker from contingency engine halts ALL payouts if mirror health drops below threshold

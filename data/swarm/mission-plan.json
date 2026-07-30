@@ -1,8 +1,8 @@
 {
   "at": "2026-03-20T02:22:24.326Z",
   "summary": {
-    "total": 71,
-    "ready": 71,
+    "total": 72,
+    "ready": 72,
     "blocked": 0
   },
   "missions": [
@@ -23,7 +23,7 @@
       "id": "INF-010",
       "title": "Continuity - Encrypted cloud mirror + restore drill",
       "type": "infrastructure",
-      "status": "pending",
+      "status": "deployed",
       "priority": "critical",
       "channel": "infrastructure",
       "dependencies": [

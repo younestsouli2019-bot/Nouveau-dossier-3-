@@ -1,0 +1,15 @@
+{
+  "lastSync": null,
+  "lastRestoreDrill": null,
+  "mirrorHealth": {
+    "mirror-01": { "status": "pending", "lastCheck": null, "latencyMs": null },
+    "mirror-02": { "status": "pending", "lastCheck": null, "latencyMs": null },
+    "mirror-gh-pages": { "status": "pending", "lastCheck": null, "latencyMs": null },
+    "mirror-encrypted-backup": { "status": "standby", "lastCheck": null, "latencyMs": null }
+  },
+  "breaches": [],
+  "encryptionKeys": {
+    "initialized": false,
+    "keyFingerprint": null
+  }
+}
