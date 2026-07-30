@@ -34,15 +34,27 @@ jobs:
         env:
           CATALOG_CSV_DIR: ${{ github.workspace }}/rank_mirror
         run: |
-          node ./scripts/ingest-external-catalogs.mjs
+          if [ -f ./scripts/ingest-external-catalogs.mjs ]; then
+            node ./scripts/ingest-external-catalogs.mjs
+          else
+            echo "scripts/ingest-external-catalogs.mjs not found — skipping"
+          fi
       - name: Refresh scrapes dataset
         run: |
-          node ./scripts/refresh-scrapes.mjs
+          if [ -f ./scripts/refresh-scrapes.mjs ]; then
+            node ./scripts/refresh-scrapes.mjs
+          else
+            echo "scripts/refresh-scrapes.mjs not found — skipping"
+          fi
       - name: Inject Google SSO extension
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID_WEB }}
         run: |
-          node ./scripts/inject-google-sso.mjs
+          if [ -f ./scripts/inject-google-sso.mjs ]; then
+            node ./scripts/inject-google-sso.mjs
+          else
+            echo "scripts/inject-google-sso.mjs not found — skipping"
+          fi
 
       - name: Commit and push if changed
         run: |

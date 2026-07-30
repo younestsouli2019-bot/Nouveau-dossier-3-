@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { existsSync, mkdirSync } from 'fs';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const REGISTRY = new Map();
 
@@ -13,13 +13,13 @@ export function register(name, factory, manifest = {}) {
 export function list() { return Array.from(REGISTRY.values()); }
 export function get(name) { return REGISTRY.get(name); }
 
-async function loadAllEngines() {
+export async function loadAllEngines() {
   const dir = path.dirname(fileURLToPath(import.meta.url));
   if (!existsSync(dir)) return;
   const entries = await fs.readdir(dir);
   for (const f of entries) {
-    if (f === 'base.mjs' || f === 'registry.mjs' || !f.endsWith('.mjs')) continue;
-    try { await import(`file://${path.join(dir, f)}`); }
+    if (f === 'base.mjs' || f === 'registry.mjs' || f === 'orchestrator.mjs' || !f.endsWith('.mjs')) continue;
+    try { await import(pathToFileURL(path.join(dir, f)).href); }
     catch (e) { console.error(`[registry] failed to load ${f}: ${e.message}`); }
   }
 }

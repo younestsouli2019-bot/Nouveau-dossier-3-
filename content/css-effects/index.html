@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RWC Effects — CSS Effect Library for realworldcerts.com</title>
+<link rel="stylesheet" href="rwc-effects.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--rwc-light); color: var(--rwc-dark); line-height: 1.6; }
+.hero { padding: 80px 24px; text-align: center; }
+.hero h1 { font-size: 3rem; margin-bottom: 16px; }
+.hero p { font-size: 1.1rem; color: var(--rwc-gray-700); max-width: 600px; margin: 0 auto; }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+.section { margin: 48px 0; padding: 32px; background: white; border-radius: var(--rwc-radius); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.section h2 { font-size: 1.5rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.section h2 .count { font-size: 0.85rem; color: var(--rwc-gray-400); font-weight: 400; }
+.section > p { color: var(--rwc-gray-400); margin-bottom: 24px; font-size: 0.95rem; }
+.demo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 24px; }
+.demo-item { padding: 24px; border: 1px solid var(--rwc-gray-200); border-radius: var(--rwc-radius-sm); text-align: center; }
+.demo-item h3 { font-size: 0.95rem; margin-bottom: 16px; color: var(--rwc-gray-700); font-weight: 500; }
+.demo-item .demo-area { min-height: 80px; display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+pre { background: #0f172a; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 0.8rem; overflow-x: auto; margin-top: 16px; line-height: 1.5; }
+code { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+.tag { display: inline-block; padding: 2px 10px; border-radius: 100px; font-size: 0.75rem; font-weight: 600; margin-left: 8px; }
+.tag-animation { background: #ede9fe; color: #6d28d9; }
+.tag-component { background: #dbeafe; color: #2563eb; }
+.tag-utility { background: #d1fae5; color: #059669; }
+.tag-interaction { background: #fef3c7; color: #d97706; }
+footer { text-align: center; padding: 48px 24px; color: var(--rwc-gray-400); font-size: 0.9rem; }
+.demo-area.dark { background: var(--rwc-dark); border-radius: 8px; }
+.demo-row { display: flex; gap: 12px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.bar { height: 100%; display: flex; align-items: center; justify-content: center; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; } }
+</style>
+</head>
+<body>
+
+<header class="hero rwc-bg-mesh" style="color:white">
+  <h1 class="rwc-text-gradient" style="-webkit-text-fill-color:transparent">RWC Effects</h1>
+  <p>A production-ready CSS effect library for realworldcerts.com — animations, components, and utilities. MIT license. Zero dependencies.</p>
+  <div style="margin-top:24px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap">
+    <span class="rwc-badge rwc-badge-gold rwc-badge-shine">v1.0.0</span>
+    <span class="rwc-badge rwc-badge-primary">6.5KB gzip</span>
+    <span class="rwc-badge rwc-badge-success">No JS required</span>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- Cards -->
+<div class="section">
+  <h2><span class="rwc-text-gradient">Cards</span> <span class="count">(5)</span></h2>
+  <p>Hover, glass, glow-border, flip, and dark card variants.</p>
+  <div class="demo-grid">
+    <div class="demo-item"><h3>Hover Lift</h3><div class="demo-area"><div class="rwc-card" style="max-width:200px">Hover me</div></div><pre>&lt;div class=&quot;rwc-card&quot;&gt;...&lt;/div&gt;</pre></div>
+    <div class="demo-item"><h3>Glass</h3><div class="demo-area dark"><div class="rwc-card-glass" style="max-width:200px;color:white">Glass card</div></div><pre>&lt;div class=&quot;rwc-card-glass&quot;&gt;...&lt;/div&gt;</pre></div>
+    <div class="demo-item"><h3>Glow Border</h3><div class="demo-area"><div class="rwc-card-glow" style="max-width:200px;color:white">Glow card</div></div><pre>&lt;div class=&quot;rwc-card-glow&quot;&gt;...&lt;/div&gt;</pre></div>
+    <div class="demo-item"><h3>3D Flip</h3><div class="demo-area"><div class="rwc-card-flip" style="max-width:200px;height:100px"><div class="rwc-card-flip-inner"><div class="rwc-card-flip-front">Front</div><div class="rwc-card-flip-back">Back</div></div></div></div><pre>&lt;div class=&quot;rwc-card-flip&quot;&gt;&lt;div class=&quot;rwc-card-flip-inner&quot;&gt;
+  &lt;div class=&quot;rwc-card-flip-front&quot;&gt;...&lt;/div&gt;
+  &lt;div class=&quot;rwc-card-flip-back&quot;&gt;...&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;</pre></div>
+  </div>
+</div>
+
+<!-- Text Effects -->
+<div class="section">
+  <h2><span class="rwc-text-gradient">Text Effects</span> <span class="count">(4)</span></h2>
+  <p>Gradient, neon glow, typewriter, and slide-reveal text.</p>
+  <div class="demo-grid">
+    <div class="demo-item"><h3>Gradient Text</h3><div class="demo-area"><h2 class="rwc-text-gradient" style="font-size:1.5rem">Gradient Text</h2></div><pre>&lt;h2 class=&quot;rwc-text-gradient&quot;&gt;...&lt;/h2&gt;</pre></div>
+    <div class="demo-item"><h3>Neon Glow</h3><div class="demo-area dark"><span class="rwc-text-neon" style="font-size:1.3rem">NEON</span></div><pre>&lt;span class=&quot;rwc-text-neon&quot;&gt;...&lt;/span&gt;</pre></div>
+    <div class="demo-item"><h3>Typewriter</h3><div class="demo-area"><span class="rwc-text-typewriter" style="display:inline-block">Typewriter effect</span></div><pre>&lt;span class=&quot;rwc-text-typewriter&quot;&gt;...&lt;/span&gt;</pre></div>
+    <div class="demo-item"><h3>Reveal</h3><div class="demo-area" style="overflow:hidden"><h3 class="rwc-text-reveal" style="font-size:1.5rem;color:var(--rwc-primary)">Reveal</h3></div><pre>&lt;h3 class=&quot;rwc-text-reveal&quot;&gt;...&lt;/h3&gt;</pre></div>
+  </div>
+</div>
+
+<!-- Buttons -->
+<div class="section">
+  <h2><span class="rwc-text-gradient">Buttons</span> <span class="count">(5)</span></h2>
+  <p>Primary, neon, slide-border, pulse, and 3D press buttons.</p>
+  <div class="demo-grid">
+    <div class="demo-item"><h3>Primary</h3><div class="demo-area"><button class="rwc-btn rwc-btn-primary">Get Certified</button></div><pre>&lt;button class=&quot;rwc-btn rwc-btn-primary&quot;&gt;...&lt;/button&gt;</pre></div>
+    <div class="demo-item dark" style="background:var(--rwc-dark)"><h3 style="color:white">Neon</h3><div class="demo-area"><button class="rwc-btn rwc-btn-neon">Neon</button></div><pre>&lt;button class=&quot;rwc-btn rwc-btn-neon&quot;&gt;...&lt;/button&gt;</pre></div>
+    <div class="demo-item"><h3>Slide</h3><div class="demo-area"><button class="rwc-btn rwc-btn-slide">Slide</button></div><pre>&lt;button class=&quot;rwc-btn rwc-btn-slide&quot;&gt;...&lt;/button&gt;</pre></div>
+    <div class="demo-item"><h3>Pulse</h3><div class="demo-area"><button class="rwc-btn rwc-btn-pulse">Pulse</button></div><pre>&lt;button class=&quot;rwc-btn rwc-btn-pulse&quot;&gt;...&lt;/button&gt;</pre></div>
+    <div class="demo-item"><h3>3D Press</h3><div class="demo-area"><button class="rwc-btn rwc-btn-3d">3D Button</button></div><pre>&lt;button class=&quot;rwc-btn rwc-btn-3d&quot;&gt;...&lt;/button&gt;</pre></div>
+  </div>
+</div>
+
+<!-- Navigation -->
+<div class="section">
+  <h2><span class="rwc-text-gradient">Navigation</span> <span class="count">(2)</span></h2>
+  <p>Underline slide and background slide nav effects.</p>
+  <div class="demo-grid">
+    <div class="demo-item"><h3>Underline</h3><div class="demo-area" style="gap:24px"><a class="rwc-nav-underline" href="#">Courses</a><a class="rwc-nav-underline" href="#">Certs</a><a class="rwc-nav-underline" href="#">Deals</a></div><pre>&lt;a class=&quot;rwc-nav-underline&quot; href=&quot;#&quot;&gt;...&lt;/a&gt;</pre></div>
+    <div class="demo-item"><h3>Slide BG</h3><div class="demo-area" style="gap:12px"><a class="rwc-nav-slide" href="#">Home</a><a class="rwc-nav-slide" href="#">Pricing</a></div><pre>&lt;a class=&quot;rwc-nav-slide&quot; href=&quot;#&quot;&gt;...&lt;/a&gt;</pre></div>
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="section">
+  <h2><span class="rwc-text-gradient">Loading</span> <span class="count">(3)</span></h2>
+  <p>Spinner, pulse dot, and skeleton shimmer.</p>
+  <div class="demo-grid">
+    <div class="demo-item"><h3>Spinner</h3><div class="demo-area"><div class="rwc-loader-spinner"></div></div><pre>&lt;div class=&quot;rwc-loader-spinner&quot;&gt;&lt;/div&gt;</pre></div>
+    <div class="demo-item"><h3>Pulse</h3><div class="demo-area"><div class="rwc-loader-pulse"></div></div><pre>&lt;div class=&quot;rwc-loader-pulse&quot;&gt;&lt;/div&gt;</pre></div>
+    <div class="demo-item"><h3>Skeleton</h3><div class="demo-area" style="flex-direction:column;gap:8px"><div class="rwc-loader-skeleton" style="width:180px;height:16px"></div><div class="rwc-loader-skeleton" style="width:140px;height:16px"></div><div class="rwc-loader-skeleton" style="width:120px;height:16px"></div></div><pre>&lt;div class=&quot;rwc-loader-skeleton&quot;&gt;&lt;/div&gt;</pre></div>
+  </div>
+</div>
+
+<!-- Progress -->
+<div class="section">
+  <h2><span class="rwc-text-gradient">Progress</span> <span class="count">(2)</span></h2>
+  <p>Determinate and indeterminate progress bars.</p>
+  <div class="demo-grid">
+    <div class="demo-item"><h3>Determinate</h3><div class="demo-area" style="flex-direction:column;width:100%"><div class="rwc-progress" style="max-width:300px"><div class="rwc-progress-bar" style="width:67%"></div></div><span style="font-size:0.8rem;color:var(--rwc-gray-400)">67% complete</span></div><pre>&lt;div class=&quot;rwc-progress&quot;&gt;
+  &lt;div class=&quot;rwc-progress-bar&quot; style=&quot;width:67%&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;</pre></div>
+    <div class="demo-item"><h3>Indeterminate</h3><div class="demo-area" style="width:100%"><div class="rwc-progress-indeterminate" style="max-width:300px"></div></div><pre>&lt;div class=&quot;rwc-progress-indeterminate&quot;&gt;&lt;/div&gt;</pre></div>
+  </div>
+</div>
+
+<!-- Badges -->
+<div class="section">
+  <h2><span class="rwc-text-gradient">Badges &amp; Seals</span> <span class="count">(3)</span></h2>
+  <p>Verification badges, gold badges with shine, and certification seals.</p>
+  <div class="demo-grid">
+    <div class="demo-item"><h3>Verified</h3><div class="demo-area"><span class="rwc-cert-badge rwc-cert-badge-verified">Verified</span></div><pre>&lt;span class=&quot;rwc-cert-badge rwc-cert-badge-verified&quot;&gt;
+  Verified
+&lt;/span&gt;</pre></div>
+    <div class="demo-item"><h3>Gold Shine</h3><div class="demo-area"><span class="rwc-badge rwc-badge-gold rwc-badge-shine">Premium</span></div><pre>&lt;span class=&quot;rwc-badge rwc-badge-gold rwc-badge-shine&quot;&gt;
+  Premium
+&lt;/span&gt;</pre></div>
+    <div class="demo-item"><h3>Seal</h3><div class="demo-area"><div class="rwc-seal">CERT</div></div><pre>&lt;div class=&quot;rwc-seal&quot;&gt;CERT&lt;/div&gt;</pre></div>
+  </div>
+</div>
+
+<!-- Modal / Overlay -->
+<div class="section">
+  <h2><span class="rwc-text-gradient">Modal / Overlay</span> <span class="count">(2)</span></h2>
+  <p>Blur backdrop and slide-up modal. Trigger the demo below.</p>
+  <div class="demo-grid">
+    <div class="demo-item"><h3>Demo</h3><div class="demo-area"><button class="rwc-btn rwc-btn-primary" onclick="document.getElementById('modalDemo').style.display='flex'">Open Modal</button></div><pre>&lt;div class=&quot;rwc-modal-overlay&quot;&gt;
+  &lt;div class=&quot;rwc-modal&quot;&gt;...&lt;/div&gt;
+&lt;/div&gt;</pre></div>
+  </div>
+</div>
+
+<!-- Backgrounds -->
+<div class="section">
+  <h2><span class="rwc-text-gradient">Backgrounds</span> <span class="count">(3)</span></h2>
+  <p>Mesh gradient, animated gradient, and glassmorphism.</p>
+  <div class="demo-grid">
+    <div class="demo-item"><h3>Mesh</h3><div class="rwc-bg-mesh demo-area" style="min-height:120px;border-radius:8px"><span style="color:white;font-weight:600">Mesh BG</span></div></div>
+    <div class="demo-item"><h3>Animated Gradient</h3><div class="rwc-bg-animated demo-area" style="min-height:120px;border-radius:8px"><span style="color:white;font-weight:600">Gradient Shift</span></div></div>
+    <div class="demo-item"><h3>Glass</h3><div class="rwc-bg-mesh demo-area" style="min-height:120px;border-radius:8px;position:relative"><div class="rwc-glass" style="padding:16px 24px;color:white">Glass panel</div></div></div>
+  </div>
+  <pre style="margin-top:0">&lt;div class=&quot;rwc-bg-mesh&quot;&gt;...&lt;/div&gt;
+&lt;div class=&quot;rwc-bg-animated&quot;&gt;...&lt;/div&gt;
+&lt;div class=&quot;rwc-glass&quot;&gt;...&lt;/div&gt;</pre>
+</div>
+
+<!-- Utilities -->
+<div class="section">
+  <h2><span class="rwc-text-gradient">Utilities</span> <span class="count">(8)</span></h2>
+  <p>Shadows, transitions, float, rotate, tilt, and interactivity helpers.</p>
+  <div class="demo-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+    <div class="demo-item"><h3>Shadow sm/md/lg</h3><div class="demo-area"><div class="rwc-shadow-sm" style="padding:12px 20px;background:white;border-radius:8px">sm</div><div class="rwc-shadow-md" style="padding:12px 20px;background:white;border-radius:8px">md</div><div class="rwc-shadow-lg" style="padding:12px 20px;background:white;border-radius:8px">lg</div></div></div>
+    <div class="demo-item"><h3>Float</h3><div class="demo-area"><div class="rwc-float" style="width:48px;height:48px;background:var(--rwc-primary);border-radius:12px"></div></div></div>
+    <div class="demo-item"><h3>Rotate</h3><div class="demo-area"><div class="rwc-rotate" style="width:48px;height:48px;border:3px solid var(--rwc-primary);border-radius:12px;border-right-color:transparent"></div></div></div>
+    <div class="demo-item"><h3>Tilt</h3><div class="demo-area"><div class="rwc-tilt" style="padding:12px 24px;background:var(--rwc-primary);color:white;border-radius:8px;cursor:pointer">Hover tilt</div></div></div>
+  </div>
+</div>
+
+<!-- Installation -->
+<div class="section" style="background:#0f172a;color:white">
+  <h2 style="color:white">Installation</h2>
+  <pre style="background:#1e293b;margin-top:16px">&lt;link rel=&quot;stylesheet&quot; href=&quot;https://realworldcerts.com/css/rwc-effects.css&quot;&gt;
+
+&lt;!-- Or local copy --&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;rwc-effects.css&quot;&gt;
+
+&lt;!-- Use any effect --&gt;
+&lt;div class=&quot;rwc-card rwc-card-glow&quot;&gt;
+  &lt;h2 class=&quot;rwc-text-gradient&quot;&gt;Hello, RWC!&lt;/h2&gt;
+  &lt;button class=&quot;rwc-btn rwc-btn-primary&quot;&gt;Get Started&lt;/button&gt;
+&lt;/div&gt;</pre>
+  <p style="color:var(--rwc-gray-400);margin-top:16px;font-size:0.9rem">MIT License. Zero dependencies. Compatible with all modern browsers.</p>
+</div>
+
+</div>
+
+<div id="modalDemo" class="rwc-modal-overlay" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="rwc-modal" style="text-align:center">
+    <h2 class="rwc-text-gradient" style="margin-bottom:12px">realworldcerts.com</h2>
+    <p style="color:var(--rwc-gray-700);margin-bottom:24px">Certifications. Courses. Career growth.</p>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button class="rwc-btn rwc-btn-primary" onclick="document.getElementById('modalDemo').style.display='none'">Get Started</button>
+      <button class="rwc-btn rwc-btn-slide" onclick="document.getElementById('modalDemo').style.display='none'">Close</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>RWC Effects &mdash; MIT License &mdash; Built for <a href="https://realworldcerts.com" style="color:var(--rwc-primary);text-decoration:none">realworldcerts.com</a></p>
+  <p style="margin-top:8px;font-size:0.8rem">by SWARM Revenue Engine / Khwarizmian Swarm Autonomous System</p>
+</footer>
+
+<script>
+if ('IntersectionObserver' in window) {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('revealed'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.rwc-scroll-fade, .rwc-scroll-scale').forEach(el => observer.observe(el));
+}
+</script>
+</body>
+</html>

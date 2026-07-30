@@ -1,1 +1,53 @@
-{"mcpServers": {}}
+{
+  "mcpServers": {
+    "revenue-engines": {
+      "name": "Revenue Engine Registry",
+      "description": "Discover, list, and run all 7 revenue engines (aipipeline, applypilot, foreman, haio-solana, haio-nft, haio-gateway, haio-vesting)",
+      "command": "node",
+      "args": ["src/revenue-engines/registry.mjs"],
+      "env": {
+        "SWARM_LIVE": "${SWARM_LIVE:-observe}",
+        "REVENUE_LOG_LEVEL": "${REVENUE_LOG_LEVEL:-info}"
+      }
+    },
+    "revenue-orchestrator": {
+      "name": "Revenue Orchestrator (PwC L2C pattern)",
+      "description": "Supervisor agent that coordinates specialist engines with policy enforcement, circuit breakers, fund allocation (10/40/50), and full audit traces",
+      "command": "node",
+      "args": ["--input-type=module", "-e", "import o from 'src/revenue-engines/orchestrator.mjs'; const r=await o.orchestrate(process.argv[1]||'run-all'); console.log(JSON.stringify(r,null,2))"],
+      "env": {
+        "SWARM_LIVE": "${SWARM_LIVE:-observe}"
+      }
+    },
+    "morocco-tax-compliance": {
+      "name": "Morocco Tax Compliance Layer",
+      "description": "Tax regime classification, foreign currency repatriation tracking, auto-entrepreneur threshold monitoring, Bank Al-Maghrib audit generation",
+      "command": "node",
+      "args": ["--input-type=module", "-e", "import c from 'src/compliance/morocco-tax.mjs'; await c.init(); const s=c.getYearlySummary(); console.log(JSON.stringify(s,null,2))"]
+    },
+    "contingency": {
+      "name": "Contingency Engine",
+      "description": "Circuit breakers, breach detection, escalation manager, recovery orchestrator, and incident playbooks",
+      "command": "node",
+      "args": ["--input-type=module", "-e", "import e from 'src/contingency.mjs'; await e.init(); const h=await e.health(); console.log(JSON.stringify(h,null,2))"]
+    },
+    "owner-route-validator": {
+      "name": "Owner Route Validator",
+      "description": "SBDS-1.0 identity verification and payout destination validation against owner-truth.json",
+      "command": "node",
+      "args": ["--input-type=module", "-e", "import v from 'src/owner-route-validator.mjs'; await v.init(); const a=v.getOwnerAccounts(); const p=v.getPolicy(); console.log(JSON.stringify({accounts:a,policy:p},null,2))"]
+    },
+    "recovery-salaire": {
+      "name": "Salaire/Dettes Recovery",
+      "description": "One-time sweep of 10% Salaire and 40% Dettes funds to designated Attijariwafa RIBs via ChariBaaS",
+      "command": "node",
+      "args": ["src/recovery-salaire.mjs"]
+    },
+    "reconcile-payouts": {
+      "name": "Payout Reconciliation",
+      "description": "Reconcile offline earnings store against settlement records; flag failed_recoverable items",
+      "command": "node",
+      "args": ["scripts/reconcile_payouts.mjs"]
+    }
+  }
+}
