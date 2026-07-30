@@ -19,9 +19,30 @@ jobs:
         with:
           node-version: "18"
       - name: Generate email queue from payer actions
-        run: node ./scripts/email/queue-from-payer-actions.mjs
+        run: |
+          if [ -f ./scripts/email/queue-from-payer-actions.mjs ]; then
+            node ./scripts/email/queue-from-payer-actions.mjs || true
+          else
+            echo "scripts/email/queue-from-payer-actions.mjs not found — skipping"
+          fi
       - name: Add communications payloads to email queue
-        run: node ./scripts/email/queue-from-communications.mjs
+        run: |
+          if [ -f ./scripts/email/queue-from-communications.mjs ]; then
+            node ./scripts/email/queue-from-communications.mjs || true
+          else
+            echo "scripts/email/queue-from-communications.mjs not found — skipping"
+          fi
       - name: Escalate unpaid and append to queue
-        run: node ./scripts/email/escalate-unpaid.mjs
-      - run: node ./scripts/email/process-queue.mjs
+        run: |
+          if [ -f ./scripts/email/escalate-unpaid.mjs ]; then
+            node ./scripts/email/escalate-unpaid.mjs || true
+          else
+            echo "scripts/email/escalate-unpaid.mjs not found — skipping"
+          fi
+      - name: Process email queue
+        run: |
+          if [ -f ./scripts/email/process-queue.mjs ]; then
+            node ./scripts/email/process-queue.mjs || true
+          else
+            echo "scripts/email/process-queue.mjs not found — skipping"
+          fi

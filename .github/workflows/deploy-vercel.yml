@@ -25,15 +25,12 @@ jobs:
         run: |
           rm -rf .vercel/output
           mkdir -p .vercel/output/static
-          if [ -d rank/output ]; then
-            cp -r rank/output/. .vercel/output/static/
+          if [ -d content ]; then
+            cp -r content/. .vercel/output/static/
           elif [ -d dist ]; then
             cp -r dist/. .vercel/output/static/
           elif [ -d build ]; then
             cp -r build/. .vercel/output/static/
-          elif [ -d src ]; then
-            cp -r src/* .vercel/output/static/ 2>/dev/null || true
-            echo "Note: copied src/ as fallback — may not be a full static build"
           else
             echo "Warning: no static build directory found — deploying empty site"
           fi

@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 const amount = process.argv.find(a => a.startsWith('--amount='))?.split('=')[1] || process.env.AMOUNT;
 const network = process.env.CRYPTO_NETWORK || 'BEP20';

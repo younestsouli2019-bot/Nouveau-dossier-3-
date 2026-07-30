@@ -50,7 +50,7 @@ jobs:
       - name: Execute payout
         id: payout
         run: |
-          node ./scripts/payout-paypal-once.mjs --amount "${{ inputs.amount }}" --currency "${{ inputs.currency }}" --email "${{ inputs.email }}" --note "${{ inputs.note }}" > out.json
+          node ./Nouveau\ dossier\ (3)/scripts/payout-paypal-once.mjs --amount "${{ inputs.amount }}" --currency "${{ inputs.currency }}" --email "${{ inputs.email }}" --note "${{ inputs.note }}" > out.json
           cat out.json
       - name: Persist artifact
         uses: actions/upload-artifact@v5

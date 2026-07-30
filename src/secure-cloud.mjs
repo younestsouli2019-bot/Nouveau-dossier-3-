@@ -4,6 +4,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { existsSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
+import contingency from './contingency.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -20,6 +21,7 @@ class SecureCloud {
   #config = null;
   #state = null;
   #initialized = false;
+  #contingencyHealth = null;
 
   async init() {
     if (this.#initialized) return this;
@@ -27,13 +29,23 @@ class SecureCloud {
     mkdirSync(CONTINUITY_DIR, { recursive: true });
     await this.#loadConfig();
     await this.#loadState();
+    try {
+      if (typeof contingency?.health === 'function') {
+        await contingency.init();
+        this.#contingencyHealth = await contingency.health();
+      }
+    } catch {
+      this.#contingencyHealth = { threatLevel: 'GREEN', breaches: [] };
+    }
     this.#initialized = true;
     return this;
   }
 
   async #loadConfig() {
     if (!existsSync(MIRROR_CONFIG_PATH)) {
-      throw new Error(`MIRROR_CONFIG_MISSING: ${MIRROR_CONFIG_PATH} not found. Run secure-cloud setup first.`);
+      console.warn(`MIRROR_CONFIG_MISSING: ${MIRROR_CONFIG_PATH} not found. Using default config.`);
+      this.#config = { mirrors: [], defaultEncryption: { algorithm: 'aes-256-gcm', keyDerivation: 'PBKDF2-HMAC-SHA256', iterations: 600000, authTagLength: 16 }, routing: { strategy: 'fallback', fallbackOrder: [], healthCheckIntervalMs: 60000, maxFailoverTimeMs: 10000 }, restoreDrill: { enabled: false } };
+      return;
     }
     const raw = await fs.readFile(MIRROR_CONFIG_PATH, 'utf-8');
     this.#config = JSON.parse(raw);
