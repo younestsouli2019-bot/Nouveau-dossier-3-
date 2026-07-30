@@ -283,11 +283,134 @@ async function checkStripe() {
   return null;
 }
 
+async function checkMemoryStore() {
+  const memPath = path.join(ROOT, '.swarm', 'memory-store.json');
+  try {
+    const mem = JSON.parse(await fs.readFile(memPath, 'utf-8'));
+    const entries = mem.entries || {};
+    let totalPendingUSD = 0;
+    const pendingEarnings = [];
+
+    const earnings = entries['autonomous:offline_store']?.value?.entities?.Earning?.records || [];
+    for (const e of earnings) {
+      if ((e.status === 'settled_externally_pending' || e.status === 'pending') && !e.settlement_id) {
+        pendingEarnings.push(e);
+        totalPendingUSD += e.amount || 0;
+      }
+    }
+
+    const batches = entries['base44:offline_store']?.value?.entities?.PayoutBatch?.records || [];
+    const pendingBatches = batches.filter(b => b.status === 'pending_external_confirmation' || b.status === 'pending_approval');
+    for (const b of pendingBatches) {
+      totalPendingUSD += b.total_amount || 0;
+    }
+
+    const items = entries['base44:offline_store']?.value?.entities?.PayoutItem?.records || [];
+    const pendingItems = items.filter(i => i.status === 'pending_external_confirmation' || i.status === 'pending');
+    for (const i of pendingItems) {
+      totalPendingUSD += i.amount || 0;
+    }
+
+    if (pendingEarnings.length > 0 || pendingBatches.length > 0 || pendingItems.length > 0) {
+      log(`[memstore] ${pendingEarnings.length} earnings + ${pendingBatches.length} batches + ${pendingItems.length} items = $${totalPendingUSD} USD`);
+    }
+    return { totalPendingUSD, pendingEarnings, pendingBatches, pendingItems };
+  } catch (err) {
+    if (err.code !== 'ENOENT') log(`[memstore] read error: ${err.message}`);
+    return { totalPendingUSD: 0, pendingEarnings: [], pendingBatches: [] };
+  }
+}
+
+const BASE44_API_URL = 'https://agent-swarm-efe0bd7e.base44.app/api';
+const BASE44_API_KEY = 'e599b5b131574c1bae885fc013620739';
+
+const BASE44_HEADERS = { 'api_key': BASE44_API_KEY, 'Content-Type': 'application/json' };
+
+async function base44Query(entity, q) {
+  const params = new URLSearchParams();
+  if (q) params.set('q', JSON.stringify(q));
+  params.set('limit', '200');
+  const url = `${BASE44_API_URL}/entities/${entity}?${params}`;
+  try {
+    const resp = await fetch(url, { headers: BASE44_HEADERS, signal: AbortSignal.timeout(10000) });
+    if (!resp.ok) {
+      log(`[base44] ${entity}: HTTP ${resp.status}`);
+      return null;
+    }
+    return await resp.json();
+  } catch (err) {
+    log(`[base44] ${entity}: ${err.message}`);
+    return null;
+  }
+}
+
+async function checkBase44Api() {
+  let totalPendingUSD = 0;
+  const revenueEvents = [];
+  const payoutItems = [];
+
+  const revData = await base44Query('RevenueEvent', { status: 'confirmed' });
+  if (revData?.records) {
+    for (const r of revData.records) {
+      if (!r.payout_batch_id) {
+        revenueEvents.push(r);
+        totalPendingUSD += r.amount || 0;
+      }
+    }
+    log(`[base44] ${revData.records.length} confirmed RevenueEvents (${revenueEvents.length} unbatchable)`);
+  }
+
+  const revProjData = await base44Query('RevenueEvent', { status: 'projected' });
+  if (revProjData?.records) {
+    for (const r of revProjData.records) {
+      if (!r.payout_batch_id) {
+        revenueEvents.push(r);
+        totalPendingUSD += r.amount || 0;
+      }
+    }
+    log(`[base44] ${revProjData.records.length} projected RevenueEvents (${revenueEvents.length} unbatchable)`);
+  }
+
+  const revPendingData = await base44Query('RevenueEvent', { status: 'paid_out' });
+  if (revPendingData?.records) {
+    for (const r of revPendingData.records) {
+      if (!r.payout_batch_id) {
+        revenueEvents.push(r);
+        totalPendingUSD += r.amount || 0;
+      }
+    }
+    log(`[base44] ${revPendingData.records.length} paid_out RevenueEvents (${revenueEvents.length} unbatchable)`);
+  }
+
+  const payoutData = await base44Query('PayoutItem', { status: 'pending_external_confirmation' });
+  if (payoutData?.records) {
+    for (const p of payoutData.records) {
+      payoutItems.push(p);
+      totalPendingUSD += p.amount || 0;
+    }
+    log(`[base44] ${payoutData.records.length} pending_external_confirmation PayoutItems`);
+  }
+
+  const payoutPending = await base44Query('PayoutItem', { status: 'pending' });
+  if (payoutPending?.records) {
+    for (const p of payoutPending.records) {
+      payoutItems.push(p);
+      totalPendingUSD += p.amount || 0;
+    }
+    log(`[base44] ${payoutPending.records.length} pending PayoutItems`);
+  }
+
+  if (revenueEvents.length > 0 || payoutItems.length > 0) {
+    log(`[base44] total pending: $${totalPendingUSD} USD (${revenueEvents.length} events + ${payoutItems.length} items)`);
+  }
+  return { totalPendingUSD, revenueEvents, payoutItems };
+}
+
 async function pollRevenue() {
   cycleCount++;
   pipelineHealth.daemon.cycles = cycleCount;
   const now = new Date().toISOString();
-  const ev = { timestamp: now, cycle: cycleCount, sources: { wallet: null, stripe: null } };
+  const ev = { timestamp: now, cycle: cycleCount, sources: { wallet: null, stripe: null, memstore: null, base44: null } };
 
   const walletData = await checkWallet();
   if (walletData) {
@@ -304,6 +427,30 @@ async function pollRevenue() {
   } else {
     pipelineHealth.wallet = { ok: false, failures: (pipelineHealth.wallet.failures || 0) + 1, reason: 'etherscan_unreachable_or_empty' };
     log(`[poll] Wallet SKIP: ${pipelineHealth.wallet.reason}`);
+  }
+
+  const memData = await checkMemoryStore();
+  if (memData && memData.totalPendingUSD > 0) {
+    const memMAD = memData.totalPendingUSD * 10;
+    ev.sources.memstore = { totalPendingUSD: memData.totalPendingUSD, madTotal: memMAD, earnings: memData.pendingEarnings.length, pendingBatches: (memData.pendingBatches || []).length };
+    log(`[poll] MemStore OK: ${memData.totalPendingUSD} USD = ${memMAD} MAD (${memData.pendingEarnings.length} earnings, ${memData.pendingBatches?.length || 0} batches)`);
+    state.totalRevenueMAD = Math.max(state.totalRevenueMAD, memMAD);
+    const result = await evaluateAndPayout(state.totalRevenueMAD, 'memstore');
+    ev.payoutResult = result;
+  } else {
+    log(`[poll] MemStore: no pending records`);
+  }
+
+  const base44Data = await checkBase44Api();
+  if (base44Data && base44Data.totalPendingUSD > 0) {
+    const base44MAD = base44Data.totalPendingUSD * 10;
+    ev.sources.base44 = { totalPendingUSD: base44Data.totalPendingUSD, madTotal: base44MAD, revenueEvents: base44Data.revenueEvents?.length || 0, payoutItems: base44Data.payoutItems?.length || 0 };
+    log(`[poll] Base44 API OK: ${base44Data.totalPendingUSD} USD = ${base44MAD} MAD (${base44Data.revenueEvents?.length || 0} revenue events, ${base44Data.payoutItems?.length || 0} payout items)`);
+    state.totalRevenueMAD = Math.max(state.totalRevenueMAD, base44MAD);
+    const result = await evaluateAndPayout(state.totalRevenueMAD, 'base44');
+    ev.payoutResult = result;
+  } else {
+    log(`[poll] Base44 API: no pending records`);
   }
 
   const stripeData = await checkStripe();
