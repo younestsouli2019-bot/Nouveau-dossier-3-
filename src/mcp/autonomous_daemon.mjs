@@ -27,6 +27,7 @@ let truth = null;
 
 const pipelineHealth = {
   stripe: { ok: false, lastOk: null, failures: 0, reason: 'not_checked' },
+  wallet: { ok: false, lastOk: null, failures: 0, reason: 'not_checked' },
   baas: { ok: false, lastOk: null, failures: 0, reason: 'not_checked' },
   attijari: { ok: false, reason: 'not_checked' },
   daemon: { uptime: 0, started: new Date().toISOString(), cycles: 0 },
@@ -195,10 +196,30 @@ async function evaluateAndPayout(balanceMAD, source) {
   return await executeBaasPayout(amount);
 }
 
+async function checkWallet() {
+  const address = '0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7';
+  const usdtContract = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
+  const balanceOf = '0x70a08231' + address.slice(2).padStart(64, '0');
+  const rpcUrl = 'https://ethereum-rpc.publicnode.com';
+  const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to: usdtContract, data: balanceOf }, 'latest'] });
+  try {
+    const resp = await fetch(rpcUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, signal: AbortSignal.timeout(10000) });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    if (data.result && data.result !== '0x') {
+      const balance = parseInt(data.result, 16) / 1e6;
+      return { balance, currency: 'USDT', source: 'wallet' };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 async function checkStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key || key.includes('PLACEHOLDER') || key.length < 20) {
-    pipelineHealth.stripe = { ok: false, reason: 'STRIPE_SECRET_KEY not set or placeholder' };
+    pipelineHealth.stripe = { ok: false, reason: 'region_blocked: Stripe requires US account (Morocco-based)' };
     return null;
   }
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -230,7 +251,24 @@ async function pollRevenue() {
   cycleCount++;
   pipelineHealth.daemon.cycles = cycleCount;
   const now = new Date().toISOString();
-  const ev = { timestamp: now, cycle: cycleCount, sources: {} };
+  const ev = { timestamp: now, cycle: cycleCount, sources: { wallet: null, stripe: null } };
+
+  const walletData = await checkWallet();
+  if (walletData) {
+    pipelineHealth.wallet = { ok: true, lastOk: new Date().toISOString(), failures: 0, reason: `${walletData.balance} USDT` };
+    const usdtMAD = walletData.balance * 10;
+    ev.sources.wallet = { balance: walletData.balance, currency: 'USDT', madTotal: usdtMAD };
+    log(`[poll] Wallet OK: ${walletData.balance} USDT = ${usdtMAD} MAD`);
+    state.totalRevenueMAD = Math.max(state.totalRevenueMAD, usdtMAD);
+    const result = await evaluateAndPayout(state.totalRevenueMAD, 'wallet');
+    ev.payoutResult = result;
+    if (result.action === 'below_threshold') {
+      log(`[poll] Wallet balance ${state.totalRevenueMAD} MAD < threshold ${THRESHOLD_MAD} MAD`);
+    }
+  } else {
+    pipelineHealth.wallet = { ok: false, failures: (pipelineHealth.wallet.failures || 0) + 1, reason: 'etherscan_unreachable_or_empty' };
+    log(`[poll] Wallet SKIP: ${pipelineHealth.wallet.reason}`);
+  }
 
   const stripeData = await checkStripe();
   if (stripeData) {
