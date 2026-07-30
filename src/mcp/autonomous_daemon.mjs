@@ -112,34 +112,21 @@ async function healthCheck() {
   }
 }
 
-async function executeBaasPayout(amountMAD) {
+async function executeBaaSTransfer(amountMAD, iban, beneficiary, bankCode, description, idempotencySuffix) {
   const baasKey = process.env.CHARI_BAAS_SECRET_KEY;
   const walletId = process.env.BAAS_WALLET_ID;
-  if (!baasKey || !walletId || baasKey.includes('PLACEHOLDER')) {
-    pipelineHealth.baas = { ok: false, reason: 'credentials not set or placeholder' };
-    return { status: 'SKIPPED', reason: 'no creds' };
-  }
-
-  const attijari = truth?.paymentDestinations?.bankAccounts?.ma_attijariwafa;
-  if (!attijari) return { status: 'SKIPPED', reason: 'no attijari' };
-
-  const ref = `SWARM_AUTO_${Date.now()}`;
-  const payload = {
-    source_account_id: walletId,
-    amount: amountMAD,
-    currency: 'MAD',
-    destination: {
-      type: 'bank_account',
-      iban: attijari.iban.replace(/\s/g, ''),
-      beneficiary_name: attijari.accountHolder || 'Younes Tsouli',
-      bank_code: '007',
-    },
-    description: ref,
-    idempotency_key: `swarm-${Date.now()}-${Math.floor(amountMAD * 100)}`,
-    metadata: { automation_layer: 'Daemon_v1' },
-  };
+  if (!baasKey || !walletId || baasKey.includes('PLACEHOLDER')) return { status: 'SKIPPED', reason: 'no creds' };
 
   const baseUrl = process.env.BAAS_ENV === 'production' ? 'https://api.baas.ma/v1' : 'https://sandbox.baas.ma/v1';
+  const payload = {
+    source_account_id: walletId,
+    amount: parseFloat(amountMAD.toFixed(2)),
+    currency: 'MAD',
+    destination: { type: 'bank_account', iban: iban.replace(/\s/g, ''), beneficiary_name: beneficiary, bank_code: bankCode },
+    description: description || `SWARM_AUTO_${Date.now()}`,
+    idempotency_key: `swarm-${Date.now()}-${idempotencySuffix || Math.floor(amountMAD * 100)}`,
+    metadata: { automation_layer: 'Daemon_v2', allocation: 'fund_allocation_policy' },
+  };
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
@@ -151,35 +138,84 @@ async function executeBaasPayout(amountMAD) {
       });
       const data = resp.ok ? await resp.json() : null;
       const settled = resp.status === 200 || resp.status === 201;
-      log(`[payout] attempt ${attempt}/${MAX_RETRIES}: ${settled ? 'SETTLED' : 'FAILED'} ${amountMAD} MAD`);
-
-      if (settled) {
-        const threat = await contingencyEngine.monitorTransaction({
-          id: `payout-${Date.now()}`,
-          amount: amountMAD,
-          destination: attijari.iban,
-          paymentMethod: 'baas',
-        }).catch(() => null);
-        if (threat) log(`[contingency] payout flagged: ${threat.threatType}`);
-
-        pipelineHealth.baas = { ok: true, lastOk: new Date().toISOString(), failures: 0 };
-        state.payouts.push({ amount: amountMAD, iban: attijari.iban, at: new Date().toISOString(), id: data?.transfer_id });
-        state.totalRevenueMAD = Math.max(0, state.totalRevenueMAD - amountMAD);
-        await saveState();
-        return { status: 'SETTLED', data };
-      }
-
-      if (resp.status === 401 || resp.status === 403) {
-        await contingencyEngine.monitorAuthFailure('baas-api').catch(() => {});
-      }
-      return { status: 'FAILED', data };
+      log(`[payout:${description}] attempt ${attempt}/${MAX_RETRIES}: ${settled ? 'SETTLED' : 'FAILED'} ${amountMAD} MAD`);
+      if (settled) return { status: 'SETTLED', data, iban };
+      if (resp.status === 401 || resp.status === 403) { await contingencyEngine.monitorAuthFailure('baas-api').catch(() => {}); }
+      return { status: 'FAILED', httpStatus: resp.status, data };
     } catch (err) {
-      log(`[payout] attempt ${attempt}/${MAX_RETRIES} error: ${err.message}`);
+      log(`[payout:${description}] attempt ${attempt}/${MAX_RETRIES} error: ${err.message}`);
       if (attempt < MAX_RETRIES) await new Promise(r => setTimeout(r, attempt * 2000));
     }
   }
   pipelineHealth.baas = { ok: false, lastOk: pipelineHealth.baas.lastOk || null, failures: (pipelineHealth.baas.failures || 0) + 1, reason: 'network after retries' };
   return { status: 'NETWORK_ERROR' };
+}
+
+async function executeBaasPayout(amountMAD) {
+  const baasKey = process.env.CHARI_BAAS_SECRET_KEY;
+  if (!baasKey || baasKey.includes('PLACEHOLDER')) {
+    pipelineHealth.baas = { ok: false, reason: 'credentials not set or placeholder' };
+    return { status: 'SKIPPED', reason: 'no creds' };
+  }
+
+  const accountPrimary = truth?.paymentDestinations?.bankAccounts?.ma_attijariwafa;
+  const accountCarnet = truth?.paymentDestinations?.bankAccounts?.ma_attijariwafa_carnet;
+  if (!accountPrimary) return { status: 'SKIPPED', reason: 'no attijariwafa primary account' };
+
+  const beneficiary = accountPrimary.accountHolder || 'Younes Tsouli';
+  const bankCode = '007';
+
+  const splits = truth?.settlementPolicy?.fundAllocation?.splits;
+  const pctSalaire = splits?.salaire?.pct != null ? splits.salaire.pct / 100 : 0.10;
+  const pctDettes = splits?.dettes?.pct != null ? splits.dettes.pct / 100 : 0.40;
+  const pctOperating = splits?.operating?.pct != null ? splits.operating.pct / 100 : 0.50;
+
+  const amountSalaire = Math.floor(amountMAD * pctSalaire * 100) / 100;
+  const amountDettes = Math.floor(amountMAD * pctDettes * 100) / 100;
+  const amountOperating = Math.floor((amountMAD - amountSalaire - amountDettes) * 100) / 100;
+
+  log(`[split] ${amountMAD} MAD = Salaire ${amountSalaire} (${pctSalaire*100}%) + Dettes ${amountDettes} (${pctDettes*100}%) + Operating ${amountOperating} (${pctOperating*100}%)`);
+
+  const results = [];
+  const primaryIban = accountPrimary.iban.replace(/\s/g, '');
+  const carnetIban = accountCarnet ? accountCarnet.iban.replace(/\s/g, '') : primaryIban;
+
+  if (amountSalaire >= 1) {
+    const r = await executeBaaSTransfer(amountSalaire, primaryIban, beneficiary, bankCode, `SALAIRE_${Date.now()}`, `sal-${Math.floor(amountSalaire * 100)}`);
+    results.push({ purpose: 'salaire', amount: amountSalaire, iban: primaryIban, status: r.status });
+  }
+  if (amountDettes >= 1 && accountCarnet) {
+    const r = await executeBaaSTransfer(amountDettes, carnetIban, beneficiary, bankCode, `DETTES_${Date.now()}`, `det-${Math.floor(amountDettes * 100)}`);
+    results.push({ purpose: 'dettes', amount: amountDettes, iban: carnetIban, status: r.status });
+  }
+  if (amountOperating >= 1) {
+    const r = await executeBaaSTransfer(amountOperating, primaryIban, beneficiary, bankCode, `OPERATING_${Date.now()}`, `op-${Math.floor(amountOperating * 100)}`);
+    results.push({ purpose: 'operating', amount: amountOperating, iban: primaryIban, status: r.status });
+  }
+
+  const settled = results.filter(r => r.status === 'SETTLED');
+  const allOk = settled.length === results.length;
+
+  for (const r of results) {
+    if (r.status === 'SETTLED') {
+      const threat = await contingencyEngine.monitorTransaction({
+        id: `payout-${Date.now()}-${r.purpose}`,
+        amount: r.amount, destination: r.iban, paymentMethod: 'baas',
+      }).catch(() => null);
+      if (threat) log(`[contingency] ${r.purpose} flagged: ${threat.threatType}`);
+      state.payouts.push({ purpose: r.purpose, amount: r.amount, iban: r.iban, at: new Date().toISOString() });
+    }
+  }
+
+  if (allOk) {
+    pipelineHealth.baas = { ok: true, lastOk: new Date().toISOString(), failures: 0 };
+    state.totalRevenueMAD = Math.max(0, state.totalRevenueMAD - amountMAD);
+  } else {
+    pipelineHealth.baas = { ok: false, lastOk: pipelineHealth.baas.lastOk || null, failures: (pipelineHealth.baas.failures || 0) + 1, reason: 'some splits failed' };
+  }
+
+  await saveState();
+  return { status: allOk ? 'SETTLED' : 'PARTIAL', splits: results, total: amountMAD };
 }
 
 async function evaluateAndPayout(balanceMAD, source) {

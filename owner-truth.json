@@ -86,8 +86,27 @@
         "accountHolder": "Younes Tsouli",
         "iban": "007810000448500030594182",
         "swift": "BCMAMAMC",
-        "label": "MA - Attijariwafa Bank (MAD) [Local Morocco]",
-        "local": true
+        "bankAddress": "83, AV.FAL OULD OUMEIR, RABAT AGDAL, Morocco",
+        "label": "MA - Attijariwafa Bank (MAD) [Primary — Salaire/Rémunération]",
+        "local": true,
+        "primary": true,
+        "purpose": "salary"
+      },
+      "ma_attijariwafa_carnet": {
+        "bankName": "Attijariwafa Bank — Compte sur Carnet",
+        "country": "MA",
+        "currency": "MAD",
+        "accountHolder": "Younes Tsouli",
+        "ribBanque": "007",
+        "ribVille": "810",
+        "ribCompte": "0004482000613213",
+        "ribCle": "72",
+        "iban": "007810000448200061321372",
+        "swift": "BCMAMAMC",
+        "bankAddress": "83, AV.FAL OULD OUMEIR, RABAT AGDAL, Morocco",
+        "label": "MA - Attijariwafa Compte sur Carnet (MAD) [Dettes/Remboursement]",
+        "local": true,
+        "purpose": "debt_repayment"
       }
     }
   },
@@ -156,6 +175,23 @@
       "JPY": "jp_mufg",
       "MAD": "ma_attijariwafa",
       "default": "us_citibank"
+    },
+    "fundAllocation": {
+      "version": "FAL-1.0",
+      "principle": "Every revenue unit is split on arrival: Salaire (10%), Dettes (40%), Operating (50%)",
+      "splits": [
+        { "id": "salaire", "label": "Salaire / Rémunération personnelle", "pct": 10, "priority": 1, "destination": "ma_attijariwafa", "purpose": "salary" },
+        { "id": "dettes", "label": "Remboursement dettes / Compte sur Carnet", "pct": 40, "priority": 2, "destination": "ma_attijariwafa_carnet", "purpose": "debt_repayment" },
+        { "id": "operating", "label": "Fonds d'exploitation / Réserve", "pct": 50, "priority": 3, "destination": "ma_attijariwafa", "purpose": "operating_reserve" }
+      ],
+      "enforcement": "HARD_STOP: Every payout must respect allocation splits. No single-route payout unless explicitly overridden.",
+      "recovery": {
+        "description": "One-time sweep of historically misrouted Salaire (10%) and Dettes (40%) funds from transition accounts to correct Attijariwafa accounts",
+        "initiatedAt": "2026-07-30",
+        "authorizedBy": "CIN A337773 — Younes Tsouli",
+        "saldoSalaireMAD": null,
+        "saldoDettesMAD": null
+      }
     }
   },
   "contingency": {
