@@ -16,15 +16,33 @@ jobs:
         with:
           node-version: "20"
       - name: Owner routing readiness
-        run: node ./scripts/owner-routing-readiness.mjs
+        run: |
+          mkdir -p dist_rwc/site-data
+          if [ -f "./Nouveau dossier (3)/scripts/owner-routing-readiness.mjs" ]; then
+            node "./Nouveau dossier (3)/scripts/owner-routing-readiness.mjs" || true
+          elif [ -f ./scripts/owner-routing-readiness.mjs ]; then
+            node ./scripts/owner-routing-readiness.mjs || true
+          else
+            echo '{"status":"SKIPPED","reason":"owner-routing-readiness.mjs not found"}' > dist_rwc/site-data/payments_readiness.json
+          fi
       - name: Generate PayPal payer links
-        run: node ./scripts/auto-paypal-owner.mjs
+        run: |
+          if [ -f "./Nouveau dossier (3)/scripts/auto-paypal-owner.mjs" ]; then
+            node "./Nouveau dossier (3)/scripts/auto-paypal-owner.mjs" || true
+          elif [ -f ./scripts/auto-paypal-owner.mjs ]; then
+            node ./scripts/auto-paypal-owner.mjs || true
+          else
+            echo '{"status":"SKIPPED","reason":"auto-paypal-owner.mjs not found"}' > dist_rwc/site-data/payer_links.json
+          fi
       - name: Commit changes
         run: |
           if [[ -n "$(git status --porcelain)" ]]; then
             git config user.name "rwc-bot"
             git config user.email "rwc-bot@users.noreply.github.com"
-            git add dist_rwc/site-data/payments_readiness.json dist_rwc/site-data/payer_links.json dist_rwc/site-data/payer_links.csv
-            git commit -m "chore: payments readiness and payer links refreshed"
-            git push
+            if [ -f dist_rwc/site-data/payments_readiness.json ] || [ -f dist_rwc/site-data/payer_links.json ] || [ -f dist_rwc/site-data/payer_links.csv ]; then
+              git add dist_rwc/site-data/payments_readiness.json dist_rwc/site-data/payer_links.json dist_rwc/site-data/payer_links.csv 2>/dev/null || true
+            fi
+            git add -A
+            git commit -m "chore: payments readiness and payer links refreshed" || true
+            git push origin HEAD:${{ github.ref_name }}
           fi

@@ -65,7 +65,7 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add -A
-            git commit -m "owner crypto withdraw executed via workflow dispatch"
-            git push
+            git commit -m "owner crypto withdraw executed via workflow dispatch" || true
+            git push origin HEAD:${{ github.ref_name }}
           else
             echo "No files to commit."

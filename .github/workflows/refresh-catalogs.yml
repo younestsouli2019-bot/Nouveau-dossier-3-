@@ -62,8 +62,8 @@ jobs:
             git config user.email "actions@github.com"
             git config user.name "github-actions[bot]"
             git add -A
-            git commit -m "chore: hourly refresh catalogs, scrapes and SSO injection"
-            git push
+            git commit -m "chore: hourly refresh catalogs, scrapes and SSO injection" || true
+            git push origin HEAD:${{ github.ref_name }}
           else
             echo "No changes to commit."
           fi

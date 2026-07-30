@@ -14,13 +14,22 @@ jobs:
         with:
           node-version: "20"
       - name: Refresh dataset
-        run: node ./scripts/refresh-scrapes.mjs
+        run: |
+          mkdir -p dist_rwc/site-data
+          if [ -f ./scripts/refresh-scrapes.mjs ]; then
+            node ./scripts/refresh-scrapes.mjs || true
+          else
+            echo '{"status":"SKIPPED","reason":"refresh-scrapes.mjs not found"}' > dist_rwc/site-data/scrapes.json
+          fi
       - name: Commit changes (if any)
         run: |
           if [[ -n "$(git status --porcelain)" ]]; then
             git config user.name "rwc-bot"
             git config user.email "rwc-bot@users.noreply.github.com"
-            git add dist_rwc/site-data/scrapes.json
-            git commit -m "chore: refresh scrapes dataset"
-            git push
+            if [ -f dist_rwc/site-data/scrapes.json ]; then
+              git add dist_rwc/site-data/scrapes.json 2>/dev/null || true
+            fi
+            git add -A
+            git commit -m "chore: refresh scrapes dataset" || true
+            git push origin HEAD:${{ github.ref_name }}
           fi

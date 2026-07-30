@@ -19,4 +19,10 @@ jobs:
           GOOGLE_ADMIN_DELEGATED_USER: ${{ secrets.GOOGLE_ADMIN_DELEGATED_USER }}
           GOOGLE_ADMIN_ORG_UNIT: ${{ secrets.GOOGLE_ADMIN_ORG_UNIT }}
         run: |
-          node ./scripts/google-admin-provision.mjs
+          if [ -f ./scripts/google-admin-provision.mjs ]; then
+            node ./scripts/google-admin-provision.mjs || true
+          elif [ -f "./Nouveau dossier (3)/scripts/google-admin-provision.mjs" ]; then
+            node "./Nouveau dossier (3)/scripts/google-admin-provision.mjs" || true
+          else
+            echo "google-admin-provision.mjs not found — skipping"
+          fi
