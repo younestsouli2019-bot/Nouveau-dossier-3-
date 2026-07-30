@@ -1,68 +1,548 @@
 {
-	"entities": {
-		"Earning": {
-			"records": [
-				{
-					"id": "offline_Earning_REV_1768225534247",
-					"created_date": "2026-01-12T13:46:34.250Z",
-					"updated_date": "2026-01-12T13:46:34.250Z",
-					"earning_id": "REV_1768225534247",
-					"amount": 25,
-					"currency": "USD",
-					"occurred_at": "2026-01-12T13:46:34.249Z",
-					"source": "swarm_revenue",
-					"beneficiary": "younestsouli2019@gmail.com",
-					"status": "settled_externally_pending",
-					"settlement_id": null,
-					"metadata": {
-						"payer_name": "Younes Tsouli",
-						"payer_email": "younestsouli2019@gmail.com",
-						"payer_company": "Private",
-						"purpose": "Services rendered – Q1 2026 consulting",
-						"reference": "INV-2026-001"
-					}
-				},
-				{
-					"id": "offline_Earning_REV_1768225564250",
-					"created_date": "2026-01-12T13:46:34.250Z",
-					"updated_date": "2026-01-12T13:46:34.250Z",
-					"earning_id": "REV_1768225564250",
-					"amount": 40,
-					"currency": "USD",
-					"occurred_at": "2026-01-12T13:46:34.250Z",
-					"source": "swarm_revenue",
-					"beneficiary": "younestsouli2019@gmail.com",
-					"status": "settled_externally_pending",
-					"settlement_id": null,
-					"metadata": {
-						"payer_name": "Younes Tsouli",
-						"payer_email": "younestsouli2019@gmail.com",
-						"payer_company": "Private",
-						"purpose": "Services rendered – Q1 2026 consulting",
-						"reference": "INV-2026-001"
-					}
-				},
-				{
-					"id": "offline_Earning_REV_1768225594250",
-					"created_date": "2026-01-12T13:46:34.250Z",
-					"updated_date": "2026-01-12T13:46:34.250Z",
-					"earning_id": "REV_1768225594250",
-					"amount": 85,
-					"currency": "USD",
-					"occurred_at": "2026-01-12T13:46:34.250Z",
-					"source": "swarm_revenue",
-					"beneficiary": "younestsouli2019@gmail.com",
-					"status": "settled_externally_pending",
-					"settlement_id": null,
-					"metadata": {
-						"payer_name": "Younes Tsouli",
-						"payer_email": "younestsouli2019@gmail.com",
-						"payer_company": "Private",
-						"purpose": "Services rendered – Q1 2026 consulting",
-						"reference": "INV-2026-001"
-					}
-				}
-			]
-		}
-	}
+  "entities": {
+    "Earning": {
+      "records": [
+        {
+          "id": "offline_Earning_REV_1768225534247",
+          "created_date": "2026-01-12T13:46:34.250Z",
+          "updated_date": "2026-01-12T13:46:34.250Z",
+          "earning_id": "REV_1768225534247",
+          "amount": 25,
+          "currency": "USD",
+          "occurred_at": "2026-01-12T13:46:34.249Z",
+          "source": "swarm_revenue",
+          "beneficiary": "younestsouli2019@gmail.com",
+          "status": "settled_externally_pending",
+          "settlement_id": null,
+          "metadata": {
+            "payer_name": "Younes Tsouli",
+            "payer_email": "younestsouli2019@gmail.com",
+            "payer_company": "Private",
+            "purpose": "Services rendered – Q1 2026 consulting",
+            "reference": "INV-2026-001"
+          }
+        },
+        {
+          "id": "offline_Earning_REV_1768225564250",
+          "created_date": "2026-01-12T13:46:34.250Z",
+          "updated_date": "2026-01-12T13:46:34.250Z",
+          "earning_id": "REV_1768225564250",
+          "amount": 40,
+          "currency": "USD",
+          "occurred_at": "2026-01-12T13:46:34.250Z",
+          "source": "swarm_revenue",
+          "beneficiary": "younestsouli2019@gmail.com",
+          "status": "settled_externally_pending",
+          "settlement_id": null,
+          "metadata": {
+            "payer_name": "Younes Tsouli",
+            "payer_email": "younestsouli2019@gmail.com",
+            "payer_company": "Private",
+            "purpose": "Services rendered – Q1 2026 consulting",
+            "reference": "INV-2026-001"
+          }
+        },
+        {
+          "id": "offline_Earning_REV_1768225594250",
+          "created_date": "2026-01-12T13:46:34.250Z",
+          "updated_date": "2026-01-12T13:46:34.250Z",
+          "earning_id": "REV_1768225594250",
+          "amount": 85,
+          "currency": "USD",
+          "occurred_at": "2026-01-12T13:46:34.250Z",
+          "source": "swarm_revenue",
+          "beneficiary": "younestsouli2019@gmail.com",
+          "status": "settled_externally_pending",
+          "settlement_id": null,
+          "metadata": {
+            "payer_name": "Younes Tsouli",
+            "payer_email": "younestsouli2019@gmail.com",
+            "payer_company": "Private",
+            "purpose": "Services rendered – Q1 2026 consulting",
+            "reference": "INV-2026-001"
+          }
+        },
+        {
+          "id": "offline_Earning_AIPROF_stub_request_1785439521129",
+          "created_date": "2026-07-30T19:25:21.132Z",
+          "updated_date": "2026-07-30T19:25:21.132Z",
+          "earning_id": "AIPROF_stub_request_1785439521129",
+          "amount": 0.005,
+          "currency": "USD",
+          "occurred_at": "2026-07-30T19:25:21.132Z",
+          "source": "aipipeline-router",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "client_id": "stub_client",
+            "model": "claude-sonnet-4",
+            "engine": "aipipeline-router",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785439521124_e5bf95",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_APPLYPILOT_stub_interview_1785439521137",
+          "created_date": "2026-07-30T19:25:21.138Z",
+          "updated_date": "2026-07-30T19:25:21.138Z",
+          "earning_id": "APPLYPILOT_stub_interview_1785439521137",
+          "amount": 50,
+          "currency": "USD",
+          "occurred_at": "2026-07-30T19:25:21.138Z",
+          "source": "applypilot-jobs",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "client_id": "stub_client",
+            "application_id": "app_001",
+            "job_title": "Senior Engineer",
+            "company": "Acme",
+            "type": "interview",
+            "engine": "applypilot-jobs",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785439521136_19f7dc",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_FOREMAN_stub_task_1785439521142",
+          "created_date": "2026-07-30T19:25:21.143Z",
+          "updated_date": "2026-07-30T19:25:21.143Z",
+          "earning_id": "FOREMAN_stub_task_1785439521142",
+          "amount": 25,
+          "currency": "USD",
+          "occurred_at": "2026-07-30T19:25:21.143Z",
+          "source": "foreman-coding",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "client_id": "stub_client",
+            "task_type": "bug_fix",
+            "complexity": "medium",
+            "engine": "foreman-coding",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785439521141_f46e14",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_HAIO_NFT_stub_mint_1785439521149",
+          "created_date": "2026-07-30T19:25:21.151Z",
+          "updated_date": "2026-07-30T19:25:21.151Z",
+          "earning_id": "HAIO_NFT_stub_mint_1785439521149",
+          "amount": 0.01,
+          "currency": "ETH",
+          "occurred_at": "2026-07-30T19:25:21.151Z",
+          "source": "haio-agent-nft",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "tx_hash": "0xstub",
+            "minter": "0xstub",
+            "token_ids": [
+              1
+            ],
+            "type": "mint_paid",
+            "engine": "haio-agent-nft",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785439521146_e8c7d9",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_HAIO_stub_inflow_1785439521156",
+          "created_date": "2026-07-30T19:25:21.157Z",
+          "updated_date": "2026-07-30T19:25:21.157Z",
+          "earning_id": "HAIO_stub_inflow_1785439521156",
+          "amount": 1,
+          "currency": "USDC",
+          "occurred_at": "2026-07-30T19:25:21.157Z",
+          "source": "haio-solana",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "signature": "stub",
+            "from": "stub_source",
+            "block_time": 1785439521,
+            "planned_burn_pct": 10,
+            "planned_operational_pct": 20,
+            "engine": "haio-solana",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785439521154_71d327",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_HAIO_GW_stub_membership_1785439521163",
+          "created_date": "2026-07-30T19:25:21.164Z",
+          "updated_date": "2026-07-30T19:25:21.164Z",
+          "earning_id": "HAIO_GW_stub_membership_1785439521163",
+          "amount": 9.99,
+          "currency": "USDC",
+          "occurred_at": "2026-07-30T19:25:21.164Z",
+          "source": "haio-tx-gateway",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "signature": "stub",
+            "payer": "stub_payer",
+            "tier": "pro_monthly",
+            "type": "membership_payment",
+            "engine": "haio-tx-gateway",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785439521161_34dffb",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_HAIO_VEST_stub_vesting_1785439521169",
+          "created_date": "2026-07-30T19:25:21.170Z",
+          "updated_date": "2026-07-30T19:25:21.170Z",
+          "earning_id": "HAIO_VEST_stub_vesting_1785439521169",
+          "amount": 1000,
+          "currency": "HAIO",
+          "occurred_at": "2026-07-30T19:25:21.170Z",
+          "source": "haio-vesting",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "schedule_id": "sched_001",
+            "claimable_since": 1785439521,
+            "engine": "haio-vesting",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785439521167_a0d281",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_AIPROF_stub_request_1785439561478",
+          "created_date": "2026-07-30T19:26:01.480Z",
+          "updated_date": "2026-07-30T19:26:01.480Z",
+          "earning_id": "AIPROF_stub_request_1785439561478",
+          "amount": 0.005,
+          "currency": "USD",
+          "occurred_at": "2026-07-30T19:26:01.480Z",
+          "source": "aipipeline-router",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "client_id": "stub_client",
+            "model": "claude-sonnet-4",
+            "engine": "aipipeline-router",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785439561473_c98f2f",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_APPLYPILOT_stub_interview_1785439561484",
+          "created_date": "2026-07-30T19:26:01.485Z",
+          "updated_date": "2026-07-30T19:26:01.485Z",
+          "earning_id": "APPLYPILOT_stub_interview_1785439561484",
+          "amount": 50,
+          "currency": "USD",
+          "occurred_at": "2026-07-30T19:26:01.485Z",
+          "source": "applypilot-jobs",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "client_id": "stub_client",
+            "application_id": "app_001",
+            "job_title": "Senior Engineer",
+            "company": "Acme",
+            "type": "interview",
+            "engine": "applypilot-jobs",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785439561484_91e66f",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_FOREMAN_stub_task_1785439561488",
+          "created_date": "2026-07-30T19:26:01.489Z",
+          "updated_date": "2026-07-30T19:26:01.489Z",
+          "earning_id": "FOREMAN_stub_task_1785439561488",
+          "amount": 25,
+          "currency": "USD",
+          "occurred_at": "2026-07-30T19:26:01.489Z",
+          "source": "foreman-coding",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "client_id": "stub_client",
+            "task_type": "bug_fix",
+            "complexity": "medium",
+            "engine": "foreman-coding",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785439561488_7ecaf2",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_HAIO_NFT_stub_mint_1785439561494",
+          "created_date": "2026-07-30T19:26:01.495Z",
+          "updated_date": "2026-07-30T19:26:01.495Z",
+          "earning_id": "HAIO_NFT_stub_mint_1785439561494",
+          "amount": 0.01,
+          "currency": "ETH",
+          "occurred_at": "2026-07-30T19:26:01.495Z",
+          "source": "haio-agent-nft",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "tx_hash": "0xstub",
+            "minter": "0xstub",
+            "token_ids": [
+              1
+            ],
+            "type": "mint_paid",
+            "engine": "haio-agent-nft",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785439561492_747e71",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_HAIO_stub_inflow_1785439561499",
+          "created_date": "2026-07-30T19:26:01.500Z",
+          "updated_date": "2026-07-30T19:26:01.500Z",
+          "earning_id": "HAIO_stub_inflow_1785439561499",
+          "amount": 1,
+          "currency": "USDC",
+          "occurred_at": "2026-07-30T19:26:01.500Z",
+          "source": "haio-solana",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "signature": "stub",
+            "from": "stub_source",
+            "block_time": 1785439561,
+            "planned_burn_pct": 10,
+            "planned_operational_pct": 20,
+            "engine": "haio-solana",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785439561497_497850",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_HAIO_GW_stub_membership_1785439561504",
+          "created_date": "2026-07-30T19:26:01.505Z",
+          "updated_date": "2026-07-30T19:26:01.505Z",
+          "earning_id": "HAIO_GW_stub_membership_1785439561504",
+          "amount": 9.99,
+          "currency": "USDC",
+          "occurred_at": "2026-07-30T19:26:01.505Z",
+          "source": "haio-tx-gateway",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "signature": "stub",
+            "payer": "stub_payer",
+            "tier": "pro_monthly",
+            "type": "membership_payment",
+            "engine": "haio-tx-gateway",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785439561502_ab2809",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_HAIO_VEST_stub_vesting_1785439561509",
+          "created_date": "2026-07-30T19:26:01.510Z",
+          "updated_date": "2026-07-30T19:26:01.510Z",
+          "earning_id": "HAIO_VEST_stub_vesting_1785439561509",
+          "amount": 1000,
+          "currency": "HAIO",
+          "occurred_at": "2026-07-30T19:26:01.510Z",
+          "source": "haio-vesting",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "schedule_id": "sched_001",
+            "claimable_since": 1785439561,
+            "engine": "haio-vesting",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785439561508_456f23",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_AIPROF_stub_request_1785440457714",
+          "created_date": "2026-07-30T19:40:57.715Z",
+          "updated_date": "2026-07-30T19:40:57.715Z",
+          "earning_id": "AIPROF_stub_request_1785440457714",
+          "amount": 0.005,
+          "currency": "USD",
+          "occurred_at": "2026-07-30T19:40:57.715Z",
+          "source": "aipipeline-router",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "client_id": "stub_client",
+            "model": "claude-sonnet-4",
+            "engine": "aipipeline-router",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785440457713_7ea27d",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_APPLYPILOT_stub_interview_1785440457725",
+          "created_date": "2026-07-30T19:40:57.726Z",
+          "updated_date": "2026-07-30T19:40:57.726Z",
+          "earning_id": "APPLYPILOT_stub_interview_1785440457725",
+          "amount": 50,
+          "currency": "USD",
+          "occurred_at": "2026-07-30T19:40:57.726Z",
+          "source": "applypilot-jobs",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "client_id": "stub_client",
+            "application_id": "app_001",
+            "job_title": "Senior Engineer",
+            "company": "Acme",
+            "type": "interview",
+            "engine": "applypilot-jobs",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785440457724_8a4be5",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_FOREMAN_stub_task_1785440457741",
+          "created_date": "2026-07-30T19:40:57.743Z",
+          "updated_date": "2026-07-30T19:40:57.743Z",
+          "earning_id": "FOREMAN_stub_task_1785440457741",
+          "amount": 25,
+          "currency": "USD",
+          "occurred_at": "2026-07-30T19:40:57.743Z",
+          "source": "foreman-coding",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "client_id": "stub_client",
+            "task_type": "bug_fix",
+            "complexity": "medium",
+            "engine": "foreman-coding",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785440457740_70cab1",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_HAIO_NFT_stub_mint_1785440457760",
+          "created_date": "2026-07-30T19:40:57.762Z",
+          "updated_date": "2026-07-30T19:40:57.762Z",
+          "earning_id": "HAIO_NFT_stub_mint_1785440457760",
+          "amount": 0.01,
+          "currency": "ETH",
+          "occurred_at": "2026-07-30T19:40:57.762Z",
+          "source": "haio-agent-nft",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "tx_hash": "0xstub",
+            "minter": "0xstub",
+            "token_ids": [
+              1
+            ],
+            "type": "mint_paid",
+            "engine": "haio-agent-nft",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785440457757_d0c93a",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_HAIO_stub_inflow_1785440457892",
+          "created_date": "2026-07-30T19:40:57.894Z",
+          "updated_date": "2026-07-30T19:40:57.894Z",
+          "earning_id": "HAIO_stub_inflow_1785440457892",
+          "amount": 1,
+          "currency": "USDC",
+          "occurred_at": "2026-07-30T19:40:57.894Z",
+          "source": "haio-solana",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "signature": "stub",
+            "from": "stub_source",
+            "block_time": 1785440457,
+            "planned_burn_pct": 10,
+            "planned_operational_pct": 20,
+            "engine": "haio-solana",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785440457889_9c1955",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_HAIO_GW_stub_membership_1785440457914",
+          "created_date": "2026-07-30T19:40:57.916Z",
+          "updated_date": "2026-07-30T19:40:57.916Z",
+          "earning_id": "HAIO_GW_stub_membership_1785440457914",
+          "amount": 9.99,
+          "currency": "USDC",
+          "occurred_at": "2026-07-30T19:40:57.916Z",
+          "source": "haio-tx-gateway",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "signature": "stub",
+            "payer": "stub_payer",
+            "tier": "pro_monthly",
+            "type": "membership_payment",
+            "engine": "haio-tx-gateway",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785440457910_f0d4fc",
+            "mode": "observe"
+          }
+        },
+        {
+          "id": "offline_Earning_HAIO_VEST_stub_vesting_1785440457935",
+          "created_date": "2026-07-30T19:40:57.937Z",
+          "updated_date": "2026-07-30T19:40:57.937Z",
+          "earning_id": "HAIO_VEST_stub_vesting_1785440457935",
+          "amount": 1000,
+          "currency": "HAIO",
+          "occurred_at": "2026-07-30T19:40:57.937Z",
+          "source": "haio-vesting",
+          "beneficiary": "",
+          "status": "observe_only",
+          "settlement_id": null,
+          "metadata": {
+            "schedule_id": "sched_001",
+            "claimable_since": 1785440457,
+            "engine": "haio-vesting",
+            "engine_version": "0.1.0",
+            "run_id": "RUN_1785440457932_f0dbd2",
+            "mode": "observe"
+          }
+        }
+      ]
+    }
+  }
 }

@@ -1,0 +1,155 @@
+{
+  "type": "all",
+  "engines_run": 7,
+  "results": [
+    {
+      "engine": "aipipeline-router",
+      "version": "0.1.0",
+      "run_id": "RUN_1785439561473_c98f2f",
+      "mode": "observe",
+      "started_at": "2026-07-30T19:26:01.474Z",
+      "opportunities": 1,
+      "earned": 1,
+      "settled": 0,
+      "earnings": [
+        {
+          "earningId": "AIPROF_stub_request_1785439561478",
+          "amount": 0.005,
+          "currency": "USD",
+          "newly_emitted": true
+        }
+      ],
+      "errors": [],
+      "status": "ok",
+      "ended_at": "2026-07-30T19:26:01.483Z"
+    },
+    {
+      "engine": "applypilot-jobs",
+      "version": "0.1.0",
+      "run_id": "RUN_1785439561484_91e66f",
+      "mode": "observe",
+      "started_at": "2026-07-30T19:26:01.484Z",
+      "opportunities": 1,
+      "earned": 1,
+      "settled": 0,
+      "earnings": [
+        {
+          "earningId": "APPLYPILOT_stub_interview_1785439561484",
+          "amount": 50,
+          "currency": "USD",
+          "newly_emitted": true
+        }
+      ],
+      "errors": [],
+      "status": "ok",
+      "ended_at": "2026-07-30T19:26:01.487Z"
+    },
+    {
+      "engine": "foreman-coding",
+      "version": "0.1.0",
+      "run_id": "RUN_1785439561488_7ecaf2",
+      "mode": "observe",
+      "started_at": "2026-07-30T19:26:01.488Z",
+      "opportunities": 1,
+      "earned": 1,
+      "settled": 0,
+      "earnings": [
+        {
+          "earningId": "FOREMAN_stub_task_1785439561488",
+          "amount": 25,
+          "currency": "USD",
+          "newly_emitted": true
+        }
+      ],
+      "errors": [],
+      "status": "ok",
+      "ended_at": "2026-07-30T19:26:01.492Z"
+    },
+    {
+      "engine": "haio-agent-nft",
+      "version": "0.1.0",
+      "run_id": "RUN_1785439561492_747e71",
+      "mode": "observe",
+      "started_at": "2026-07-30T19:26:01.492Z",
+      "opportunities": 1,
+      "earned": 1,
+      "settled": 0,
+      "earnings": [
+        {
+          "earningId": "HAIO_NFT_stub_mint_1785439561494",
+          "amount": 0.01,
+          "currency": "ETH",
+          "newly_emitted": true
+        }
+      ],
+      "errors": [],
+      "status": "ok",
+      "ended_at": "2026-07-30T19:26:01.497Z"
+    },
+    {
+      "engine": "haio-solana",
+      "version": "0.1.0",
+      "run_id": "RUN_1785439561497_497850",
+      "mode": "observe",
+      "started_at": "2026-07-30T19:26:01.497Z",
+      "opportunities": 1,
+      "earned": 1,
+      "settled": 0,
+      "earnings": [
+        {
+          "earningId": "HAIO_stub_inflow_1785439561499",
+          "amount": 1,
+          "currency": "USDC",
+          "signature": "stub",
+          "newly_emitted": true
+        }
+      ],
+      "errors": [],
+      "status": "ok",
+      "ended_at": "2026-07-30T19:26:01.502Z"
+    },
+    {
+      "engine": "haio-tx-gateway",
+      "version": "0.1.0",
+      "run_id": "RUN_1785439561502_ab2809",
+      "mode": "observe",
+      "started_at": "2026-07-30T19:26:01.502Z",
+      "opportunities": 1,
+      "earned": 1,
+      "settled": 0,
+      "earnings": [
+        {
+          "earningId": "HAIO_GW_stub_membership_1785439561504",
+          "amount": 9.99,
+          "currency": "USDC",
+          "newly_emitted": true
+        }
+      ],
+      "errors": [],
+      "status": "ok",
+      "ended_at": "2026-07-30T19:26:01.508Z"
+    },
+    {
+      "engine": "haio-vesting",
+      "version": "0.1.0",
+      "run_id": "RUN_1785439561508_456f23",
+      "mode": "observe",
+      "started_at": "2026-07-30T19:26:01.508Z",
+      "opportunities": 1,
+      "earned": 1,
+      "settled": 0,
+      "earnings": [
+        {
+          "earningId": "HAIO_VEST_stub_vesting_1785439561509",
+          "amount": 1000,
+          "currency": "HAIO",
+          "newly_emitted": true
+        }
+      ],
+      "errors": [],
+      "status": "ok",
+      "ended_at": "2026-07-30T19:26:01.513Z"
+    }
+  ],
+  "generated_at": "2026-07-30T19:26:01.513Z"
+}

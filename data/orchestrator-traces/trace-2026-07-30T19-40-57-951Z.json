@@ -1,0 +1,476 @@
+{
+  "traceId": "06bac0f4-8503-4dfb-9ac0-89c7d5891089",
+  "spans": [
+    {
+      "traceId": "06bac0f4-8503-4dfb-9ac0-89c7d5891089",
+      "spanId": "598e8e68-ece4-4f50-aa95-93420b3904bb",
+      "parentSpanId": null,
+      "service": "orchestrator",
+      "name": "orchestrate:run-all",
+      "phase": "start",
+      "timestamp": "2026-07-30T19:40:57.711Z"
+    },
+    {
+      "traceId": "06bac0f4-8503-4dfb-9ac0-89c7d5891089",
+      "spanId": "ab09b2eb-6e87-458b-9372-a0785a5de599",
+      "parentSpanId": "598e8e68-ece4-4f50-aa95-93420b3904bb",
+      "service": "orchestrator",
+      "name": "run-all",
+      "phase": "discover",
+      "timestamp": "2026-07-30T19:40:57.712Z"
+    },
+    {
+      "traceId": "06bac0f4-8503-4dfb-9ac0-89c7d5891089",
+      "spanId": "a47d0c9b-5033-4035-90a0-9a7db6dfb572",
+      "parentSpanId": "ab09b2eb-6e87-458b-9372-a0785a5de599",
+      "service": "aipipeline-router",
+      "name": "engine:aipipeline-router",
+      "phase": "run",
+      "timestamp": "2026-07-30T19:40:57.712Z"
+    },
+    {
+      "traceId": "06bac0f4-8503-4dfb-9ac0-89c7d5891089",
+      "spanId": "42f873db-0c10-438d-987d-0385869a70b5",
+      "parentSpanId": "a47d0c9b-5033-4035-90a0-9a7db6dfb572",
+      "service": "policy",
+      "name": "fund-allocation",
+      "phase": "applied",
+      "timestamp": "2026-07-30T19:40:57.724Z",
+      "earningId": "AIPROF_stub_request_1785440457714",
+      "totalAmount": 0.005,
+      "splits": []
+    },
+    {
+      "traceId": "06bac0f4-8503-4dfb-9ac0-89c7d5891089",
+      "spanId": "760c6f1f-f735-4ab3-813e-4167993c1dd3",
+      "parentSpanId": "42f873db-0c10-438d-987d-0385869a70b5",
+      "service": "applypilot-jobs",
+      "name": "engine:applypilot-jobs",
+      "phase": "run",
+      "timestamp": "2026-07-30T19:40:57.724Z"
+    },
+    {
+      "traceId": "06bac0f4-8503-4dfb-9ac0-89c7d5891089",
+      "spanId": "dd70e858-9987-4348-8da8-3eb502a56ad2",
+      "parentSpanId": "760c6f1f-f735-4ab3-813e-4167993c1dd3",
+      "service": "policy",
+      "name": "fund-allocation",
+      "phase": "applied",
+      "timestamp": "2026-07-30T19:40:57.740Z",
+      "earningId": "APPLYPILOT_stub_interview_1785440457725",
+      "totalAmount": 50,
+      "splits": []
+    },
+    {
+      "traceId": "06bac0f4-8503-4dfb-9ac0-89c7d5891089",
+      "spanId": "8306a44e-358d-4412-a099-8f9fec84b205",
+      "parentSpanId": "dd70e858-9987-4348-8da8-3eb502a56ad2",
+      "service": "foreman-coding",
+      "name": "engine:foreman-coding",
+      "phase": "run",
+      "timestamp": "2026-07-30T19:40:57.740Z"
+    },
+    {
+      "traceId": "06bac0f4-8503-4dfb-9ac0-89c7d5891089",
+      "spanId": "6df25773-a0c2-419d-892e-d49ff4179c49",
+      "parentSpanId": "8306a44e-358d-4412-a099-8f9fec84b205",
+      "service": "policy",
+      "name": "fund-allocation",
+      "phase": "applied",
+      "timestamp": "2026-07-30T19:40:57.757Z",
+      "earningId": "FOREMAN_stub_task_1785440457741",
+      "totalAmount": 25,
+      "splits": []
+    },
+    {
+      "traceId": "06bac0f4-8503-4dfb-9ac0-89c7d5891089",
+      "spanId": "cab9eff2-cacc-4734-86c4-a0308090ad39",
+      "parentSpanId": "6df25773-a0c2-419d-892e-d49ff4179c49",
+      "service": "haio-agent-nft",
+      "name": "engine:haio-agent-nft",
+      "phase": "run",
+      "timestamp": "2026-07-30T19:40:57.757Z"
+    },
+    {
+      "traceId": "06bac0f4-8503-4dfb-9ac0-89c7d5891089",
+      "spanId": "315a9cb8-3b5f-4f92-8d46-bbd541bc2fe0",
+      "parentSpanId": "cab9eff2-cacc-4734-86c4-a0308090ad39",
+      "service": "policy",
+      "name": "circuit-breaker-tripped",
+      "phase": "blocked",
+      "timestamp": "2026-07-30T19:40:57.889Z",
+      "earningId": "HAIO_NFT_stub_mint_1785440457760",
+      "threats": [
+        {
+          "escalation": {
+            "id": "2438c86b-db82-45fe-8470-4a1092e302fc",
+            "threatType": "PAYOUT_VELOCITY",
+            "severity": "HIGH",
+            "level": 3,
+            "detail": "4 payouts in 60min (max 3)",
+            "payload": {
+              "windowPayouts": 4,
+              "limit": 3,
+              "txs": [
+                {
+                  "destination": "AIPROF_stub_request_1785440457714",
+                  "paymentMethod": "crypto",
+                  "amount": 0.005,
+                  "previousBalance": 0,
+                  "timestamp": "2026-07-30T19:40:57.718Z"
+                },
+                {
+                  "destination": "APPLYPILOT_stub_interview_1785440457725",
+                  "paymentMethod": "crypto",
+                  "amount": 50,
+                  "previousBalance": 0,
+                  "timestamp": "2026-07-30T19:40:57.732Z"
+                },
+                {
+                  "destination": "FOREMAN_stub_task_1785440457741",
+                  "paymentMethod": "crypto",
+                  "amount": 25,
+                  "previousBalance": 0,
+                  "timestamp": "2026-07-30T19:40:57.750Z"
+                },
+                {
+                  "destination": "HAIO_NFT_stub_mint_1785440457760",
+                  "paymentMethod": "crypto",
+                  "amount": 0.01,
+                  "previousBalance": 0,
+                  "timestamp": "2026-07-30T19:40:57.768Z"
+                }
+              ]
+            },
+            "timestamp": "2026-07-30T19:40:57.772Z",
+            "actions": [
+              "log",
+              "console",
+              "webhook"
+            ],
+            "responded": false,
+            "response": null,
+            "autoEscalateAt": "2026-07-30T20:40:57.772Z"
+          },
+          "playbook": {
+            "playbookId": "PLAYBOOK-BREACH-001",
+            "playbookName": "Confirmed Security Breach",
+            "triggeredBy": "PAYOUT_VELOCITY",
+            "severity": "HIGH",
+            "startedAt": "2026-07-30T19:40:57.881Z",
+            "steps": [
+              {
+                "step": "IMMEDIATE: Trip all circuit breakers (GLOBAL FREEZE)",
+                "status": "pending",
+                "completedAt": null
+              },
+              {
+                "step": "IMMEDIATE: Take forensic snapshot of all state",
+                "status": "pending",
+                "completedAt": null
+              },
+              {
+                "step": "FAST: Rotate all credentials in vault",
+                "status": "pending",
+                "completedAt": null
+              },
+              {
+                "step": "FAST: Revoke all active sessions/tokens",
+                "status": "pending",
+                "completedAt": null
+              },
+              {
+                "step": "MEDIUM: Generate incident report with evidence",
+                "status": "pending",
+                "completedAt": null
+              },
+              {
+                "step": "MEDIUM: Notify owner via all channels",
+                "status": "pending",
+                "completedAt": null
+              },
+              {
+                "step": "SLOW: Review audit log for unauthorized transactions",
+                "status": "pending",
+                "completedAt": null
+              },
+              {
+                "step": "SLOW: Contact affected financial institutions",
+                "status": "pending",
+                "completedAt": null
+              },
+              {
+                "step": "RECOVERY: Restore from pre-breach state snapshot",
+                "status": "pending",
+                "completedAt": null
+              },
+              {
+                "step": "POST-MORTEM: Update security policy to prevent recurrence",
+                "status": "pending",
+                "completedAt": null
+              }
+            ]
+          },
+          "threatLevel": "ORANGE",
+          "lockdownToken": null
+        }
+      ]
+    },
+    {
+      "traceId": "06bac0f4-8503-4dfb-9ac0-89c7d5891089",
+      "spanId": "7858213a-8b0d-490c-beb0-b32b5cdf28ee",
+      "parentSpanId": "315a9cb8-3b5f-4f92-8d46-bbd541bc2fe0",
+      "service": "haio-solana",
+      "name": "engine:haio-solana",
+      "phase": "run",
+      "timestamp": "2026-07-30T19:40:57.889Z"
+    },
+    {
+      "traceId": "06bac0f4-8503-4dfb-9ac0-89c7d5891089",
+      "spanId": "dd354d04-c8ea-47e2-89eb-ec1c6763d2fd",
+      "parentSpanId": "7858213a-8b0d-490c-beb0-b32b5cdf28ee",
+      "service": "policy",
+      "name": "fund-allocation",
+      "phase": "applied",
+      "timestamp": "2026-07-30T19:40:57.909Z",
+      "earningId": "HAIO_stub_inflow_1785440457892",
+      "totalAmount": 1,
+      "splits": []
+    },
+    {
+      "traceId": "06bac0f4-8503-4dfb-9ac0-89c7d5891089",
+      "spanId": "bb1dd266-075a-48aa-8a94-256fe3062c45",
+      "parentSpanId": "dd354d04-c8ea-47e2-89eb-ec1c6763d2fd",
+      "service": "haio-tx-gateway",
+      "name": "engine:haio-tx-gateway",
+      "phase": "run",
+      "timestamp": "2026-07-30T19:40:57.909Z"
+    },
+    {
+      "traceId": "06bac0f4-8503-4dfb-9ac0-89c7d5891089",
+      "spanId": "983df769-2823-4d81-86a3-c5eb7f55518a",
+      "parentSpanId": "bb1dd266-075a-48aa-8a94-256fe3062c45",
+      "service": "policy",
+      "name": "fund-allocation",
+      "phase": "applied",
+      "timestamp": "2026-07-30T19:40:57.932Z",
+      "earningId": "HAIO_GW_stub_membership_1785440457914",
+      "totalAmount": 9.99,
+      "splits": []
+    },
+    {
+      "traceId": "06bac0f4-8503-4dfb-9ac0-89c7d5891089",
+      "spanId": "84a78b06-6a73-46ea-8cd8-183ea7a97c25",
+      "parentSpanId": "983df769-2823-4d81-86a3-c5eb7f55518a",
+      "service": "haio-vesting",
+      "name": "engine:haio-vesting",
+      "phase": "run",
+      "timestamp": "2026-07-30T19:40:57.932Z"
+    },
+    {
+      "traceId": "06bac0f4-8503-4dfb-9ac0-89c7d5891089",
+      "spanId": "d39859d9-14b4-4da7-a702-fec545b55ae3",
+      "parentSpanId": "84a78b06-6a73-46ea-8cd8-183ea7a97c25",
+      "service": "policy",
+      "name": "fund-allocation",
+      "phase": "applied",
+      "timestamp": "2026-07-30T19:40:57.951Z",
+      "earningId": "HAIO_VEST_stub_vesting_1785440457935",
+      "totalAmount": 1000,
+      "splits": []
+    },
+    {
+      "traceId": "06bac0f4-8503-4dfb-9ac0-89c7d5891089",
+      "spanId": "804cd3e1-57bb-4099-bb04-4c42f153ea90",
+      "parentSpanId": "d39859d9-14b4-4da7-a702-fec545b55ae3",
+      "service": "orchestrator",
+      "name": "run-all",
+      "phase": "complete",
+      "timestamp": "2026-07-30T19:40:57.951Z",
+      "enginesRun": 7,
+      "ok": 7,
+      "partial": 0
+    }
+  ],
+  "result": {
+    "goal": "run-all",
+    "status": "ok",
+    "enginesRun": 7,
+    "ok": 7,
+    "partial": 0,
+    "fatal": 0,
+    "envMissing": 0,
+    "results": [
+      {
+        "engine": "aipipeline-router",
+        "result": {
+          "engine": "aipipeline-router",
+          "version": "0.1.0",
+          "run_id": "RUN_1785440457713_7ea27d",
+          "mode": "observe",
+          "started_at": "2026-07-30T19:40:57.713Z",
+          "opportunities": 1,
+          "earned": 1,
+          "settled": 0,
+          "earnings": [
+            {
+              "earningId": "AIPROF_stub_request_1785440457714",
+              "amount": 0.005,
+              "currency": "USD",
+              "newly_emitted": true
+            }
+          ],
+          "errors": [],
+          "status": "ok",
+          "ended_at": "2026-07-30T19:40:57.718Z"
+        }
+      },
+      {
+        "engine": "applypilot-jobs",
+        "result": {
+          "engine": "applypilot-jobs",
+          "version": "0.1.0",
+          "run_id": "RUN_1785440457724_8a4be5",
+          "mode": "observe",
+          "started_at": "2026-07-30T19:40:57.724Z",
+          "opportunities": 1,
+          "earned": 1,
+          "settled": 0,
+          "earnings": [
+            {
+              "earningId": "APPLYPILOT_stub_interview_1785440457725",
+              "amount": 50,
+              "currency": "USD",
+              "newly_emitted": true
+            }
+          ],
+          "errors": [],
+          "status": "ok",
+          "ended_at": "2026-07-30T19:40:57.731Z"
+        }
+      },
+      {
+        "engine": "foreman-coding",
+        "result": {
+          "engine": "foreman-coding",
+          "version": "0.1.0",
+          "run_id": "RUN_1785440457740_70cab1",
+          "mode": "observe",
+          "started_at": "2026-07-30T19:40:57.740Z",
+          "opportunities": 1,
+          "earned": 1,
+          "settled": 0,
+          "earnings": [
+            {
+              "earningId": "FOREMAN_stub_task_1785440457741",
+              "amount": 25,
+              "currency": "USD",
+              "newly_emitted": true
+            }
+          ],
+          "errors": [],
+          "status": "ok",
+          "ended_at": "2026-07-30T19:40:57.748Z"
+        }
+      },
+      {
+        "engine": "haio-agent-nft",
+        "result": {
+          "engine": "haio-agent-nft",
+          "version": "0.1.0",
+          "run_id": "RUN_1785440457757_d0c93a",
+          "mode": "observe",
+          "started_at": "2026-07-30T19:40:57.757Z",
+          "opportunities": 1,
+          "earned": 1,
+          "settled": 0,
+          "earnings": [
+            {
+              "earningId": "HAIO_NFT_stub_mint_1785440457760",
+              "amount": 0.01,
+              "currency": "ETH",
+              "newly_emitted": true
+            }
+          ],
+          "errors": [],
+          "status": "ok",
+          "ended_at": "2026-07-30T19:40:57.766Z"
+        }
+      },
+      {
+        "engine": "haio-solana",
+        "result": {
+          "engine": "haio-solana",
+          "version": "0.1.0",
+          "run_id": "RUN_1785440457889_9c1955",
+          "mode": "observe",
+          "started_at": "2026-07-30T19:40:57.889Z",
+          "opportunities": 1,
+          "earned": 1,
+          "settled": 0,
+          "earnings": [
+            {
+              "earningId": "HAIO_stub_inflow_1785440457892",
+              "amount": 1,
+              "currency": "USDC",
+              "signature": "stub",
+              "newly_emitted": true
+            }
+          ],
+          "errors": [],
+          "status": "ok",
+          "ended_at": "2026-07-30T19:40:57.899Z"
+        }
+      },
+      {
+        "engine": "haio-tx-gateway",
+        "result": {
+          "engine": "haio-tx-gateway",
+          "version": "0.1.0",
+          "run_id": "RUN_1785440457910_f0d4fc",
+          "mode": "observe",
+          "started_at": "2026-07-30T19:40:57.910Z",
+          "opportunities": 1,
+          "earned": 1,
+          "settled": 0,
+          "earnings": [
+            {
+              "earningId": "HAIO_GW_stub_membership_1785440457914",
+              "amount": 9.99,
+              "currency": "USDC",
+              "newly_emitted": true
+            }
+          ],
+          "errors": [],
+          "status": "ok",
+          "ended_at": "2026-07-30T19:40:57.921Z"
+        }
+      },
+      {
+        "engine": "haio-vesting",
+        "result": {
+          "engine": "haio-vesting",
+          "version": "0.1.0",
+          "run_id": "RUN_1785440457932_f0dbd2",
+          "mode": "observe",
+          "started_at": "2026-07-30T19:40:57.932Z",
+          "opportunities": 1,
+          "earned": 1,
+          "settled": 0,
+          "earnings": [
+            {
+              "earningId": "HAIO_VEST_stub_vesting_1785440457935",
+              "amount": 1000,
+              "currency": "HAIO",
+              "newly_emitted": true
+            }
+          ],
+          "errors": [],
+          "status": "ok",
+          "ended_at": "2026-07-30T19:40:57.941Z"
+        }
+      }
+    ]
+  },
+  "generated_at": "2026-07-30T19:40:57.951Z"
+}
