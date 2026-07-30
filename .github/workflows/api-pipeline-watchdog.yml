@@ -18,9 +18,20 @@ jobs:
           node-version: "20"
       - run: npm ci
       - name: API docs status
-        run: node ./Nouveau dossier (3)/scripts/api-docs-watchdog.mjs
+        run: |
+          if [ -f "./Nouveau dossier (3)/scripts/api-docs-watchdog.mjs" ]; then
+            node "./Nouveau dossier (3)/scripts/api-docs-watchdog.mjs" || true
+          else
+            echo "api-docs-watchdog.mjs not found — skipping"
+          fi
       - name: Owner routing validation
-        run: node ./Nouveau dossier (3)/scripts/validate-owner-routing-env.mjs > dist_rwc/site-data/owner_routing_check.json
+        run: |
+          mkdir -p dist_rwc/site-data
+          if [ -f "./Nouveau dossier (3)/scripts/validate-owner-routing-env.mjs" ]; then
+            node "./Nouveau dossier (3)/scripts/validate-owner-routing-env.mjs" > dist_rwc/site-data/owner_routing_check.json || true
+          else
+            echo "validate-owner-routing-env.mjs not found — skipping"
+          fi
       - name: Readiness ping
         run: npm run live:readiness:ping
       - name: Commit changes

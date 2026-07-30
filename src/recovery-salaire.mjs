@@ -11,11 +11,11 @@ const RECOVERY_LOG = path.join(ROOT, '.swarm', 'recovery-salaire.json');
 async function log(msg) {
   const line = `[${new Date().toISOString()}] [RECOVERY] ${msg}`;
   console.log(line);
-  try { await fs.appendFile(path.join(ROOT, '.swarm', 'recovery-salaire.log'), line + '\n', 'utf-8'); } catch {}
+  try { await fs.appendFile(path.join(ROOT, '.swarm', 'recovery-salaire.log'), line + '\n', 'utf-8'); } catch (e) { console.error('log write failed:', e.message); }
 }
 
 async function loadJSON(fp) {
-  try { return JSON.parse(await fs.readFile(fp, 'utf-8')); } catch { return null; }
+  try { return JSON.parse(await fs.readFile(fp, 'utf-8')); } catch (e) { if (e.code !== 'ENOENT') console.warn('loadJSON failed:', fp, e.message); return null; }
 }
 
 async function saveJSON(fp, data) {

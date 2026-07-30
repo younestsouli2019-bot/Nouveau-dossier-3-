@@ -43,10 +43,17 @@ dotenv.config();
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 
-const swarmMemoryReady = swarmMemory.init();
-const ownerRouteReady = ownerRouteValidator.init().catch(err => {
-  logger.warn({ err: err.message }, 'OwnerRouteValidator init failed - SBDS enforcement degraded');
-});
+let swarmMemoryReady, ownerRouteReady;
+
+async function initShared() {
+  if (!swarmMemoryReady) swarmMemoryReady = swarmMemory.init().catch(err => { logger.warn({ err: err.message }, 'swarmMemory init failed'); });
+  if (!ownerRouteReady) ownerRouteReady = ownerRouteValidator.init().catch(err => { logger.warn({ err: err.message }, 'OwnerRouteValidator init failed - SBDS enforcement degraded'); });
+  await Promise.all([swarmMemoryReady, ownerRouteReady]);
+}
+
+if (process.argv[1] && import.meta.url.includes(process.argv[1].replace(/\\/g, '/'))) {
+  initShared();
+}
 
 // =============================================================================
 // COMPREHENSIVE PAYMENT PROCESSOR CONFIGURATION
