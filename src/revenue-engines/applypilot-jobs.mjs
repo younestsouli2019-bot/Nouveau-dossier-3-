@@ -4,17 +4,20 @@ import fs from 'fs/promises';
 import { existsSync } from 'fs';
 
 class ApplyPilotJobsEngine extends RevenueEngine {
-  constructor() { super('applypilot-jobs', { version: '0.1.0', vendor: 'https://github.com/ncklrs/ApplyPilot', description: 'ApplyPilot autonomous job applications — placement fee revenue', requiredEnv: ['APPLYPILOT_LEDGER_PATH'], optionalEnv: ['APPLYPILOT_FEE_SCHEDULE_PATH', 'APPLYPILOT_INTERVIEW_FEE_USD', 'APPLYPILOT_PLACEMENT_PCT', 'APPLYPILOT_SUBSCRIPTION_USD'] }); }
+  constructor() {
+    super('applypilot-jobs', { version: '0.1.0', vendor: 'https://github.com/ncklrs/ApplyPilot', description: 'ApplyPilot autonomous job applications — placement fee revenue', requiredEnv: ['APPLYPILOT_LEDGER_PATH'], optionalEnv: ['APPLYPILOT_FEE_SCHEDULE_PATH', 'APPLYPILOT_INTERVIEW_FEE_USD', 'APPLYPILOT_PLACEMENT_PCT', 'APPLYPILOT_SUBSCRIPTION_USD'] });
+    this._emittedEvents = new Set();
+    this._lastSeenOffset = 0;
+  }
 
   async _init() {
     this.ledgerPath = process.env.APPLYPILOT_LEDGER_PATH; this.feeSchedulePath = process.env.APPLYPILOT_FEE_SCHEDULE_PATH;
     this.interviewFee = Number(process.env.APPLYPILOT_INTERVIEW_FEE_USD || 50); this.placementPct = Number(process.env.APPLYPILOT_PLACEMENT_PCT || 0.10); this.subscriptionUsd = Number(process.env.APPLYPILOT_SUBSCRIPTION_USD || 99);
-    this._feeSchedule = existsSync(this.feeSchedulePath || '__none__') ? JSON.parse(await fs.readFile(this.feeSchedulePath, 'utf-8')) : {};
-    this._lastSeenOffset = 0; this._emittedEvents = new Set();
+    this._feeSchedule = (this.feeSchedulePath && existsSync(this.feeSchedulePath)) ? JSON.parse(await fs.readFile(this.feeSchedulePath, 'utf-8')) : {};
   }
 
   async _discover() {
-    if (!existsSync(this.ledgerPath)) { if (this.isObserve()) return { opportunities: [{ id: `stub_interview_${Date.now()}`, type: 'interview', client_id: 'stub_client', application_id: 'app_001', job_title: 'Senior Engineer', company: 'Acme', salary_usd: 150000, amount_usd: 50, ts: Date.now() }] }; return { opportunities: [] }; }
+    if (!this.ledgerPath || !existsSync(this.ledgerPath)) { if (this.isObserve()) return { opportunities: [{ id: `stub_interview_${Date.now()}`, type: 'interview', client_id: 'stub_client', application_id: 'app_001', job_title: 'Senior Engineer', company: 'Acme', salary_usd: 150000, amount_usd: 50, ts: Date.now() }] }; return { opportunities: [] }; }
     const stat = await fs.stat(this.ledgerPath); if (stat.size < this._lastSeenOffset) this._lastSeenOffset = 0;
     const fh = await fs.open(this.ledgerPath, 'r'); const buf = Buffer.alloc(stat.size - this._lastSeenOffset); await fh.read(buf, 0, buf.length, this._lastSeenOffset); await fh.close();
     this._lastSeenOffset = stat.size;

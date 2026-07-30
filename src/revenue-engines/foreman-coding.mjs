@@ -9,13 +9,13 @@ class ForemanCodingEngine extends RevenueEngine {
   async _init() {
     this.ledgerPath = process.env.FOREMAN_TASK_LEDGER_PATH; this.rateCardPath = process.env.FOREMAN_RATE_CARD_PATH;
     this.minTaskUsd = Number(process.env.FOREMAN_MIN_TASK_USD || 1.00); this.invoiceAuto = String(process.env.FOREMAN_INVOICE_AUTO || '').toLowerCase() === 'true';
-    if (!existsSync(this.rateCardPath)) { this.warn(`rate card not found: ${this.rateCardPath}`); this._rateCard = {}; }
+    if (!this.rateCardPath || !existsSync(this.rateCardPath)) { this.warn(`rate card not found: ${this.rateCardPath}`); this._rateCard = {}; }
     else { this._rateCard = JSON.parse(await fs.readFile(this.rateCardPath, 'utf-8')); }
     this._lastSeenOffset = 0;
   }
 
   async _discover() {
-    if (!existsSync(this.ledgerPath)) { if (this.isObserve()) return { opportunities: [{ id: `stub_task_${Date.now()}`, type: 'coding_task', task_type: 'bug_fix', client_id: 'stub_client', status: 'merged', complexity: 'medium', rate_usd: 25, ts: Date.now() }] }; return { opportunities: [] }; }
+    if (!this.ledgerPath || !existsSync(this.ledgerPath)) { if (this.isObserve()) return { opportunities: [{ id: `stub_task_${Date.now()}`, type: 'coding_task', task_type: 'bug_fix', client_id: 'stub_client', status: 'merged', complexity: 'medium', rate_usd: 25, ts: Date.now() }] }; return { opportunities: [] }; }
     const stat = await fs.stat(this.ledgerPath); if (stat.size < this._lastSeenOffset) this._lastSeenOffset = 0;
     const fh = await fs.open(this.ledgerPath, 'r'); const buf = Buffer.alloc(stat.size - this._lastSeenOffset); await fh.read(buf, 0, buf.length, this._lastSeenOffset); await fh.close();
     this._lastSeenOffset = stat.size;

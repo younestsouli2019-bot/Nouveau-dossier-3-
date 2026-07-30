@@ -157,6 +157,7 @@ export class RevenueEngine {
   }
 
   async status() {
+    if (!this._initDone) await this.init();
     const base = { engine: this.name, version: this.version, mode: this._mode, env_ok: this._envOk, run_id: this._runId };
     try { const extra = await this._status(); return { ...base, ...extra }; }
     catch (e) { return { ...base, error: e.message }; }

@@ -2,14 +2,16 @@ import RevenueEngine from './base.mjs';
 import { register } from './registry.mjs';
 
 class HAiOVestingEngine extends RevenueEngine {
-  constructor() { super('haio-vesting', { version: '0.1.0', vendor: 'https://github.com/HAiO-labs/HAiO-vesting-program', description: 'HAiO Vesting: claimable token tranches as recurring revenue', requiredEnv: ['HAIO_VESTING_PROGRAM', 'HAIO_RPC_URL', 'HAIO_VESTING_RECIPIENT'], optionalEnv: ['HAIO_VESTING_MINT', 'HAIO_VESTING_CRANK', 'SOLANA_PRIVATE_KEY'] }); }
+  constructor() {
+    super('haio-vesting', { version: '0.1.0', vendor: 'https://github.com/HAiO-labs/HAiO-vesting-program', description: 'HAiO Vesting: claimable token tranches as recurring revenue', requiredEnv: ['HAIO_VESTING_PROGRAM', 'HAIO_RPC_URL', 'HAIO_VESTING_RECIPIENT'], optionalEnv: ['HAIO_VESTING_MINT', 'HAIO_VESTING_CRANK', 'SOLANA_PRIVATE_KEY'] });
+    this._processedTranches = new Set();
+  }
 
   async _init() {
     this.programId = process.env.HAIO_VESTING_PROGRAM; this.rpcUrl = process.env.HAIO_RPC_URL; this.recipient = process.env.HAIO_VESTING_RECIPIENT;
     this.mintFilter = process.env.HAIO_VESTING_MINT; this.doCrank = String(process.env.HAIO_VESTING_CRANK || '').toLowerCase() === 'true';
     try { const mod = await import('@solana/web3.js'); this.solana = mod; this.connection = new this.solana.Connection(this.rpcUrl, 'confirmed'); }
     catch { this.warn('@solana/web3.js not installed — stub mode'); this.solana = null; this.connection = null; }
-    this._processedTranches = new Set();
   }
 
   async _discover() {

@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { existsSync, mkdirSync } from 'fs';
+import { fileURLToPath } from 'url';
 
 const REGISTRY = new Map();
 
@@ -13,7 +14,7 @@ export function list() { return Array.from(REGISTRY.values()); }
 export function get(name) { return REGISTRY.get(name); }
 
 async function loadAllEngines() {
-  const dir = path.dirname(new URL(import.meta.url).pathname);
+  const dir = path.dirname(fileURLToPath(import.meta.url));
   if (!existsSync(dir)) return;
   const entries = await fs.readdir(dir);
   for (const f of entries) {

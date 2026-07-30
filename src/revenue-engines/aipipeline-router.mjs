@@ -9,13 +9,13 @@ class AIPipelineRouterEngine extends RevenueEngine {
   async _init() {
     this.usageLogPath = process.env.AIPROFILE_USAGE_LOG_PATH; this.pricingTablePath = process.env.AIPROFILE_PRICING_TABLE_PATH;
     this.minMargin = Number(process.env.AIPROFILE_MIN_MARGIN_USD || 0.0001); this.aggregate = String(process.env.AIPROFILE_AGGREGATE || '').toLowerCase() === 'true';
-    if (!existsSync(this.pricingTablePath)) { this.warn(`pricing table not found: ${this.pricingTablePath}`); this._pricing = {}; }
+    if (!this.pricingTablePath || !existsSync(this.pricingTablePath)) { this.warn(`pricing table not found: ${this.pricingTablePath}`); this._pricing = {}; }
     else { this._pricing = JSON.parse(await fs.readFile(this.pricingTablePath, 'utf-8')); }
     this._lastSeenOffset = 0;
   }
 
   async _discover() {
-    if (!existsSync(this.usageLogPath)) { if (this.isObserve()) return { opportunities: [{ id: `stub_request_${Date.now()}`, type: 'routed_request', client_id: 'stub_client', model: 'claude-sonnet-4', input_tokens: 1000, output_tokens: 500, upstream_cost_usd: 0.015, price_charged_usd: 0.020, margin_usd: 0.005, ts: Date.now() }] }; return { opportunities: [] }; }
+    if (!this.usageLogPath || !existsSync(this.usageLogPath)) { if (this.isObserve()) return { opportunities: [{ id: `stub_request_${Date.now()}`, type: 'routed_request', client_id: 'stub_client', model: 'claude-sonnet-4', input_tokens: 1000, output_tokens: 500, upstream_cost_usd: 0.015, price_charged_usd: 0.020, margin_usd: 0.005, ts: Date.now() }] }; return { opportunities: [] }; }
     const stat = await fs.stat(this.usageLogPath); if (stat.size < this._lastSeenOffset) this._lastSeenOffset = 0;
     const fh = await fs.open(this.usageLogPath, 'r'); const buf = Buffer.alloc(stat.size - this._lastSeenOffset); await fh.read(buf, 0, buf.length, this._lastSeenOffset); await fh.close();
     this._lastSeenOffset = stat.size;
