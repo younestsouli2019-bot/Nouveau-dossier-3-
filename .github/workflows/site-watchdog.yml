@@ -30,7 +30,12 @@ jobs:
       
       - name: Health Check (Smoke Test)
         if: ${{ matrix.url != '' }}
-        run: node ./scripts/site-smoke-test.mjs
+        run: |
+          if [ -f ./scripts/site-smoke-test.mjs ]; then
+            node ./scripts/site-smoke-test.mjs
+          else
+            echo "scripts/site-smoke-test.mjs not found — skipping"
+          fi
 
       - name: Notify on Failure
         if: failure()

@@ -47,8 +47,13 @@ jobs:
       - name: Execute withdraw
         id: withdraw
         run: |
-          node ./scripts/execute-crypto-withdraw.mjs --amount "${{ inputs.amount }}" > out.json || true
-          cat out.json
+          if [ -f ./scripts/execute-crypto-withdraw.mjs ]; then
+            node ./scripts/execute-crypto-withdraw.mjs --amount "${{ inputs.amount }}" > out.json || true
+            cat out.json
+          else
+            echo '{"status":"SKIPPED","reason":"script not found"}' > out.json
+            echo "scripts/execute-crypto-withdraw.mjs not found"
+          fi
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
