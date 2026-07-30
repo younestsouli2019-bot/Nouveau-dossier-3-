@@ -7,123 +7,176 @@
     "keyDerivation": "PBKDF2-HMAC-SHA256",
     "iterations": 600000,
     "authTagLength": 16,
-    "integrity": "HMAC-SHA256"
+    "integrity": "HMAC-SHA256",
+    "splitKeyQuorum": { "totalShares": 5, "required": 3 }
+  },
+  "antiCensorship": {
+    "enabled": true,
+    "probeEndpoints": ["https://check.torproject.org", "https://www.cloudflare.com/cdn-cgi/trace"],
+    "regionalBlockDetect": {
+      "intervalMs": 3600000,
+      "timeoutMs": 10000,
+      "suspectedBlockThreshold": 2
+    },
+    "providerDiversity": {
+      "jurisdictionsRequired": ["US", "EU", "CH", "RU-region"],
+      "minDistinctProviders": 4,
+      "minDistinctJurisdictions": 3
+    },
+    "failoverCascade": ["clearnet-cdn", "onion-mirror", "i2p-mirror", "ipfs-gateway", "local-cache"]
+  },
+  "doomsdayVault": {
+    "enabled": true,
+    "intervalDays": 1,
+    "retentionSnapshots": 30,
+    "vaultDir": "data/doomsday-vault",
+    "geoReplicas": [
+      { "region": "EU-Central", "provider": "Infomaniak", "syncCron": "0 4 * * *" },
+      { "region": "US-East", "provider": "Backblaze B2", "syncCron": "0 5 * * *" },
+      { "region": "APAC", "provider": "Scaleway", "syncCron": "0 6 * * *" }
+    ],
+    "quorumRestore": { "totalShares": 5, "required": 3 },
+    "integrityCheck": { "algorithm": "sha256", "scheduleCron": "0 2 * * *" }
   },
   "mirrors": [
     {
-      "id": "mirror-01",
+      "id": "mirror-cf-us-eu",
       "url": "https://mirror1.realworldcerts.com",
-      "label": "Primary CDN (US-East/EU-West)",
+      "label": "Cloudflare CDN (US-East/EU-West)",
       "provider": "Cloudflare",
+      "jurisdiction": "US",
+      "networkLayer": "clearnet",
       "status": "active",
       "lastSync": null,
       "regions": ["US-East", "EU-West"],
-      "capabilities": ["cdn", "ssl", "waf", "ddos-protection"],
+      "capabilities": ["cdn", "ssl", "waf", "ddos-protection", "http3"],
       "healthEndpoint": "https://mirror1.realworldcerts.com/health",
-      "syncSchedule": {
-        "cron": "*/30 * * * *",
-        "intervalMinutes": 30,
-        "retentionDays": 90,
-        "compression": "brotli"
-      },
-      "encryption": {
-        "atRest": true,
-        "inTransit": true,
-        "keyRef": "env://SECURE_CLOUD_KEY_MIRROR_01"
-      },
-      "backup": {
-        "enabled": true,
-        "target": "s3://rwc-backup-us-east-1",
-        "scheduleCron": "0 3 * * *"
-      }
+      "integrityEndpoint": "https://mirror1.realworldcerts.com/content.sha256",
+      "syncSchedule": { "cron": "*/30 * * * *", "intervalMinutes": 30, "retentionDays": 90, "compression": "brotli" },
+      "encryption": { "atRest": true, "inTransit": true, "keyRef": "env://SECURE_CLOUD_KEY_MIRROR_01" },
+      "backup": { "enabled": true, "target": "s3://rwc-backup-us-east-1", "scheduleCron": "0 3 * * *" },
+      "antiCensorship": { "priority": 1, "fallbackGroup": "clearnet-cdn", "blockDetectUrl": "https://mirror1.realworldcerts.com/health" }
     },
     {
-      "id": "mirror-02",
+      "id": "mirror-bunny-apac",
       "url": "https://mirror2.realworldcerts.com",
-      "label": "Secondary CDN (APAC/Middle-East)",
+      "label": "BunnyCDN (APAC/Middle-East)",
       "provider": "BunnyCDN",
+      "jurisdiction": "EU",
+      "networkLayer": "clearnet",
       "status": "active",
       "lastSync": null,
-      "regions": ["APAC", "Middle-East"],
-      "capabilities": ["cdn", "ssl", "edge-rules"],
+      "regions": ["APAC", "Middle-East", "South America"],
+      "capabilities": ["cdn", "ssl", "edge-rules", "geo-redundant"],
       "healthEndpoint": "https://mirror2.realworldcerts.com/health",
-      "syncSchedule": {
-        "cron": "*/30 * * * *",
-        "intervalMinutes": 30,
-        "retentionDays": 90,
-        "compression": "gzip"
-      },
-      "encryption": {
-        "atRest": true,
-        "inTransit": true,
-        "keyRef": "env://SECURE_CLOUD_KEY_MIRROR_02"
-      },
-      "backup": {
-        "enabled": true,
-        "target": "s3://rwc-backup-ap-southeast-1",
-        "scheduleCron": "0 5 * * *"
-      }
+      "integrityEndpoint": "https://mirror2.realworldcerts.com/content.sha256",
+      "syncSchedule": { "cron": "*/30 * * * *", "intervalMinutes": 30, "retentionDays": 90, "compression": "gzip" },
+      "encryption": { "atRest": true, "inTransit": true, "keyRef": "env://SECURE_CLOUD_KEY_MIRROR_02" },
+      "backup": { "enabled": true, "target": "s3://rwc-backup-ap-southeast-1", "scheduleCron": "0 5 * * *" },
+      "antiCensorship": { "priority": 2, "fallbackGroup": "clearnet-cdn" }
     },
     {
       "id": "mirror-gh-pages",
       "url": "https://realworldcerts.com",
       "label": "GitHub Pages (Origin/Zero-Cost)",
       "provider": "GitHub Pages",
+      "jurisdiction": "US",
+      "networkLayer": "clearnet",
       "status": "active",
       "lastSync": null,
       "regions": ["Global"],
-      "capabilities": ["static-hosting", "custom-domain", "ssl", "zero-cost"],
+      "capabilities": ["static-hosting", "custom-domain", "ssl", "zero-cost", "git-versioned"],
       "healthEndpoint": "https://realworldcerts.com/healthz",
-      "syncSchedule": {
-        "cron": "@push",
-        "intervalMinutes": null,
-        "retentionDays": null,
-        "compression": "none"
-      },
-      "encryption": {
-        "atRest": false,
-        "inTransit": true,
-        "keyRef": null
-      },
-      "backup": {
-        "enabled": true,
-        "target": "git://origin/gh-pages-backup",
-        "scheduleCron": "0 2 * * 0"
-      }
+      "integrityEndpoint": null,
+      "syncSchedule": { "cron": "@push", "intervalMinutes": null, "retentionDays": null, "compression": "none" },
+      "encryption": { "atRest": false, "inTransit": true, "keyRef": null },
+      "backup": { "enabled": true, "target": "git://origin/gh-pages-backup", "scheduleCron": "0 2 * * 0" },
+      "antiCensorship": { "priority": 3, "fallbackGroup": "clearnet-cdn" }
     },
     {
-      "id": "mirror-encrypted-backup",
-      "url": null,
-      "label": "Encrypted Cold Storage (Disaster Recovery)",
-      "provider": "Infomaniak / Scaleway",
+      "id": "mirror-onion",
+      "url": "http://rwcxyz1234567.onion",
+      "label": "Tor Onion Service (Censorship-Resistant)",
+      "provider": "Tor Project",
+      "jurisdiction": "CH",
+      "networkLayer": "onion",
       "status": "standby",
       "lastSync": null,
-      "regions": ["EU-Central"],
-      "capabilities": ["object-storage", "encryption-at-rest", "geo-redundant"],
+      "regions": ["Global (Tor network)"],
+      "capabilities": ["onion-service", "end-to-end-encrypted", "anonymous", "censorship-resistant"],
       "healthEndpoint": null,
-      "syncSchedule": {
-        "cron": "0 4 * * *",
-        "intervalMinutes": 1440,
-        "retentionDays": 365,
-        "compression": "zstd"
-      },
-      "encryption": {
-        "atRest": true,
-        "inTransit": true,
-        "keyRef": "env://SECURE_CLOUD_KEY_COLD_STORAGE"
-      },
-      "backup": {
-        "enabled": true,
-        "target": "s3://rwc-disaster-recovery-eu-central",
-        "scheduleCron": "0 6 * * 6"
-      }
+      "integrityEndpoint": null,
+      "syncSchedule": { "cron": "0 */6 * * *", "intervalMinutes": 360, "retentionDays": 90, "compression": "zstd" },
+      "encryption": { "atRest": true, "inTransit": true, "keyRef": "env://SECURE_CLOUD_KEY_ONION" },
+      "backup": { "enabled": false },
+      "antiCensorship": { "priority": 4, "fallbackGroup": "onion-mirror", "requiresTorProxy": true }
+    },
+    {
+      "id": "mirror-i2p",
+      "url": "http://rwc.i2p",
+      "label": "I2P Eepsite (Censorship-Resistant)",
+      "provider": "I2P",
+      "jurisdiction": "RU-region",
+      "networkLayer": "i2p",
+      "status": "standby",
+      "lastSync": null,
+      "regions": ["Global (I2P network)"],
+      "capabilities": ["i2p-eepsite", "end-to-end-encrypted", "anonymous", "resilient"],
+      "healthEndpoint": null,
+      "integrityEndpoint": null,
+      "syncSchedule": { "cron": "0 */12 * * *", "intervalMinutes": 720, "retentionDays": 90, "compression": "zstd" },
+      "encryption": { "atRest": true, "inTransit": true, "keyRef": "env://SECURE_CLOUD_KEY_I2P" },
+      "backup": { "enabled": false },
+      "antiCensorship": { "priority": 5, "fallbackGroup": "i2p-mirror", "requiresI2PProxy": true }
+    },
+    {
+      "id": "mirror-ipfs",
+      "url": "https://ipfs.io/ipns/rwc-content",
+      "label": "IPFS Gateway (Decentralized Storage)",
+      "provider": "IPFS (Protocol Labs)",
+      "jurisdiction": "Global",
+      "networkLayer": "p2p",
+      "status": "active",
+      "lastSync": null,
+      "regions": ["Global (P2P)"],
+      "capabilities": ["ipfs", "content-addressed", "p2p", "decentralized", "tamper-proof"],
+      "healthEndpoint": null,
+      "integrityEndpoint": null,
+      "syncSchedule": { "cron": "0 */4 * * *", "intervalMinutes": 240, "retentionDays": 365, "compression": "none" },
+      "encryption": { "atRest": false, "inTransit": true, "keyRef": null },
+      "backup": { "enabled": true, "target": "ipfs://cluster/rwc-backup", "scheduleCron": "0 */6 * * *" },
+      "antiCensorship": { "priority": 6, "fallbackGroup": "ipfs-gateway", "ipfsCID": "QmPlaceholder" }
+    },
+    {
+      "id": "mirror-doomsday-vault",
+      "url": null,
+      "label": "Doomsday Encrypted Vault (Geo-Redundant, Quorum Restore)",
+      "provider": "Infomaniak / Backblaze B2 / Scaleway",
+      "jurisdiction": "EU, US, APAC",
+      "networkLayer": "cold-storage",
+      "status": "standby",
+      "lastSync": null,
+      "regions": ["EU-Central", "US-East", "APAC"],
+      "capabilities": ["object-storage", "encryption-at-rest", "geo-redundant", "split-key", "quorum-restore"],
+      "healthEndpoint": null,
+      "integrityEndpoint": null,
+      "syncSchedule": { "cron": "0 4 * * *", "intervalMinutes": 1440, "retentionDays": 365, "compression": "zstd" },
+      "encryption": { "atRest": true, "inTransit": true, "keyRef": "env://SECURE_CLOUD_KEY_COLD_STORAGE" },
+      "backup": { "enabled": true, "target": "s3://rwc-doomsday-eu + s3://rwc-doomsday-us + s3://rwc-doomsday-apac", "scheduleCron": "0 6 * * *" },
+      "antiCensorship": { "priority": 7, "fallbackGroup": "doomsday" }
     }
   ],
   "routing": {
-    "strategy": "geo-latency",
-    "fallbackOrder": ["mirror-01", "mirror-02", "mirror-gh-pages"],
+    "strategy": "geo-latency-with-censorship-bypass",
+    "fallbackOrder": ["mirror-cf-us-eu", "mirror-bunny-apac", "mirror-gh-pages", "mirror-ipfs", "mirror-onion", "mirror-i2p"],
     "healthCheckIntervalMs": 30000,
-    "maxFailoverTimeMs": 5000
+    "maxFailoverTimeMs": 5000,
+    "censorshipBypass": {
+      "enabled": true,
+      "autoPromoteOnionOnBlock": true,
+      "autoPromoteI2POnBlock": true,
+      "blockThresholdSeconds": 30
+    }
   },
   "restoreDrill": {
     "enabled": true,
@@ -134,7 +187,9 @@
     "playbooks": {
       "partial_outage": "restore_single_mirror",
       "full_outage": "restore_all_mirrors",
-      "data_corruption": "restore_from_encrypted_backup"
+      "data_corruption": "restore_from_encrypted_backup",
+      "censorship_block": "promote_onion_mirror",
+      "doomsday_scenario": "quorum_restore_vault"
     }
   }
 }

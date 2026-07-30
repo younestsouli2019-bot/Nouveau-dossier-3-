@@ -1,0 +1,74 @@
+{
+  "enabled": true,
+  "created": "2026-07-30T00:00:00.000Z",
+  "updated": "2026-07-30T00:00:00.000Z",
+  "encryption": {
+    "algorithm": "aes-256-gcm",
+    "keyDerivation": "PBKDF2-HMAC-SHA256",
+    "iterations": 600000,
+    "splitKey": {
+      "enabled": true,
+      "totalShares": 5,
+      "required": 3,
+      "shareLocations": [
+        { "shareId": 1, "region": "US-East", "holder": "owner-key-1", "keyRef": "env://DOOMSDAY_SHARE_1" },
+        { "shareId": 2, "region": "EU-Central", "holder": "owner-key-2", "keyRef": "env://DOOMSDAY_SHARE_2" },
+        { "shareId": 3, "region": "APAC", "holder": "contingency-vault", "keyRef": "env://DOOMSDAY_SHARE_3" },
+        { "shareId": 4, "region": "CH", "holder": "paper-backup", "keyRef": "env://DOOMSDAY_SHARE_4" },
+        { "shareId": 5, "region": "RU-region", "holder": "legal-escrow", "keyRef": "env://DOOMSDAY_SHARE_5" }
+      ]
+    }
+  },
+  "geoReplicas": [
+    {
+      "id": "vault-eu-central",
+      "region": "EU-Central",
+      "provider": "Infomaniak Object Storage",
+      "bucket": "s3://rwc-doomsday-eu",
+      "syncSchedule": { "cron": "0 4 * * *", "compression": "zstd" },
+      "retentionDays": 365,
+      "status": "standby"
+    },
+    {
+      "id": "vault-us-east",
+      "region": "US-East",
+      "provider": "Backblaze B2",
+      "bucket": "s3://rwc-doomsday-us",
+      "syncSchedule": { "cron": "0 5 * * *", "compression": "zstd" },
+      "retentionDays": 365,
+      "status": "standby"
+    },
+    {
+      "id": "vault-apac",
+      "region": "APAC",
+      "provider": "Scaleway Object Storage",
+      "bucket": "s3://rwc-doomsday-apac",
+      "syncSchedule": { "cron": "0 6 * * *", "compression": "zstd" },
+      "retentionDays": 365,
+      "status": "standby"
+    }
+  ],
+  "integrity": {
+    "algorithm": "sha256",
+    "checkSchedule": "0 2 * * *",
+    "manifestFile": "data/doomsday-vault/manifest.json",
+    "autoRepairCorrupt": true
+  },
+  "restore": {
+    "quorumRequired": 3,
+    "timeoutMinutes": 120,
+    "requireDecryption": true,
+    "postRestoreVerify": true,
+    "playbook": {
+      "snapshotSealed": "verify_integrity -> collect_quorum_shards -> decrypt -> restore -> verify",
+      "snapshotCorrupt": "fallback_to_prior_snapshot -> alert_contingency",
+      "geoReplicaLost": "replicate_from_remaining_replicas -> rebalance"
+    }
+  },
+  "circuitBreaker": {
+    "consecutiveIntegrityFailures": 3,
+    "consecutiveGeoReplicaFailures": 2,
+    "alertOnFailure": true,
+    "escalateToContingency": true
+  }
+}
