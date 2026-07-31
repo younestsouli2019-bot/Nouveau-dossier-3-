@@ -15,7 +15,12 @@
     "live:readiness:ping": "node ./src/mcp/webhook_listener.mjs --ping",
     "catalogue:ultimate": "node \"Nouveau dossier (3)/scripts/generate-catalogue-ultimate.mjs\"",
     "catalogue:pdfkit": "node \"Nouveau dossier (3)/scripts/generate-catalogue-pdfkit.mjs\"",
-    "revenue:engines": "node ./src/revenue-engines/registry.mjs run-all"
+    "revenue:engines": "node ./src/revenue-engines/registry.mjs run-all",
+    "settlement:status": "node ./src/settlement/settlement.mjs status",
+    "settlement:selftest": "node ./src/settlement/settlement.mjs selftest",
+    "settlement:net": "node ./src/settlement/settlement.mjs net",
+    "settlement:sahl:status": "node ./src/settlement/settlement.mjs sahl-status",
+    "settlement:payout": "node ./src/settlement/settlement.mjs payout"
   },
   "dependencies": {
     "chari-baas-client": "^1.0.0"

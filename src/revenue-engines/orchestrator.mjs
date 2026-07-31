@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { list, get, loadAllEngines } from './registry.mjs';
 import contingencyEngine from '../contingency.mjs';
 import ownerRouteValidator from '../owner-route-validator.mjs';
+import settlementPipeline from '../settlement/pipeline.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../..');
@@ -28,6 +29,7 @@ class RevenueOrchestrator {
     await loadAllEngines();
     await contingencyEngine.init();
     await ownerRouteValidator.init();
+    await settlementPipeline.init();
     this._initialized = true;
   }
 
@@ -130,6 +132,27 @@ class RevenueOrchestrator {
           totalAmount: earning.amount,
           splits: allocation,
         });
+
+        try {
+          const posted = await settlementPipeline.postEarning({
+            txId: earning.earningId,
+            amount: earning.amount,
+            currency: earning.currency,
+            agent: name,
+            reference: earning.earningId,
+            payload: {
+              ...(earning.metadata || {}),
+              purpose: 'revenue_settlement',
+              counterpartyAck: earning.metadata?.counterpartyAck,
+              gatewayLedger: earning.metadata?.gatewayLedger,
+              oracleConfirmed: earning.metadata?.oracleConfirmed,
+              verified: earning.metadata?.verified,
+            },
+          });
+          this._addSpan('settlement', 'revenue-pipeline', posted.status, { txId: posted.txId });
+        } catch (e) {
+          this._addSpan('settlement', 'revenue-pipeline', 'error', { earningId: earning.earningId, error: e.message });
+        }
       }
     }
 
