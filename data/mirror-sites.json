@@ -1,7 +1,7 @@
 {
   "$schema": "./mirror-sites.schema.json",
   "created": "2026-07-30T00:00:00.000Z",
-  "updated": "2026-07-30T00:00:00.000Z",
+  "updated": "2026-07-31T15:30:00.000Z",
   "defaultEncryption": {
     "algorithm": "aes-256-gcm",
     "keyDerivation": "PBKDF2-HMAC-SHA256",
@@ -164,7 +164,7 @@
       "encryption": { "atRest": true, "inTransit": true, "keyRef": "env://SECURE_CLOUD_KEY_COLD_STORAGE" },
       "backup": { "enabled": true, "target": "s3://rwc-doomsday-eu/settlement", "scheduleCron": "0 */2 * * *" },
       "antiCensorship": { "priority": 8, "fallbackGroup": "doomsday", "settlementData": "data/settlement" },
-      "revenueRails": ["sahl", "charipay", "payzone"]
+      "revenueRails": ["sahl", "charipay", "payzone", "xs2a"]
     },
     {
       "id": "mirror-doomsday-vault",

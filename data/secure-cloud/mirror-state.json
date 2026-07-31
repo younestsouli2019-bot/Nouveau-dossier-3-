@@ -14,6 +14,12 @@
       "at": "2026-07-31T11:13:21.200Z",
       "severity": "HIGH",
       "detail": "Cannot read properties of undefined (reading 'push')"
+    },
+    {
+      "type": "SETTLEMENT_SEAL_FAILED",
+      "at": "2026-07-31T14:27:12.075Z",
+      "severity": "HIGH",
+      "detail": "Encryption key not available for env://DOOMSDAY_SHARE_1"
     }
   ],
   "censorshipEvents": [],

@@ -59,6 +59,59 @@
         "SECURE_CLOUD_KEY_MIRROR_02": "${SECURE_CLOUD_KEY_MIRROR_02:-}",
         "SECURE_CLOUD_KEY_COLD_STORAGE": "${SECURE_CLOUD_KEY_COLD_STORAGE:-}"
       }
+    },
+    "settlement-status": {
+      "name": "Settlement Status & Class A Receivables",
+      "description": "Full settlement pipeline status: ledger integrity, escrow, quarantine, reconciliation, receivables by class (A/B/C) — gates all revenue settlement on Class A receivable coverage",
+      "command": "node",
+      "args": ["src/settlement/settlement.mjs", "status"],
+      "env": {
+        "SWARM_LIVE": "${SWARM_LIVE:-observe}",
+        "RECEIVABLES_REVENUE_TYPES": "${RECEIVABLES_REVENUE_TYPES:-}"
+      }
+    },
+    "receivables-audit": {
+      "name": "Receivables Audit (Revenue Mission Coverage)",
+      "description": "Audit every revenue-generating swarm mission for Class A receivable coverage against data/swarm/mission-plan.json; lists violations when coverage is incomplete",
+      "command": "node",
+      "args": ["src/settlement/settlement.mjs", "receivables-audit"],
+      "env": {
+        "RECEIVABLES_REVENUE_TYPES": "${RECEIVABLES_REVENUE_TYPES:-}"
+      }
+    },
+    "settlement-rails": {
+      "name": "Settlement Rails Status (Morocco + EU)",
+      "description": "Status of all payment rails: Sahl, Chari Pay, Payzone (Morocco) and XS2A/adorsys (EU SEPA) — configured, dry-run, baseUrl, token, payment counts",
+      "command": "node",
+      "args": ["src/settlement/settlement.mjs", "sahl-status"],
+      "env": {
+        "CHARIPAY_API_KEY": "${CHARIPAY_API_KEY:-}",
+        "PAYZONE_API_KEY": "${PAYZONE_API_KEY:-}",
+        "XS2A_API_KEY": "${XS2A_API_KEY:-}"
+      }
+    },
+    "settle-revenue": {
+      "name": "Settle Revenue (Net Eligible Class A)",
+      "description": "Net eligible Class A receivables per currency into batches and submit to the selected rail (charipay|payzone|sahl|xs2a|usdc|eurc|...); non-Class-A receivables are blocked and quarantined",
+      "command": "node",
+      "args": ["src/settlement/settlement.mjs", "settle-revenue", "charipay"],
+      "env": {
+        "SWARM_LIVE": "${SWARM_LIVE:-observe}",
+        "RECEIVABLES_REVENUE_TYPES": "${RECEIVABLES_REVENUE_TYPES:-}"
+      }
+    },
+    "vault-status": {
+      "name": "Vault Status (Doomsday + Settlement Seal)",
+      "description": "Doomsday vault status and settlement seal readiness: scopes, split-key quorum, geo-replicas, integrity manifest, last seal",
+      "command": "node",
+      "args": ["src/secure-cloud.mjs", "health"],
+      "env": {
+        "DOOMSDAY_SHARE_1": "${DOOMSDAY_SHARE_1:-}",
+        "DOOMSDAY_SHARE_2": "${DOOMSDAY_SHARE_2:-}",
+        "DOOMSDAY_SHARE_3": "${DOOMSDAY_SHARE_3:-}",
+        "DOOMSDAY_SHARE_4": "${DOOMSDAY_SHARE_4:-}",
+        "DOOMSDAY_SHARE_5": "${DOOMSDAY_SHARE_5:-}"
+      }
     }
   }
 }
