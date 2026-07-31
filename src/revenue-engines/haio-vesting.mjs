@@ -44,5 +44,5 @@ class HAiOVestingEngine extends RevenueEngine {
   async _status() { return { program_id: this.programId, recipient: this.recipient, solana_sdk_loaded: !!this.solana, mint_filter: this.mintFilter, crank_enabled: this.doCrank, processed_tranches: this._processedTranches.size }; }
 }
 
-register('haio-vesting', () => new HAiOVestingEngine(), { vendor: 'https://github.com/HAiO-labs/HAiO-vesting-program', revenue_model: 'permissionless crank releases vested tokens on schedule', integration_cost: 'medium', risk_level: 'low', recommended_mode: 'observe' });
+register('haio-vesting', () => new HAiOVestingEngine(), { missionId: '68c73bbe3efa5daf0a6709aa', vendor: 'https://github.com/HAiO-labs/HAiO-vesting-program', revenue_model: 'permissionless crank releases vested tokens on schedule', integration_cost: 'medium', risk_level: 'low', recommended_mode: 'observe' });
 export default HAiOVestingEngine;

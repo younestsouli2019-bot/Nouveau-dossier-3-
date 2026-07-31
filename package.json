@@ -20,7 +20,16 @@
     "settlement:selftest": "node ./src/settlement/settlement.mjs selftest",
     "settlement:net": "node ./src/settlement/settlement.mjs net",
     "settlement:sahl:status": "node ./src/settlement/settlement.mjs sahl-status",
-    "settlement:payout": "node ./src/settlement/settlement.mjs payout"
+    "settlement:payout": "node ./src/settlement/settlement.mjs payout",
+    "settlement:charipay:status": "node ./src/settlement/settlement.mjs charipay-status",
+    "settlement:payzone:status": "node ./src/settlement/settlement.mjs payzone-status",
+    "settlement:xs2a:status": "node ./src/settlement/settlement.mjs xs2a-status",
+    "settlement:receivables:status": "node ./src/settlement/settlement.mjs receivables-status",
+    "settlement:receivables:audit": "node ./src/settlement/settlement.mjs receivables-audit",
+    "settlement:revenue:settle": "node ./src/settlement/settlement.mjs settle-revenue",
+    "vault:settlement-seal": "node ./src/secure-cloud.mjs settlement-seal",
+    "vault:snapshot": "node ./src/secure-cloud.mjs vault-snapshot",
+    "vault:status": "node ./src/secure-cloud.mjs health"
   },
   "dependencies": {
     "chari-baas-client": "^1.0.0"

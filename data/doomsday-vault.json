@@ -48,11 +48,16 @@
       "status": "standby"
     }
   ],
+  "scopes": {
+    "content": { "dir": "content", "maxAssets": 50, "required": true },
+    "settlement": { "dir": "data/settlement", "maxAssets": 200, "required": true, "ledgerVerify": true, "sealKind": "settlement-seal", "receivables": { "dir": "data/settlement/receivables.json", "classAEnforced": true } }
+  },
   "integrity": {
     "algorithm": "sha256",
     "checkSchedule": "0 2 * * *",
     "manifestFile": "data/doomsday-vault/manifest.json",
-    "autoRepairCorrupt": true
+    "autoRepairCorrupt": true,
+    "settlementLedgerVerify": true
   },
   "restore": {
     "quorumRequired": 3,

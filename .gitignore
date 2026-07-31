@@ -116,3 +116,16 @@ docker-compose.charibaas.yml
 charibaas.tf
 src/charibaas-bootstrap.*
 .swarm/charibaas-*
+
+# ==============================
+# RUNTIME STATE (not committed)
+# ==============================
+/data/settlement/*.json
+/data/settlement/ledger/
+/data/settlement/rails/*-state.json
+/data/settlement/rails/*-accounts.json
+/data/doomsday-vault/
+/data/secure-cloud/sync-manifest.json
+/data/secure-cloud/mirror-state.json
+/data/secure-cloud/snapshot-*
+

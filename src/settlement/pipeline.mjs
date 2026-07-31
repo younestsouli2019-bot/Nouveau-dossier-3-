@@ -1,12 +1,19 @@
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
+import { existsSync, readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
 import immutableLedger from './immutable-ledger.mjs';
 import didRegistry from './did-registry.mjs';
 import reconciliationEngine from './reconciliation.mjs';
 import escrowEngine from './escrow.mjs';
 import settlementEngine from './netting.mjs';
 import guardrailEngine from './guardrails.mjs';
+import receivablesEngine from './receivables.mjs';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(__dirname, '../..');
+const MISSION_PLAN_PATH = path.join(ROOT, 'data', 'swarm', 'mission-plan.json');
 
 class SettlementPipeline {
   constructor() {
@@ -21,6 +28,7 @@ class SettlementPipeline {
     await escrowEngine.init();
     await settlementEngine.init();
     await guardrailEngine.init();
+    await receivablesEngine.init();
     this.initialized = true;
     return this;
   }
@@ -30,7 +38,7 @@ class SettlementPipeline {
     return didRegistry.register(agentId, opts);
   }
 
-  async postEarning({ txId, amount, currency, agent, sourceAccount, revenueAccount, reference, payload }) {
+  async postEarning({ txId, amount, currency, agent, sourceAccount, revenueAccount, reference, payload, missionId }) {
     await this.init();
     const agentEntry = await didRegistry.register(agent || 'swarm');
     const tx = txId || `TXN_${Date.now()}_${cryptoRandom()}`;
@@ -64,6 +72,24 @@ class SettlementPipeline {
       stateVars: payload?.stateVars || {},
     });
 
+    const mission = missionId || payload?.missionId || payload?.proposalId || null;
+    const receivable = await receivablesEngine.registerReceivable({
+      txId: tx,
+      missionId: mission,
+      amount,
+      currency,
+      agent: agentEntry.agentId,
+      recon,
+      evidence: {
+        counterpartyAck: payload?.counterpartyAck,
+        gatewayLedger: payload?.gatewayLedger,
+        oracleConfirmed: payload?.oracleConfirmed,
+      },
+    });
+
+    const isRevenueMission = this._isRevenueGeneratingMission(mission);
+    const blocked = isRevenueMission && receivable.klass !== 'A';
+
     let escrow = null;
     if (recon.status === 'MATCHED') {
       escrow = await escrowEngine.createEscrow({
@@ -81,7 +107,52 @@ class SettlementPipeline {
       await reconciliationEngine.quarantine({ txId: tx, amount, currency, agent: agentEntry.agentId }, `recon_mismatch:${recon.status}`);
     }
 
-    return { status: recon.status === 'MATCHED' ? 'ESCROWED' : 'QUARANTINED', txId: tx, reconciliation: recon, escrow };
+    return {
+      status: recon.status === 'MATCHED' ? 'ESCROWED' : 'QUARANTINED',
+      txId: tx,
+      reconciliation: recon,
+      escrow,
+      receivable,
+      receivableBlocked: blocked,
+      blockedReason: blocked ? `NON_CLASS_A_RECEIVABLE:${receivable.klass}` : null,
+    };
+  }
+
+  _isRevenueGeneratingMission(missionId) {
+    if (!missionId) return false;
+    const plan = this._loadMissionPlan();
+    if (!plan || !Array.isArray(plan.missions)) return false;
+    const mission = plan.missions.find(m => m.id === missionId);
+    if (!mission) return false;
+    return receivablesEngine.revenueGeneratingTypes().includes(mission.type);
+  }
+
+  _loadMissionPlan() {
+    if (!existsSync(MISSION_PLAN_PATH)) return null;
+    try { return JSON.parse(readFileSync(MISSION_PLAN_PATH, 'utf-8')); }
+    catch { return null; }
+  }
+
+  async settleRevenue(rail = 'charipay', opts = {}) {
+    await this.init();
+    const { nets, blocked, batches } = await settlementEngine.settleReceivables(receivablesEngine.state.receivables, rail, opts);
+    for (const batch of batches) {
+      for (const rId of batch.receivableIds || []) {
+        const rec = receivablesEngine.state.receivables.find(r => r.receivableId === rId);
+        if (rec) await receivablesEngine.settleReceivable(rec.txId, { batchId: batch.batchId, rail });
+      }
+    }
+    return { nets, blocked, batches };
+  }
+
+  async auditRevenueMissions() {
+    await this.init();
+    return receivablesEngine.auditRevenueMissions();
+  }
+
+  async receivablesStatus() {
+    await this.init();
+    return receivablesEngine.status();
   }
 
   async netAndSettle(transactions, rail = 'ach', opts = {}) {
@@ -105,6 +176,7 @@ class SettlementPipeline {
       escrow: await escrowEngine.status(),
       settlements: await settlementEngine.status(),
       guardrails: await guardrailEngine.status(),
+      receivables: await receivablesEngine.status(),
     };
   }
 }

@@ -30,5 +30,5 @@ class HAiOAgentNFTEngine extends RevenueEngine {
   async _status() { return { contract_address: this.contractAddress, fee_recipient: this.feeRecipient, ethers_loaded: !!this.ethers, withdraw_threshold_eth: this.withdrawThreshold, last_seen_block: this._lastSeenBlock }; }
 }
 
-register('haio-agent-nft', () => new HAiOAgentNFTEngine(), { vendor: 'https://github.com/HAiO-labs/HAiO-evm-contracts', revenue_model: 'ERC-7857 paid mint + protocol fee withdrawal (ETH)', integration_cost: 'medium', risk_level: 'low', recommended_mode: 'observe' });
+register('haio-agent-nft', () => new HAiOAgentNFTEngine(), { missionId: '68c73bbe3efa5daf0a6709aa', vendor: 'https://github.com/HAiO-labs/HAiO-evm-contracts', revenue_model: 'ERC-7857 paid mint + protocol fee withdrawal (ETH)', integration_cost: 'medium', risk_level: 'low', recommended_mode: 'observe' });
 export default HAiOAgentNFTEngine;

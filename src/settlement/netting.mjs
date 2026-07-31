@@ -4,15 +4,30 @@ import crypto from 'crypto';
 import { existsSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 import sahlRail from './rails/sahl.mjs';
+import charipayRail from './rails/charipay.mjs';
+import payzoneRail from './rails/payzone.mjs';
+import xs2aRail from './rails/xs2a.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../..');
 const SETTLEMENT_PATH = path.join(ROOT, 'data', 'settlement', 'settlements.json');
 
-const SUPPORTED_RAILS = ['ach', 'sepa', 'swift', 'usdc', 'eurc', 'sahl', 'ma_openbanking'];
+const SUPPORTED_RAILS = ['ach', 'sepa', 'swift', 'usdc', 'eurc', 'sahl', 'ma_openbanking', 'charipay', 'payzone', 'xs2a'];
+
+const RAIL_ADAPTERS = {
+  sahl: sahlRail,
+  charipay: charipayRail,
+  payzone: payzoneRail,
+  xs2a: xs2aRail,
+};
 
 function isMoroccanOpenBankingRail(rail) {
-  return rail === 'sahl' || rail === 'ma_openbanking';
+  return rail === 'sahl' || rail === 'ma_openbanking' || rail === 'charipay' || rail === 'payzone';
+}
+
+function getRailAdapter(rail) {
+  if (!isMoroccanOpenBankingRail(rail) && rail !== 'xs2a') return null;
+  return RAIL_ADAPTERS[rail] || sahlRail;
 }
 
 class SettlementEngine {
@@ -107,14 +122,15 @@ class SettlementEngine {
     await this.init();
     const batch = this.settlements.batches.find(b => b.batchId === batchId);
     if (!batch) throw new Error(`Batch not found: ${batchId}`);
-    if (!isMoroccanOpenBankingRail(batch.rail)) throw new Error(`Batch rail ${batch.rail} has no open-banking adapter`);
+    if (!isMoroccanOpenBankingRail(batch.rail) && batch.rail !== 'xs2a') throw new Error(`Batch rail ${batch.rail} has no open-banking adapter`);
 
     const iban = opts.iban || (opts.destinationAccount && opts.destinationAccount.iban) || this.resolveDestination(opts.destinationKey || 'ma_attijariwafa')?.iban;
     if (!iban) throw new Error('Missing destination IBAN for Moroccan open-banking rail (opts.iban)');
 
-    await sahlRail.init();
+    const adapter = getRailAdapter(batch.rail);
+    await adapter.init();
     const destination = opts.destinationAccount || this.resolveDestination(opts.destinationKey || 'ma_attijariwafa') || {};
-    const result = await sahlRail.initiatePayment({
+    const result = await adapter.initiatePayment({
       amount: batch.amount,
       currency: batch.currency,
       iban,
@@ -139,11 +155,46 @@ class SettlementEngine {
     return { batch, railResult: result };
   }
 
+  netReceivables(receivables = []) {
+    const eligible = receivables.filter(r => r.klass === 'A' && r.status === 'ELIGIBLE');
+    const blocked = receivables.filter(r => r.klass !== 'A' || r.status !== 'ELIGIBLE');
+    const nets = new Map();
+    for (const r of eligible) {
+      const key = `${r.currency}`;
+      const cur = nets.get(key) || { currency: r.currency, amount: 0, count: 0, receivableIds: [], missionIds: new Set() };
+      cur.amount += Number(r.amount) || 0;
+      cur.count++;
+      cur.receivableIds.push(r.receivableId);
+      cur.missionIds.add(r.missionId);
+      nets.set(key, cur);
+    }
+    return {
+      nets: Array.from(nets.values()).map(n => ({ currency: n.currency, amount: Math.round(n.amount * 1e8) / 1e8, count: n.count, receivableIds: n.receivableIds, missionIds: Array.from(n.missionIds).filter(Boolean) })),
+      blocked,
+    };
+  }
+
+  async settleReceivables(receivables = [], rail = 'charipay', opts = {}) {
+    await this.init();
+    const { nets, blocked } = this.netReceivables(receivables);
+    const batches = [];
+    for (const row of nets) {
+      if (opts.onlyPositive !== false && row.amount <= 0) continue;
+      const batch = this.settleNetRow({ counterparty: 'SWARM_REVENUE', currency: row.currency, netAmount: row.amount }, rail);
+      batch.receivableIds = row.receivableIds;
+      batch.missionIds = row.missionIds;
+      batches.push(batch);
+      this.settlements.batches.push(batch);
+    }
+    await this._persist();
+    return { nets, blocked, batches };
+  }
+
   async execute(batchId, result = {}, opts = {}) {
     await this.init();
     const batch = this.settlements.batches.find(b => b.batchId === batchId);
     if (!batch) throw new Error(`Batch not found: ${batchId}`);
-    if (isMoroccanOpenBankingRail(batch.rail) && !result.status) {
+    if ((isMoroccanOpenBankingRail(batch.rail) || batch.rail === 'xs2a') && !result.status) {
       return this.submitToRail(batchId, opts);
     }
     batch.status = result.status || 'EXECUTED';
@@ -163,4 +214,4 @@ class SettlementEngine {
 
 const settlementEngine = new SettlementEngine();
 export default settlementEngine;
-export { SettlementEngine, SUPPORTED_RAILS, isMoroccanOpenBankingRail };
+export { SettlementEngine, SUPPORTED_RAILS, isMoroccanOpenBankingRail, getRailAdapter, RAIL_ADAPTERS };

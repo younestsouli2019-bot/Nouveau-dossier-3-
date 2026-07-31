@@ -1,15 +1,47 @@
 {
   "lastSync": null,
   "lastRestoreDrill": null,
-  "mirrorHealth": {
-    "mirror-01": { "status": "pending", "lastCheck": null, "latencyMs": null },
-    "mirror-02": { "status": "pending", "lastCheck": null, "latencyMs": null },
-    "mirror-gh-pages": { "status": "pending", "lastCheck": null, "latencyMs": null },
-    "mirror-encrypted-backup": { "status": "standby", "lastCheck": null, "latencyMs": null }
-  },
-  "breaches": [],
+  "mirrorHealth": {},
+  "breaches": [
+    {
+      "type": "SETTLEMENT_SEAL_FAILED",
+      "at": "2026-07-31T11:12:11.331Z",
+      "severity": "HIGH",
+      "detail": "Encryption key not available for env://DOOMSDAY_SHARE_1"
+    },
+    {
+      "type": "SETTLEMENT_SEAL_FAILED",
+      "at": "2026-07-31T11:13:21.200Z",
+      "severity": "HIGH",
+      "detail": "Cannot read properties of undefined (reading 'push')"
+    }
+  ],
+  "censorshipEvents": [],
+  "vaultSnapshots": [
+    {
+      "id": "settlement-seal-ms8uje7i",
+      "at": "2026-07-31T11:15:37.264Z",
+      "assetCount": 7,
+      "integrityRoot": "814fcd0efa4699acab32b97753222307fe497ac5c1415fee0908145b9b02c8c4",
+      "scopes": {
+        "settlement": 7
+      },
+      "kind": "settlement-seal"
+    },
+    {
+      "id": "snapshot-ms8umwav1d2c80f2",
+      "at": "2026-07-31T11:18:21.704Z",
+      "assetCount": 11,
+      "integrityRoot": "e6e556544224f0e8f4d3a920594dba2417fed839782a4f6507be4750ece496a8",
+      "scopes": {
+        "content": 4,
+        "settlement": 7
+      }
+    }
+  ],
+  "integrityLog": [],
   "encryptionKeys": {
-    "initialized": false,
-    "keyFingerprint": null
+    "initialized": true,
+    "keyFingerprint": "0d69cf215a346928"
   }
 }

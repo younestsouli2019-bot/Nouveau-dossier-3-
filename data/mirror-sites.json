@@ -148,6 +148,25 @@
       "antiCensorship": { "priority": 6, "fallbackGroup": "ipfs-gateway", "ipfsCID": "QmPlaceholder" }
     },
     {
+      "id": "mirror-settlement-data",
+      "url": null,
+      "label": "Settlement Ledger Mirror (Encrypted, Quorum-Sealed)",
+      "provider": "Local + Sahl open-banking audit trail",
+      "jurisdiction": "MA (local encrypted)",
+      "networkLayer": "cold-storage",
+      "status": "active",
+      "lastSync": null,
+      "regions": ["Local"],
+      "capabilities": ["encryption-at-rest", "hash-chained-ledger", "quorum-seal", "audit-trail", "class-a-receivables"],
+      "healthEndpoint": null,
+      "integrityEndpoint": null,
+      "syncSchedule": { "cron": "0 */2 * * *", "intervalMinutes": 120, "retentionDays": 365, "compression": "zstd" },
+      "encryption": { "atRest": true, "inTransit": true, "keyRef": "env://SECURE_CLOUD_KEY_COLD_STORAGE" },
+      "backup": { "enabled": true, "target": "s3://rwc-doomsday-eu/settlement", "scheduleCron": "0 */2 * * *" },
+      "antiCensorship": { "priority": 8, "fallbackGroup": "doomsday", "settlementData": "data/settlement" },
+      "revenueRails": ["sahl", "charipay", "payzone"]
+    },
+    {
       "id": "mirror-doomsday-vault",
       "url": null,
       "label": "Doomsday Encrypted Vault (Geo-Redundant, Quorum Restore)",
@@ -168,7 +187,7 @@
   ],
   "routing": {
     "strategy": "geo-latency-with-censorship-bypass",
-    "fallbackOrder": ["mirror-cf-us-eu", "mirror-bunny-apac", "mirror-gh-pages", "mirror-ipfs", "mirror-onion", "mirror-i2p"],
+    "fallbackOrder": ["mirror-cf-us-eu", "mirror-bunny-apac", "mirror-gh-pages", "mirror-ipfs", "mirror-onion", "mirror-i2p", "mirror-settlement-data"],
     "healthCheckIntervalMs": 30000,
     "maxFailoverTimeMs": 5000,
     "censorshipBypass": {

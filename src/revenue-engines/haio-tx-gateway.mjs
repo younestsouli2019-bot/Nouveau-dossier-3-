@@ -37,5 +37,5 @@ class HAiOTxGatewayEngine extends RevenueEngine {
   async _status() { return { program_id: this.programId, treasury: this.treasury, solana_sdk_loaded: !!this.solana }; }
 }
 
-register('haio-tx-gateway', () => new HAiOTxGatewayEngine(), { vendor: 'https://github.com/HAiO-labs/HAiO-solana-programs', revenue_model: 'membership payments + deposits (multi-token) on Solana', integration_cost: 'medium', risk_level: 'low', recommended_mode: 'observe' });
+register('haio-tx-gateway', () => new HAiOTxGatewayEngine(), { missionId: '68c73bbe3efa5daf0a6709aa', vendor: 'https://github.com/HAiO-labs/HAiO-solana-programs', revenue_model: 'membership payments + deposits (multi-token) on Solana', integration_cost: 'medium', risk_level: 'low', recommended_mode: 'observe' });
 export default HAiOTxGatewayEngine;

@@ -15,6 +15,7 @@ const DEFAULT_LOCK_HOURS = 24;
 class EscrowEngine {
   constructor() {
     this.escrows = null;
+    this._persistQueue = Promise.resolve();
   }
 
   async init() {
@@ -28,10 +29,12 @@ class EscrowEngine {
     return this;
   }
 
-  async _persist() {
+  _persist() {
     const tmp = ESCROW_PATH + '.tmp';
-    await fs.writeFile(tmp, JSON.stringify(this.escrows, null, 2), 'utf-8');
-    await fs.rename(tmp, ESCROW_PATH);
+    this._persistQueue = this._persistQueue
+      .then(() => fs.writeFile(tmp, JSON.stringify(this.escrows, null, 2), 'utf-8'))
+      .then(() => fs.rename(tmp, ESCROW_PATH));
+    return this._persistQueue;
   }
 
   async createEscrow({ txId, amount, currency, destination, sourceAccount, purpose, agent }) {

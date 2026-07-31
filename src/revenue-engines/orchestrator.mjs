@@ -140,6 +140,7 @@ class RevenueOrchestrator {
             currency: earning.currency,
             agent: name,
             reference: earning.earningId,
+            missionId: entry.manifest.missionId || earning.metadata?.missionId || null,
             payload: {
               ...(earning.metadata || {}),
               purpose: 'revenue_settlement',
@@ -149,7 +150,7 @@ class RevenueOrchestrator {
               verified: earning.metadata?.verified,
             },
           });
-          this._addSpan('settlement', 'revenue-pipeline', posted.status, { txId: posted.txId });
+          this._addSpan('settlement', 'revenue-pipeline', posted.status, { txId: posted.txId, receivable: posted.receivable?.klass, blocked: posted.receivableBlocked });
         } catch (e) {
           this._addSpan('settlement', 'revenue-pipeline', 'error', { earningId: earning.earningId, error: e.message });
         }

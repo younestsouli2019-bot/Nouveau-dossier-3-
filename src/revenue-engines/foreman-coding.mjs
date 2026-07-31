@@ -35,5 +35,5 @@ class ForemanCodingEngine extends RevenueEngine {
   async _status() { return { ledger_path: this.ledgerPath, rate_card_entries: Object.keys(this._rateCard || {}).length, min_task_usd: this.minTaskUsd, invoice_auto: this.invoiceAuto, last_seen_offset: this._lastSeenOffset }; }
 }
 
-register('foreman-coding', () => new ForemanCodingEngine(), { vendor: 'https://github.com/ncklrs/foreman', revenue_model: 'agentic coding capacity sold per-task', integration_cost: 'low', risk_level: 'low', recommended_mode: 'observe' });
+register('foreman-coding', () => new ForemanCodingEngine(), { missionId: '68c73bbe3efa5daf0a6709aa', vendor: 'https://github.com/ncklrs/foreman', revenue_model: 'agentic coding capacity sold per-task', integration_cost: 'low', risk_level: 'low', recommended_mode: 'observe' });
 export default ForemanCodingEngine;

@@ -43,5 +43,5 @@ class ApplyPilotJobsEngine extends RevenueEngine {
   async _status() { return { ledger_path: this.ledgerPath, interview_fee_usd: this.interviewFee, placement_pct: this.placementPct, subscription_usd: this.subscriptionUsd, emitted_events: this._emittedEvents.size, last_seen_offset: this._lastSeenOffset }; }
 }
 
-register('applypilot-jobs', () => new ApplyPilotJobsEngine(), { vendor: 'https://github.com/ncklrs/ApplyPilot', revenue_model: 'job placement fees — interview fee + placement % + subscription', integration_cost: 'low', risk_level: 'low', recommended_mode: 'observe' });
+register('applypilot-jobs', () => new ApplyPilotJobsEngine(), { missionId: '68c73bbe3efa5daf0a6709aa', vendor: 'https://github.com/ncklrs/ApplyPilot', revenue_model: 'job placement fees — interview fee + placement % + subscription', integration_cost: 'low', risk_level: 'low', recommended_mode: 'observe' });
 export default ApplyPilotJobsEngine;

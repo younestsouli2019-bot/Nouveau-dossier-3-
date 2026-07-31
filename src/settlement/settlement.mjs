@@ -3,6 +3,9 @@ import escrowEngine from './escrow.mjs';
 import guardrailEngine from './guardrails.mjs';
 import settlementEngine from './netting.mjs';
 import sahlRail from './rails/sahl.mjs';
+import charipayRail from './rails/charipay.mjs';
+import payzoneRail from './rails/payzone.mjs';
+import xs2aRail from './rails/xs2a.mjs';
 
 async function main() {
   const cmd = process.argv[2] || 'status';
@@ -16,6 +19,43 @@ async function main() {
   if (cmd === 'sahl-status') {
     const status = await sahlRail.status();
     console.log(JSON.stringify(status, null, 2));
+    return;
+  }
+
+  if (cmd === 'charipay-status') {
+    const status = await charipayRail.status();
+    console.log(JSON.stringify(status, null, 2));
+    return;
+  }
+
+  if (cmd === 'payzone-status') {
+    const status = await payzoneRail.status();
+    console.log(JSON.stringify(status, null, 2));
+    return;
+  }
+
+  if (cmd === 'xs2a-status') {
+    const status = await xs2aRail.status();
+    console.log(JSON.stringify(status, null, 2));
+    return;
+  }
+
+  if (cmd === 'receivables-status') {
+    const status = await settlementPipeline.receivablesStatus();
+    console.log(JSON.stringify(status, null, 2));
+    return;
+  }
+
+  if (cmd === 'receivables-audit') {
+    const audit = await settlementPipeline.auditRevenueMissions();
+    console.log(JSON.stringify(audit, null, 2));
+    return;
+  }
+
+  if (cmd === 'settle-revenue') {
+    const rail = process.argv[3] || 'charipay';
+    const result = await settlementPipeline.settleRevenue(rail, { onlyPositive: true });
+    console.log(JSON.stringify(result, null, 2));
     return;
   }
 
@@ -98,7 +138,7 @@ async function main() {
     return;
   }
 
-  console.error(`Unknown command: ${cmd}. Usage: settlement.mjs [status|sahl-status|payout <amount> [MAD] [dest]|selftest|net [rail]|escrow-release-drill]`);
+  console.error(`Unknown command: ${cmd}. Usage: settlement.mjs [status|sahl-status|charipay-status|payzone-status|xs2a-status|receivables-status|receivables-audit|settle-revenue [rail]|payout <amount> [MAD] [dest]|selftest|net [rail]|escrow-release-drill]`);
   process.exit(1);
 }
 

@@ -75,5 +75,5 @@ class HAiOSolanaEngine extends RevenueEngine {
   }
 }
 
-register('haio-solana', () => new HAiOSolanaEngine(), { vendor: 'https://github.com/HAiO-labs/HAiO-revenue-engine', revenue_model: 'on-chain USDC inflow → swap to $HAiO → burn % → distribute', integration_cost: 'high', risk_level: 'high', recommended_mode: 'observe' });
+register('haio-solana', () => new HAiOSolanaEngine(), { missionId: '68c73bbe3efa5daf0a6709aa', vendor: 'https://github.com/HAiO-labs/HAiO-revenue-engine', revenue_model: 'on-chain USDC inflow → swap to $HAiO → burn % → distribute', integration_cost: 'high', risk_level: 'high', recommended_mode: 'observe' });
 export default HAiOSolanaEngine;

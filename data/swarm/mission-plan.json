@@ -62,7 +62,16 @@
       "phase": 1,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\MKT-001.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "MKT-002",
@@ -79,7 +88,16 @@
       "phase": 1,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\MKT-002.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "MKT-010",
@@ -92,7 +110,16 @@
       "phase": 1,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\MKT-010.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "MKT-011",
@@ -107,7 +134,16 @@
       "phase": 1,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\MKT-011.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "PAY-001",
@@ -122,7 +158,16 @@
       "phase": 2,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\PAY-001.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "STO-001",
@@ -138,7 +183,16 @@
       "phase": 2,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\STO-001.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "STO-010",
@@ -153,7 +207,16 @@
       "phase": 2,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\STO-010.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "68c73bbe3efa5daf0a6709aa",
@@ -168,7 +231,16 @@
       "phase": 3,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\68c73bbe3efa5daf0a6709aa.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "6948efedb395307e371a4804",
@@ -183,7 +255,16 @@
       "phase": 3,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\6948efedb395307e371a4804.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "6949298e487b2732b7dd45be",
@@ -198,7 +279,16 @@
       "phase": 3,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\6949298e487b2732b7dd45be.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "6949467151f90bf73859f7fe",
@@ -213,7 +303,16 @@
       "phase": 3,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\6949467151f90bf73859f7fe.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "OPS-011",
@@ -241,7 +340,16 @@
       "phase": 3,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\68c7e0f1fe47320743671675.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "68e764bad3991759502b86a0",
@@ -254,7 +362,16 @@
       "phase": 3,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\68e764bad3991759502b86a0.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "69495d85c95b207cb70e1f7f",
@@ -269,7 +386,16 @@
       "phase": 3,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69495d85c95b207cb70e1f7f.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "69496d6139b52c6b1d7cf3a7",
@@ -284,7 +410,16 @@
       "phase": 3,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69496d6139b52c6b1d7cf3a7.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "69496d6139b52c6b1d7cf3a9",
@@ -299,7 +434,16 @@
       "phase": 3,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69496d6139b52c6b1d7cf3a9.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "69496e6ae10ccb8e82d8a692",
@@ -314,7 +458,16 @@
       "phase": 3,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69496e6ae10ccb8e82d8a692.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "OPS-010",
@@ -344,7 +497,16 @@
       "phase": 3,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\68bc5353ef800d98b63c95f9.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "69496e6ae10ccb8e82d8a693",
@@ -359,7 +521,16 @@
       "phase": 3,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69496e6ae10ccb8e82d8a693.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "OPS-001",
@@ -994,7 +1165,16 @@
       "phase": 9,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69495d36282e49098ee4a887.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "69496e6ae10ccb8e82d8a690",
@@ -1007,7 +1187,16 @@
       "phase": 9,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69496e6ae10ccb8e82d8a690.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "69492fdf37681e7f2603ec25",
@@ -1020,7 +1209,16 @@
       "phase": 9,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69492fdf37681e7f2603ec25.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "69496e6ae10ccb8e82d8a691",
@@ -1033,7 +1231,16 @@
       "phase": 9,
       "file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\swarm\\missions\\69496e6ae10ccb8e82d8a691.json",
       "missing_dependencies": [],
-      "ready": true
+      "ready": true,
+      "revenue": {
+        "classAReceivableRequired": true,
+        "receivableStatus": "required",
+        "requiredEvidence": [
+          "counterpartyAck",
+          "gatewayLedger",
+          "oracleConfirmed"
+        ]
+      }
     },
     {
       "id": "website_feedback_collect_2026-02-06",
@@ -1048,5 +1255,6 @@
       "missing_dependencies": [],
       "ready": true
     }
-  ]
+  ],
+  "updated": "2026-07-31T12:48:49.068Z"
 }

@@ -15,6 +15,8 @@ const STATE_FILE = path.join(SECURE_CLOUD_DIR, 'mirror-state.json');
 const CONTINUITY_DIR = path.join(ROOT, 'data', 'swarm', 'continuity');
 const VAULT_DIR = path.join(ROOT, 'data', 'doomsday-vault');
 const SITE_ASSETS_DIR = path.join(ROOT, 'content');
+const SETTLEMENT_DIR = path.join(ROOT, 'data', 'settlement');
+const SETTLEMENT_LEDGER_DIR = path.join(ROOT, 'data', 'settlement', 'ledger');
 
 const ALGORITHM = 'aes-256-gcm';
 const KEY_DERIVATION = { algorithm: 'PBKDF2-HMAC-SHA256', iterations: 600000, keyLength: 32 };
@@ -77,7 +79,10 @@ class SecureCloud {
   async #loadState() {
     if (existsSync(STATE_FILE)) {
       try {
-        this.#state = JSON.parse(await fs.readFile(STATE_FILE, 'utf-8'));
+        this.#state = { ...this.#defaultState(), ...JSON.parse(await fs.readFile(STATE_FILE, 'utf-8')) };
+        for (const key of ['mirrorHealth', 'breaches', 'censorshipEvents', 'vaultSnapshots', 'integrityLog']) {
+          if (!Array.isArray(this.#state[key])) this.#state[key] = this.#defaultState()[key];
+        }
       } catch {
         this.#state = this.#defaultState();
       }
@@ -162,7 +167,13 @@ class SecureCloud {
     }
     const censorship = { events: this.#state.censorshipEvents?.length || 0, lastEvent: this.#state.censorshipEvents?.slice(-1)?.[0] || null };
     const vault = { enabled: this.#vaultConfig?.enabled || false, geoReplicas: this.#vaultConfig?.geoReplicas?.length || 0, snapshots: this.#state.vaultSnapshots?.length || 0, quorumRequired: this.#vaultConfig?.restore?.quorumRequired || 1 };
-    return { timestamp: new Date().toISOString(), mirrorCount: mirrors.length, mirrors: results, drill: this.#state.lastRestoreDrill, censorship, vault, threatLevel: this.#contingencyHealth?.threatLevel || 'GREEN' };
+    const settlementVault = {
+      sealed: (this.#state.vaultSnapshots || []).some(s => s.kind === 'settlement-seal'),
+      lastSeal: (this.#state.vaultSnapshots || []).filter(s => s.kind === 'settlement-seal').slice(-1)?.[0]?.at || null,
+      dataDirPresent: existsSync(SETTLEMENT_DIR),
+      ledgerDirPresent: existsSync(SETTLEMENT_LEDGER_DIR),
+    };
+    return { timestamp: new Date().toISOString(), mirrorCount: mirrors.length, mirrors: results, drill: this.#state.lastRestoreDrill, censorship, vault, settlementVault, threatLevel: this.#contingencyHealth?.threatLevel || 'GREEN' };
   }
 
   async checkMirrorHealth(mirrorId) {
@@ -247,17 +258,26 @@ class SecureCloud {
     return restoreProof;
   }
 
-  async vaultSnapshot() {
+  async vaultSnapshot(opts = {}) {
     if (!this.#initialized) await this.init();
     if (!this.#vaultConfig?.enabled) return { ok: false, reason: 'doomsday_vault_not_enabled' };
     const era = Date.now().toString(36) + crypto.randomBytes(4).toString('hex');
-    const snapshot = { id: `snapshot-${era}`, timestamp: new Date().toISOString(), assets: [], geoReplicas: [], integrity: {} };
+    const snapshot = { id: `snapshot-${era}`, timestamp: new Date().toISOString(), scopes: {}, assets: [], geoReplicas: [], integrity: {} };
+    const includeSettlement = opts.includeSettlement !== false;
     try {
       const contentFiles = [];
-      async function walk(dir) { const entries = await fs.readdir(dir, { withFileTypes: true }); for (const e of entries) { const p = path.join(dir, e.name); if (e.isDirectory()) await walk(p); else contentFiles.push(p); } }
-      await walk(SITE_ASSETS_DIR);
+      async function walk(dir, maxFiles = Infinity) { const entries = await fs.readdir(dir, { withFileTypes: true }); for (const e of entries) { const p = path.join(dir, e.name); if (e.isDirectory()) await walk(p, maxFiles); else if (!e.name.startsWith('.') && contentFiles.length < maxFiles) contentFiles.push(p); } }
+      await walk(SITE_ASSETS_DIR, 50);
+      snapshot.scopes.content = contentFiles.length;
+      let settlementFiles = [];
+      if (includeSettlement && existsSync(SETTLEMENT_DIR)) {
+        const walkSettlement = async (dir, maxFiles) => { const entries = await fs.readdir(dir, { withFileTypes: true }); for (const e of entries) { const p = path.join(dir, e.name); if (e.isDirectory()) await walkSettlement(p, maxFiles); else if (!e.name.startsWith('.') && settlementFiles.length < maxFiles) settlementFiles.push(p); } };
+        await walkSettlement(SETTLEMENT_DIR, 200);
+        settlementFiles = settlementFiles.filter(f => !f.includes(`${path.sep}.gitkeep`));
+        snapshot.scopes.settlement = settlementFiles.length;
+      }
       const keyRef = this.#vaultConfig.encryption?.splitKey?.shareLocations?.[0]?.keyRef || 'env://SECURE_CLOUD_KEY_COLD_STORAGE';
-      for (const file of contentFiles.slice(0, 50)) {
+      for (const file of [...contentFiles, ...settlementFiles]) {
         const rel = path.relative(ROOT, file);
         const encPath = path.join(VAULT_DIR, 'snapshots', era, rel + '.enc');
         const result = await this.encryptAsset(file, encPath, keyRef);
@@ -270,7 +290,7 @@ class SecureCloud {
       snapshot.integrity.assetCount = snapshot.assets.length;
       const metaFile = path.join(VAULT_DIR, `snapshot-${era}.json`);
       await fs.writeFile(metaFile, JSON.stringify(snapshot, null, 2));
-      this.#state.vaultSnapshots.push({ id: snapshot.id, at: snapshot.timestamp, assetCount: snapshot.assets.length, integrityRoot: snapshot.integrity.rootHash });
+      this.#state.vaultSnapshots.push({ id: snapshot.id, at: snapshot.timestamp, assetCount: snapshot.assets.length, integrityRoot: snapshot.integrity.rootHash, scopes: snapshot.scopes });
       if (this.#state.vaultSnapshots.length > 30) this.#state.vaultSnapshots = this.#state.vaultSnapshots.slice(-30);
       await this.#persist();
       return snapshot;
@@ -278,6 +298,53 @@ class SecureCloud {
       this.#state.breaches.push({ type: 'VAULT_SNAPSHOT_FAILED', at: new Date().toISOString(), severity: 'HIGH', detail: err.message });
       await this.#persist();
       return { ok: false, reason: err.message };
+    }
+  }
+
+  async settlementSeal() {
+    if (!this.#initialized) await this.init();
+    const settlementJson = path.join(SETTLEMENT_DIR, 'settlement-state.json');
+    const report = {
+      at: new Date().toISOString(),
+      included: [],
+      verifiedLedgerIntegrity: false,
+      violations: [],
+    };
+    if (!existsSync(SETTLEMENT_DIR)) return { ok: false, reason: 'no_settlement_data', report };
+    try {
+      let ledgerIntegrity = null;
+      try {
+        const ledger = await import('./settlement/immutable-ledger.mjs');
+        await ledger.default.init();
+        ledgerIntegrity = await ledger.default.verify();
+      } catch (e) {
+        report.integrityError = e.message;
+      }
+      if (ledgerIntegrity) {
+        report.verifiedLedgerIntegrity = ledgerIntegrity.valid === true;
+        report.violations = ledgerIntegrity.violations || [];
+      }
+      const keyRef = this.#vaultConfig?.encryption?.splitKey?.shareLocations?.[0]?.keyRef || 'env://SECURE_CLOUD_KEY_COLD_STORAGE';
+      const files = [];
+      async function walk(dir) { const entries = await fs.readdir(dir, { withFileTypes: true }); for (const e of entries) { const p = path.join(dir, e.name); if (e.isDirectory()) await walk(p); else if (!e.name.startsWith('.') && e.name !== '.gitkeep') files.push(p); } }
+      await walk(SETTLEMENT_DIR);
+      for (const file of files) {
+        const rel = path.relative(ROOT, file);
+        const encPath = path.join(VAULT_DIR, 'settlement-seals', `${new Date().toISOString().slice(0, 10)}`, rel + '.enc');
+        const result = await this.encryptAsset(file, encPath, keyRef);
+        report.included.push({ source: rel, encrypted: path.relative(ROOT, encPath), checksum: result.checksum });
+      }
+      const integrity = crypto.createHash('sha256');
+      for (const asset of report.included) integrity.update(asset.checksum);
+      report.integrityRoot = integrity.digest('hex');
+      report.assetCount = report.included.length;
+      this.#state.vaultSnapshots.push({ id: `settlement-seal-${Date.now().toString(36)}`, at: report.at, assetCount: report.assetCount, integrityRoot: report.integrityRoot, scopes: { settlement: report.assetCount }, kind: 'settlement-seal' });
+      await this.#persist();
+      return { ok: true, report };
+    } catch (err) {
+      this.#state.breaches.push({ type: 'SETTLEMENT_SEAL_FAILED', at: new Date().toISOString(), severity: 'HIGH', detail: err.message });
+      await this.#persist();
+      return { ok: false, reason: err.message, report };
     }
   }
 
@@ -372,6 +439,11 @@ class SecureCloud {
       fallbackOrder: this.#config.routing?.fallbackOrder || [],
       antiCensorship: { enabled: this.#config.antiCensorship?.enabled || false, failoverCascade: this.#config.antiCensorship?.failoverCascade || [] },
       doomsdayVault: { enabled: this.#vaultConfig?.enabled || false, geoReplicas: this.#vaultConfig?.geoReplicas?.length || 0, quorumRequired: this.#vaultConfig?.restore?.quorumRequired || 1 },
+      settlementVault: {
+        sealed: (this.#state.vaultSnapshots || []).some(s => s.kind === 'settlement-seal'),
+        lastSeal: (this.#state.vaultSnapshots || []).filter(s => s.kind === 'settlement-seal').slice(-1)?.[0]?.at || null,
+        includedInSnapshots: (this.#state.vaultSnapshots || []).some(s => s.scopes && s.scopes.settlement > 0),
+      },
       restoreDrillEnabled: this.#config.restoreDrill?.enabled || false,
       lastRestoreDrill: this.#state.lastRestoreDrill,
       breachCount: (this.#state.breaches || []).length,
@@ -409,12 +481,13 @@ if (process.argv[1] && (process.argv[1] === fileURLToPath(import.meta.url) || pa
         case 'restore-drill': { const d = await secureCloud.runRestoreDrill(); console.log(JSON.stringify(d, null, 2)); break; }
         case 'detect-censorship': { const c = await secureCloud.detectCensorship(); console.log(JSON.stringify(c, null, 2)); break; }
         case 'failover': { const f = await secureCloud.failoverCascade(); console.log(JSON.stringify(f, null, 2)); break; }
-        case 'vault-snapshot': { const v = await secureCloud.vaultSnapshot(); console.log(JSON.stringify(v, null, 2)); break; }
+        case 'vault-snapshot': { const v = await secureCloud.vaultSnapshot({ includeSettlement: !process.argv.includes('--content-only') }); console.log(JSON.stringify(v, null, 2)); break; }
+        case 'settlement-seal': { const v = await secureCloud.settlementSeal(); console.log(JSON.stringify(v, null, 2)); break; }
         case 'vault-restore': { const v = await secureCloud.vaultRestore(process.argv[3]); console.log(JSON.stringify(v, null, 2)); break; }
         case 'verify': { const v = await secureCloud.verifyIntegrity(process.argv[3]); console.log(JSON.stringify(v, null, 2)); break; }
         case 'sync-manifest': { const m = await secureCloud.syncManifest(); console.log(JSON.stringify(m, null, 2)); break; }
         case 'config': { const c = await secureCloud.getConfig(); console.log(JSON.stringify(c, null, 2)); break; }
-        default: console.log('Usage: node src/secure-cloud.mjs <health|check-mirror|restore-drill|detect-censorship|failover|vault-snapshot|vault-restore|verify|sync-manifest|config>');
+        default: console.log('Usage: node src/secure-cloud.mjs <health|check-mirror|restore-drill|detect-censorship|failover|vault-snapshot [--content-only]|settlement-seal|vault-restore|verify|sync-manifest|config>');
       }
     } catch (err) {
       console.error(err.message);
