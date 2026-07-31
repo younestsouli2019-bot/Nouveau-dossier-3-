@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RealWorldCerts — Certified. Verified. Future-Ready.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #06040f;
+    --bg-2: #0a0618;
+    --surface: #0f0a20;
+    --surface-2: #140d2b;
+    --border: rgba(148, 130, 255, 0.14);
+    --border-strong: rgba(168, 85, 247, 0.45);
+    --purple: #a855f7;
+    --purple-2: #8b5cf6;
+    --indigo: #6366f1;
+    --indigo-deep: #4f46e5;
+    --cyan: #22d3ee;
+    --text: #f2eeff;
+    --text-dim: #9a92c0;
+    --text-faint: #6b6395;
+    --success: #34d399;
+    --amber: #fbbf24;
+    --radius: 18px;
+    --glow: 0 0 24px rgba(139, 92, 246, 0.35);
+    --glow-soft: 0 0 14px rgba(99, 102, 241, 0.25);
+    --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-display: 'Space Grotesk', 'Inter', sans-serif;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection { background: rgba(168, 85, 247, 0.35); color: #fff; }
+
+  /* ---------- ambient background ---------- */
+  .bg-fx { position: fixed; inset: 0; z-index: -2; background: var(--bg); }
+  .bg-fx::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(900px 500px at 85% -10%, rgba(124, 58, 237, 0.22), transparent 60%),
+      radial-gradient(800px 500px at 0% 15%, rgba(79, 70, 229, 0.18), transparent 55%),
+      radial-gradient(700px 600px at 55% 110%, rgba(34, 211, 238, 0.08), transparent 60%);
+  }
+  .bg-fx::after {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(148, 130, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 130, 255, 0.05) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
+  }
+  .orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5; animation: drift 14s var(--ease) infinite alternate; }
+  .orb-1 { width: 420px; height: 420px; background: rgba(139, 92, 246, 0.35); top: -140px; right: -80px; }
+  .orb-2 { width: 340px; height: 340px; background: rgba(99, 102, 241, 0.3); bottom: 10%; left: -120px; animation-delay: -6s; }
+
+  @keyframes drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(40px, -30px) scale(1.08); } }
+
+  /* ---------- nav ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px clamp(20px, 4vw, 56px);
+    background: rgba(6, 4, 15, 0.65);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; letter-spacing: -0.01em; }
+  .brand-mark {
+    width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--purple), var(--indigo-deep));
+    box-shadow: var(--glow-soft); font-size: 0.8rem; color: #fff; font-weight: 800;
+  }
+  .brand b { background: linear-gradient(120deg, var(--purple), var(--indigo), var(--cyan)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .nav-links { display: flex; gap: 26px; align-items: center; }
+  .nav-links a { color: var(--text-dim); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.25s var(--ease); }
+  .nav-links a:hover { color: var(--text); }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 22px; border-radius: 12px; font-weight: 600; font-size: 0.92rem;
+    text-decoration: none; cursor: pointer; border: 1px solid transparent;
+    transition: all 0.3s var(--ease); white-space: nowrap;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--purple), var(--indigo-deep));
+    color: #fff; box-shadow: var(--glow-soft);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--glow); filter: brightness(1.08); }
+  .btn-ghost { border-color: var(--border); color: var(--text); background: rgba(255,255,255,0.02); }
+  .btn-ghost:hover { border-color: var(--border-strong); box-shadow: var(--glow-soft); transform: translateY(-2px); }
+
+  /* ---------- hero ---------- */
+  .hero { text-align: center; padding: 84px 24px 56px; position: relative; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 7px 16px; border-radius: 100px; font-size: 0.78rem; font-weight: 600;
+    color: var(--purple); background: rgba(168, 85, 247, 0.08);
+    border: 1px solid rgba(168, 85, 247, 0.3); margin-bottom: 22px; letter-spacing: 0.02em;
+  }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); animation: blink 2s infinite; }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  h1 {
+    font-family: var(--font-display); font-size: clamp(2.4rem, 5.6vw, 4.3rem);
+    font-weight: 700; line-height: 1.08; letter-spacing: -0.03em; max-width: 900px; margin: 0 auto;
+  }
+  .grad-text {
+    background: linear-gradient(120deg, var(--purple) 0%, var(--indigo) 45%, var(--cyan) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero-sub { color: var(--text-dim); max-width: 640px; margin: 20px auto 34px; font-size: 1.08rem; }
+  .hero-cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .hero-stats { display: flex; justify-content: center; gap: clamp(28px, 6vw, 64px); margin-top: 48px; flex-wrap: wrap; }
+  .stat { text-align: center; }
+  .stat b { font-family: var(--font-display); font-size: 1.7rem; display: block; }
+  .stat b .accent { color: var(--purple); }
+  .stat span { font-size: 0.82rem; color: var(--text-faint); }
+
+  /* ---------- toolbar ---------- */
+  .catalog { max-width: 1240px; margin: 0 auto; padding: 24px clamp(20px, 4vw, 56px) 90px; }
+  .catalog-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 26px; flex-wrap: wrap; }
+  .catalog-head h2 { font-family: var(--font-display); font-size: 1.7rem; letter-spacing: -0.02em; }
+  .catalog-head p { color: var(--text-faint); font-size: 0.92rem; margin-top: 4px; }
+  .filters { display: flex; gap: 10px; flex-wrap: wrap; }
+  .chip {
+    padding: 8px 18px; border-radius: 100px; cursor: pointer; font-size: 0.84rem; font-weight: 500;
+    color: var(--text-dim); background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    transition: all 0.25s var(--ease); user-select: none;
+  }
+  .chip:hover { color: var(--text); border-color: var(--border-strong); }
+  .chip.active {
+    color: #fff; background: linear-gradient(135deg, rgba(168,85,247,0.25), rgba(99,102,241,0.25));
+    border-color: var(--border-strong); box-shadow: var(--glow-soft);
+  }
+
+  /* ---------- card grid ---------- */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  @media (max-width: 1024px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px)  { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    position: relative; border-radius: var(--radius); padding: 1px;
+    background: linear-gradient(160deg, rgba(168,85,247,0.35), rgba(99,102,241,0.12) 40%, rgba(34,211,238,0.15));
+    transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease);
+  }
+  .card:hover { transform: translateY(-6px); box-shadow: var(--glow); }
+  .card-body {
+    background: var(--surface); border-radius: calc(var(--radius) - 1px);
+    padding: 22px; height: 100%; display: flex; flex-direction: column; gap: 14px;
+    position: relative; overflow: hidden;
+  }
+  .card-body::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(168,85,247,0.6), transparent);
+    opacity: 0; transition: opacity 0.35s var(--ease);
+  }
+  .card:hover .card-body::before { opacity: 1; }
+
+  .card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .cat-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--purple); background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.25);
+    padding: 5px 12px; border-radius: 100px;
+  }
+  .cat-badge.c-cyber { color: var(--cyan); background: rgba(34,211,238,0.08); border-color: rgba(34,211,238,0.25); }
+  .cat-badge.c-cloud { color: #60a5fa; background: rgba(96,165,250,0.1); border-color: rgba(96,165,250,0.28); }
+  .cat-badge.c-ai { color: var(--amber); background: rgba(251,191,36,0.08); border-color: rgba(251,191,36,0.25); }
+  .cat-badge.c-dev { color: var(--success); background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.25); }
+  .cat-badge.c-block { color: var(--purple); background: rgba(168,85,247,0.1); border-color: rgba(168,85,247,0.25); }
+  .cat-badge.c-data { color: #f472b6; background: rgba(244,114,182,0.08); border-color: rgba(244,114,182,0.25); }
+  .cat-badge.c-sec { color: #a78bfa; background: rgba(167,139,250,0.1); border-color: rgba(167,139,250,0.25); }
+
+  .icon-badge {
+    width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center;
+    font-size: 1.1rem; background: linear-gradient(135deg, rgba(168,85,247,0.18), rgba(99,102,241,0.18));
+    border: 1px solid var(--border);
+  }
+
+  .card h3 { font-family: var(--font-display); font-size: 1.12rem; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; }
+  .card p.desc { color: var(--text-dim); font-size: 0.88rem; flex: 1; }
+  .card-meta { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-faint); }
+  .card-meta span { display: inline-flex; align-items: center; gap: 6px; }
+  .stars { color: var(--amber); letter-spacing: 1px; }
+  .card-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .price { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; }
+  .price small { color: var(--text-faint); font-weight: 500; font-size: 0.75rem; margin-left: 6px; text-decoration: line-through; }
+  .btn-sm { padding: 9px 18px; font-size: 0.85rem; border-radius: 10px; }
+  .tag-popular {
+    position: absolute; top: 14px; right: 14px; z-index: 2;
+    background: linear-gradient(135deg, var(--amber), #f97316); color: #1a0b00;
+    font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 5px 11px; border-radius: 100px; box-shadow: 0 4px 14px rgba(251,191,36,0.35);
+  }
+
+  /* ---------- trust bar ---------- */
+  .trust {
+    max-width: 1240px; margin: 0 auto; padding: 40px clamp(20px, 4vw, 56px) 70px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;
+  }
+  .trust-item {
+    border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px;
+    background: rgba(255,255,255,0.02); display: flex; align-items: center; gap: 14px;
+    transition: all 0.3s var(--ease);
+  }
+  .trust-item:hover { border-color: var(--border-strong); background: rgba(255,255,255,0.04); }
+  .trust-icon { font-size: 1.5rem; }
+  .trust-item b { font-family: var(--font-display); display: block; font-size: 0.95rem; }
+  .trust-item span { font-size: 0.78rem; color: var(--text-faint); }
+
+  /* ---------- CTA banner ---------- */
+  .cta-band {
+    max-width: 1240px; margin: 0 auto 70px; padding: 0 clamp(20px, 4vw, 56px);
+  }
+  .cta-inner {
+    border-radius: 26px; padding: 1px; position: relative; overflow: hidden;
+    background: linear-gradient(120deg, rgba(168,85,247,0.5), rgba(99,102,241,0.35), rgba(34,211,238,0.4));
+    box-shadow: 0 20px 60px rgba(124, 58, 237, 0.2);
+  }
+  .cta-inner > div {
+    border-radius: 25px; padding: 54px 40px; text-align: center;
+    background: radial-gradient(700px 300px at 50% -40%, rgba(124,58,237,0.35), transparent 70%), var(--surface);
+  }
+  .cta-inner h2 { font-family: var(--font-display); font-size: clamp(1.6rem, 3.4vw, 2.4rem); letter-spacing: -0.02em; margin-bottom: 12px; }
+  .cta-inner p { color: var(--text-dim); max-width: 520px; margin: 0 auto 26px; }
+
+  /* ---------- footer ---------- */
+  footer { border-top: 1px solid var(--border); padding: 34px clamp(20px, 4vw, 56px); text-align: center; color: var(--text-faint); font-size: 0.85rem; }
+  footer a { color: var(--purple); text-decoration: none; }
+
+  /* ---------- scroll reveal ---------- */
+  .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s var(--ease), transform 0.7s var(--ease); }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    .reveal { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-fx"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
+
+<nav>
+  <div class="brand"><div class="brand-mark">R</div><div>Real<b>World</b>Certs</div></div>
+  <div class="nav-links">
+    <a href="#catalog">Catalog</a>
+    <a href="#why">Why RWC</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#" class="btn btn-primary">Sign In</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="eyebrow"><span class="dot"></span> 1,200+ certifications · new prep tests added weekly</div>
+  <h1>Certify your skills.<br><span class="grad-text">Own your career.</span></h1>
+  <p class="hero-sub">Premium exam-prep and certification courses engineered for pass rates. Practice tests that mirror the real exam — so you walk in ready.</p>
+  <div class="hero-cta">
+    <a href="#catalog" class="btn btn-primary">Browse Certifications</a>
+    <a href="#why" class="btn btn-ghost">How it works →</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><b>1,200<span class="accent">+</span></b><span>Certifications</span></div>
+    <div class="stat"><b>250K<span class="accent">+</span></b><span>Practice questions</span></div>
+    <div class="stat"><b>4.8<span class="accent">★</span></b><span>Average rating</span></div>
+    <div class="stat"><b>38<span class="accent">K</span></b><span>Professionals certified</span></div>
+  </div>
+</header>
+
+<section class="catalog" id="catalog">
+  <div class="catalog-head reveal">
+    <div>
+      <h2>Featured certifications</h2>
+      <p>Hand-picked programs with the highest pass-rate lift. Tap a filter to explore.</p>
+    </div>
+    <div class="filters" id="filters">
+      <span class="chip active" data-filter="all">All</span>
+      <span class="chip" data-filter="cyber">Cyber</span>
+      <span class="chip" data-filter="cloud">Cloud</span>
+      <span class="chip" data-filter="ai">AI & Data</span>
+      <span class="chip" data-filter="dev">DevOps</span>
+      <span class="chip" data-filter="block">Blockchain</span>
+      <span class="chip" data-filter="sec">Security</span>
+    </div>
+  </div>
+
+  <div class="grid" id="grid">
+
+    <!-- Cyber -->
+    <article class="card reveal" data-cat="cyber">
+      <span class="tag-popular">Bestseller</span>
+      <div class="card-body">
+        <div class="card-top">
+          <span class="cat-badge c-cyber">Cyber</span>
+          <div class="icon-badge">🛡️</div>
+        </div>
+        <h3>Certified IoT Professional (CIoTP) 2025</h3>
+        <p class="desc">IoT security, architecture, networking & data pipelines — 350 hard-level MCQs mirroring the real exam.</p>
+        <div class="card-meta"><span>📝 350 questions</span><span class="stars">★★★★★</span><span>Expert</span></div>
+        <div class="card-foot">
+          <div class="price">$49<span>$89</span></div>
+          <a href="#" class="btn btn-primary btn-sm">Get Certified</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- Cloud -->
+    <article class="card reveal" data-cat="cloud">
+      <div class="card-body">
+        <div class="card-top">
+          <span class="cat-badge c-cloud">Cloud</span>
+          <div class="icon-badge">☁️</div>
+        </div>
+        <h3>AWS Certified ML – Specialty TestPrep 2025</h3>
+        <p class="desc">Full AWS ML exam coverage with real-world scenarios, detailed explanations and skill-gap mapping.</p>
+        <div class="card-meta"><span>📝 300+ questions</span><span class="stars">★★★★☆</span><span>Advanced</span></div>
+        <div class="card-foot">
+          <div class="price">$49<span>$89</span></div>
+          <a href="#" class="btn btn-primary btn-sm">Get Certified</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- AI -->
+    <article class="card reveal" data-cat="ai">
+      <div class="card-body">
+        <div class="card-top">
+          <span class="cat-badge c-ai">AI & Data</span>
+          <div class="icon-badge">🤖</div>
+        </div>
+        <h3>Databricks Certified ML Associate</h3>
+        <p class="desc">Delta Lake, MLflow, feature stores & model serving — everything you need to pass the DCMLA first try.</p>
+        <div class="card-meta"><span>📝 275 questions</span><span class="stars">★★★★★</span><span>Advanced</span></div>
+        <div class="card-foot">
+          <div class="price">$49<span>$89</span></div>
+          <a href="#" class="btn btn-primary btn-sm">Get Certified</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- Dev -->
+    <article class="card reveal" data-cat="dev">
+      <span class="tag-popular">Popular</span>
+      <div class="card-body">
+        <div class="card-top">
+          <span class="cat-badge c-dev">DevOps</span>
+          <div class="icon-badge">⚙️</div>
+        </div>
+        <h3>Certified Kubernetes Administrator (CKA + CKAD)</h3>
+        <p class="desc">Cluster architecture, workloads, networking & troubleshooting. Dual-track prep for CKA and CKAD.</p>
+        <div class="card-meta"><span>📝 400+ questions</span><span class="stars">★★★★★</span><span>Expert</span></div>
+        <div class="card-foot">
+          <div class="price">$59<span>$99</span></div>
+          <a href="#" class="btn btn-primary btn-sm">Get Certified</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- Block -->
+    <article class="card reveal" data-cat="block">
+      <div class="card-body">
+        <div class="card-top">
+          <span class="cat-badge c-block">Blockchain</span>
+          <div class="icon-badge">⛓️</div>
+        </div>
+        <h3>Certified Blockchain Expert (CBE) 2025</h3>
+        <p class="desc">Consensus, cryptography, smart contracts & L2 scaling. 350 hard-level questions with deep explanations.</p>
+        <div class="card-meta"><span>📝 350 questions</span><span class="stars">★★★★★</span><span>Expert</span></div>
+        <div class="card-foot">
+          <div class="price">$49<span>$89</span></div>
+          <a href="#" class="btn btn-primary btn-sm">Get Certified</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- Security -->
+    <article class="card reveal" data-cat="sec">
+      <div class="card-body">
+        <div class="card-top">
+          <span class="cat-badge c-sec">Security</span>
+          <div class="icon-badge">🔐</div>
+        </div>
+        <h3>SC-100 Microsoft Cybersecurity Architect</h3>
+        <p class="desc">Zero Trust, hybrid-cloud architecture, risk & incident response — 180+ exam-pattern practice questions.</p>
+        <div class="card-meta"><span>📝 180+ questions</span><span class="stars">★★★★★</span><span>Advanced</span></div>
+        <div class="card-foot">
+          <div class="price">$49<span>$89</span></div>
+          <a href="#" class="btn btn-primary btn-sm">Get Certified</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- Cloud -->
+    <article class="card reveal" data-cat="cloud">
+      <div class="card-body">
+        <div class="card-top">
+          <span class="cat-badge c-cloud">Cloud</span>
+          <div class="icon-badge">🧱</div>
+        </div>
+        <h3>Terraform Associate Certification +200 Exam</h3>
+        <p class="desc">IaC fundamentals, state management, modules and providers — with 200+ exam-style test questions.</p>
+        <div class="card-meta"><span>📝 200+ questions</span><span class="stars">★★★★☆</span><span>Intermediate</span></div>
+        <div class="card-foot">
+          <div class="price">$49<span>$89</span></div>
+          <a href="#" class="btn btn-primary btn-sm">Get Certified</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- AI -->
+    <article class="card reveal" data-cat="ai">
+      <div class="card-body">
+        <div class="card-top">
+          <span class="cat-badge c-ai">AI & Data</span>
+          <div class="icon-badge">🧠</div>
+        </div>
+        <h3>Google Professional ML Engineer 2025</h3>
+        <p class="desc">ML pipelines on GCP, Vertex AI, model optimization & MLOps — exam-aligned practice bank.</p>
+        <div class="card-meta"><span>📝 325 questions</span><span class="stars">★★★★★</span><span>Expert</span></div>
+        <div class="card-foot">
+          <div class="price">$59<span>$99</span></div>
+          <a href="#" class="btn btn-primary btn-sm">Get Certified</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- Security -->
+    <article class="card reveal" data-cat="sec">
+      <div class="card-body">
+        <div class="card-top">
+          <span class="cat-badge c-sec">Security</span>
+          <div class="icon-badge">☸️</div>
+        </div>
+        <h3>Kubernetes Security Specialist (CKS)</h3>
+        <p class="desc">Cluster hardening, supply-chain security, runtime protection and audit — targeted exam prep.</p>
+        <div class="card-meta"><span>📝 260 questions</span><span class="stars">★★★★★</span><span>Expert</span></div>
+        <div class="card-foot">
+          <div class="price">$49<span>$89</span></div>
+          <a href="#" class="btn btn-primary btn-sm">Get Certified</a>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<section class="trust" id="why">
+  <div class="trust-item reveal"><span class="trust-icon">🏆</span><div><b>Exam-aligned content</b><span>Mirrors official syllabus & difficulty</span></div></div>
+  <div class="trust-item reveal"><span class="trust-icon">📊</span><div><b>Instant progress</b><span>Skill-gap reports on every test</span></div></div>
+  <div class="trust-item reveal"><span class="trust-icon">🎓</span><div><b>Certified seal</b><span>Shareable proof of mastery</span></div></div>
+  <div class="trust-item reveal"><span class="trust-icon">💳</span><div><b>Secure checkout</b><span>PayPal & cards · 7-day guarantee</span></div></div>
+</section>
+
+<section class="cta-band" id="pricing">
+  <div class="cta-inner reveal">
+    <div>
+      <h2>Ready to <span class="grad-text">get certified?</span></h2>
+      <p>Join 38,000+ professionals who boosted their pass rates with RealWorldCerts. Lifetime access, one-time price, guaranteed.</p>
+      <a href="#catalog" class="btn btn-primary" style="padding:14px 34px">Start Learning Today</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>RealWorldCerts · Certified. Verified. Future-Ready. · <a href="#">Terms</a> · <a href="#">Privacy</a> · <a href="#">Support</a></p>
+  <p style="margin-top:8px">© 2026 RealWorldCerts — built on the Khwarizmian Swarm Autonomous System</p>
+</footer>
+
+<script>
+  // Category filter
+  const chips = document.querySelectorAll('#filters .chip');
+  const cards = document.querySelectorAll('#grid .card');
+  chips.forEach(chip => chip.addEventListener('click', () => {
+    chips.forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    const f = chip.dataset.filter;
+    cards.forEach(card => {
+      const show = f === 'all' || card.dataset.cat === f;
+      card.style.display = show ? '' : 'none';
+      if (show) card.classList.add('in');
+    });
+  }));
+
+  // Scroll reveal
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>
