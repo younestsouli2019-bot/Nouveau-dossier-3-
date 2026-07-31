@@ -67,3 +67,4 @@ jobs:
             git push origin HEAD:${{ github.ref_name }}
           else
             echo "No files to commit."
+          fi
