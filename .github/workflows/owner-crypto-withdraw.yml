@@ -43,7 +43,7 @@ jobs:
         with:
           node-version: "20"
       - name: Install
-        run: npm ci
+        run: npm ci || npm i
       - name: Execute withdraw
         id: withdraw
         run: |
