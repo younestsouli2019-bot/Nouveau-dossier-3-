@@ -9,12 +9,8 @@ jobs:
   health:
     runs-on: ubuntu-latest
     environment: prod
-    strategy:
-      matrix:
-        url: [ "${{ secrets.SITE_PUBLIC_URL }}" ]
-        # Add staging URL here if needed, e.g. "https://staging.realworldcerts.com"
     env:
-      SITE_PUBLIC_URL: ${{ matrix.url }}
+      SITE_PUBLIC_URL: ${{ secrets.SITE_PUBLIC_URL }}
       PAYPAL_OWNER_EMAIL: ${{ secrets.PAYPAL_OWNER_EMAIL }} # For smoke test context if needed
     steps:
       - name: Checkout
@@ -29,7 +25,7 @@ jobs:
         run: npm ci || npm i
       
       - name: Health Check (Smoke Test)
-        if: ${{ matrix.url != '' }}
+        if: env.SITE_PUBLIC_URL != ''
         run: |
           if [ -f ./scripts/site-smoke-test.mjs ]; then
             node ./scripts/site-smoke-test.mjs
@@ -40,7 +36,7 @@ jobs:
       - name: Notify on Failure
         if: failure()
         run: |
-          echo "::error::Health check failed for ${{ matrix.url }}"
+          echo "::error::Health check failed for ${{ env.SITE_PUBLIC_URL }}"
           # Optional: Send email via SMTP or API if secrets exist
           # if [ -n "${{ secrets.SMTP_HOST }}" ]; then ... fi
           echo "Would send alert to younesdgc@gmail.com"

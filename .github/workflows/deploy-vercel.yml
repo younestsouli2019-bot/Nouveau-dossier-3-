@@ -62,4 +62,4 @@ jobs:
           fi
           curl -sSfL "$URL" | head -n 50 >/dev/null
       - name: Output Vercel URL
-        run: echo "Vercel deployment completed: ${{ steps.vercel_deploy.outputs.deploy_url }}"
+        run: 'echo "Vercel deployment completed: ${{ steps.vercel_deploy.outputs.deploy_url }}"'

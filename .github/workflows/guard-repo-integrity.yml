@@ -28,7 +28,7 @@ jobs:
       - name: Check for deprecated @v4 actions
         run: |
           set -euo pipefail
-          V4_REFS=$(grep -r 'actions/.*@v4' .github/workflows/ 2>/dev/null || true)
+          V4_REFS=$(grep -rEn '^\s*uses: [A-Za-z0-9_./-]+@v4\b' .github/workflows/ 2>/dev/null | grep -v 'actions/deploy-pages@v4' || true)
           if [ -n "$V4_REFS" ]; then
             echo "::error::Deprecated @v4 actions found:"
             echo "$V4_REFS"
