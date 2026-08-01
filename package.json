@@ -5,6 +5,7 @@
   "type": "module",
   "description": "ChariBaaS autonomous AI agentic swarm — crowdsourcing HIT revenue automation",
   "scripts": {
+    "test": "node --test --test-concurrency=1 test/**/*.test.mjs",
     "site:smoke": "node ./scripts/site-smoke-test.mjs",
     "owner:crypto:withdraw": "node ./scripts/execute-crypto-withdraw.mjs",
     "vercel:prepare": "node \"Nouveau dossier (3)/scripts/generate-vercel-output.mjs\"",

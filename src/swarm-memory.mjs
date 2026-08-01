@@ -118,6 +118,7 @@ class SwarmMemory {
         value: entry.value,
         writtenAt: entry.writtenAt,
         version: entry.version,
+        ttl: entry.ttl,
         namespace: entry.namespace,
       };
     }
