@@ -22,6 +22,8 @@ describe("course-factory.mjs", () => {
 		assert.ok(result.status === "idea_to_course_preview");
 		assert.ok(result.blueprint.opportunity.topic);
 		assert.ok(Array.isArray(result.blueprint.curriculum.modules));
+		assert.ok(Array.isArray(result.blueprint.script.narration));
+		assert.ok(result.blueprint.video.timeline.length > 0);
 		assert.ok(result.blueprint.recommendedPriceCents > 0);
 	});
 
