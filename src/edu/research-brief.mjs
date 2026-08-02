@@ -47,6 +47,39 @@ const KNOWLEDGE_BASE = {
 			"Customer lifetime value is the total expected revenue from one customer over time": "Standard marketing metric",
 		},
 	},
+	"tutoring": {
+		wellKnown: [
+			"A short trial session builds trust before a paid commitment",
+			"Recurring weekly sessions improve retention over one-off lessons",
+			"Referrals are the most reliable source of new students",
+			"Clear pricing reduces no-shows and booking friction",
+		],
+		sources: {
+			"Interactive whiteboards keep remote students engaged through shared writing": "Common tutoring practice",
+		},
+	},
+	"baking": {
+		wellKnown: [
+			"A sourdough starter is a mix of flour and water that cultivates wild yeast",
+			"Warm temperatures speed up fermentation while cool slows it down",
+			"Kneading develops gluten, which gives bread its structure",
+			"Weighing ingredients is more reliable than volume measures",
+		],
+		sources: {
+			"A young starter fed twice a day matures faster than one fed occasionally": "Common baker's practice",
+		},
+	},
+	"ev ownership": {
+		wellKnown: [
+			"Cold weather reduces an electric vehicle's usable range",
+			"Home charging at night is typically the cheapest charging option",
+			"Regenerative braking recovers energy while slowing the car",
+			"Fast chargers are intended for long trips, not daily use",
+		],
+		sources: {
+			"EV range depends on speed, temperature, heating, and driving style": "EPA test methodology",
+		},
+	},
 };
 
 const WELL_KNOWN_GENERIC = [
@@ -70,6 +103,9 @@ export class ResearchAgent {
 		if (/ai|automation|workflow|prompt|agent|llm|gpt|bot/.test(lower)) return "ai automation";
 		if (/finance|money|invest|budget|saving|savings|debt|tax|retire|index\s*fund|compound|inflation|emergency\s*fund/.test(lower)) return "finance";
 		if (/market|brand|ads|funnel|copy|seo|social/.test(lower)) return "marketing";
+		if (/tutor|lesson|teaching|students|whiteboard|homework/.test(lower)) return "tutoring";
+		if (/sourdough|baking|bread|starter|knead|ferment|flour/.test(lower)) return "baking";
+		if (/electric\s*vehicle|ev\s*charging|ev\s*range|regenerative|fast\s*charger/.test(lower)) return "ev ownership";
 		return "general";
 	}
 

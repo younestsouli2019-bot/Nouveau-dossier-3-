@@ -11,6 +11,7 @@
     "edu:factory:publish": "node ./src/edu/course-factory-cli.mjs publish",
     "edu:research": "node ./src/edu/research-script-cli.mjs research",
     "edu:script": "node ./src/edu/research-script-cli.mjs script",
+    "edu:standards": "node ./src/edu/standards-audit-cli.mjs",
     "edu:storefronts": "node ./scripts/edu-storefront-status.mjs",
     "affiliate:status": "node ./scripts/affiliate-program-cli.mjs status",
     "affiliate:recruit": "node ./scripts/affiliate-program-cli.mjs recruit",

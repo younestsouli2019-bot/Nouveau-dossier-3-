@@ -9,6 +9,13 @@ const DEFAULT_NICHES = [
 	{ niche: "AI tools for students", cpm: 10, demand: 0.8, competition: 0.7, willingnessToPay: 0.4, audience: "Students", formats: ["Tutorial", "Comparison"] },
 	{ niche: "Local business marketing", cpm: 16, demand: 0.65, competition: 0.3, willingnessToPay: 0.7, audience: "Local shop owners", formats: ["Case study", "Tutorial"] },
 	{ niche: "Video editing with AI", cpm: 13, demand: 0.7, competition: 0.5, willingnessToPay: 0.6, audience: "Creators, editors", formats: ["Walkthrough", "Tool review"] },
+	{ niche: "Side businesses for caregivers", cpm: 11, demand: 0.6, competition: 0.3, willingnessToPay: 0.6, audience: "Family caregivers", formats: ["Tutorial", "Case study", "Checklist"] },
+	{ niche: "Online tutoring setup", cpm: 12, demand: 0.65, competition: 0.4, willingnessToPay: 0.65, audience: "Teachers, subject experts", formats: ["Tutorial", "Walkthrough"] },
+	{ niche: "Home organization systems", cpm: 9, demand: 0.7, competition: 0.5, willingnessToPay: 0.5, audience: "Busy households", formats: ["Before-and-after", "Checklist", "Story"] },
+	{ niche: "Pregnancy nutrition basics", cpm: 10, demand: 0.6, competition: 0.35, willingnessToPay: 0.7, audience: "Expecting parents", formats: ["Tutorial", "Interview"] },
+	{ niche: "Veteran business grants", cpm: 14, demand: 0.5, competition: 0.2, willingnessToPay: 0.6, audience: "Veteran founders", formats: ["Walkthrough", "Case study"] },
+	{ niche: "Electric vehicle ownership", cpm: 13, demand: 0.65, competition: 0.4, willingnessToPay: 0.6, audience: "Prospective EV buyers", formats: ["Comparison", "Tutorial"] },
+	{ niche: "Sourdough baking fundamentals", cpm: 8, demand: 0.75, competition: 0.6, willingnessToPay: 0.45, audience: "Home bakers", formats: ["Tutorial", "Before-and-after"] },
 ];
 
 const TREND_TOPICS = {
@@ -16,6 +23,13 @@ const TREND_TOPICS = {
 	"Cybersecurity for small business": ["Phishing defense for small teams", "Securing remote work setups", "Passwordless authentication basics"],
 	"Faceless YouTube channel operations": ["Scripting a documentary-style video", "Choosing a profitable niche", "Batch-producing a month of shorts"],
 	"Personal finance for freelancers": ["Emergency funds for irregular income", "Tax-simplification for gig workers", "Separating business and personal money"],
+	"Side businesses for caregivers": ["Building a flexible side income", "Scheduling work around care shifts", "Low-overhead service businesses"],
+	"Online tutoring setup": ["Pricing your first tutoring sessions", "Tools for online whiteboards", "Turning one student into referrals"],
+	"Home organization systems": ["Decluttering a high-traffic room", "Storage systems that hold up", "Maintaining systems with kids at home"],
+	"Pregnancy nutrition basics": ["Building a balanced plate", "Safe foods during pregnancy", "Meal-prep on low-energy days"],
+	"Veteran business grants": ["Finding veteran-focused grants", "Writing a winning grant pitch", "Documentation veteran founders need"],
+	"Electric vehicle ownership": ["Charging at home vs on the road", "Understanding EV range in winter", "Total cost of ownership vs gas"],
+	"Sourdough baking fundamentals": ["Building and keeping a starter", "Shaping without tearing", "A forgiving beginner's schedule"],
 };
 
 function mulberry32(seed) {
