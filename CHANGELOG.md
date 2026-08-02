@@ -5,8 +5,9 @@
 - feat(edu): research-to-script pipeline with anti-hallucination claim gating — `ResearchAgent.brief` classifies claims as well-known/verified/unverified against a knowledge base and supplied sources; `ScriptWriter` only narrates verified claims, hedges when unverified claims remain; `research-script-cli.mjs`.
 - feat(edu): realworldcerts.com standards audit — `SiteStandardsAuditor` grades SEO title/description, pricing, social proof, affiliate visibility, cert objectives, trust, CTA, mobile, human copy, and sales mapping (grade + verdict + per-check actions); `standards-audit-cli.mjs`.
 - feat(edu): niche catalog expanded 8 → 16 (caregivers, tutoring, home organization, pregnancy nutrition, veteran grants, EV ownership, sourdough baking) with trend topics and knowledge-base entries for tutoring/baking/EV.
-- Tests: 271 passing (opportunity 6, curriculum 7, video 6, courseFactory 5, research 7, script 7, standards 8).
-- infra: pushed research-to-script (`a2db044822`) and standards/niche (`18ffa0473b`) commits to origin/main; remote in sync.
+- feat(edu): analytics feedback loop — `CourseAnalytics` ingests per-module completion/quiz/dropoff and sale conversion, returns price signals (raise/lower/keep), module health actions (rewrite_quiz/shorten/reorder/keep), and next-topic suggestions from the opportunity scan; `analytics-loop-cli.mjs` closes the idea→course→improve cycle.
+- Tests: 279 passing (opportunity 6, curriculum 7, video 6, courseFactory 5, research 7, script 7, standards 8, analytics 8).
+- infra: pushed research-to-script (`a2db044822`), standards/niche (`18ffa0473b`), changelog (`ba97e329ee`), and analytics (`7b649d3493`) commits to origin/main; remote in sync.
 
 ## [2026-02-01]
 - Added hourly Autonomous Scheduler (agents registration, headhunter discovery, autonomous tick, readiness ping, catalogue build, truth marker write, auto-commit/push).
