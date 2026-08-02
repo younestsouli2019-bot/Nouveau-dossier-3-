@@ -7,6 +7,8 @@
     "edu:preptests": "node ./src/edu/edu-provisioner.mjs import-preptests",
     "edu:webhooks": "node ./src/edu/edu-provisioner.mjs register-webhooks",
     "edu:publish": "node ./src/edu/edu-publisher-cli.mjs publish",
+    "edu:factory:preview": "node ./src/edu/course-factory-cli.mjs preview",
+    "edu:factory:publish": "node ./src/edu/course-factory-cli.mjs publish",
     "edu:storefronts": "node ./scripts/edu-storefront-status.mjs",
     "affiliate:status": "node ./scripts/affiliate-program-cli.mjs status",
     "affiliate:recruit": "node ./scripts/affiliate-program-cli.mjs recruit",
