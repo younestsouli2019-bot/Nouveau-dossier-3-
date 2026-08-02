@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-08-02]
+- feat(edu): humanized LearnWorlds publishing (AI-tell stripping, natural copy, instructor persona) default-on via `EDU_HUMANIZE`.
+- feat(edu): RealWorldCerts main-site client with HMAC webhook verification and normalized sale handling.
+- feat(edu): affiliate program with `RWC-` referral codes, recruitment loop, conversion recording, leaderboard, owner-gated payouts.
+- feat(edu): 10-storefront registry (realworldcerts primary + teachable/learnworlds/udemy/skillshare/skool/whop/lemon-squeezy/gumroad/github-sponsors).
+- feat(edu): webhook routes `/webhook/realworldcerts` and `/webhook/affiliate`; reconciliation hooks for main-site sales + affiliate conversions.
+- scripts: `edu-storefront-status.mjs`, `affiliate-program-cli.mjs`; package.json `edu:storefronts`, `affiliate:status`, `affiliate:recruit`.
+- Tests: 225 passing (humanize 11, learnworldsPublisher 9, mainSiteClient 4, affiliateProgram 6, storefrontRegistry 4, reconciliation 8, and more).
+- infra: force-pushed local `main` to `origin/main`; repo_nd3 remote removed; legacy agent tree preserved on `origin/trae/agent-71cE3g`.
+
 ## [2026-02-01]
 - Added hourly Autonomous Scheduler (agents registration, headhunter discovery, autonomous tick, readiness ping, catalogue build, truth marker write, auto-commit/push).
 - Integrated headhunter discovery into supervisor cycle for continuous agent onboarding.
