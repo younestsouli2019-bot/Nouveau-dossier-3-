@@ -1,14 +1,12 @@
 # Changelog
 
 ## [2026-08-02]
-- feat(edu): humanized LearnWorlds publishing (AI-tell stripping, natural copy, instructor persona) default-on via `EDU_HUMANIZE`.
-- feat(edu): RealWorldCerts main-site client with HMAC webhook verification and normalized sale handling.
-- feat(edu): affiliate program with `RWC-` referral codes, recruitment loop, conversion recording, leaderboard, owner-gated payouts.
-- feat(edu): 10-storefront registry (realworldcerts primary + teachable/learnworlds/udemy/skillshare/skool/whop/lemon-squeezy/gumroad/github-sponsors).
-- feat(edu): webhook routes `/webhook/realworldcerts` and `/webhook/affiliate`; reconciliation hooks for main-site sales + affiliate conversions.
-- scripts: `edu-storefront-status.mjs`, `affiliate-program-cli.mjs`; package.json `edu:storefronts`, `affiliate:status`, `affiliate:recruit`.
-- Tests: 225 passing (humanize 11, learnworldsPublisher 9, mainSiteClient 4, affiliateProgram 6, storefrontRegistry 4, reconciliation 8, and more).
-- infra: force-pushed local `main` to `origin/main`; repo_nd3 remote removed; legacy agent tree preserved on `origin/trae/agent-71cE3g`.
+- feat(edu): Agentic Course Factory — `OpportunityAgent` (niche scanning, seeded ranking, CREATE NOW/WATCH/IGNORE verdicts), `CurriculumArchitect` (module frameworks, per-module quizzes, humanized copy), `VideoDirector` (scene timelines, renderer plan, ffmpeg detection), wired end-to-end via `CourseFactory.createCourse` (idea→opportunity→curriculum→script→video→publisher) and `course-factory-cli.mjs` (preview/publish).
+- feat(edu): research-to-script pipeline with anti-hallucination claim gating — `ResearchAgent.brief` classifies claims as well-known/verified/unverified against a knowledge base and supplied sources; `ScriptWriter` only narrates verified claims, hedges when unverified claims remain; `research-script-cli.mjs`.
+- feat(edu): realworldcerts.com standards audit — `SiteStandardsAuditor` grades SEO title/description, pricing, social proof, affiliate visibility, cert objectives, trust, CTA, mobile, human copy, and sales mapping (grade + verdict + per-check actions); `standards-audit-cli.mjs`.
+- feat(edu): niche catalog expanded 8 → 16 (caregivers, tutoring, home organization, pregnancy nutrition, veteran grants, EV ownership, sourdough baking) with trend topics and knowledge-base entries for tutoring/baking/EV.
+- Tests: 271 passing (opportunity 6, curriculum 7, video 6, courseFactory 5, research 7, script 7, standards 8).
+- infra: pushed research-to-script (`a2db044822`) and standards/niche (`18ffa0473b`) commits to origin/main; remote in sync.
 
 ## [2026-02-01]
 - Added hourly Autonomous Scheduler (agents registration, headhunter discovery, autonomous tick, readiness ping, catalogue build, truth marker write, auto-commit/push).
