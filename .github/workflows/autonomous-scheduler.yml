@@ -11,6 +11,21 @@ jobs:
     concurrency:
       group: autonomous-scheduler
       cancel-in-progress: false
+    env:
+      BASE44_APP_ID: ${{ secrets.BASE44_APP_ID }}
+      BASE44_SERVICE_TOKEN: ${{ secrets.BASE44_SERVICE_TOKEN }}
+      PAYPAL_CLIENT_ID: ${{ secrets.PAYPAL_CLIENT_ID }}
+      PAYPAL_CLIENT_SECRET: ${{ secrets.PAYPAL_CLIENT_SECRET }}
+      PAYPAL_WEBHOOK_ID: ${{ secrets.PAYPAL_WEBHOOK_ID }}
+      OWNER_WISE_API_TOKEN: ${{ secrets.OWNER_WISE_API_TOKEN }}
+      BITGET_API_KEY: ${{ secrets.BITGET_API_KEY }}
+      BITGET_API_SECRET: ${{ secrets.BITGET_API_SECRET }}
+      BITGET_PASSPHRASE: ${{ secrets.BITGET_PASSPHRASE }}
+      BYBIT_API_KEY: ${{ secrets.BYBIT_API_KEY }}
+      BYBIT_API_SECRET: ${{ secrets.BYBIT_API_SECRET }}
+      OWNER_CRYPTO_BEP20: ${{ secrets.OWNER_CRYPTO_BEP20 }}
+      CRYPTO_ALLOWED_ADDRESSES: ${{ secrets.CRYPTO_ALLOWED_ADDRESSES }}
+      CRYPTO_WITHDRAW_ENABLE: ${{ secrets.CRYPTO_WITHDRAW_ENABLE }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,6 +40,8 @@ jobs:
         run: npm run swarm:headhunter:once
       - name: Autonomous once
         run: npm run autonomous:once
+      - name: Rail health probe
+        run: node ./scripts/rail-health-probe.mjs
       - name: Health readiness ping
         run: npm run live:readiness:ping
       - name: Build catalogue (ultimate)

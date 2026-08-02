@@ -279,13 +279,24 @@ export class BinanceClient {
 				res.on("end", () => {
 					try {
 						const j = JSON.parse(String(data || "{}"));
+						j.statusCode = res.statusCode || 0;
+						if (res.statusCode && res.statusCode >= 400) {
+							console.error(
+								`[binance] HTTP ${res.statusCode} ${options.method} ${options.path} ->`,
+								JSON.stringify(j).slice(0, 400),
+							);
+						}
 						resolve(j);
 					} catch (e) {
+						e.statusCode = res.statusCode || 0;
 						reject(e);
 					}
 				});
 			});
-			req.on("error", reject);
+			req.on("error", (e) => {
+				e.statusCode = 0;
+				reject(e);
+			});
 			if (body) req.write(body);
 			req.end();
 		});

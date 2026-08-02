@@ -2659,7 +2659,6 @@ async function main() {
 		await sleep(delay);
 	} while (!stop);
 }
-}
 
 const selfPath = fileURLToPath(import.meta.url);
 const argvPath = process.argv[1] ? path.resolve(process.argv[1]) : null;

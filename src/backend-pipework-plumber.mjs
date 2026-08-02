@@ -9,10 +9,103 @@ import {
 	buildBase44ServiceClient,
 	buildBase44Client,
 } from "./base44-client.mjs";
+import {
+	addSecurityHeaders,
+	validateRequest,
+	validateAuth,
+	detectPromptInjection,
+	extractPayoutDestinations,
+} from "./security-middleware.mjs";
 import { fileURLToPath } from "url";
 
 function ensureDir(p) {
 	if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
+}
+
+function getEnvBool(name, def = false) {
+	const v = process.env[name];
+	if (v == null) return def;
+	return String(v).toLowerCase() === "true";
+}
+
+function getPlumberTokens() {
+	return [
+		process.env.BACKEND_PLUMBER_API_KEY,
+		process.env.PLUMBER_API_KEY,
+		process.env.SWARM_API_KEY,
+		process.env.BASE44_SERVICE_TOKEN,
+	]
+		.filter(Boolean)
+		.map((s) => String(s).trim())
+		.filter((s) => s.length > 0);
+}
+
+function requirePlumberAuth(req, res, next) {
+	const tokens = getPlumberTokens();
+	if (tokens.length === 0) {
+		// No tokens configured: only reachable on localhost loopback.
+		const addr = req.socket?.remoteAddress || req.ip || "";
+		if (addr.includes("127.0.0.1") || addr.includes("::1") || addr === "") {
+			return next();
+		}
+		res.status(401).json({ ok: false, error: "Unauthorized" });
+		return;
+	}
+	if (!validateAuth(req, tokens)) {
+		res.status(401).json({ ok: false, error: "Unauthorized" });
+		return;
+	}
+	next();
+}
+
+function guardPromptInjection(req, res, next) {
+	if (req.body == null) return next();
+	const found = detectPromptInjection(req.body);
+	if (found) {
+		res.status(400).json({
+			ok: false,
+			error: "Prompt injection blocked",
+			label: found.label,
+			field: found.location,
+		});
+		return;
+	}
+	next();
+}
+
+function guardFundDiversion(req, res, next) {
+	if (req.body == null) return next();
+	const allow = [
+		process.env.OWNER_PAYPAL_EMAIL,
+		process.env.OWNER_IBAN,
+		process.env.OWNER_BANK_RIB,
+		process.env.OWNER_BANK_ACCOUNT,
+		process.env.OWNER_CRYPTO_ADDRESS,
+		process.env.OWNER_TRUST_WALLET,
+		process.env.OWNER_PAYONEER_ID,
+	];
+	const targets = extractPayoutDestinations(req.body);
+	for (const t of targets) {
+		const norm = String(t.value)
+			.replace(/["']/g, "")
+			.replace(/\s+/g, "")
+			.toUpperCase();
+		const ok = allow.some(
+			(a) =>
+				a &&
+				String(a).replace(/["']/g, "").replace(/\s+/g, "").toUpperCase() ===
+					norm,
+		);
+		if (!ok) {
+			res.status(403).json({
+				ok: false,
+				error: "Fund_diversion_guard",
+				field: t.path,
+			});
+			return;
+		}
+	}
+	next();
 }
 
 function safeJson(v, fallback = null) {
@@ -196,6 +289,15 @@ function buildSettlementOps() {
 export function createApp() {
 	const app = express();
 	app.use(bodyParser.json({ limit: "1mb" }));
+	app.use((req, res, next) => {
+		addSecurityHeaders(res);
+		const invalid = validateRequest(req);
+		if (invalid) {
+			res.status(invalid.status).json({ ok: false, error: invalid.error });
+			return;
+		}
+		next();
+	});
 		app.use((req, _res, next) => {
 			console.log(`[BackendPlumber] ${req.method} ${req.path}`);
 			next();
@@ -248,7 +350,7 @@ export function createApp() {
     }));
   });
 
-	app.get("/api/owner/:entity", async (req, res) => {
+	app.get("/api/owner/:entity", requirePlumberAuth, async (req, res) => {
 		try {
 			const r = await ownerApi.list(
 				req.params.entity,
@@ -261,7 +363,7 @@ export function createApp() {
 			res.status(500).json({ ok: false, error: String(e.message || e) });
 		}
 	});
-	app.get("/api/owner/:entity/:id", async (req, res) => {
+	app.get("/api/owner/:entity/:id", requirePlumberAuth, async (req, res) => {
 		try {
 			const r = await ownerApi.get(req.params.entity, req.params.id);
 			res.json({ ok: true, row: r });
@@ -269,28 +371,40 @@ export function createApp() {
 			res.status(500).json({ ok: false, error: String(e.message || e) });
 		}
 	});
-	app.post("/api/owner/:entity", async (req, res) => {
-		try {
-			const r = await ownerApi.create(req.params.entity, req.body || {});
-			res.json({ ok: true, id: r?.id ?? null, row: r });
-		} catch (e) {
-			res.status(500).json({ ok: false, error: String(e.message || e) });
-		}
-	});
-	app.patch("/api/owner/:entity/:id", async (req, res) => {
-		try {
-			const r = await ownerApi.update(
-				req.params.entity,
-				req.params.id,
-				req.body || {},
-			);
-			res.json({ ok: true, row: r });
-		} catch (e) {
-			res.status(500).json({ ok: false, error: String(e.message || e) });
-		}
-	});
+	app.post(
+		"/api/owner/:entity",
+		requirePlumberAuth,
+		guardPromptInjection,
+		guardFundDiversion,
+		async (req, res) => {
+			try {
+				const r = await ownerApi.create(req.params.entity, req.body || {});
+				res.json({ ok: true, id: r?.id ?? null, row: r });
+			} catch (e) {
+				res.status(500).json({ ok: false, error: String(e.message || e) });
+			}
+		},
+	);
+	app.patch(
+		"/api/owner/:entity/:id",
+		requirePlumberAuth,
+		guardPromptInjection,
+		guardFundDiversion,
+		async (req, res) => {
+			try {
+				const r = await ownerApi.update(
+					req.params.entity,
+					req.params.id,
+					req.body || {},
+				);
+				res.json({ ok: true, row: r });
+			} catch (e) {
+				res.status(500).json({ ok: false, error: String(e.message || e) });
+			}
+		},
+	);
 
-	app.get("/api/agents/status", async (_req, res) => {
+	app.get("/api/agents/status", requirePlumberAuth, async (_req, res) => {
 		try {
 			const r = await agents.status();
 			res.json({ ok: true, status: r });
@@ -298,14 +412,20 @@ export function createApp() {
 			res.status(500).json({ ok: false, error: String(e.message || e) });
 		}
 	});
-	app.post("/api/agents/mission", async (req, res) => {
-		try {
-			const r = await agents.writeMission(req.body || {});
-			res.json({ ok: true, result: r });
-		} catch (e) {
-			res.status(500).json({ ok: false, error: String(e.message || e) });
-		}
-	});
+	app.post(
+		"/api/agents/mission",
+		requirePlumberAuth,
+		guardPromptInjection,
+		guardFundDiversion,
+		async (req, res) => {
+			try {
+				const r = await agents.writeMission(req.body || {});
+				res.json({ ok: true, result: r });
+			} catch (e) {
+				res.status(500).json({ ok: false, error: String(e.message || e) });
+			}
+		},
+	);
 
 	app.post("/api/webhooks/paypal", async (req, res) => {
 		try {
@@ -324,17 +444,23 @@ export function createApp() {
 		}
 	});
 
-	app.post("/api/settlement/orchestrate", async (req, res) => {
-		try {
-			const intentEnvelope = safeJson(req.body?.intentEnvelope, null);
-			const kid = req.body?.kid ?? null;
-			const dryRun = req.body?.dryRun !== false;
-			const r = await settlement.orchestrate({ intentEnvelope, dryRun, kid });
-			res.json(r);
-		} catch (e) {
-			res.status(500).json({ ok: false, error: String(e.message || e) });
-		}
-	});
+	app.post(
+		"/api/settlement/orchestrate",
+		requirePlumberAuth,
+		guardPromptInjection,
+		guardFundDiversion,
+		async (req, res) => {
+			try {
+				const intentEnvelope = safeJson(req.body?.intentEnvelope, null);
+				const kid = req.body?.kid ?? null;
+				const dryRun = req.body?.dryRun !== false;
+				const r = await settlement.orchestrate({ intentEnvelope, dryRun, kid });
+				res.json(r);
+			} catch (e) {
+				res.status(500).json({ ok: false, error: String(e.message || e) });
+			}
+		},
+	);
 
 	app.get(/.*/, (_req, res) => {
 		res
