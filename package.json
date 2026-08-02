@@ -12,6 +12,7 @@
     "edu:research": "node ./src/edu/research-script-cli.mjs research",
     "edu:script": "node ./src/edu/research-script-cli.mjs script",
     "edu:standards": "node ./src/edu/standards-audit-cli.mjs",
+    "edu:analytics": "node ./src/edu/analytics-loop-cli.mjs",
     "edu:storefronts": "node ./scripts/edu-storefront-status.mjs",
     "affiliate:status": "node ./scripts/affiliate-program-cli.mjs status",
     "affiliate:recruit": "node ./scripts/affiliate-program-cli.mjs recruit",
