@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-08-04]
+- feat(swarm): multi-machine task queue — `src/task-queue.mjs` atomic lease-based queue (mkdir-atomic `claim()`, enqueue/list/stats/complete/fail, `reap()` for expired leases, `clear()`), plus `runCommand`/`gitCommand` helpers for spawning workers; `src/task-orchestrator.mjs` handler map (`run-tests`, `edu:*`, `swarm:supervisor`) with `processOnce`/`runLoop` + git pull --rebase sync; `src/task-queue-cli.mjs` (enqueue/list/process/loop/reap/clear); `scripts/spawn-parallel-workers.mjs` spawns N loop workers (default 2) with `data/swarm/workers/manifest.json`.
+- fix(ledger): resolved `data/financial/settlement_ledger.json` merge conflict (stale `<<<<<<< Updated upstream` markers committed at HEAD); kept upstream side — 23 transactions incl. `tx_1768336443897_38c4044b3a`; file now parses clean.
+- Tests: 296 passing (taskQueue 17 added → 279 + 17 = 296).
+- infra: pushed `fc6fef962d` (ledger fix) and `421fd4bd77` (task queue) to origin/main; remote in sync.
+
 ## [2026-08-02]
 - feat(edu): Agentic Course Factory — `OpportunityAgent` (niche scanning, seeded ranking, CREATE NOW/WATCH/IGNORE verdicts), `CurriculumArchitect` (module frameworks, per-module quizzes, humanized copy), `VideoDirector` (scene timelines, renderer plan, ffmpeg detection), wired end-to-end via `CourseFactory.createCourse` (idea→opportunity→curriculum→script→video→publisher) and `course-factory-cli.mjs` (preview/publish).
 - feat(edu): research-to-script pipeline with anti-hallucination claim gating — `ResearchAgent.brief` classifies claims as well-known/verified/unverified against a knowledge base and supplied sources; `ScriptWriter` only narrates verified claims, hedges when unverified claims remain; `research-script-cli.mjs`.
