@@ -26,6 +26,7 @@ import { SelfHealer } from "./autonomous-healer.mjs";
 import { ExternalPayerEnforcer } from "./finance/ExternalPayerEnforcer.mjs";
 import { ReplenishmentProtocol } from "./finance/ReplenishmentProtocol.mjs";
 import { LocalSwarmStore } from "./local-store.mjs";
+import { TaskOrchestrator } from "./task-orchestrator.mjs";
 
 const healer = new SelfHealer();
 const enforcer = new ExternalPayerEnforcer();
@@ -792,6 +793,44 @@ async function maybeRunMissionOrchestration(cfg, state) {
 		return { ok: true, missionsExecuted: results.length };
 	} catch (e) {
 		return { ok: false, error: e?.message ?? String(e) };
+	}
+}
+
+async function maybeRunTaskQueue(cfg, state, queue = null) {
+	if (cfg.tasks?.taskQueue !== true) {
+		return { ok: true, skipped: true, reason: "disabled" };
+	}
+	if (cfg.offline?.enabled === true)
+		return { ok: true, skipped: true, reason: "offline" };
+
+	const nowMs = Date.now();
+	const lastAt = Number(state.lastTaskQueueAt ?? 0) || 0;
+	const intervalMs =
+		Number(cfg.taskQueue?.intervalMs ?? 60000) || 60000;
+	if (nowMs - lastAt < intervalMs) {
+		return { ok: true, skipped: true, reason: "interval" };
+	}
+	if (state.taskQueueBusy === true)
+		return { ok: true, skipped: true, reason: "busy" };
+
+	state.taskQueueBusy = true;
+	try {
+		const maxPerTick = Math.max(
+			1,
+			Math.floor(Number(cfg.taskQueue?.maxPerTick ?? 1) || 1),
+		);
+		const pull = cfg.taskQueue?.pull === true;
+		const orchestrator = new TaskOrchestrator({
+			worker: `daemon_${process.pid}`,
+			queue,
+		});
+		const out = await orchestrator.processOnce({ max: maxPerTick, pull });
+		state.lastTaskQueueAt = nowMs;
+		return { ok: true, ...out };
+	} catch (e) {
+		return { ok: false, error: e?.message ?? String(e) };
+	} finally {
+		state.taskQueueBusy = false;
 	}
 }
 
@@ -1927,6 +1966,10 @@ async function runTick(cfg, state) {
 		await maybeAlertOnFailure(cfg, health, state);
 	}
 
+	if (cfg.tasks.taskQueue) {
+		out.results.taskQueue = await maybeRunTaskQueue(cfg, state);
+	}
+
 	if (cfg.tasks.missionHealth) {
 		const args = ["--mission-health", "--once"];
 		if (cfg.missionHealth?.missionId)
@@ -2679,4 +2722,5 @@ export {
 	maybeRunAutonomousOptimization,
 	startNetworkGuardIfLive,
 	runPDCAOnce,
+	maybeRunTaskQueue,
 };

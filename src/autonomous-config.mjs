@@ -123,6 +123,12 @@ export function defaultConfig() {
 			autoExportPayoneerPayoutBatches: false,
 			autoSettleOwnerPayoneer: false,
 			ensureMarketingFunnel: true,
+			taskQueue: false,
+		},
+		taskQueue: {
+			intervalMs: 60000,
+			maxPerTick: 1,
+			pull: false,
 		},
 		alerts: { enabled: false, cooldownMs: 900000 },
 		missionHealth: { missionId: null, limit: 50 },
@@ -383,6 +389,33 @@ export function resolveRuntimeConfig(args, fileCfg) {
 		getEnvBool("AUTONOMOUS_ENSURE_MARKETING_FUNNEL", true) ||
 		cfg.tasks?.ensureMarketingFunnel === true;
 
+	const taskQueueEnabled =
+		args["task-queue"] === true ||
+		getEnvBool("AUTONOMOUS_TASK_QUEUE", false) ||
+		cfg.tasks?.taskQueue === true;
+	const taskQueueIntervalMs = normalizeIntervalMs(
+		args["task-queue-interval-ms"] ??
+			process.env.AUTONOMOUS_TASK_QUEUE_INTERVAL_MS ??
+			cfg.taskQueue?.intervalMs,
+		60000,
+	);
+	const taskQueueMaxPerTick = Math.max(
+		1,
+		Math.floor(
+			normalizeNumber(
+				args["task-queue-max-per-tick"] ??
+					process.env.AUTONOMOUS_TASK_QUEUE_MAX_PER_TICK ??
+					cfg.taskQueue?.maxPerTick ??
+					1,
+				1,
+			),
+		),
+	);
+	const taskQueuePull =
+		args["task-queue-pull"] === true ||
+		getEnvBool("AUTONOMOUS_TASK_QUEUE_PULL", false) ||
+		cfg.taskQueue?.pull === true;
+
 	return {
 		intervalMs,
 		offline: {
@@ -434,6 +467,12 @@ export function resolveRuntimeConfig(args, fileCfg) {
 				autoExportPayoneerPayoutBatchesEnabled === true,
 			autoSettleOwnerPayoneer: autoSettleOwnerPayoneerEnabled === true,
 			ensureMarketingFunnel: ensureMarketingFunnelEnabled === true,
+			taskQueue: taskQueueEnabled === true,
+		},
+		taskQueue: {
+			intervalMs: taskQueueIntervalMs,
+			maxPerTick: taskQueueMaxPerTick,
+			pull: taskQueuePull === true,
 		},
 		alerts: { enabled: alertsEnabled, cooldownMs: alertCooldownMs },
 		missionHealth: {
