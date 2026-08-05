@@ -5,7 +5,11 @@
   "type": "module",
   "description": "ChariBaaS autonomous AI agentic swarm — crowdsourcing HIT revenue automation",
   "scripts": {
-    "site:smoke": "node ./scripts/site-smoke-test.mjs",
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "security:scan": "node ./src/security/cli.mjs scan",
+    "security:status": "node ./src/security/cli.mjs status",
+    "security:recovery": "node ./src/security/cli.mjs recovery",
+    "security:legal": "node ./src/security/cli.mjs legal-report",
     "owner:crypto:withdraw": "node ./scripts/execute-crypto-withdraw.mjs",
     "vercel:prepare": "node \"Nouveau dossier (3)/scripts/generate-vercel-output.mjs\"",
     "reconcile:payouts": "node ./scripts/reconcile_payouts.mjs",

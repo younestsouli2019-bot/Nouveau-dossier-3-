@@ -1,0 +1,182 @@
+[
+  {
+    "id": "F-UiCnt-ZyX0",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:07:04.509Z",
+    "approvedAt": "2026-08-05T07:07:04.520Z"
+  },
+  {
+    "id": "uUge_XwCio4k",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:07:32.804Z",
+    "approvedAt": "2026-08-05T07:07:32.828Z"
+  },
+  {
+    "id": "yshvz-Su8dUD",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:08:01.114Z",
+    "approvedAt": "2026-08-05T07:08:01.143Z"
+  },
+  {
+    "id": "dvreF3rLKgTi",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:08:27.013Z",
+    "approvedAt": "2026-08-05T07:08:27.043Z"
+  },
+  {
+    "id": "ul0eLAXaHGXe",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:08:55.942Z",
+    "approvedAt": "2026-08-05T07:08:55.977Z"
+  },
+  {
+    "id": "9ueXQrGEgG4f",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:09:21.948Z",
+    "approvedAt": "2026-08-05T07:09:21.965Z"
+  },
+  {
+    "id": "L98mdyIELTqA",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:09:46.619Z",
+    "approvedAt": "2026-08-05T07:09:46.649Z"
+  },
+  {
+    "id": "fRM54tksT0rj",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:10:11.879Z",
+    "approvedAt": "2026-08-05T07:10:11.888Z"
+  },
+  {
+    "id": "34C7TwCTLGtS",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:10:39.997Z",
+    "approvedAt": "2026-08-05T07:10:40.007Z"
+  },
+  {
+    "id": "a_HvrFXIRrWj",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:14:18.985Z",
+    "approvedAt": "2026-08-05T07:14:19.008Z"
+  },
+  {
+    "id": "xTWQten5KM6v",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:16:48.315Z",
+    "approvedAt": "2026-08-05T07:16:48.331Z"
+  },
+  {
+    "id": "TChgCKmF-QBm",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:24:15.791Z",
+    "approvedAt": "2026-08-05T07:24:15.810Z"
+  },
+  {
+    "id": "nbrpoxBheJV2",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:25:10.183Z",
+    "approvedAt": "2026-08-05T07:25:10.214Z"
+  },
+  {
+    "id": "S0byer2-qA7Y",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:26:23.765Z",
+    "approvedAt": "2026-08-05T07:26:23.776Z"
+  },
+  {
+    "id": "NYm9VmvbRs9k",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:27:19.673Z",
+    "approvedAt": "2026-08-05T07:27:19.691Z"
+  },
+  {
+    "id": "8xo3epZlEmy1",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:27:49.735Z",
+    "approvedAt": "2026-08-05T07:27:49.745Z"
+  },
+  {
+    "id": "kAupj0JOyEEH",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:28:14.648Z",
+    "approvedAt": "2026-08-05T07:28:14.658Z"
+  },
+  {
+    "id": "0MV3zXfPW1Zv",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:28:29.118Z",
+    "approvedAt": "2026-08-05T07:28:29.149Z"
+  },
+  {
+    "id": "oPI2nuAsTpca",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T07:29:19.598Z",
+    "approvedAt": "2026-08-05T07:29:19.607Z"
+  },
+  {
+    "id": "q2aohOn-90ic",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T08:25:08.661Z",
+    "approvedAt": "2026-08-05T08:25:08.685Z"
+  }
+]

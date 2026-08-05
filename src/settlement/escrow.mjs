@@ -37,11 +37,12 @@ class EscrowEngine {
     return this._persistQueue;
   }
 
-  async createEscrow({ txId, amount, currency, destination, sourceAccount, purpose, agent }) {
+  async createEscrow({ txId, amount, currency, destination, sourceAccount, purpose, agent, signers = null, quorum = null, lockHours = null }) {
     await this.init();
     const existing = this.escrows.accounts.find(a => a.txId === txId);
     if (existing) return existing;
 
+    const hours = Number(lockHours != null ? lockHours : DEFAULT_LOCK_HOURS);
     const escrow = {
       escrowId: crypto.randomUUID(),
       txId,
@@ -53,9 +54,9 @@ class EscrowEngine {
       purpose: purpose || 'settlement',
       agent,
       createdAt: new Date().toISOString(),
-      unlockAt: new Date(Date.now() + DEFAULT_LOCK_HOURS * 3600 * 1000).toISOString(),
-      signers: JSON.parse(process.env.ESCROW_SIGNERS || JSON.stringify(DEFAULT_SIGNERS)),
-      quorum: Number(process.env.ESCROW_QUORUM || DEFAULT_QUORUM),
+      unlockAt: hours > 0 ? new Date(Date.now() + hours * 3600 * 1000).toISOString() : new Date().toISOString(),
+      signers: signers || JSON.parse(process.env.ESCROW_SIGNERS || JSON.stringify(DEFAULT_SIGNERS)),
+      quorum: Number(quorum || process.env.ESCROW_QUORUM || DEFAULT_QUORUM),
       signatures: [],
       oracleConfirmations: [],
       verifiedBy: [],

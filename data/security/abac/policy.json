@@ -1,0 +1,195 @@
+{
+  "version": "ABAC-1.0",
+  "rules": {
+    "payout.execute": {
+      "roles": [
+        "owner"
+      ],
+      "hitl": true
+    },
+    "payout.submit": {
+      "roles": [
+        "owner",
+        "supervisor"
+      ],
+      "hitl": true
+    },
+    "payout.approve": {
+      "roles": [
+        "owner"
+      ],
+      "hitl": true
+    },
+    "payout.resubmit": {
+      "roles": [
+        "owner"
+      ],
+      "hitl": true
+    },
+    "crypto.withdraw": {
+      "roles": [
+        "owner"
+      ],
+      "hitl": true
+    },
+    "wire.submit": {
+      "roles": [
+        "owner"
+      ],
+      "hitl": true
+    },
+    "auto-pilot.enable": {
+      "roles": [
+        "owner"
+      ],
+      "hitl": true
+    },
+    "auto-pilot.disable": {
+      "roles": [
+        "owner"
+      ],
+      "hitl": true
+    },
+    "recovery.scan": {
+      "roles": [
+        "owner",
+        "supervisor",
+        "agent"
+      ],
+      "hitl": false
+    },
+    "recovery.approve": {
+      "roles": [
+        "owner"
+      ],
+      "hitl": true
+    },
+    "recovery.resolve": {
+      "roles": [
+        "owner"
+      ],
+      "hitl": true
+    },
+    "audit.read": {
+      "roles": [
+        "owner",
+        "supervisor"
+      ],
+      "hitl": false
+    },
+    "audit.seal": {
+      "roles": [
+        "owner"
+      ],
+      "hitl": true
+    },
+    "audit.unseal": {
+      "roles": [
+        "owner"
+      ],
+      "hitl": true
+    },
+    "config.owner": {
+      "roles": [
+        "owner"
+      ],
+      "hitl": true
+    },
+    "agent.register": {
+      "roles": [
+        "owner",
+        "supervisor"
+      ],
+      "hitl": false
+    },
+    "agent.isolate": {
+      "roles": [
+        "owner",
+        "supervisor"
+      ],
+      "hitl": true
+    },
+    "rekey.swarm": {
+      "roles": [
+        "owner"
+      ],
+      "hitl": true
+    },
+    "thaw.global": {
+      "roles": [
+        "owner"
+      ],
+      "hitl": true
+    },
+    "dashboard.read": {
+      "roles": [
+        "owner",
+        "supervisor",
+        "agent"
+      ],
+      "hitl": false
+    },
+    "legal.protocol": {
+      "roles": [
+        "owner"
+      ],
+      "hitl": true
+    },
+    "procurement.execute": {
+      "roles": [
+        "owner",
+        "agent"
+      ],
+      "hitl": false
+    },
+    "procurement.supplier.register": {
+      "roles": [
+        "owner"
+      ],
+      "hitl": true
+    },
+    "procurement.supplier.approve": {
+      "roles": [
+        "owner"
+      ],
+      "hitl": true
+    },
+    "procurement.settle": {
+      "roles": [
+        "owner",
+        "agent"
+      ],
+      "hitl": true
+    }
+  },
+  "highRisk": [
+    "payout.execute",
+    "payout.submit",
+    "payout.approve",
+    "payout.resubmit",
+    "crypto.withdraw",
+    "wire.submit",
+    "auto-pilot.enable",
+    "recovery.approve",
+    "recovery.resolve",
+    "audit.unseal",
+    "config.owner",
+    "agent.isolate",
+    "rekey.swarm",
+    "thaw.global",
+    "procurement.execute",
+    "procurement.supplier.register",
+    "procurement.supplier.approve",
+    "procurement.settle"
+  ],
+  "liveGated": [
+    "payout.execute",
+    "payout.submit",
+    "payout.approve",
+    "payout.resubmit",
+    "crypto.withdraw",
+    "wire.submit",
+    "recovery.resolve",
+    "procurement.settle"
+  ]
+}
