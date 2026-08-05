@@ -178,5 +178,23 @@
     "status": "approved",
     "createdAt": "2026-08-05T08:25:08.661Z",
     "approvedAt": "2026-08-05T08:25:08.685Z"
+  },
+  {
+    "id": "CRZx3XIS2pK1",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T09:05:03.267Z",
+    "approvedAt": "2026-08-05T09:05:03.282Z"
+  },
+  {
+    "id": "scH84_Ufytq3",
+    "action": "recovery.approve",
+    "detail": "item-1",
+    "actor": "system",
+    "status": "approved",
+    "createdAt": "2026-08-05T09:11:46.586Z",
+    "approvedAt": "2026-08-05T09:11:46.743Z"
   }
 ]
