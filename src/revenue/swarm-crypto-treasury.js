@@ -16,7 +16,6 @@
 
 const SWARMCryptoPaymentGateway = require('./swarm-crypto-payment-gateway');
 const SWARMFundRecoveryEngine = require('./swarm-fund-recovery');
-const SWARML2PaymentProcessor = require('./swarm-l2-payment-processor');
 const https = require('https');
 const crypto = require('crypto');
 
@@ -24,7 +23,7 @@ class SWARMCryptoTreasury {
     constructor() {
         this.gateway = new SWARMCryptoPaymentGateway();
         this.recovery = new SWARMFundRecoveryEngine();
-        this.processor = new SWARML2PaymentProcessor();
+        this.processor = null;
         
         this.config = {
             zeroWaste: true,
@@ -173,7 +172,11 @@ class SWARMCryptoTreasury {
     }
 
     // Generate payment request for procurement
-    createProcurementPaymentRequest(order) {
+    async createProcurementPaymentRequest(order) {
+        if (!this.processor) {
+            const { default: SWARML2PaymentProcessor } = await import('./swarm-l2-payment-processor.js');
+            this.processor = new SWARML2PaymentProcessor();
+        }
         return this.processor.createProcurementInvoice(order);
     }
 

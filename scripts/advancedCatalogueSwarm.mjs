@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import PDFDocument from "pdfkit";
 import { parse as csvParse } from "csv-parse/sync";
 
@@ -17,9 +18,43 @@ function ensureDir(dir) {
 	fs.mkdirSync(dir, { recursive: true });
 }
 
-function readCsv(p) {
+function detectBrand(name) {
+	const u = name.toUpperCase();
+	const brands = ["BIC", "PILOT", "DELI", "UHU", "MAPED", "MALOW", "KINGGIFFT", "GATES", "SIGMAFLO", "CLARO", "EXPRESS", "MASH"];
+	const hit = brands.find((b) => u.includes(b));
+	return hit || "Divers";
+}
+
+function readProductsCsv(p) {
 	const txt = fs.readFileSync(p, "utf8");
-	return csvParse(txt, { columns: true, skip_empty_lines: true });
+	const rows = csvParse(txt, {
+		delimiter: ";",
+		relax_quotes: true,
+		relax_column_count: true,
+		skip_empty_lines: true,
+		bom: true,
+		ltrim: true,
+		rtrim: true,
+	});
+	const products = [];
+	for (const r of rows) {
+		const ref = String(r[0] || "").trim();
+		const name = String(r[1] || "").trim();
+		if (ref && /^\d+$/.test(ref) && name) {
+			products.push({
+				ref,
+				name_FR: name,
+				name_AR: name,
+				barcode: ref,
+				packaging: "",
+				brand: detectBrand(name),
+			});
+		} else if (name && products.length) {
+			products[products.length - 1].packaging +=
+				(products[products.length - 1].packaging ? " " : "") + name;
+		}
+	}
+	return products;
 }
 
 function getPaths() {
@@ -87,7 +122,7 @@ export function runAdvancedCatalogue() {
 		coverImage,
 	} = getPaths();
 	ensureDir(path.dirname(outPdf));
-	const products = readCsv(productsCsv);
+	const products = readProductsCsv(productsCsv);
 	const imageMap = safeJson(imageMapJson, {});
 	const brandThemes = safeJson(brandThemesJson, {});
 	const doc = new PDFDocument({ margin: 50 });
@@ -174,6 +209,14 @@ export function runAdvancedCatalogue() {
 		}
 	}
 	doc.end();
+	stream.on("error", (err) => {
+		process.stderr.write(`catalogue pdf stream error: ${err.message}\n`);
+		process.exitCode = 1;
+	});
+	doc.on("error", (err) => {
+		process.stderr.write(`catalogue pdfkit error: ${err.message}\n`);
+		process.exitCode = 1;
+	});
 	stream.on("finish", () => {
 		process.stdout.write(JSON.stringify({ ok: true, outPdf }) + "\n");
 	});
@@ -181,7 +224,9 @@ export function runAdvancedCatalogue() {
 
 if (
 	import.meta.url ===
-	`file://${path.resolve(process.cwd(), "scripts", "advancedCatalogueSwarm.mjs").replace(/\\/g, "/")}`
+	pathToFileURL(
+		path.resolve(process.cwd(), "scripts", "advancedCatalogueSwarm.mjs"),
+	).href
 ) {
 	runAdvancedCatalogue();
 }
