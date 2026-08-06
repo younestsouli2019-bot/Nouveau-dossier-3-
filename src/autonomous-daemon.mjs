@@ -86,6 +86,37 @@ async function runNodeScript(scriptRelPath, scriptArgs, { env }) {
 		});
 	});
 }
+function runSyntaxCheck(scriptRelPath) {
+	return new Promise((resolve) => {
+		const child = spawn(
+			process.execPath,
+			["--check", path.resolve(process.cwd(), scriptRelPath)],
+			{
+				cwd: process.cwd(),
+				env: { ...process.env },
+				stdio: ["ignore", "pipe", "pipe"],
+			},
+		);
+
+		let stdout = "";
+		let stderr = "";
+		child.stdout.on("data", (d) => {
+			stdout += String(d);
+		});
+		child.stderr.on("data", (d) => {
+			stderr += String(d);
+		});
+		child.on("close", (code) => {
+			resolve({
+				ok: Number(code ?? 1) === 0,
+				code: Number(code ?? 1),
+				stdout,
+				stderr,
+			});
+		});
+	});
+}
+
 function parseArgs(argv) {
 	const args = {};
 	for (let i = 2; i < argv.length; i++) {
@@ -2475,16 +2506,30 @@ async function main() {
 	const args = parseArgs(process.argv);
 	const once = args.once === true;
 
+	// --check: verify the script parses without syntax errors, then exit.
+	if (args.check === true) {
+		const res = await runSyntaxCheck(
+			fileURLToPath(import.meta.url),
+		);
+		process.stdout.write(
+			`${JSON.stringify({ ok: res.ok, check: true, at: nowIso(), stderr: res.stderr })}\n`,
+		);
+		process.exitCode = res.ok ? 0 : 1;
+		return;
+	}
+
 	// AUTONOMOUS SELF-CHECK AND AUTO-REPAIR (disabled in test environment)
-	if (process.env.NODE_ENV !== "test") {
+	if (process.env.NODE_ENV !== "test" && args.check !== true) {
 		try {
-			// Check if we can parse ourselves without syntax errors
-			const selfCheckResult = await runNodeScript("src/autonomous-daemon.mjs", ["--check"], { env: process.env });
+			// Check if we can parse ourselves without syntax errors.
+			// Use `node --check` (syntax-only) instead of passing --check to the
+			// script itself, which would re-enter main() and recurse forever.
+			const selfCheckResult = await runSyntaxCheck("src/autonomous-daemon.mjs");
 			if (!selfCheckResult.ok) {
 				console.error("Self-check failed: syntax error detected, attempting auto-repair");
 				// In a real implementation, this would attempt to fix common syntax issues
 				// For now, we'll just log and continue
-				process.stderr.write(`${JSON.stringify({ ok: false, at: nowIso(), error: "Self-check failed", details: selfCheckResult.error })}\n`);
+				process.stderr.write(`${JSON.stringify({ ok: false, at: nowIso(), error: "Self-check failed", details: selfCheckResult.stderr })}\n`);
 			}
 		} catch (e) {
 			// Self-check failed, but we can still try to run in safe mode
