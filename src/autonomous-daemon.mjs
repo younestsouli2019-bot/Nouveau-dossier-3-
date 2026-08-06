@@ -2746,6 +2746,18 @@ async function main() {
 		const delay = Math.min(max, Math.max(1000, Math.floor(base * exp)));
 		await sleep(delay);
 	} while (!stop);
+
+	// --once: the run loop breaks above, but child processes spawned during the
+	// tick may keep handles alive (stdio streams, timers) and prevent exit.
+	// Force an exit so --once runs terminate deterministically in CI.
+	if (once) {
+		const code = Number(process.exitCode) || 0;
+		process.stdout.write(
+			`${JSON.stringify({ ok: code === 0, once: true, done: true, at: nowIso() })}\n`,
+			() => process.exit(code),
+		);
+		setTimeout(() => process.exit(code), 1000).unref();
+	}
 }
 
 const selfPath = fileURLToPath(import.meta.url);

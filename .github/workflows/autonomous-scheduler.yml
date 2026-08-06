@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       group: autonomous-scheduler
-      cancel-in-progress: false
+      cancel-in-progress: true
     env:
       BASE44_APP_ID: ${{ secrets.BASE44_APP_ID }}
       BASE44_SERVICE_TOKEN: ${{ secrets.BASE44_SERVICE_TOKEN }}
