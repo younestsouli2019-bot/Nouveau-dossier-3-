@@ -1,8 +1,1 @@
-{
-  "pendingDecisions": [],
-  "lastUpdated": "2026-06-17T18:53:00Z",
-  "consecutiveFailures": 0,
-  "freeze": {
-    "active": false
-  }
-}
+{"lastAlertAt":0,"lastApprovalAlertAt":0,"lastDeadmanAt":0,"consecutiveFailures":1,"freeze":{"active":false},"exportedPayoneerBatches":{},"updatedAt":"2026-08-06T23:51:31.426Z"}

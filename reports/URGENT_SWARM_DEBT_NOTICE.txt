@@ -1,8 +1,8 @@
 
         🚨 URGENT NOTICE TO SWARM 🚨
         ---------------------------
-        You have failed to maintain the required Reserve Balance of $25000.
-        Current Deficit: $25000.00
+        You have failed to maintain the required Reserve Balance of $50000.
+        Current Deficit: $50000.00
         
         MANDATE:
         1. All non-revenue generating tasks are SUSPENDED.
