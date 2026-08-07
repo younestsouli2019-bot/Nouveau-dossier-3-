@@ -1,53 +1,8 @@
-import crypto from "node:crypto";
-import https from "node:https";
 import "dotenv/config";
+import ccxt from "ccxt";
 import { binanceClient } from "./binance-client.mjs";
 
-const BEP20_CHAIN_BYBIT = "BSC";
-const BEP20_CHAIN_BITGET = "BSC";
-
-function stableStringify(value) {
-	function sortObj(obj) {
-		if (obj === null) return null;
-		if (Array.isArray(obj)) return obj.map((v) => sortObj(v));
-		if (typeof obj === "object") {
-			const keys = Object.keys(obj).sort((a, b) => a.localeCompare(b));
-			const out = {};
-			for (const k of keys) out[k] = sortObj(obj[k]);
-			return out;
-		}
-		if (obj === undefined) return null;
-		if (typeof obj === "number" && !Number.isFinite(obj)) return String(obj);
-		return obj;
-	}
-	return JSON.stringify(sortObj(value));
-}
-
-function request({ hostname, path, method = "GET", headers, body }) {
-	return new Promise((resolve, reject) => {
-		const options = {
-			hostname,
-			port: 443,
-			path,
-			method,
-			headers: { ...(headers ?? {}), "User-Agent": "swarm-autonomous/2.0" },
-		};
-		const req = https.request(options, (res) => {
-			let data = "";
-			res.on("data", (c) => (data += c));
-			res.on("end", () => {
-				try {
-					resolve({ status: res.statusCode, body: JSON.parse(data || "{}") });
-				} catch {
-					resolve({ status: res.statusCode, body: data });
-				}
-			});
-		});
-		req.on("error", reject);
-		if (body) req.write(body);
-		req.end();
-	});
-}
+const BEP20_CHAIN = "BSC";
 
 function envBool(name, def = false) {
 	const v = process.env[name];
@@ -58,6 +13,12 @@ function envBool(name, def = false) {
 function envNumber(name, def) {
 	const n = Number(process.env[name]);
 	return Number.isFinite(n) ? n : def;
+}
+
+function toCctxAmount(value) {
+	const n = Number(value);
+	if (!Number.isFinite(n) || n <= 0) throw new Error("invalid_amount");
+	return n;
 }
 
 function normalizeAddress(value) {
@@ -148,190 +109,111 @@ export function getRailPriority() {
 }
 
 class BitgetClient {
-	constructor({ apiKey, apiSecret, passphrase, host = "api.bitget.com" } = {}) {
+	constructor({ apiKey, apiSecret, passphrase } = {}) {
 		this.apiKey = apiKey ?? process.env.BITGET_API_KEY;
 		this.apiSecret = apiSecret ?? process.env.BITGET_API_SECRET;
 		this.passphrase = passphrase ?? process.env.BITGET_PASSPHRASE;
-		this.host = host;
+		this.exchange = new ccxt.bitget({
+			apiKey: this.apiKey ?? "",
+			secret: this.apiSecret ?? "",
+			password: this.passphrase ?? "",
+			enableRateLimit: true,
+			timeout: 30000,
+		});
 	}
 
 	get credsPresent() {
 		return !!(this.apiKey && this.apiSecret && this.passphrase);
 	}
 
-	sign(method, requestPath, bodyObj) {
-		const ts = Date.now().toString();
-		const body = bodyObj ? stableStringify(bodyObj) : "";
-		const prehash = ts + method.toUpperCase() + requestPath + body;
-		const sig = crypto
-			.createHmac("sha256", String(this.apiSecret))
-			.update(prehash)
-			.digest("base64");
-		return {
-			ts,
-			sig,
-			headers: {
-				"ACCESS-KEY": String(this.apiKey),
-				"ACCESS-SIGN": sig,
-				"ACCESS-PASSPHRASE": String(this.passphrase),
-				"ACCESS-TIMESTAMP": ts,
-				locale: "en-US",
-				"Content-Type": "application/json",
-			},
-		};
-	}
-
-	async request(method, requestPath, bodyObj = null) {
-		const { headers } = this.sign(method, requestPath, bodyObj);
-		const res = await request({
-			hostname: this.host,
-			path: requestPath,
-			method,
-			headers,
-			body: bodyObj ? stableStringify(bodyObj) : null,
-		});
-		if (res.body && res.body.code !== undefined && res.body.code !== "00000") {
-			const msg =
-				res.body.msg ?? res.body.message ?? res.body.code ?? "bitget_error";
-			throw new Error(`Bitget ${method} ${requestPath}: ${msg}`);
-		}
-		return res.body?.data ?? res.body;
-	}
-
-	async getAssets() {
-		return this.request("GET", "/api/v2/spot/account/assets");
-	}
-
 	async getUsdtAvailable() {
 		if (!this.credsPresent) return null;
-		const assets = await this.getAssets();
-		const list = Array.isArray(assets) ? assets : [];
-		const usdt = list.find((c) => String(c?.coin ?? "").toUpperCase() === "USDT");
-		return Number(usdt?.available ?? usdt?.availableBalance ?? 0);
+		const bal = await this.exchange.fetchBalance();
+		const usdt = bal?.USDT;
+		return Number(usdt?.free ?? usdt?.total ?? 0);
 	}
 
 	async withdrawUSDT({ address, amount, clientOid }) {
 		if (!this.credsPresent) throw new Error("Bitget credentials missing");
-		const payload = {
-			coin: "USDT",
-			transferType: "on_chain",
-			address,
-			chain: BEP20_CHAIN_BITGET,
-			size: String(amount),
-			...(clientOid ? { clientOid: String(clientOid) } : {}),
-		};
-		const data = await this.request(
-			"POST",
-			"/api/v2/spot/wallet/withdrawal",
-			payload,
+		const params = { network: BEP20_CHAIN };
+		if (clientOid) params.clientOid = String(clientOid);
+		const tx = await this.exchange.withdraw(
+			"USDT",
+			toCctxAmount(amount),
+			normalizeAddress(address),
+			undefined,
+			params,
 		);
+		const withdrawId = tx?.id ?? null;
 		return {
 			provider: "bitget",
-			applyId: data?.orderId ?? data?.id ?? null,
-			withdrawId: data?.orderId ?? data?.id ?? null,
-			raw: data,
+			applyId: withdrawId,
+			withdrawId,
+			raw: tx,
 		};
 	}
 }
 
 class BybitClient {
-	constructor({ apiKey, apiSecret, host = "api.bybit.com" } = {}) {
+	constructor({ apiKey, apiSecret } = {}) {
 		this.apiKey = apiKey ?? process.env.BYBIT_API_KEY;
 		this.apiSecret = apiSecret ?? process.env.BYBIT_API_SECRET;
-		this.host = host;
+		this.exchange = new ccxt.bybit({
+			apiKey: this.apiKey ?? "",
+			secret: this.apiSecret ?? "",
+			enableRateLimit: true,
+			timeout: 30000,
+		});
 	}
 
 	get credsPresent() {
 		return !!(this.apiKey && this.apiSecret);
 	}
 
-	sign(timestamp, recvWindow, query, body) {
-		const payload = `${timestamp}${String(this.apiKey)}${recvWindow}${query}${body}`;
-		return crypto
-			.createHmac("sha256", String(this.apiSecret))
-			.update(payload)
-			.digest("hex");
-	}
-
-	headers(timestamp, recvWindow, query, body) {
-		return {
-			"X-BAPI-API-KEY": String(this.apiKey),
-			"X-BAPI-TIMESTAMP": timestamp,
-			"X-BAPI-RECV-WINDOW": String(recvWindow),
-			"X-BAPI-SIGN": this.sign(timestamp, recvWindow, query, body),
-			"Content-Type": "application/json",
-		};
-	}
-
-	async request(method, requestPath, { query = "", bodyObj = null } = {}) {
-		const timestamp = Date.now().toString();
-		const recvWindow = "20000";
-		const body = bodyObj ? stableStringify(bodyObj) : "";
-		const headers = this.headers(timestamp, recvWindow, query, body);
-		const res = await request({
-			hostname: this.host,
-			path: requestPath + (query ? `?${query}` : ""),
-			method,
-			headers,
-			body: body || null,
-		});
-		if (res.body && res.body.retCode !== undefined && Number(res.body.retCode) !== 0) {
-			const msg =
-				res.body.retMsg ?? res.body.retCode ?? "bybit_error";
-			throw new Error(`Bybit ${method} ${requestPath}: ${msg}`);
-		}
-		return res.body?.result ?? res.body;
-	}
-
 	async getWalletBalance() {
 		if (!this.credsPresent) return null;
-		const result = await this.request("GET", "/v5/account/wallet-balance", {
-			query: "accountType=UNIFIED",
-		});
-		const list = Array.isArray(result?.list) ? result.list : [];
-		const acc = list[0];
-		const coins = Array.isArray(acc?.coin) ? acc.coin : [];
-		const usdt = coins.find((c) => String(c?.coin ?? "").toUpperCase() === "USDT");
+		const bal = await this.exchange.fetchBalance();
+		const list = Array.isArray(bal?.info?.result?.list)
+			? bal.info.result.list
+			: [];
+		const acc = list[0] ?? {};
+		const usdt = bal?.USDT;
 		return {
 			totalEquity: Number(acc?.totalEquity ?? 0),
-			usdtAvailable: Number(usdt?.walletBalance ?? usdt?.availableToWithdraw ?? 0),
+			usdtAvailable: Number(usdt?.free ?? usdt?.total ?? 0),
 		};
 	}
 
 	async getCoinInfo() {
 		if (!this.credsPresent) return null;
-		const result = await this.request("GET", "/v5/asset/coin/query-info", {
-			query: "coin=USDT",
-		});
-		const rows = Array.isArray(result?.rows) ? result.rows : [];
-		const row = rows[0];
-		const chains = Array.isArray(row?.chains) ? row.chains : [];
-		const bsc = chains.find((c) => String(c?.chain ?? "") === "BSC") ?? chains[0];
-		return {
-			chain: bsc?.chain ?? null,
-			minWithdraw: Number(bsc?.minWithdraw ?? 0),
-			maxWithdraw: Number(bsc?.maxWithdraw ?? 0),
-		};
+		const info = { chain: BEP20_CHAIN, minWithdraw: null, maxWithdraw: null };
+		try {
+			const fee = await this.exchange.fetchDepositWithdrawFee("USDT", {
+				network: BEP20_CHAIN,
+			});
+			info.minWithdraw = Number(fee?.withdraw?.min ?? NaN) || null;
+			info.maxWithdraw = Number(fee?.withdraw?.max ?? NaN) || null;
+		} catch {}
+		return info;
 	}
 
 	async withdrawUSDT({ address, amount, externalId }) {
 		if (!this.credsPresent) throw new Error("Bybit credentials missing");
-		const payload = {
-			coin: "USDT",
-			chain: BEP20_CHAIN_BYBIT,
-			address,
-			amount: String(amount),
-			accountType: "UNIFIED",
-			...(externalId ? { externalId: String(externalId) } : {}),
-		};
-		const result = await this.request("POST", "/v5/asset/withdraw/create", {
-			bodyObj: payload,
-		});
+		const params = { network: BEP20_CHAIN };
+		if (externalId) params.externalId = String(externalId);
+		const tx = await this.exchange.withdraw(
+			"USDT",
+			toCctxAmount(amount),
+			normalizeAddress(address),
+			undefined,
+			params,
+		);
+		const withdrawId = tx?.id ?? null;
 		return {
 			provider: "bybit",
-			applyId: result?.id ?? null,
-			withdrawId: result?.id ?? null,
-			raw: result,
+			applyId: withdrawId,
+			withdrawId,
+			raw: tx,
 		};
 	}
 }
