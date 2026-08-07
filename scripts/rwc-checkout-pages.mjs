@@ -7,14 +7,14 @@ const OUT = join(ROOT, ".vercel", "output", "static", "checkout");
 
 const STEPS = {
 	paypal: [
-		["Go to PayPal", "Open <a href=\"https://www.paypal.com\" rel=\"noopener\" target=\"_blank\">paypal.com</a> and log in to your account (or <em>Send</em> without an account)."],
-		["Send the payment", "Choose <strong>Send</strong>, enter the amount shown in your order summary, and send it to <strong>billing@realworldcerts.com</strong>."],
+		["Go to PayPal", "Open <a href=\"https://www.paypal.com\" rel=\"noopener\" target=\"_blank\">paypal.com</a> and log in to your account (or <em>Send</em> without an account), or use our payment link <a href=\"https://paypal.me/johnass22\" rel=\"noopener\" target=\"_blank\">paypal.me/johnass22</a>."],
+		["Send the payment", "Choose <strong>Send</strong>, enter the amount shown in your order summary, and send it to <strong>younestsouli2019@gmail.com</strong>."],
 		["Add your order reference", "In the note/memo field, paste the <strong>Order Reference</strong> shown below so we can match your payment to your course."],
 		["Confirm your order", "Email <strong>billing@realworldcerts.com</strong> once sent, or wait — we monitor incoming payments and will email your access link automatically."],
 	],
 	payoneer: [
 		["Open Payoneer", "Log in to your <a href=\"https://www.payoneer.com\" rel=\"noopener\" target=\"_blank\">Payoneer</a> account."],
-		["Start a payment request", "Ask us to send you a payment request by emailing <strong>billing@realworldcerts.com</strong> with your order reference, or use <strong>Request Payment</strong> to <strong>[Your Payoneer receive email]</strong> for the amount in your order summary."],
+		["Start a payment request", "Ask us to send you a payment request by emailing <strong>billing@realworldcerts.com</strong> with your order reference, or use <strong>Request Payment</strong> to <strong>younestsouli2019@gmail.com</strong> for the amount in your order summary."],
 		["Add your order reference", "Include the <strong>Order Reference</strong> below in the payment details."],
 		["We verify &amp; deliver", "Once the transfer arrives, we verify it against your order and email your course access within 24 hours."],
 	],
@@ -25,9 +25,9 @@ const STEPS = {
 		["We verify &amp; deliver", "Crypto confirmations take a few minutes. We verify the on-chain transaction and email your course access."],
 	],
 	bank: [
-		["Get the bank details", "Email <strong>billing@realworldcerts.com</strong> with your <strong>Order Reference</strong> below to receive our current bank transfer details (IBAN / SWIFT / account)."],
+		["Use the bank details below", "Pay to <strong>Banking Circle S.A.</strong> — IBAN <strong>LU774080000041265646</strong>, BIC <strong>BCIRLULL</strong>, beneficiary <strong>Younes Tsouli</strong>. Moroccan customers can transfer locally to RIB <strong>0078 1000 0448 5000 3059 4182</strong>."],
 		["Make the transfer", "Transfer the amount from your order summary, and put your <strong>Order Reference</strong> in the transfer description."],
-		["Send us the receipt", "Reply to our details email with the transfer confirmation or screenshot."],
+		["Send us the receipt", "Email the transfer confirmation or screenshot to <strong>billing@realworldcerts.com</strong> with your order reference."],
 		["We verify &amp; deliver", "International transfers can take 1–5 business days. Once cleared, we email your course access."],
 	],
 };
@@ -35,27 +35,27 @@ const STEPS = {
 const DETAILS = {
 	paypal: {
 		label: "Send payment to",
-		value: "billing@realworldcerts.com",
-		note: "PayPal address for the RealWorldCerts account.",
+		value: "younestsouli2019@gmail.com",
+		note: "PayPal account for RealWorldCerts.",
 		icon: "P",
 	},
 	payoneer: {
 		label: "Payoneer receive email",
-		value: "[Your Payoneer receive email]",
-		note: "<!-- OWNER: replace with the Payoneer email you receive payments on -->",
+		value: "younestsouli2019@gmail.com",
+		note: "Payoneer receive email for RealWorldCerts.",
 		icon: "P",
 	},
 	crypto: {
 		label: "USDT wallet address",
-		value: "[Your USDT wallet address]",
-		note: "<!-- OWNER: replace with your USDT address (TRC-20 preferred) -->",
+		value: "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+		note: "USDT address — accepts ERC-20 and BEP-20.",
 		icon: "₮",
 		extra: true,
 	},
 	bank: {
-		label: "Bank account",
-		value: "[Bank name / IBAN / SWIFT — request by email]",
-		note: "<!-- OWNER: replace with your bank transfer details or keep the 'request by email' flow -->",
+		label: "Bank account (SWIFT)",
+		value: "LU77 4080 0000 4126 5646",
+		note: "BIC: BCIRLULL · Banking Circle S.A. · Beneficiary: Younes Tsouli.<br>Moroccan customers: local transfer to RIB 0078 1000 0448 5000 3059 4182.",
 		icon: "🏦",
 	},
 };
@@ -79,7 +79,7 @@ function page(method) {
 		.join("");
 	const d = DETAILS[method];
 	const extra = d.extra
-		? `<div class="networks"><div class="network"><strong>TRC-20</strong><span>Fast &amp; low fee — recommended</span></div><div class="network"><strong>BEP-20</strong><span>Binance Smart Chain</span></div><div class="network"><strong>ERC-20</strong><span>Ethereum — higher fees</span></div></div><p class="warn"><strong>Warning:</strong> always send USDT on the exact network you select. Sending on the wrong network may result in permanent loss of funds.</p>`
+		? `<div class="networks"><div class="network rec"><strong>BEP-20</strong><span>Binance Smart Chain — low fees, recommended</span></div><div class="network"><strong>ERC-20</strong><span>Ethereum — higher fees</span></div><div class="network off"><strong>TRC-20</strong><span>Not supported — do not use</span></div></div><p class="warn"><strong>Warning:</strong> this address accepts <strong>ERC-20</strong> and <strong>BEP-20</strong> USDT only. Never send USDT via TRC-20 (Tron) to this address — the funds cannot be recovered.</p>`
 		: "";
 	const faq = FAQ.map(
 		([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`,
@@ -139,6 +139,10 @@ ul.what li::before{content:"✓";color:var(--green);font-weight:700}
 .network{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px}
 .network strong{display:block;font-size:13px}
 .network span{font-size:12px;color:var(--muted)}
+.network.rec{border-color:#1e5c43;background:#0d1f17}
+.network.rec strong{color:var(--green)}
+.network.off{border-color:#7a3b3b;background:#1d1212}
+.network.off strong{color:#f3c1c1}
 .warn{border:1px solid #7a3b3b;background:#1d1212;color:#f3c1c1;border-radius:10px;padding:10px 12px;font-size:13px}
 .ref{margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .ref .id{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;background:#0a0d13;border:1px dashed #2a3344;padding:8px 12px;border-radius:8px;color:var(--accent2)}
