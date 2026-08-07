@@ -1,10 +1,97 @@
-<!doctype html>
+import { writeFileSync, mkdirSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const ROOT = dirname(fileURLToPath(import.meta.url)) + "/..";
+const OUT = join(ROOT, ".vercel", "output", "static", "checkout");
+
+const STEPS = {
+	paypal: [
+		["Go to PayPal", "Open <a href=\"https://www.paypal.com\" rel=\"noopener\" target=\"_blank\">paypal.com</a> and log in to your account (or <em>Send</em> without an account)."],
+		["Send the payment", "Choose <strong>Send</strong>, enter the amount shown in your order summary, and send it to <strong>billing@realworldcerts.com</strong>."],
+		["Add your order reference", "In the note/memo field, paste the <strong>Order Reference</strong> shown below so we can match your payment to your course."],
+		["Confirm your order", "Email <strong>billing@realworldcerts.com</strong> once sent, or wait — we monitor incoming payments and will email your access link automatically."],
+	],
+	payoneer: [
+		["Open Payoneer", "Log in to your <a href=\"https://www.payoneer.com\" rel=\"noopener\" target=\"_blank\">Payoneer</a> account."],
+		["Start a payment request", "Ask us to send you a payment request by emailing <strong>billing@realworldcerts.com</strong> with your order reference, or use <strong>Request Payment</strong> to <strong>[Your Payoneer receive email]</strong> for the amount in your order summary."],
+		["Add your order reference", "Include the <strong>Order Reference</strong> below in the payment details."],
+		["We verify &amp; deliver", "Once the transfer arrives, we verify it against your order and email your course access within 24 hours."],
+	],
+	crypto: [
+		["Choose your network", "Send <strong>USDT</strong> on one of the networks below. Use the exact same network you select — sending on a different network can lose funds."],
+		["Copy the wallet address", "Copy the USDT address shown, set the network, and enter the amount from your order summary."],
+		["Add your order reference", "Put the <strong>Order Reference</strong> below in the payment note where your wallet allows, then confirm the transfer."],
+		["We verify &amp; deliver", "Crypto confirmations take a few minutes. We verify the on-chain transaction and email your course access."],
+	],
+	bank: [
+		["Get the bank details", "Email <strong>billing@realworldcerts.com</strong> with your <strong>Order Reference</strong> below to receive our current bank transfer details (IBAN / SWIFT / account)."],
+		["Make the transfer", "Transfer the amount from your order summary, and put your <strong>Order Reference</strong> in the transfer description."],
+		["Send us the receipt", "Reply to our details email with the transfer confirmation or screenshot."],
+		["We verify &amp; deliver", "International transfers can take 1–5 business days. Once cleared, we email your course access."],
+	],
+};
+
+const DETAILS = {
+	paypal: {
+		label: "Send payment to",
+		value: "billing@realworldcerts.com",
+		note: "PayPal address for the RealWorldCerts account.",
+		icon: "P",
+	},
+	payoneer: {
+		label: "Payoneer receive email",
+		value: "[Your Payoneer receive email]",
+		note: "<!-- OWNER: replace with the Payoneer email you receive payments on -->",
+		icon: "P",
+	},
+	crypto: {
+		label: "USDT wallet address",
+		value: "[Your USDT wallet address]",
+		note: "<!-- OWNER: replace with your USDT address (TRC-20 preferred) -->",
+		icon: "₮",
+		extra: true,
+	},
+	bank: {
+		label: "Bank account",
+		value: "[Bank name / IBAN / SWIFT — request by email]",
+		note: "<!-- OWNER: replace with your bank transfer details or keep the 'request by email' flow -->",
+		icon: "🏦",
+	},
+};
+
+const FAQ = [
+	["Is it safe to pay this way?", "Yes. All orders are matched by your unique order reference and delivered to the email you provide. We never store your card or bank credentials on this site."],
+	["When will I get access?", "PayPal payments are usually matched within a few hours; Payoneer and bank transfers within 1–5 business days; crypto within minutes to a few hours depending on network confirmations."],
+	["What do I receive?", "You get instant lifetime access to the course, all practice tests, explanations, and a completion certificate (PDF) when you finish."],
+	["Can I use another payment method?", "Yes — every course page offers PayPal, Payoneer, Crypto (USDT) and bank transfer. Pick whichever is easiest for you."],
+	["What if I pay and don't receive access?", "Email billing@realworldcerts.com with your order reference and we'll resolve it within 24 hours."],
+	["Is there a refund policy?", "Yes. If the course doesn't meet your expectations, contact us within 7 days of purchase for a full refund — see our refund policy."],
+];
+
+const METHOD_TITLES = { paypal: "PayPal", payoneer: "Payoneer", crypto: "Crypto (USDT)", bank: "Bank Transfer" };
+
+function page(method) {
+	const steps = STEPS[method]
+		.map(
+			(s, i) => `<li><span class="step-num">${i + 1}</span><div><h4>${s[0]}</h4><p>${s[1]}</p></div></li>`,
+		)
+		.join("");
+	const d = DETAILS[method];
+	const extra = d.extra
+		? `<div class="networks"><div class="network"><strong>TRC-20</strong><span>Fast &amp; low fee — recommended</span></div><div class="network"><strong>BEP-20</strong><span>Binance Smart Chain</span></div><div class="network"><strong>ERC-20</strong><span>Ethereum — higher fees</span></div></div><p class="warn"><strong>Warning:</strong> always send USDT on the exact network you select. Sending on the wrong network may result in permanent loss of funds.</p>`
+		: "";
+	const faq = FAQ.map(
+		([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`,
+	).join("");
+
+	return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Checkout · Bank Transfer · RealWorldCerts</title>
-<meta name="description" content="Complete your RealWorldCerts purchase with Bank Transfer. Secure, verified delivery by email.">
+<title>Checkout · ${METHOD_TITLES[method]} · RealWorldCerts</title>
+<meta name="description" content="Complete your RealWorldCerts purchase with ${METHOD_TITLES[method]}. Secure, verified delivery by email.">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <style>
@@ -80,13 +167,13 @@ footer{border-top:1px solid var(--border);padding:26px 20px;color:var(--muted);f
 <main>
   <div class="steps">
     <span class="step done"><b>1</b> Choose course <span class="arrow">→</span></span>
-    <span class="step cur"><b>2</b> Pay with Bank Transfer <span class="arrow">→</span></span>
+    <span class="step cur"><b>2</b> Pay with ${METHOD_TITLES[method]} <span class="arrow">→</span></span>
     <span class="step"><b>3</b> Get access by email</span>
   </div>
 
   <div class="grid">
     <section class="card">
-      <h2>Order summary <span class="badge" id="payBadge">Bank Transfer</span></h2>
+      <h2>Order summary <span class="badge" id="payBadge">${METHOD_TITLES[method]}</span></h2>
       <div class="course">
         <img id="courseImg" src="/assets/courses/oscp-certification-exam.svg" alt="Course image">
         <div class="t"><h3 id="courseTitle">Your selected course</h3><p id="courseMeta">Practice tests with detailed explanations</p></div>
@@ -103,14 +190,14 @@ footer{border-top:1px solid var(--border);padding:26px 20px;color:var(--muted);f
     </section>
 
     <section class="card">
-      <h2>Pay with Bank Transfer</h2>
-      <ol class="steps-pay"><li><span class="step-num">1</span><div><h4>Get the bank details</h4><p>Email <strong>billing@realworldcerts.com</strong> with your <strong>Order Reference</strong> below to receive our current bank transfer details (IBAN / SWIFT / account).</p></div></li><li><span class="step-num">2</span><div><h4>Make the transfer</h4><p>Transfer the amount from your order summary, and put your <strong>Order Reference</strong> in the transfer description.</p></div></li><li><span class="step-num">3</span><div><h4>Send us the receipt</h4><p>Reply to our details email with the transfer confirmation or screenshot.</p></div></li><li><span class="step-num">4</span><div><h4>We verify &amp; deliver</h4><p>International transfers can take 1–5 business days. Once cleared, we email your course access.</p></div></li></ol>
+      <h2>Pay with ${METHOD_TITLES[method]}</h2>
+      <ol class="steps-pay">${steps}</ol>
       <div class="dest">
-        <label>Bank account</label>
-        <div class="val" id="destVal">[Bank name / IBAN / SWIFT — request by email]</div>
-        <!-- OWNER: replace with your bank transfer details or keep the 'request by email' flow -->
+        <label>${d.label}</label>
+        <div class="val" id="destVal">${d.value}</div>
+        ${d.note || ""}
       </div>
-      
+      ${extra}
     </section>
   </div>
 
@@ -127,7 +214,7 @@ footer{border-top:1px solid var(--border);padding:26px 20px;color:var(--muted);f
   </section>
 
   <h2 style="font-size:19px;margin:32px 0 6px">Frequently asked questions</h2>
-  <details><summary>Is it safe to pay this way?</summary><p>Yes. All orders are matched by your unique order reference and delivered to the email you provide. We never store your card or bank credentials on this site.</p></details><details><summary>When will I get access?</summary><p>PayPal payments are usually matched within a few hours; Payoneer and bank transfers within 1–5 business days; crypto within minutes to a few hours depending on network confirmations.</p></details><details><summary>What do I receive?</summary><p>You get instant lifetime access to the course, all practice tests, explanations, and a completion certificate (PDF) when you finish.</p></details><details><summary>Can I use another payment method?</summary><p>Yes — every course page offers PayPal, Payoneer, Crypto (USDT) and bank transfer. Pick whichever is easiest for you.</p></details><details><summary>What if I pay and don't receive access?</summary><p>Email billing@realworldcerts.com with your order reference and we'll resolve it within 24 hours.</p></details><details><summary>Is there a refund policy?</summary><p>Yes. If the course doesn't meet your expectations, contact us within 7 days of purchase for a full refund — see our refund policy.</p></details>
+  ${faq}
 </main>
 <footer><div class="foot-in"><a href="/catalog/index.html">Course Catalog</a><a href="/cybersecurity.html">Cybersecurity</a><a href="/practice.html">Practice Tests</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/refund.html">Refund Policy</a><a href="/terms.html">Terms</a></div></footer>
 <script>
@@ -163,3 +250,11 @@ footer{border-top:1px solid var(--border);padding:26px 20px;color:var(--muted);f
 </script>
 </body>
 </html>
+`;
+}
+
+mkdirSync(OUT, { recursive: true });
+for (const m of Object.keys(METHOD_TITLES)) {
+	writeFileSync(join(OUT, `${m}.html`), page(m), "utf8");
+	console.log(`checkout: wrote ${m}.html`);
+}
