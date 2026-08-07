@@ -22,3 +22,6 @@
 {"id":"replenish_1786131193089","timestamp":"2026-08-07T19:33:13.089Z","deficit_detected":50000,"assets_seized":65,"value_recovered":0,"status":"PARTIALLY_RECOVERED"}
 {"id":"replenish_1786131231865","timestamp":"2026-08-07T19:33:51.865Z","deficit_detected":50000,"assets_seized":65,"value_recovered":0,"status":"PARTIALLY_RECOVERED"}
 {"id":"replenish_1786131269738","timestamp":"2026-08-07T19:34:29.738Z","deficit_detected":50000,"assets_seized":65,"value_recovered":0,"status":"PARTIALLY_RECOVERED"}
+{"id":"replenish_1786131308384","timestamp":"2026-08-07T19:35:08.384Z","deficit_detected":50000,"assets_seized":65,"value_recovered":0,"status":"PARTIALLY_RECOVERED"}
+{"id":"replenish_1786131347241","timestamp":"2026-08-07T19:35:47.241Z","deficit_detected":50000,"assets_seized":65,"value_recovered":0,"status":"PARTIALLY_RECOVERED"}
+{"id":"replenish_1786131387062","timestamp":"2026-08-07T19:36:27.062Z","deficit_detected":50000,"assets_seized":65,"value_recovered":0,"status":"PARTIALLY_RECOVERED"}
