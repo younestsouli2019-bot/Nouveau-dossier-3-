@@ -15,8 +15,6 @@ export class BinanceClient {
 		apiSecret = process.env.BINANCE_API_SECRET,
 		baseURL = process.env.BINANCE_API_BASE || "https://api.binance.com",
 			ed25519PrivateKey = process.env.BINANCE_ED25519_PRIVATE_KEY,
-			signatureEncoding =
-				(process.env.BINANCE_SIGNATURE_ENCODING || "hex").toLowerCase(),
 	} = {}) {
 		this.apiKey = apiKey;
 		this.apiSecret = apiSecret;
@@ -33,8 +31,6 @@ export class BinanceClient {
 				} catch {}
 			}
 			this.ed25519PrivateKey = keyVal || null;
-			this.signatureEncoding =
-				signatureEncoding === "base64" ? "base64" : "hex";
 	}
 
 	async ensureTimeOffset(force = false) {
@@ -105,11 +101,8 @@ export class BinanceClient {
 				}
 				const msg = Buffer.from(qs, "utf8");
 				const sigBytes = nacl.sign.detached(new Uint8Array(msg), secretKey);
-				const sigBuf = Buffer.from(sigBytes);
-				const sig =
-					this.signatureEncoding === "base64"
-						? sigBuf.toString("base64")
-						: sigBuf.toString("hex");
+				// Binance requires Ed25519 signatures to be base64-encoded.
+				const sig = Buffer.from(sigBytes).toString("base64");
 				return { qs, sig };
 			}
 			// Legacy HMAC-SHA256 (may be rejected post-2026)
