@@ -21,6 +21,7 @@ import {
 	normalizeIntervalMs,
 	loadAutonomousConfig,
 	resolveRuntimeConfig,
+	getEnvBool,
 } from "./autonomous-config.mjs";
 import { SelfHealer } from "./autonomous-healer.mjs";
 import { ExternalPayerEnforcer } from "./finance/ExternalPayerEnforcer.mjs";

@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import "dotenv/config";
 import path from "node:path";
 import { buildBase44ServiceClient } from "./base44-client.mjs";
 import { getPayPalAccessToken } from "./paypal-api.mjs";

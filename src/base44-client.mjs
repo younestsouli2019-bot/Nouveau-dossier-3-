@@ -1,4 +1,3 @@
-import { createClient } from "@base44/sdk";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -210,6 +209,74 @@ function createOfflineClient({ filePath }) {
 	};
 }
 
+function createEntityRequestHandler({ serverUrl, appId, apiKey, entityName }) {
+	const basePath = `${serverUrl}/api/apps/${appId}/entities/${encodeURIComponent(entityName)}`;
+	const headers = {
+		Accept: "application/json",
+		"Content-Type": "application/json",
+		api_key: apiKey,
+	};
+
+	async function request(method, url, { params, body } = {}) {
+		const query = params
+			? `?${new URLSearchParams(
+					Object.entries(params).filter(([, v]) => v != null),
+				).toString()}`
+			: "";
+		const res = await fetch(`${url}${query}`, {
+			method,
+			headers,
+			...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+		});
+		const text = await res.text();
+		let data = null;
+		if (text) {
+			try {
+				data = JSON.parse(text);
+			} catch {
+				data = text;
+			}
+		}
+		if (!res.ok) {
+			const message =
+				typeof data === "object" && data?.message
+					? `${res.status}: ${data.message}`
+					: `${res.status}: ${text || res.statusText}`;
+			const err = new Error(message);
+			err.status = res.status;
+			err.response = { status: res.status, data };
+			throw err;
+		}
+		return data;
+	}
+
+	return {
+		list: (sort, limit, skip, fields) => {
+			const params = {};
+			if (sort) params.sort = sort;
+			if (limit) params.limit = limit;
+			if (skip) params.skip = skip;
+			if (fields) params.fields = Array.isArray(fields) ? fields.join(",") : fields;
+			return request("GET", basePath, { params });
+		},
+		filter: (query, sort, limit, skip, fields) => {
+			const params = { q: JSON.stringify(query) };
+			if (sort) params.sort = sort;
+			if (limit) params.limit = limit;
+			if (skip) params.skip = skip;
+			if (fields) params.fields = Array.isArray(fields) ? fields.join(",") : fields;
+			return request("GET", basePath, { params });
+		},
+		get: (id) => request("GET", `${basePath}/${encodeURIComponent(String(id))}`),
+		create: (data) => request("POST", basePath, { body: data }),
+		update: (id, data) =>
+			request("PUT", `${basePath}/${encodeURIComponent(String(id))}`, { body: data }),
+		delete: (id) => request("DELETE", `${basePath}/${encodeURIComponent(String(id))}`),
+		deleteMany: (query) => request("DELETE", basePath, { body: query }),
+		bulkCreate: (data) => request("POST", `${basePath}/bulk`, { body: data }),
+	};
+}
+
 function createOnlineClient() {
 	const { appId, serviceToken } = getOnlineAuth();
 	const serverUrl = resolveServerUrl();
@@ -218,18 +285,24 @@ function createOnlineClient() {
 	console.log(`[Base44Client] Connecting to server: ${serverUrl}`);
 	console.log(`[Base44Client] App identifier resolved`);
 
-	const headers = {
-		Authorization: `Bearer ${serviceToken}`,
-		"X-Service-Token": serviceToken,
-	};
+	const entities = new Proxy(
+		{},
+		{
+			get(_target, prop) {
+				if (typeof prop !== "string") return undefined;
+				return createEntityRequestHandler({
+					serverUrl,
+					appId,
+					apiKey: serviceToken,
+					entityName: prop,
+				});
+			},
+		},
+	);
 
-	const client = createClient({
-		serverUrl,
-		appId,
-		serviceToken,
-		headers,
-	});
-	return client;
+	return {
+		asServiceRole: { entities },
+	};
 }
 
 function decodeJwtPayload(token) {

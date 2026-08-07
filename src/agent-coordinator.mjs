@@ -99,8 +99,8 @@ async function api(method, path, body) {
 	const res = await fetch(url, {
 		method,
 		headers: {
-			Authorization: `Bearer ${String(process.env.BASE44_SERVICE_TOKEN ?? "")}`,
 			"X-Service-Token": String(process.env.BASE44_SERVICE_TOKEN ?? ""),
+			api_key: String(process.env.BASE44_SERVICE_TOKEN ?? ""),
 			"Content-Type": "application/json",
 		},
 		...(body ? { body: JSON.stringify(body) } : {}),
