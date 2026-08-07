@@ -1,4 +1,4 @@
-import fs from "node:fs/promises";
+﻿import fs from "node:fs/promises";
 import "dotenv/config";
 import path from "node:path";
 import os from "node:os";
@@ -1001,6 +1001,27 @@ async function runAutoSettleOwner(cfg) {
 	return {
 		ok: false,
 		error: String(msg).trim() || "auto-settle-owner failed",
+		raw: { code: res.code, lastJson: res.lastJson },
+	};
+}
+
+async function runAutoSettleOwnerCrypto(cfg) {
+	const args = [];
+	if (cfg.payout?.dryRun) args.push("--dry-run");
+	if (cfg.crypto?.providerPriority) {
+		args.push("--providers", String(cfg.crypto.providerPriority));
+	}
+	const res = await runNodeScript("./scripts/auto-settle-owner-crypto.mjs", args, {
+		env: {},
+	});
+	if (res.code === 0 && res.lastJson)
+		return { ok: true, result: res.lastJson };
+	const errJson =
+		res.lastJson && res.lastJson.ok === false ? res.lastJson : null;
+	const msg = errJson?.error ?? res.stderr ?? res.stdout ?? "";
+	return {
+		ok: false,
+		error: String(msg).trim() || "auto-settle-owner-crypto failed",
 		raw: { code: res.code, lastJson: res.lastJson },
 	};
 }
@@ -2422,6 +2443,15 @@ async function runTick(cfg, state) {
 		}
 	}
 
+	if (cfg.tasks.autoSettleOwnerCrypto) {
+		if (isFreezeActive(state)) {
+			out.results.autoSettleOwnerCrypto = freezeSkip(state, "freeze_active");
+		} else {
+			const res = await runAutoSettleOwnerCrypto(cfg);
+			out.results.autoSettleOwnerCrypto = res;
+		}
+	}
+
 	if (cfg.tasks.syncPayPalLedgerBatches) {
 		if (isFreezeActive(state)) {
 			out.results.syncPayPalLedger = freezeSkip(state, "freeze_active");
@@ -2557,6 +2587,7 @@ async function main() {
 				autoSubmitPayPalPayoutBatches: false,
 				syncPayPalLedgerBatches: false,
 				autoSettleOwnerPayoneer: false,
+				autoSettleOwnerCrypto: false,
 			}
 		};
 		// Continue with safe configuration
@@ -2709,6 +2740,7 @@ async function main() {
 							autoExportPayoneerPayoutBatches: false,
 							syncPayPalLedgerBatches: false,
 							autoSettleOwnerPayoneer: false,
+							autoSettleOwnerCrypto: false,
 						},
 					};
 			const out = await runTick(loopCfg, state);

@@ -1,6 +1,7 @@
 import { Spot } from "@binance/connector";
 import https from "node:https";
 import crypto from "node:crypto";
+import fs from "node:fs";
 import nacl from "tweetnacl";
 import "dotenv/config";
 
@@ -28,8 +29,7 @@ export class BinanceClient {
 			let keyVal = ed25519PrivateKey || null;
 			if (!keyVal && filePath) {
 				try {
-					const txt = require("node:fs").readFileSync(String(filePath), "utf8");
-					keyVal = String(txt || "").trim();
+					keyVal = String(fs.readFileSync(String(filePath), "utf8") || "").trim();
 				} catch {}
 			}
 			this.ed25519PrivateKey = keyVal || null;
@@ -145,8 +145,24 @@ export class BinanceClient {
 		return this._robustGet("/sapi/v1/capital/withdraw/history", params);
 	}
 
-	async fetchWithdrawals(coin = "USDT", since = null) {
-		try {
+	async getUsdtAvailable() {
+		if (!this.apiKey) return null;
+		await this.ensureTimeOffset();
+		const acc = await this._robustGet("/api/v3/account", {
+			timestamp: this.ms(),
+			recvWindow: 5000,
+		});
+		const balances = Array.isArray(acc?.balances) ? acc.balances : [];
+		const usdt = balances.find(
+			(b) => String(b?.asset || "").toUpperCase() === "USDT",
+		);
+		return {
+			usdtAvailable: Number(usdt?.free ?? 0),
+			totalBalanceOfBTC: acc?.totalBalanceOfBTC ?? null,
+		};
+	}
+
+	async fetchWithdrawals(coin = "USDT", since = null) {		try {
 			await this.ensureTimeOffset();
 			const params = {
 				coin: String(coin || "USDT"),
@@ -276,22 +292,30 @@ export class BinanceClient {
 			const req = https.request(options, (res) => {
 				let data = "";
 				res.on("data", (c) => (data += c));
-				res.on("end", () => {
-					try {
-						const j = JSON.parse(String(data || "{}"));
-						j.statusCode = res.statusCode || 0;
-						if (res.statusCode && res.statusCode >= 400) {
-							console.error(
-								`[binance] HTTP ${res.statusCode} ${options.method} ${options.path} ->`,
-								JSON.stringify(j).slice(0, 400),
-							);
-						}
-						resolve(j);
-					} catch (e) {
-						e.statusCode = res.statusCode || 0;
-						reject(e);
+			res.on("end", () => {
+				try {
+					const j = JSON.parse(String(data || "{}"));
+					j.statusCode = res.statusCode || 0;
+					const code = String(j?.code ?? "");
+					const isTiming = code === "-1021" || code === "-1022";
+					if (res.statusCode && res.statusCode >= 400 && !isTiming) {
+						console.error(
+							`[binance] HTTP ${res.statusCode} ${options.method} ${options.path} ->`,
+							JSON.stringify(j).slice(0, 400),
+						);
+						const err = new Error(
+							`Binance HTTP ${res.statusCode} (${String(j?.msg || j?.message || "")})`,
+						);
+						err.statusCode = res.statusCode;
+						reject(err);
+						return;
 					}
-				});
+					resolve(j);
+				} catch (e) {
+					e.statusCode = res.statusCode || 0;
+					reject(e);
+				}
+			});
 			});
 			req.on("error", (e) => {
 				e.statusCode = 0;

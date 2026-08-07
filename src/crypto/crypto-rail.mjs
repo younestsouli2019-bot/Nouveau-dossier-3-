@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import https from "node:https";
 import "dotenv/config";
+import { binanceClient } from "./binance-client.mjs";
 
 const BEP20_CHAIN_BYBIT = "BSC";
 const BEP20_CHAIN_BITGET = "BSC";
@@ -137,11 +138,13 @@ export function getRailPriority() {
 	const raw =
 		process.env.CRYPTO_RAIL_PRIORITY ??
 		process.env.AUTONOMOUS_CRYPTO_RAIL_PRIORITY ??
-		"bybit,bitget";
+		"binance,bybit,bitget";
 	return String(raw)
 		.split(",")
 		.map((x) => String(x).trim().toLowerCase())
-		.filter((x) => x === "bybit" || x === "bitget");
+		.filter(
+			(x) => x === "binance" || x === "bybit" || x === "bitget",
+		);
 }
 
 class BitgetClient {
@@ -219,7 +222,7 @@ class BitgetClient {
 		};
 		const data = await this.request(
 			"POST",
-			"/api/v2/spot/wallet/withdrawal-create",
+			"/api/v2/spot/wallet/withdrawal",
 			payload,
 		);
 		return {
@@ -243,7 +246,7 @@ class BybitClient {
 	}
 
 	sign(timestamp, recvWindow, query, body) {
-		const payload = `${String(this.apiKey)}${timestamp}${recvWindow}${query}${body}`;
+		const payload = `${timestamp}${String(this.apiKey)}${recvWindow}${query}${body}`;
 		return crypto
 			.createHmac("sha256", String(this.apiSecret))
 			.update(payload)
@@ -346,6 +349,20 @@ export class CryptoRailManager {
 	async checkRails() {
 		const bybit = { provider: "bybit", credsPresent: this.bybit.credsPresent };
 		const bitget = { provider: "bitget", credsPresent: this.bitget.credsPresent };
+		const binance = {
+			provider: "binance",
+			credsPresent: binanceClient.apiKey ? true : false,
+		};
+		if (binance.credsPresent) {
+			try {
+				const bal = await binanceClient.getUsdtAvailable();
+				binance.authOk = true;
+				binance.usdtAvailable = bal?.usdtAvailable ?? null;
+			} catch (e) {
+				binance.authOk = false;
+				binance.error = e?.message ?? String(e);
+			}
+		}
 		if (bybit.credsPresent) {
 			try {
 				const bal = await this.bybit.getWalletBalance();
@@ -382,7 +399,7 @@ export class CryptoRailManager {
 			minWithdraw: getMinWithdrawAmount(),
 			maxWithdraw: getMaxWithdrawAmount(),
 			priority: getRailPriority(),
-			rails: { bybit, bitget },
+			rails: { binance, bybit, bitget },
 		};
 	}
 
@@ -440,8 +457,63 @@ export class CryptoRailManager {
 			? providers
 			: getRailPriority();
 		const attempts = [];
+		const available = {};
 		for (const p of priority) {
 			try {
+				if (p === "binance") {
+					const bal = await binanceClient.getUsdtAvailable();
+					available[p] = bal?.usdtAvailable ?? 0;
+				} else if (p === "bybit") {
+					const bal = await this.bybit.getWalletBalance();
+					available[p] = bal?.usdtAvailable ?? 0;
+				} else if (p === "bitget") {
+					available[p] = (await this.bitget.getUsdtAvailable()) ?? 0;
+				} else {
+					available[p] = 0;
+				}
+			} catch (e) {
+				available[p] = -1;
+			}
+		}
+		for (const p of priority) {
+			const avail = available[p] ?? 0;
+			if (avail <= 0) {
+				attempts.push({
+					provider: p,
+					ok: false,
+					skipped: true,
+					reason: avail < 0 ? "rail_auth_failed" : "no_available_usdt",
+					available: avail < 0 ? null : avail,
+				});
+				continue;
+			}
+			try {
+				if (p === "binance") {
+					const r = await binanceClient.withdrawUsingServerTime({
+						coin: "USDT",
+						address: dest,
+						amount: String(amountNum),
+						network: "BSC",
+						name: `AutonomousSettlement${idempotencyKey ? `-${String(idempotencyKey).slice(0, 12)}` : ""}`,
+					});
+					const withdrawId = r?.id ?? r?.withdrawId ?? null;
+					attempts.push({
+						provider: "binance",
+						ok: true,
+						withdrawId,
+						raw: r,
+					});
+					return {
+						ok: true,
+						provider: "binance",
+						withdrawId,
+						raw: r,
+						network: "BEP20",
+						address: dest,
+						amount: amountNum,
+						attempts,
+					};
+				}
 				if (p === "bybit") {
 					const r = await this.bybit.withdrawUSDT({
 						address: dest,

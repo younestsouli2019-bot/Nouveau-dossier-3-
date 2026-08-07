@@ -561,7 +561,12 @@ class SWARML2PaymentProcessor {
 		return id;
 	}
 
-	async settleToOwner({ amountUSD, network = "bsc", providerPriority }) {
+	async settleToOwner({
+		amountUSD,
+		network = "bsc",
+		providerPriority,
+		invoiceId = null,
+	}) {
 		const dest = this.ownerAddresses.bep20;
 		if (!dest) return { ok: false, error: "missing_owner_destination" };
 		const amount = Number(amountUSD);
@@ -606,6 +611,7 @@ class SWARML2PaymentProcessor {
 					network,
 					address: dest,
 					amount,
+					invoice_id: invoiceId || null,
 					status: res.ok
 						? res.dryRun
 							? "QUEUED"
@@ -636,6 +642,7 @@ class SWARML2PaymentProcessor {
 				destination: dest,
 				network,
 				instruction_file: file,
+				invoice_id: invoiceId || null,
 				rail: res,
 				recipient_type: "owner",
 			},
@@ -643,6 +650,99 @@ class SWARML2PaymentProcessor {
 		atomicWriteJsonSync(this.ledgerFile, ledger);
 
 		return { ...res, instruction_file: file };
+	}
+
+	async sweepConfirmedRevenueToOwner({
+		providerPriority,
+		retryCooldownMs = 30 * 60 * 1000,
+		minAmount = null,
+		maxAmount = null,
+	} = {}) {
+		const ledger = loadJson(this.ledgerFile, { transactions: [] });
+		if (!Array.isArray(ledger.transactions)) ledger.transactions = [];
+		const rows = ledger.transactions;
+
+		const settled = new Set();
+		for (const t of rows) {
+			if (t?.channel === "L2_CRYPTO_SETTLEMENT" && t.status === "SUBMITTED") {
+				const inv = t.details?.invoice_id;
+				if (inv) settled.add(String(inv));
+			}
+		}
+
+		const seen = new Set();
+		const candidates = [];
+		for (const t of rows) {
+			if (t?.channel !== "L2_CRYPTO") continue;
+			if (String(t.status ?? "") !== "CONFIRMED") continue;
+			const inv = String(t.details?.invoice_id ?? t.id ?? "");
+			if (!inv || seen.has(inv) || settled.has(inv)) continue;
+			const lastAttempt = t.details?.settleAttemptAt
+				? Date.parse(t.details.settleAttemptAt)
+				: 0;
+			if (lastAttempt && Date.now() - lastAttempt < retryCooldownMs) continue;
+			const amount = Number(t.amount);
+			if (!Number.isFinite(amount) || amount <= 0) continue;
+			if (minAmount != null && amount < Number(minAmount)) continue;
+			if (maxAmount != null && amount > Number(maxAmount)) continue;
+			seen.add(inv);
+			candidates.push({ invoiceId: inv, amount, row: t });
+		}
+
+		const attempts = [];
+		let sent = 0;
+		let queued = 0;
+		let failed = 0;
+		for (const c of candidates) {
+			let res;
+			try {
+				res = await this.settleToOwner({
+					amountUSD: c.amount,
+					providerPriority,
+					invoiceId: c.invoiceId,
+				});
+			} catch (e) {
+				res = { ok: false, error: e?.message ?? String(e) };
+			}
+			if (res.dryRun) queued++;
+			else if (res.ok) sent++;
+			else failed++;
+			attempts.push({ invoiceId: c.invoiceId, amount: c.amount, result: res });
+		}
+
+		// Re-read the ledger after settlement writes so we stamp the live rows
+		// without clobbering L2_CRYPTO_SETTLEMENT records created above.
+		const fresh = loadJson(this.ledgerFile, { transactions: [] });
+		if (!Array.isArray(fresh.transactions)) fresh.transactions = [];
+		for (const a of attempts) {
+			const row = fresh.transactions.find(
+				(t) =>
+					t?.channel === "L2_CRYPTO" &&
+					String(t.details?.invoice_id ?? t.id ?? "") ===
+						String(a.invoiceId),
+			);
+			if (row?.details && typeof row.details === "object") {
+				const res = a.result;
+				row.details.settleAttemptAt = new Date().toISOString();
+				row.details.settleResult = {
+					ok: res.ok === true,
+					dryRun: res.dryRun === true,
+					provider: res.provider ?? null,
+					error: res.error ?? null,
+				};
+			}
+		}
+		atomicWriteJsonSync(this.ledgerFile, fresh);
+
+		return {
+			ok: failed === 0,
+			scanned: candidates.length,
+			sent,
+			queued,
+			failed,
+			attempts,
+			checkedAt: new Date().toISOString(),
+		};
 	}
 
 	displayPaymentOptions(invoice) {

@@ -122,6 +122,7 @@ export function defaultConfig() {
 			syncPayPalLedgerBatches: false,
 			autoExportPayoneerPayoutBatches: false,
 			autoSettleOwnerPayoneer: false,
+			autoSettleOwnerCrypto: null,
 			ensureMarketingFunnel: true,
 			taskQueue: false,
 		},
@@ -384,6 +385,12 @@ export function resolveRuntimeConfig(args, fileCfg) {
 		args["auto-settle-owner"] === true ||
 		getEnvBool("AUTONOMOUS_AUTO_SETTLE_OWNER_PAYONEER", false) ||
 		cfg.tasks?.autoSettleOwnerPayoneer === true;
+	const autoSettleOwnerCryptoEnabled =
+		args["auto-settle-owner-crypto"] === true ||
+		getEnvBool("AUTONOMOUS_AUTO_SETTLE_OWNER_CRYPTO", false) ||
+		cfg.tasks?.autoSettleOwnerCrypto === true ||
+		(cfg.tasks?.autoSettleOwnerCrypto !== false &&
+			getEnvBool("CRYPTO_WITHDRAW_ENABLE", false));
 	const ensureMarketingFunnelEnabled =
 		args["ensure-marketing-funnel"] === true ||
 		getEnvBool("AUTONOMOUS_ENSURE_MARKETING_FUNNEL", true) ||
@@ -466,6 +473,7 @@ export function resolveRuntimeConfig(args, fileCfg) {
 			autoExportPayoneerPayoutBatches:
 				autoExportPayoneerPayoutBatchesEnabled === true,
 			autoSettleOwnerPayoneer: autoSettleOwnerPayoneerEnabled === true,
+			autoSettleOwnerCrypto: autoSettleOwnerCryptoEnabled === true,
 			ensureMarketingFunnel: ensureMarketingFunnelEnabled === true,
 			taskQueue: taskQueueEnabled === true,
 		},
