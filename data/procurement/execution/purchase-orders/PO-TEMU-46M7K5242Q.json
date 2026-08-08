@@ -1,0 +1,29 @@
+{
+  "poId": "PO-TEMU-46M7K5242Q",
+  "orderId": "TEMU-46M7K5242Q",
+  "phase": 2,
+  "batchId": "BATCH-2026-08-08-843CB3",
+  "sku": "TEMU-46M7K5242Q",
+  "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+  "qty": 1,
+  "unitPrice": 0,
+  "amount": 0,
+  "currency": "USD",
+  "vendor": {
+    "id": "VEN-TEMU",
+    "name": "Temu",
+    "slaHours": 168
+  },
+  "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+  "slaHours": 168,
+  "approval": {
+    "mode": "auto",
+    "status": "dry_run_no_key",
+    "signedBy": null,
+    "signature": null,
+    "reason": "corporate purchasing key unavailable; drafted without live approval"
+  },
+  "mode": "draft",
+  "status": "drafted",
+  "dispatchedAt": "2026-08-08T22:32:16.967Z"
+}

@@ -1814,6 +1814,930 @@
       "dispatchedAt": "2026-08-08T14:45:48.103Z",
       "receivedAt": "2026-08-08T14:47:34.856Z",
       "reconciledAt": "2026-08-08T14:47:34.856Z"
+    },
+    {
+      "id": "TEMU-68MQ459GK5",
+      "sku": "TEMU-68MQ459GK5",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-68MQ459GK5",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.970Z",
+      "approvedAt": "2026-08-08T22:32:16.936Z",
+      "dispatchedAt": "2026-08-08T22:32:16.956Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-AR1917716",
+      "sku": "TEMU-AR1917716",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-AR1917716",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.938Z",
+      "dispatchedAt": "2026-08-08T22:32:16.958Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-G3MQ6559XQ",
+      "sku": "TEMU-G3MQ6559XQ",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-G3MQ6559XQ",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.939Z",
+      "dispatchedAt": "2026-08-08T22:32:16.960Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-KD7851456",
+      "sku": "TEMU-KD7851456",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-KD7851456",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.940Z",
+      "dispatchedAt": "2026-08-08T22:32:16.961Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-7KM63511Q4",
+      "sku": "TEMU-7KM63511Q4",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-7KM63511Q4",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.941Z",
+      "dispatchedAt": "2026-08-08T22:32:16.963Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-G6M9K56643",
+      "sku": "TEMU-G6M9K56643",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-G6M9K56643",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.942Z",
+      "dispatchedAt": "2026-08-08T22:32:16.964Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-46M965WX7Q",
+      "sku": "TEMU-46M965WX7Q",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-46M965WX7Q",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.943Z",
+      "dispatchedAt": "2026-08-08T22:32:16.966Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-46M7K5242Q",
+      "sku": "TEMU-46M7K5242Q",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-46M7K5242Q",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.943Z",
+      "dispatchedAt": "2026-08-08T22:32:16.967Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-QD11273448",
+      "sku": "TEMU-QD11273448",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-QD11273448",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.944Z",
+      "dispatchedAt": "2026-08-08T22:32:16.968Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-73M6V566KV",
+      "sku": "TEMU-73M6V566KV",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-73M6V566KV",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.944Z",
+      "dispatchedAt": "2026-08-08T22:32:16.970Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-18MWK6K03W",
+      "sku": "TEMU-18MWK6K03W",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-18MWK6K03W",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.945Z",
+      "dispatchedAt": "2026-08-08T22:32:16.973Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-79MG0530W3",
+      "sku": "TEMU-79MG0530W3",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-79MG0530W3",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.945Z",
+      "dispatchedAt": "2026-08-08T22:32:16.975Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-4GM6G5K2W2",
+      "sku": "TEMU-4GM6G5K2W2",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-4GM6G5K2W2",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.946Z",
+      "dispatchedAt": "2026-08-08T22:32:16.977Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-78M9X58190",
+      "sku": "TEMU-78M9X58190",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-78M9X58190",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.946Z",
+      "dispatchedAt": "2026-08-08T22:32:16.978Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-7QMW3518G8",
+      "sku": "TEMU-7QMW3518G8",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-7QMW3518G8",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.947Z",
+      "dispatchedAt": "2026-08-08T22:32:16.979Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-G2M1W52221",
+      "sku": "TEMU-G2M1W52221",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-G2M1W52221",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.947Z",
+      "dispatchedAt": "2026-08-08T22:32:16.981Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-20M786Q8Q1",
+      "sku": "TEMU-20M786Q8Q1",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-20M786Q8Q1",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.948Z",
+      "dispatchedAt": "2026-08-08T22:32:16.982Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-72M5V55V74",
+      "sku": "TEMU-72M5V55V74",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-72M5V55V74",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.948Z",
+      "dispatchedAt": "2026-08-08T22:32:16.983Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-4QMK250609",
+      "sku": "TEMU-4QMK250609",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-4QMK250609",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.949Z",
+      "dispatchedAt": "2026-08-08T22:32:16.985Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-KG8057687",
+      "sku": "TEMU-KG8057687",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-KG8057687",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.949Z",
+      "dispatchedAt": "2026-08-08T22:32:16.986Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-GGM165V30W",
+      "sku": "TEMU-GGM165V30W",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-GGM165V30W",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.951Z",
+      "dispatchedAt": "2026-08-08T22:32:16.987Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-FK3500556",
+      "sku": "TEMU-FK3500556",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-FK3500556",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.952Z",
+      "dispatchedAt": "2026-08-08T22:32:16.989Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-1GM4Q6215K",
+      "sku": "TEMU-1GM4Q6215K",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-1GM4Q6215K",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.953Z",
+      "dispatchedAt": "2026-08-08T22:32:16.990Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-JH6793985",
+      "sku": "TEMU-JH6793985",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-JH6793985",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.953Z",
+      "dispatchedAt": "2026-08-08T22:32:16.992Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-G2MGV587K8",
+      "sku": "TEMU-G2MGV587K8",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-G2MGV587K8",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.954Z",
+      "dispatchedAt": "2026-08-08T22:32:16.993Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-HP5081217",
+      "sku": "TEMU-HP5081217",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-HP5081217",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.954Z",
+      "dispatchedAt": "2026-08-08T22:32:16.995Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-1GMQQ6G3Q2",
+      "sku": "TEMU-1GMQQ6G3Q2",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-1GMQQ6G3Q2",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.955Z",
+      "dispatchedAt": "2026-08-08T22:32:16.996Z",
+      "receivedAt": null,
+      "reconciledAt": null
+    },
+    {
+      "id": "TEMU-BH12434947",
+      "sku": "TEMU-BH12434947",
+      "label": "Female shoes - EU 39.5-40 - GOLD (or available)",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 1,
+      "unitPrice": 0,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-TEMU",
+        "name": "Temu",
+        "slaHours": 168
+      },
+      "destination": "Younes Tsouli, 45 avenue ibn sina Agdal apt4, RABAT, RABAT SALE KENITRA 10999, Maroc",
+      "phase": 2,
+      "status": "drafted",
+      "batchId": "BATCH-2026-08-08-843CB3",
+      "poId": "PO-TEMU-BH12434947",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T22:32:02.978Z",
+      "approvedAt": "2026-08-08T22:32:16.955Z",
+      "dispatchedAt": "2026-08-08T22:32:16.998Z",
+      "receivedAt": null,
+      "reconciledAt": null
     }
   ],
   "meta": {
@@ -1821,8 +2745,44 @@
     "manualIntervention": "disabled",
     "approvalGate": "auto-signed",
     "live": false,
-    "cycle": 2,
-    "lastCycleAt": "2026-08-08T14:46:03.468Z"
+    "cycle": 3,
+    "lastCycleAt": "2026-08-08T22:32:16.999Z",
+    "pendingBatch": {
+      "id": "BATCH-2026-08-08-843CB3",
+      "createdAt": "2026-08-08T22:32:16.956Z",
+      "orders": [
+        "TEMU-68MQ459GK5",
+        "TEMU-AR1917716",
+        "TEMU-G3MQ6559XQ",
+        "TEMU-KD7851456",
+        "TEMU-7KM63511Q4",
+        "TEMU-G6M9K56643",
+        "TEMU-46M965WX7Q",
+        "TEMU-46M7K5242Q",
+        "TEMU-QD11273448",
+        "TEMU-73M6V566KV",
+        "TEMU-18MWK6K03W",
+        "TEMU-79MG0530W3",
+        "TEMU-4GM6G5K2W2",
+        "TEMU-78M9X58190",
+        "TEMU-7QMW3518G8",
+        "TEMU-G2M1W52221",
+        "TEMU-20M786Q8Q1",
+        "TEMU-72M5V55V74",
+        "TEMU-4QMK250609",
+        "TEMU-KG8057687",
+        "TEMU-GGM165V30W",
+        "TEMU-FK3500556",
+        "TEMU-1GM4Q6215K",
+        "TEMU-JH6793985",
+        "TEMU-G2MGV587K8",
+        "TEMU-HP5081217",
+        "TEMU-1GMQQ6G3Q2",
+        "TEMU-BH12434947"
+      ],
+      "status": "dispatched",
+      "dispatchedAt": "2026-08-08T22:32:16.999Z"
+    }
   },
   "log": [
     {
@@ -3940,6 +4900,836 @@
       "message": "Order ORD-055 reconciled",
       "meta": {
         "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-68MQ459GK5 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-AR1917716 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-G3MQ6559XQ queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-KD7851456 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-7KM63511Q4 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-G6M9K56643 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-46M965WX7Q queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-46M7K5242Q queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-QD11273448 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-73M6V566KV queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-18MWK6K03W queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-79MG0530W3 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-4GM6G5K2W2 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-78M9X58190 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-7QMW3518G8 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-G2M1W52221 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-20M786Q8Q1 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-72M5V55V74 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-4QMK250609 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-KG8057687 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-GGM165V30W queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-FK3500556 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-1GM4Q6215K queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-JH6793985 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-G2MGV587K8 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-HP5081217 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-1GMQQ6G3Q2 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:02.978Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order TEMU-BH12434947 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.938Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-68MQ459GK5 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.939Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-AR1917716 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.940Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-G3MQ6559XQ auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.941Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-KD7851456 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.942Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-7KM63511Q4 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.942Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-G6M9K56643 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.943Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-46M965WX7Q auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.944Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-46M7K5242Q auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.944Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-QD11273448 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.945Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-73M6V566KV auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.945Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-18MWK6K03W auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.946Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-79MG0530W3 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.946Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-4GM6G5K2W2 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.947Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-78M9X58190 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.947Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-7QMW3518G8 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.948Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-G2M1W52221 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.948Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-20M786Q8Q1 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.949Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-72M5V55V74 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.949Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-4QMK250609 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.951Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-KG8057687 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.952Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-GGM165V30W auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.953Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-FK3500556 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.953Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-1GM4Q6215K auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.954Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-JH6793985 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.954Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-G2MGV587K8 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.954Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-HP5081217 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.955Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-1GMQQ6G3Q2 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.955Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order TEMU-BH12434947 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.958Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-68MQ459GK5 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.960Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-AR1917716 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.961Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-G3MQ6559XQ draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.963Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-KD7851456 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.964Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-7KM63511Q4 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.966Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-G6M9K56643 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.967Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-46M965WX7Q draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.968Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-46M7K5242Q draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.970Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-QD11273448 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.973Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-73M6V566KV draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.975Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-18MWK6K03W draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.977Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-79MG0530W3 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.978Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-4GM6G5K2W2 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.979Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-78M9X58190 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.981Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-7QMW3518G8 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.982Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-G2M1W52221 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.983Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-20M786Q8Q1 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.984Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-72M5V55V74 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.986Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-4QMK250609 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.987Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-KG8057687 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.989Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-GGM165V30W draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.990Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-FK3500556 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.992Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-1GM4Q6215K draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.993Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-JH6793985 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.995Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-G2MGV587K8 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.996Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-HP5081217 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.998Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-1GMQQ6G3Q2 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.999Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-TEMU-BH12434947 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:16.999Z",
+      "level": "info",
+      "event": "BATCH_DISPATCHED",
+      "message": "Batch BATCH-2026-08-08-843CB3 dispatched",
+      "meta": {
+        "count": 28
+      }
+    },
+    {
+      "ts": "2026-08-08T22:32:17.000Z",
+      "level": "info",
+      "event": "CYCLE_COMPLETE",
+      "message": "Cycle 3 complete",
+      "meta": {
+        "live": false
       }
     }
   ]
