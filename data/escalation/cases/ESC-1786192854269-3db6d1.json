@@ -2,7 +2,7 @@
   "id": "ESC-1786192854269-3db6d1",
   "createdAt": "2026-08-08T12:40:54.269Z",
   "updatedAt": "2026-08-08T12:40:54.269Z",
-  "status": "HITL",
+  "status": "ESCALATED",
   "statusHistory": [
     {
       "from": null,
@@ -24,6 +24,13 @@
       "reason": "Forensic gate requires human review",
       "actor": "EscalationAgent",
       "at": "2026-08-08T12:40:54.282Z"
+    },
+    {
+      "from": "HITL",
+      "to": "ESCALATED",
+      "reason": "Owner LIVE override approved",
+      "actor": "EscalationAgent",
+      "at": "2026-08-08T13:22:51.414Z"
     }
   ],
   "trigger": "A-02_MANUAL_COMPLAINT",
@@ -123,7 +130,31 @@
     },
     "gate": "HITL"
   },
-  "dispatches": [],
+  "dispatches": [
+    {
+      "channel": "email",
+      "mode": "draft",
+      "to": "r.guedira@attijariwafa.com",
+      "cc": "operations-escalations@platform.com",
+      "subject": "[URGENT REGULATORY TRACKING] Missing Inbound MT103 Wires - USD 149,253 - Ref: TSOULI YOUNES",
+      "file": "data\\escalation\\outbox\\ESC-1786192854269-3db6d1-escalation-01.eml",
+      "sentAt": "2026-08-08T13:22:51.440Z"
+    },
+    {
+      "channel": "swift_gpi",
+      "status": "not_integrated",
+      "note": "SWIFT gpi track-and-trace requires a sender-platform GPI integration; recorded UETR/batch identifiers for manual trace.",
+      "identifiers": [
+        "BATCH_RECOVERY_BANK_WIRE_1784880181_PAYPAL_BRIDGE_004",
+        "BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_003",
+        "BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_002",
+        "BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_001"
+      ],
+      "requestedAt": "2026-08-08T13:22:51.479Z",
+      "caseId": "ESC-1786192854269-3db6d1",
+      "step": "escalation-01"
+    }
+  ],
   "followups": [],
   "responses": [],
   "complianceFlags": [],
@@ -132,5 +163,13 @@
     "reason": "No internal record of the claimed batches or matching RIB settlement in audits/reconciliation",
     "decision": "NOT_FOUND_ON_RECORDS",
     "raisedAt": "2026-08-08T12:40:54.282Z"
-  }
+  },
+  "ownerOverride": {
+    "type": "owner_approval",
+    "reason": "Owner satisfied with escalation package; authorize live bank dispatch",
+    "decidedBy": "owner",
+    "at": "2026-08-08T13:22:51.409Z"
+  },
+  "dispatchedAt": "2026-08-08T13:22:51.440Z",
+  "escrowTimestamp": "2026-08-08T13:22:51.440Z"
 }

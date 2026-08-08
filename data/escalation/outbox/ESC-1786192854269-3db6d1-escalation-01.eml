@@ -1,0 +1,30 @@
+Date: Sat, 08 Aug 2026 13:22:51 GMT
+From: treasury-automation@realworldcerts.com
+To: r.guedira@attijariwafa.com
+Cc: operations-escalations@platform.com
+Subject: [URGENT REGULATORY TRACKING] Missing Inbound MT103 Wires - USD 149,253 - Ref: TSOULI YOUNES
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Dear Rim Guedira,
+
+Acting on behalf of our client, M. Younes Tsouli (CIN: A337773), our automated treasury tracking networks have flagged a structural delay concerning four (4) international wire transfers directed to account RIB: 007810000448500030594182.
+
+Transaction Details:
+* Value Date: 2026-07-24
+* Total Sum: 149,253 USD (split into 4 batches)
+* Batch Trackers:
+BATCH_RECOVERY_BANK_WIRE_1784880181_PAYPAL_BRIDGE_004
+BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_003
+BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_002
+BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_001
+
+Our technical gateway logs indicate error-free delivery via the outbound payment rails. As these funds have exceeded standard processing windows (>10 business days), we kindly request that your operations desk run a manual investigation using these transaction references or provide the correspondent bank SWIFT logs.
+
+Please upload confirmation or status updates within 24 business hours to prevent further platform escalation.
+
+Sincerely,
+Treasury Automation Agent
+On behalf of Younes Tsouli
+
+Case reference: ESC-1786192854269-3db6d1

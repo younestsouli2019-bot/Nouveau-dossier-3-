@@ -46,6 +46,43 @@ function actorName() {
 	return "EscalationAgent";
 }
 
+async function performDispatch({ caseData, forensic, override }) {
+	const fromHitl = caseData.status === STATUS.HITL;
+	if (fromHitl) {
+		transitionTo(caseData, STATUS.ESCALATED, { reason: override ? "Owner LIVE override approved" : "Forensic gate PASS", actor: actorName() });
+	} else {
+		transitionTo(caseData, STATUS.VERIFIED_OUTBOUND, { reason: override ? "Owner LIVE override approved" : "Forensic gate PASS", actor: actorName() });
+	}
+	const email = escalationEmail({ caseData });
+	const dispatch = dispatchEmail({
+		caseId: caseData.id,
+		to: caseData.complaint.bankContact,
+		cc: "operations-escalations@platform.com",
+		from: "treasury-automation@realworldcerts.com",
+		subject: email.subject,
+		body: email.body,
+		step: "escalation-01",
+	});
+	caseData.dispatchedAt = new Date().toISOString();
+	caseData.escrowTimestamp = caseData.dispatchedAt;
+	caseData.dispatches.push(dispatch);
+	await generatePdfDossier({
+		caseId: caseData.id,
+		title: "Letter of Escalation - Missing MT103 Wires",
+		sections: escalationLetterSections({ caseData, forensic }),
+	});
+	const gpi = dispatchSwiftGpi({ caseId: caseData.id, batches: caseData.complaint.batches || [], step: "escalation-01" });
+	caseData.dispatches.push(gpi);
+	transitionTo(caseData, STATUS.ESCALATED, { reason: "Phase 2 dispatch complete", actor: actorName() });
+	appendAudit({
+		action: override ? "ESCALATION_DISPATCHED_LIVE" : "ESCALATION_DISPATCHED",
+		entityId: caseData.id,
+		actor: actorName(),
+		changes: { to: dispatch.to, subject: dispatch.subject, mode: dispatch.mode, ownerOverride: Boolean(override) },
+	});
+	return dispatch;
+}
+
 async function cmdCreate({ args }) {	const payload = loadPayload(args.create === true ? undefined : args.create);
 	const caseData = createCase({ payload, actor: actorName() });
 	appendAudit({ action: "CASE_CREATED", entityId: caseData.id, actor: actorName(), changes: { status: caseData.status } });
@@ -60,34 +97,26 @@ async function cmdCreate({ args }) {	const payload = loadPayload(args.create ===
 	});
 
 	if (forensic.gate === "PASS") {
-		transitionTo(caseData, STATUS.VERIFIED_OUTBOUND, { reason: "Forensic gate PASS", actor: actorName() });
-		const email = escalationEmail({ caseData });
-		const dispatch = dispatchEmail({
-			caseId: caseData.id,
-			to: payload.bankContact,
-			cc: "operations-escalations@platform.com",
-			from: "treasury-automation@realworldcerts.com",
-			subject: email.subject,
-			body: email.body,
-			step: "escalation-01",
-		});
-		caseData.dispatchedAt = new Date().toISOString();
-		caseData.escrowTimestamp = caseData.dispatchedAt;
-		caseData.dispatches.push(dispatch);
-		await generatePdfDossier({
-			caseId: caseData.id,
-			title: "Letter of Escalation - Missing MT103 Wires",
-			sections: escalationLetterSections({ caseData, forensic }),
-		});
-		const gpi = dispatchSwiftGpi({ caseId: caseData.id, batches: payload.batches || [], step: "escalation-01" });
-		caseData.dispatches.push(gpi);
-		transitionTo(caseData, STATUS.ESCALATED, { reason: "Phase 2 dispatch complete", actor: actorName() });
+		const dispatch = await performDispatch({ caseData, forensic });
+		saveCase(caseData);
+		return { ok: true, caseId: caseData.id, status: caseData.status, forensic: { decision: forensic.decision, gate: forensic.gate }, dispatch: { to: dispatch.to, mode: dispatch.mode } };
+	}
+	if (args.live) {
+		caseData.ownerOverride = {
+			type: "owner_approval",
+			reason: args["override-reason"] || "Owner reviewed HITL queue and approved live dispatch",
+			decidedBy: args["decided-by"] || "owner",
+			at: new Date().toISOString(),
+		};
 		appendAudit({
-			action: "ESCALATION_DISPATCHED",
+			action: "OWNER_LIVE_OVERRIDE",
 			entityId: caseData.id,
 			actor: actorName(),
-			changes: { to: dispatch.to, subject: dispatch.subject, mode: dispatch.mode },
+			changes: { gate: forensic.gate, reason: caseData.ownerOverride.reason },
 		});
+		const dispatch = await performDispatch({ caseData, forensic, override: true });
+		saveCase(caseData);
+		return { ok: true, caseId: caseData.id, status: caseData.status, forensic: { decision: forensic.decision, gate: forensic.gate }, ownerOverride: caseData.ownerOverride, dispatch: { to: dispatch.to, mode: dispatch.mode } };
 	} else {
 		transitionTo(caseData, STATUS.DISCREPANCY, { reason: forensic.reason, actor: actorName() });
 		transitionTo(caseData, STATUS.HITL, { reason: "Forensic gate requires human review", actor: actorName() });
@@ -107,6 +136,31 @@ async function cmdCreate({ args }) {	const payload = loadPayload(args.create ===
 
 	saveCase(caseData);
 	return { ok: true, caseId: caseData.id, status: caseData.status, forensic: { decision: forensic.decision, gate: forensic.gate } };
+}
+
+async function cmdDispatchLive({ args }) {
+	const caseData = loadCase(args["dispatch-live"]);
+	const eligible = [STATUS.HITL, STATUS.DISCREPANCY, STATUS.FORENSIC_REVIEW];
+	if (!eligible.includes(caseData.status)) {
+		return { ok: true, caseId: caseData.id, status: caseData.status, note: "Case not awaiting live dispatch" };
+	}
+	const forensic = caseData.forensic || runForensicValidation(caseData.complaint);
+	caseData.forensic = forensic;
+	caseData.ownerOverride = {
+		type: "owner_approval",
+		reason: args["override-reason"] || "Owner reviewed HITL queue and approved live dispatch",
+		decidedBy: args["decided-by"] || "owner",
+		at: new Date().toISOString(),
+	};
+	appendAudit({
+		action: "OWNER_LIVE_OVERRIDE",
+		entityId: caseData.id,
+		actor: actorName(),
+		changes: { gate: forensic.gate, reason: caseData.ownerOverride.reason },
+	});
+	const dispatch = await performDispatch({ caseData, forensic, override: true });
+	saveCase(caseData);
+	return { ok: true, caseId: caseData.id, status: caseData.status, forensic: { decision: forensic.decision, gate: forensic.gate }, ownerOverride: caseData.ownerOverride, dispatch: { to: dispatch.to, mode: dispatch.mode } };
 }
 
 function cmdAdvance({ args, now = new Date() }) {
@@ -208,6 +262,15 @@ function main() {
 		});
 		return;
 	}
+	if (args["dispatch-live"]) {
+		cmdDispatchLive({ args }).then((r) => {
+			console.log(JSON.stringify(r, null, 2));
+		}).catch((e) => {
+			console.error(e.message);
+			process.exit(1);
+		});
+		return;
+	}
 	if (args.advance) {
 		console.log(JSON.stringify(cmdAdvance({ args }), null, 2));
 		return;
@@ -226,7 +289,8 @@ function main() {
 	}
 	console.log(
 		[
-			"Usage: node scripts/run-escalation.mjs --create [payload.json]",
+			"Usage: node scripts/run-escalation.mjs --create [payload.json] [--live [--override-reason X] [--decided-by owner]]",
+			"       node scripts/run-escalation.mjs --dispatch-live <caseId> [--override-reason X] [--decided-by owner]",
 			"       node scripts/run-escalation.mjs --advance <caseId>",
 			"       node scripts/run-escalation.mjs --respond <caseId> <response.txt>",
 			"       node scripts/run-escalation.mjs --status <caseId>",
