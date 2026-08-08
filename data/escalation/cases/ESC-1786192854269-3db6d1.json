@@ -1,0 +1,136 @@
+{
+  "id": "ESC-1786192854269-3db6d1",
+  "createdAt": "2026-08-08T12:40:54.269Z",
+  "updatedAt": "2026-08-08T12:40:54.269Z",
+  "status": "HITL",
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "FORENSIC_REVIEW",
+      "reason": "Ingestion complete",
+      "actor": "EscalationAgent",
+      "at": "2026-08-08T12:40:54.270Z"
+    },
+    {
+      "from": "FORENSIC_REVIEW",
+      "to": "DISCREPANCY",
+      "reason": "No internal record of the claimed batches or matching RIB settlement in audits/reconciliation",
+      "actor": "EscalationAgent",
+      "at": "2026-08-08T12:40:54.282Z"
+    },
+    {
+      "from": "DISCREPANCY",
+      "to": "HITL",
+      "reason": "Forensic gate requires human review",
+      "actor": "EscalationAgent",
+      "at": "2026-08-08T12:40:54.282Z"
+    }
+  ],
+  "trigger": "A-02_MANUAL_COMPLAINT",
+  "complaint": {
+    "trigger": "A-02_MANUAL_COMPLAINT",
+    "beneficiary": "Younes Tsouli",
+    "cin": "A337773",
+    "bank": "Attijariwafa Bank",
+    "bankContact": "r.guedira@attijariwafa.com",
+    "escalationDesk": "reclamation@attijariwafa.com",
+    "rib": "007810000448500030594182",
+    "currency": "USD",
+    "totalAmount": 149253,
+    "valueDate": "2026-07-24",
+    "perBatch": 37313.25,
+    "batches": [
+      {
+        "id": "BATCH_RECOVERY_BANK_WIRE_1784880181_PAYPAL_BRIDGE_004",
+        "amount": 37313.25,
+        "currency": "USD",
+        "channel": "MT103"
+      },
+      {
+        "id": "BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_003",
+        "amount": 37313.25,
+        "currency": "USD",
+        "channel": "MT103"
+      },
+      {
+        "id": "BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_002",
+        "amount": 37313.25,
+        "currency": "USD",
+        "channel": "MT103"
+      },
+      {
+        "id": "BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_001",
+        "amount": 37313.25,
+        "currency": "USD",
+        "channel": "MT103"
+      }
+    ],
+    "ownerContact": "younestsouli2019@gmail.com"
+  },
+  "forensic": {
+    "decision": "NOT_FOUND_ON_RECORDS",
+    "reason": "No internal record of the claimed batches or matching RIB settlement in audits/reconciliation",
+    "auditHits": 6,
+    "auditSamples": [
+      {
+        "file": "audits\\autonomous_hmac\\2026-01-09.jsonl",
+        "line": 5,
+        "sample": "{\"id\":\"AUD_1767992154154_a2a0fa92\",\"timestamp\":\"2026-01-09T20:55:54.154Z\",\"action\":\"BANK_WIRE_PREPARED\",\"entity_id\":\"BATCH_LIVE_1767528254631_CRYPTO\",\"actor\":\"OwnerDirectCryptoRelease\",\"changes\":{\"before\":null,\"after\":{\"status\":\"prepared\",\"network\":\"BANK_WIRE\",\"prepared_at\":\"2026-01-09T20:55:54.154Z\",\"transactions\":[{\"amount\":850,\"currency\":\"USDT\",\"destination\":\"007810000448500030594182\",\"referenc"
+      },
+      {
+        "file": "audits\\autonomous_hmac\\2026-01-09.jsonl",
+        "line": 6,
+        "sample": "{\"id\":\"AUD_1767992154156_b508a286\",\"timestamp\":\"2026-01-09T20:55:54.156Z\",\"action\":\"INITIATE_AUTO_SETTLEMENT\",\"entity_id\":\"a40064e6-685c-43cd-b9f3-31c2d3d90df7\",\"actor\":\"OwnerDirectCryptoRelease\",\"changes\":{\"before\":null,\"after\":{\"status\":\"processing\",\"gateway_response\":{\"status\":\"prepared\",\"network\":\"BANK_WIRE\",\"prepared_at\":\"2026-01-09T20:55:54.154Z\",\"transactions\":[{\"amount\":850,\"currency\":\"USD"
+      },
+      {
+        "file": "audits\\autonomous_hmac\\2026-01-09.jsonl",
+        "line": 7,
+        "sample": "{\"id\":\"SETL_BATCH_LIVE_1767528254631_CRYPTO\",\"timestamp\":\"2026-01-09T20:55:54.158Z\",\"action\":\"REQUEST_AUTO_SETTLEMENT\",\"entity_id\":\"BATCH_LIVE_1767528254631_CRYPTO\",\"actor\":\"OwnerDirectCryptoRelease\",\"changes\":{\"before\":null,\"after\":{\"status\":\"processing\",\"gateway_response\":{\"status\":\"prepared\",\"network\":\"BANK_WIRE\",\"prepared_at\":\"2026-01-09T20:55:54.154Z\",\"transactions\":[{\"amount\":850,\"currency\":"
+      },
+      {
+        "file": "audits\\autonomous_hmac\\2026-01-09.jsonl",
+        "line": 10,
+        "sample": "{\"id\":\"AUD_1767992984027_16b8b3a2\",\"timestamp\":\"2026-01-09T21:09:44.027Z\",\"action\":\"BANK_WIRE_PREPARED\",\"entity_id\":\"BATCH_LIVE_1767528254631_CRYPTO\",\"actor\":\"OwnerDirectCryptoRelease\",\"changes\":{\"before\":null,\"after\":{\"status\":\"prepared\",\"network\":\"BANK_WIRE\",\"prepared_at\":\"2026-01-09T21:09:44.027Z\",\"transactions\":[{\"amount\":850,\"currency\":\"USDT\",\"destination\":\"007810000448500030594182\",\"referenc"
+      },
+      {
+        "file": "audits\\autonomous_hmac\\2026-01-09.jsonl",
+        "line": 11,
+        "sample": "{\"id\":\"AUD_1767992984029_7fd95c6a\",\"timestamp\":\"2026-01-09T21:09:44.029Z\",\"action\":\"INITIATE_AUTO_SETTLEMENT\",\"entity_id\":\"1d7a72f1-ebca-40c4-9a61-3157884e07c6\",\"actor\":\"OwnerDirectCryptoRelease\",\"changes\":{\"before\":null,\"after\":{\"status\":\"processing\",\"gateway_response\":{\"status\":\"prepared\",\"network\":\"BANK_WIRE\",\"prepared_at\":\"2026-01-09T21:09:44.027Z\",\"transactions\":[{\"amount\":850,\"currency\":\"USD"
+      }
+    ],
+    "reconciliation": {
+      "file": "reports/reconciliation_report.csv",
+      "rows": [
+        {
+          "line": 505,
+          "row": "695eeb95ca2cf8cd827bca12,\"Deploy Payment Gateways (Attijariwafa Bank, PayPal, Base44)\",0,,,not_sent,absent_hard_bound_evidence\r"
+        },
+        {
+          "line": 1408,
+          "row": "695eeb95ca2cf8cd827bc65b,\"Deploy Payment Gateways (Attijariwafa Bank, PayPal, Base44)\",0,,,not_sent,absent_hard_bound_evidence\r"
+        },
+        {
+          "line": 1650,
+          "row": "695eeb95ca2cf8cd827bc5a0,\"Deploy Payment Gateways (Attijariwafa Bank, PayPal, Base44)\",0,,,not_sent,absent_hard_bound_evidence\r"
+        }
+      ]
+    },
+    "httpHandshakeHits": 0,
+    "httpHandshakeSamples": [],
+    "rib": {
+      "configured": "",
+      "matches": false
+    },
+    "gate": "HITL"
+  },
+  "dispatches": [],
+  "followups": [],
+  "responses": [],
+  "complianceFlags": [],
+  "hitl": {
+    "type": "Tier3HumanOps",
+    "reason": "No internal record of the claimed batches or matching RIB settlement in audits/reconciliation",
+    "decision": "NOT_FOUND_ON_RECORDS",
+    "raisedAt": "2026-08-08T12:40:54.282Z"
+  }
+}

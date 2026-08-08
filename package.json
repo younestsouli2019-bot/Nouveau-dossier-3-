@@ -65,6 +65,8 @@
     "swarm:headhunter:once": "node ./scripts/headhunter-daemon.mjs",
     "format": "biome format --write src scripts",
     "catalogue:parse": "node ./scripts/parse-bozni.mjs",
+    "escalation:mt103": "node ./scripts/run-escalation.mjs",
+    "edu:posters": "node ./scripts/generate-course-posters.mjs",
     "catalogue:build": "node ./scripts/build-catalogue-pro.mjs",
     "catalogue:pdfkit": "node ./scripts/advancedCatalogueSwarm.mjs",
     "catalogue:ultimate": "node ./scripts/ultimateCatalogueSwarm.mjs",

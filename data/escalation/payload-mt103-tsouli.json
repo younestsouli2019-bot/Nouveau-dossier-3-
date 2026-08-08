@@ -1,0 +1,20 @@
+{
+  "trigger": "A-02_MANUAL_COMPLAINT",
+  "beneficiary": "Younes Tsouli",
+  "cin": "A337773",
+  "bank": "Attijariwafa Bank",
+  "bankContact": "r.guedira@attijariwafa.com",
+  "escalationDesk": "reclamation@attijariwafa.com",
+  "rib": "007810000448500030594182",
+  "currency": "USD",
+  "totalAmount": 149253.0,
+  "valueDate": "2026-07-24",
+  "perBatch": 37313.25,
+  "batches": [
+    { "id": "BATCH_RECOVERY_BANK_WIRE_1784880181_PAYPAL_BRIDGE_004", "amount": 37313.25, "currency": "USD", "channel": "MT103" },
+    { "id": "BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_003", "amount": 37313.25, "currency": "USD", "channel": "MT103" },
+    { "id": "BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_002", "amount": 37313.25, "currency": "USD", "channel": "MT103" },
+    { "id": "BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_001", "amount": 37313.25, "currency": "USD", "channel": "MT103" }
+  ],
+  "ownerContact": "younestsouli2019@gmail.com"
+}
