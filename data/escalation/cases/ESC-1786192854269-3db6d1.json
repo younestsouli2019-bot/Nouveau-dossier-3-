@@ -1,7 +1,7 @@
 {
   "id": "ESC-1786192854269-3db6d1",
   "createdAt": "2026-08-08T12:40:54.269Z",
-  "updatedAt": "2026-08-08T12:40:54.269Z",
+  "updatedAt": "2026-08-08T15:34:16.183Z",
   "status": "FOLLOW_UP_1",
   "statusHistory": [
     {
@@ -160,6 +160,28 @@
       "requestedAt": "2026-08-08T13:22:51.479Z",
       "caseId": "ESC-1786192854269-3db6d1",
       "step": "escalation-01"
+    },
+    {
+      "channel": "email",
+      "kind": "reclamation_attijariwafa",
+      "mode": "draft",
+      "to": "r.guedira@attijariwafa.com",
+      "cc": "reclamation@attijariwafa.com",
+      "subject": "MISE EN DEMEURE — Virements internationaux MT103 retenus (149 253,00 USD) — Younes Tsouli",
+      "file": "data\\escalation\\outbox\\ESC-1786192854269-3db6d1-reclamation-attijariwafa-01.eml",
+      "dispatchedAt": "2026-08-08T15:34:16.183Z",
+      "error": null
+    },
+    {
+      "channel": "email",
+      "kind": "plainte_bank_al_maghrib",
+      "mode": "draft",
+      "to": "[destinataire BAM à configurer: BAM_SUPERVISION_EMAIL]",
+      "cc": null,
+      "subject": "PLAINTE FORMELLE — Supervision Bancaire BAM — Rétention 149 253,00 USD par Attijariwafa Bank (Younes Tsouli)",
+      "file": "data\\escalation\\outbox\\ESC-1786192854269-3db6d1-plainte-bank-al-maghrib-01.eml",
+      "dispatchedAt": "2026-08-08T15:34:16.183Z",
+      "error": null
     }
   ],
   "followups": [

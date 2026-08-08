@@ -66,6 +66,8 @@
     "format": "biome format --write src scripts",
     "catalogue:parse": "node ./scripts/parse-bozni.mjs",
     "escalation:mt103": "node ./scripts/run-escalation.mjs",
+    "escalation:letters": "node ./scripts/dispatch-regulatory-letters.mjs",
+    "escalation:letters:live": "node ./scripts/dispatch-regulatory-letters.mjs --live",
     "escalation:daemon": "node ./scripts/escalation-daemon.mjs",
     "escalation:daemon:live": "node ./scripts/escalation-daemon.mjs --live",
     "escalation:daemon:once": "node ./scripts/escalation-daemon.mjs --once",
