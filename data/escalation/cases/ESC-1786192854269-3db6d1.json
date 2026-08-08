@@ -2,7 +2,7 @@
   "id": "ESC-1786192854269-3db6d1",
   "createdAt": "2026-08-08T12:40:54.269Z",
   "updatedAt": "2026-08-08T12:40:54.269Z",
-  "status": "ESCALATED",
+  "status": "FOLLOW_UP_1",
   "statusHistory": [
     {
       "from": null,
@@ -31,6 +31,13 @@
       "reason": "Owner LIVE override approved",
       "actor": "EscalationAgent",
       "at": "2026-08-08T13:22:51.414Z"
+    },
+    {
+      "from": "ESCALATED",
+      "to": "FOLLOW_UP_1",
+      "reason": "T+27h elapsed, no response",
+      "actor": "EscalationDaemon",
+      "at": "2026-08-08T14:14:56.610Z"
     }
   ],
   "trigger": "A-02_MANUAL_COMPLAINT",
@@ -155,7 +162,24 @@
       "step": "escalation-01"
     }
   ],
-  "followups": [],
+  "followups": [
+    {
+      "kind": "chaser",
+      "step": "FOLLOW_UP_1",
+      "reason": "T+27h elapsed, no response",
+      "dispatchedAt": "2026-08-08T14:14:56.610Z",
+      "dispatch": {
+        "channel": "email",
+        "mode": "live",
+        "to": "r.guedira@attijariwafa.com",
+        "subject": "FOLLOW-UP (FOLLOW_UP_1) - Missing Inbound MT103 Wires - USD 149,253 - ESC-1786192854269-3db6d1",
+        "file": "data\\escalation\\outbox\\ESC-1786192854269-3db6d1-followup-1.eml",
+        "sentAt": "2026-08-08T14:14:56.608Z",
+        "error": "SMTP rejected (0): ",
+        "note": "Sent via outbox queue flush after connectivity recovery (store-and-forward)."
+      }
+    }
+  ],
   "responses": [],
   "complianceFlags": [],
   "hitl": {

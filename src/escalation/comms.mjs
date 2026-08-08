@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import PDFDocument from "pdfkit";
+import { sendEmail, isSmtpConfigured, missingSmtpHint } from "./email-sender.mjs";
 
 const OUTBOX = () => path.resolve(process.cwd(), "data", "escalation", "outbox");
 
@@ -25,11 +26,55 @@ function buildEmail({ to, cc, from, subject, body }) {
 	return lines.join("\r\n");
 }
 
-export function dispatchEmail({ caseId, to, cc, from, subject, body, step }) {
+export async function dispatchEmail({ caseId, to, cc, from, subject, body, step, live = false, env = process.env }) {
 	const draft = buildEmail({ to, cc, from, subject, body });
 	ensureOutbox();
 	const safe = `${caseId}-${step}.eml`;
 	fs.writeFileSync(path.join(OUTBOX(), safe), draft, "utf8");
+
+	if (live) {
+		if (!isSmtpConfigured(env)) {
+			return {
+				channel: "email",
+				mode: "draft",
+				to,
+				cc,
+				subject,
+				file: path.join("data", "escalation", "outbox", safe),
+				sentAt: new Date().toISOString(),
+				note: missingSmtpHint(env),
+			};
+		}
+		try {
+			const result = await sendEmail({ to, cc, from, subject, body, env });
+			return {
+				channel: "email",
+				mode: "live",
+				to,
+				cc,
+				subject,
+				host: result.host,
+				port: result.port,
+				secure: result.secure,
+				startTls: result.startTls,
+				file: path.join("data", "escalation", "outbox", safe),
+				sentAt: result.sentAt,
+			};
+		} catch (err) {
+			return {
+				channel: "email",
+				mode: "draft",
+				to,
+				cc,
+				subject,
+				file: path.join("data", "escalation", "outbox", safe),
+				sentAt: new Date().toISOString(),
+				error: err.message,
+				note: "SMTP send failed; draft preserved in outbox for manual dispatch.",
+			};
+		}
+	}
+
 	return {
 		channel: "email",
 		mode: "draft",

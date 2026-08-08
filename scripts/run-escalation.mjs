@@ -46,7 +46,7 @@ function actorName() {
 	return "EscalationAgent";
 }
 
-async function performDispatch({ caseData, forensic, override }) {
+async function performDispatch({ caseData, forensic, override, live = false }) {
 	const fromHitl = caseData.status === STATUS.HITL;
 	if (fromHitl) {
 		transitionTo(caseData, STATUS.ESCALATED, { reason: override ? "Owner LIVE override approved" : "Forensic gate PASS", actor: actorName() });
@@ -54,7 +54,7 @@ async function performDispatch({ caseData, forensic, override }) {
 		transitionTo(caseData, STATUS.VERIFIED_OUTBOUND, { reason: override ? "Owner LIVE override approved" : "Forensic gate PASS", actor: actorName() });
 	}
 	const email = escalationEmail({ caseData });
-	const dispatch = dispatchEmail({
+	const dispatch = await dispatchEmail({
 		caseId: caseData.id,
 		to: caseData.complaint.bankContact,
 		cc: "operations-escalations@platform.com",
@@ -62,6 +62,7 @@ async function performDispatch({ caseData, forensic, override }) {
 		subject: email.subject,
 		body: email.body,
 		step: "escalation-01",
+		live,
 	});
 	caseData.dispatchedAt = new Date().toISOString();
 	caseData.escrowTimestamp = caseData.dispatchedAt;
@@ -114,7 +115,7 @@ async function cmdCreate({ args }) {	const payload = loadPayload(args.create ===
 			actor: actorName(),
 			changes: { gate: forensic.gate, reason: caseData.ownerOverride.reason },
 		});
-		const dispatch = await performDispatch({ caseData, forensic, override: true });
+		const dispatch = await performDispatch({ caseData, forensic, override: true, live: true });
 		saveCase(caseData);
 		return { ok: true, caseId: caseData.id, status: caseData.status, forensic: { decision: forensic.decision, gate: forensic.gate }, ownerOverride: caseData.ownerOverride, dispatch: { to: dispatch.to, mode: dispatch.mode } };
 	} else {
@@ -158,13 +159,14 @@ async function cmdDispatchLive({ args }) {
 		actor: actorName(),
 		changes: { gate: forensic.gate, reason: caseData.ownerOverride.reason },
 	});
-	const dispatch = await performDispatch({ caseData, forensic, override: true });
+	const dispatch = await performDispatch({ caseData, forensic, override: true, live: true });
 	saveCase(caseData);
 	return { ok: true, caseId: caseData.id, status: caseData.status, forensic: { decision: forensic.decision, gate: forensic.gate }, ownerOverride: caseData.ownerOverride, dispatch: { to: dispatch.to, mode: dispatch.mode } };
 }
 
-function cmdAdvance({ args, now = new Date() }) {
+async function cmdAdvance({ args, now = new Date() }) {
 	const caseData = loadCase(args.advance);
+	const live = Boolean(args.live);
 	const eligible = [STATUS.ESCALATED, STATUS.FOLLOW_UP_1, STATUS.FOLLOW_UP_2];
 	if (!eligible.includes(caseData.status)) {
 		return { ok: true, caseId: caseData.id, status: caseData.status, businessHoursElapsed: 0, actionsDispatched: 0, note: "Case not in an active follow-up window" };
@@ -174,7 +176,7 @@ function cmdAdvance({ args, now = new Date() }) {
 	for (const action of actions) {
 		const email = followUpEmail({ caseData, stage: action.step });
 		const cc = action.step === "FOLLOW_UP_2" ? "reclamation@attijariwafa.com" : undefined;
-		const dispatch = dispatchEmail({
+		const dispatch = await dispatchEmail({
 			caseId: caseData.id,
 			to: caseData.complaint.bankContact,
 			cc,
@@ -182,6 +184,7 @@ function cmdAdvance({ args, now = new Date() }) {
 			subject: email.subject,
 			body: email.body,
 			step: `followup-${caseData.followups.length + 1}`,
+			live,
 		});
 		caseData.followups.push({
 			kind: "chaser",
@@ -272,7 +275,12 @@ function main() {
 		return;
 	}
 	if (args.advance) {
-		console.log(JSON.stringify(cmdAdvance({ args }), null, 2));
+		cmdAdvance({ args }).then((r) => {
+			console.log(JSON.stringify(r, null, 2));
+		}).catch((e) => {
+			console.error(e.message);
+			process.exit(1);
+		});
 		return;
 	}
 	if (args.respond) {
@@ -291,6 +299,7 @@ function main() {
 		[
 			"Usage: node scripts/run-escalation.mjs --create [payload.json] [--live [--override-reason X] [--decided-by owner]]",
 			"       node scripts/run-escalation.mjs --dispatch-live <caseId> [--override-reason X] [--decided-by owner]",
+			"       node scripts/run-escalation.mjs --advance <caseId> [--live]",
 			"       node scripts/run-escalation.mjs --advance <caseId>",
 			"       node scripts/run-escalation.mjs --respond <caseId> <response.txt>",
 			"       node scripts/run-escalation.mjs --status <caseId>",
