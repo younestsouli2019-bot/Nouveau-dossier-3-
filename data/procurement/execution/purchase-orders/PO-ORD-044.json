@@ -1,0 +1,29 @@
+{
+  "poId": "PO-ORD-044",
+  "orderId": "ORD-044",
+  "phase": 1,
+  "batchId": null,
+  "sku": "SKU-PERISHABLE-44",
+  "label": "perishable item 44",
+  "qty": 5,
+  "unitPrice": 18,
+  "amount": 90,
+  "currency": "USD",
+  "vendor": {
+    "id": "VEN-FOOD-A",
+    "name": "FreshChain Cold",
+    "slaHours": 6
+  },
+  "destination": "WH-3",
+  "slaHours": 6,
+  "approval": {
+    "mode": "auto",
+    "status": "dry_run_no_key",
+    "signedBy": null,
+    "signature": null,
+    "reason": "corporate purchasing key unavailable; drafted without live approval"
+  },
+  "mode": "draft",
+  "status": "drafted",
+  "dispatchedAt": "2026-08-08T14:45:48.034Z"
+}

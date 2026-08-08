@@ -1,0 +1,3946 @@
+{
+  "queue": [
+    {
+      "id": "ORD-001",
+      "sku": "SKU-MEDICAL-1",
+      "label": "medical item 1",
+      "category": "medical",
+      "priority": "critical",
+      "urgencyHours": 6,
+      "qty": 2,
+      "unitPrice": 250,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-MED-A",
+        "name": "MedSupply Direct",
+        "slaHours": 12
+      },
+      "destination": "WH-2",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-001",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.890Z",
+      "approvedAt": "2026-08-08T14:45:47.931Z",
+      "dispatchedAt": "2026-08-08T14:45:47.981Z",
+      "receivedAt": "2026-08-08T14:47:34.741Z",
+      "reconciledAt": "2026-08-08T14:47:34.743Z"
+    },
+    {
+      "id": "ORD-002",
+      "sku": "SKU-MEDICAL-2",
+      "label": "medical item 2",
+      "category": "medical",
+      "priority": "critical",
+      "urgencyHours": 6,
+      "qty": 3,
+      "unitPrice": 250,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-MED-B",
+        "name": "PharmaLogix",
+        "slaHours": 24
+      },
+      "destination": "WH-3",
+      "phase": 1,
+      "status": "discrepancy",
+      "batchId": null,
+      "poId": "PO-ORD-002",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.897Z",
+      "approvedAt": "2026-08-08T14:45:47.935Z",
+      "dispatchedAt": "2026-08-08T14:45:47.983Z",
+      "receivedAt": "2026-08-08T14:47:34.746Z",
+      "reconciledAt": "2026-08-08T14:47:34.746Z"
+    },
+    {
+      "id": "ORD-003",
+      "sku": "SKU-FOOD-3",
+      "label": "food item 3",
+      "category": "food",
+      "priority": "critical",
+      "urgencyHours": 24,
+      "qty": 4,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-FOOD-A",
+        "name": "FreshChain Cold",
+        "slaHours": 6
+      },
+      "destination": "WH-1",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-003",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.897Z",
+      "approvedAt": "2026-08-08T14:45:47.936Z",
+      "dispatchedAt": "2026-08-08T14:45:47.985Z",
+      "receivedAt": "2026-08-08T14:47:34.748Z",
+      "reconciledAt": "2026-08-08T14:47:34.748Z"
+    },
+    {
+      "id": "ORD-004",
+      "sku": "SKU-PERISHABLE-4",
+      "label": "perishable item 4",
+      "category": "perishable",
+      "priority": "critical",
+      "urgencyHours": 24,
+      "qty": 5,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-FOOD-A",
+        "name": "FreshChain Cold",
+        "slaHours": 6
+      },
+      "destination": "WH-2",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-004",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.897Z",
+      "approvedAt": "2026-08-08T14:45:47.938Z",
+      "dispatchedAt": "2026-08-08T14:45:47.988Z",
+      "receivedAt": "2026-08-08T14:47:34.750Z",
+      "reconciledAt": "2026-08-08T14:47:34.750Z"
+    },
+    {
+      "id": "ORD-005",
+      "sku": "SKU-BULK-5",
+      "label": "bulk item 5",
+      "category": "bulk",
+      "priority": "bulk",
+      "urgencyHours": 120,
+      "qty": 55,
+      "unitPrice": 12,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-BULK-A",
+        "name": "BulkWare International",
+        "slaHours": 96
+      },
+      "destination": "WH-3",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-005",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.897Z",
+      "approvedAt": "2026-08-08T14:45:47.939Z",
+      "dispatchedAt": "2026-08-08T14:45:48.048Z",
+      "receivedAt": "2026-08-08T14:47:34.752Z",
+      "reconciledAt": "2026-08-08T14:47:34.752Z"
+    },
+    {
+      "id": "ORD-006",
+      "sku": "SKU-BULK-6",
+      "label": "bulk item 6",
+      "category": "bulk",
+      "priority": "bulk",
+      "urgencyHours": 120,
+      "qty": 56,
+      "unitPrice": 12,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-BULK-A",
+        "name": "BulkWare International",
+        "slaHours": 96
+      },
+      "destination": "WH-1",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-006",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.897Z",
+      "approvedAt": "2026-08-08T14:45:47.940Z",
+      "dispatchedAt": "2026-08-08T14:45:48.050Z",
+      "receivedAt": "2026-08-08T14:47:34.754Z",
+      "reconciledAt": "2026-08-08T14:47:34.754Z"
+    },
+    {
+      "id": "ORD-007",
+      "sku": "SKU-BULK-7",
+      "label": "bulk item 7",
+      "category": "bulk",
+      "priority": "bulk",
+      "urgencyHours": 120,
+      "qty": 57,
+      "unitPrice": 12,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-BULK-A",
+        "name": "BulkWare International",
+        "slaHours": 96
+      },
+      "destination": "WH-2",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-007",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.897Z",
+      "approvedAt": "2026-08-08T14:45:47.941Z",
+      "dispatchedAt": "2026-08-08T14:45:48.052Z",
+      "receivedAt": "2026-08-08T14:47:34.756Z",
+      "reconciledAt": "2026-08-08T14:47:34.756Z"
+    },
+    {
+      "id": "ORD-008",
+      "sku": "SKU-GENERAL-8",
+      "label": "general item 8",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 9,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-GEN-A",
+        "name": "General Distributors",
+        "slaHours": 72
+      },
+      "destination": "WH-3",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-008",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.897Z",
+      "approvedAt": "2026-08-08T14:45:47.943Z",
+      "dispatchedAt": "2026-08-08T14:45:48.055Z",
+      "receivedAt": "2026-08-08T14:47:34.758Z",
+      "reconciledAt": "2026-08-08T14:47:34.758Z"
+    },
+    {
+      "id": "ORD-009",
+      "sku": "SKU-GENERAL-9",
+      "label": "general item 9",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 10,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-GEN-A",
+        "name": "General Distributors",
+        "slaHours": 72
+      },
+      "destination": "WH-1",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-009",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.897Z",
+      "approvedAt": "2026-08-08T14:45:47.943Z",
+      "dispatchedAt": "2026-08-08T14:45:48.057Z",
+      "receivedAt": "2026-08-08T14:47:34.760Z",
+      "reconciledAt": "2026-08-08T14:47:34.760Z"
+    },
+    {
+      "id": "ORD-010",
+      "sku": "SKU-MEDICAL-10",
+      "label": "medical item 10",
+      "category": "medical",
+      "priority": "critical",
+      "urgencyHours": 6,
+      "qty": 1,
+      "unitPrice": 250,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-MED-B",
+        "name": "PharmaLogix",
+        "slaHours": 24
+      },
+      "destination": "WH-2",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-010",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.897Z",
+      "approvedAt": "2026-08-08T14:45:47.944Z",
+      "dispatchedAt": "2026-08-08T14:45:47.990Z",
+      "receivedAt": "2026-08-08T14:47:34.762Z",
+      "reconciledAt": "2026-08-08T14:47:34.762Z"
+    },
+    {
+      "id": "ORD-011",
+      "sku": "SKU-MEDICAL-11",
+      "label": "medical item 11",
+      "category": "medical",
+      "priority": "critical",
+      "urgencyHours": 6,
+      "qty": 2,
+      "unitPrice": 250,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-MED-A",
+        "name": "MedSupply Direct",
+        "slaHours": 12
+      },
+      "destination": "WH-3",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-011",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.945Z",
+      "dispatchedAt": "2026-08-08T14:45:47.992Z",
+      "receivedAt": "2026-08-08T14:47:34.764Z",
+      "reconciledAt": "2026-08-08T14:47:34.764Z"
+    },
+    {
+      "id": "ORD-012",
+      "sku": "SKU-MEDICAL-12",
+      "label": "medical item 12",
+      "category": "medical",
+      "priority": "critical",
+      "urgencyHours": 6,
+      "qty": 3,
+      "unitPrice": 250,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-MED-B",
+        "name": "PharmaLogix",
+        "slaHours": 24
+      },
+      "destination": "WH-1",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-012",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.946Z",
+      "dispatchedAt": "2026-08-08T14:45:47.994Z",
+      "receivedAt": "2026-08-08T14:47:34.766Z",
+      "reconciledAt": "2026-08-08T14:47:34.766Z"
+    },
+    {
+      "id": "ORD-013",
+      "sku": "SKU-FOOD-13",
+      "label": "food item 13",
+      "category": "food",
+      "priority": "critical",
+      "urgencyHours": 24,
+      "qty": 4,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-FOOD-A",
+        "name": "FreshChain Cold",
+        "slaHours": 6
+      },
+      "destination": "WH-2",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-013",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.947Z",
+      "dispatchedAt": "2026-08-08T14:45:47.998Z",
+      "receivedAt": "2026-08-08T14:47:34.768Z",
+      "reconciledAt": "2026-08-08T14:47:34.768Z"
+    },
+    {
+      "id": "ORD-014",
+      "sku": "SKU-PERISHABLE-14",
+      "label": "perishable item 14",
+      "category": "perishable",
+      "priority": "critical",
+      "urgencyHours": 24,
+      "qty": 5,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-FOOD-A",
+        "name": "FreshChain Cold",
+        "slaHours": 6
+      },
+      "destination": "WH-3",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-014",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.948Z",
+      "dispatchedAt": "2026-08-08T14:45:48.000Z",
+      "receivedAt": "2026-08-08T14:47:34.771Z",
+      "reconciledAt": "2026-08-08T14:47:34.771Z"
+    },
+    {
+      "id": "ORD-015",
+      "sku": "SKU-BULK-15",
+      "label": "bulk item 15",
+      "category": "bulk",
+      "priority": "bulk",
+      "urgencyHours": 120,
+      "qty": 65,
+      "unitPrice": 12,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-BULK-A",
+        "name": "BulkWare International",
+        "slaHours": 96
+      },
+      "destination": "WH-1",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-015",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.949Z",
+      "dispatchedAt": "2026-08-08T14:45:48.061Z",
+      "receivedAt": "2026-08-08T14:47:34.773Z",
+      "reconciledAt": "2026-08-08T14:47:34.773Z"
+    },
+    {
+      "id": "ORD-016",
+      "sku": "SKU-BULK-16",
+      "label": "bulk item 16",
+      "category": "bulk",
+      "priority": "bulk",
+      "urgencyHours": 120,
+      "qty": 66,
+      "unitPrice": 12,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-BULK-A",
+        "name": "BulkWare International",
+        "slaHours": 96
+      },
+      "destination": "WH-2",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-016",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.950Z",
+      "dispatchedAt": "2026-08-08T14:45:48.063Z",
+      "receivedAt": "2026-08-08T14:47:34.775Z",
+      "reconciledAt": "2026-08-08T14:47:34.775Z"
+    },
+    {
+      "id": "ORD-017",
+      "sku": "SKU-BULK-17",
+      "label": "bulk item 17",
+      "category": "bulk",
+      "priority": "bulk",
+      "urgencyHours": 120,
+      "qty": 67,
+      "unitPrice": 12,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-BULK-A",
+        "name": "BulkWare International",
+        "slaHours": 96
+      },
+      "destination": "WH-3",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-017",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.951Z",
+      "dispatchedAt": "2026-08-08T14:45:48.065Z",
+      "receivedAt": "2026-08-08T14:47:34.777Z",
+      "reconciledAt": "2026-08-08T14:47:34.777Z"
+    },
+    {
+      "id": "ORD-018",
+      "sku": "SKU-GENERAL-18",
+      "label": "general item 18",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 9,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-GEN-A",
+        "name": "General Distributors",
+        "slaHours": 72
+      },
+      "destination": "WH-1",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-018",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.952Z",
+      "dispatchedAt": "2026-08-08T14:45:48.067Z",
+      "receivedAt": "2026-08-08T14:47:34.779Z",
+      "reconciledAt": "2026-08-08T14:47:34.779Z"
+    },
+    {
+      "id": "ORD-019",
+      "sku": "SKU-GENERAL-19",
+      "label": "general item 19",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 10,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-GEN-A",
+        "name": "General Distributors",
+        "slaHours": 72
+      },
+      "destination": "WH-2",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-019",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.952Z",
+      "dispatchedAt": "2026-08-08T14:45:48.069Z",
+      "receivedAt": "2026-08-08T14:47:34.783Z",
+      "reconciledAt": "2026-08-08T14:47:34.783Z"
+    },
+    {
+      "id": "ORD-020",
+      "sku": "SKU-MEDICAL-20",
+      "label": "medical item 20",
+      "category": "medical",
+      "priority": "critical",
+      "urgencyHours": 6,
+      "qty": 1,
+      "unitPrice": 250,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-MED-B",
+        "name": "PharmaLogix",
+        "slaHours": 24
+      },
+      "destination": "WH-3",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-020",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.953Z",
+      "dispatchedAt": "2026-08-08T14:45:48.002Z",
+      "receivedAt": "2026-08-08T14:47:34.785Z",
+      "reconciledAt": "2026-08-08T14:47:34.785Z"
+    },
+    {
+      "id": "ORD-021",
+      "sku": "SKU-MEDICAL-21",
+      "label": "medical item 21",
+      "category": "medical",
+      "priority": "critical",
+      "urgencyHours": 6,
+      "qty": 2,
+      "unitPrice": 250,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-MED-A",
+        "name": "MedSupply Direct",
+        "slaHours": 12
+      },
+      "destination": "WH-1",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-021",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.954Z",
+      "dispatchedAt": "2026-08-08T14:45:48.004Z",
+      "receivedAt": "2026-08-08T14:47:34.787Z",
+      "reconciledAt": "2026-08-08T14:47:34.787Z"
+    },
+    {
+      "id": "ORD-022",
+      "sku": "SKU-MEDICAL-22",
+      "label": "medical item 22",
+      "category": "medical",
+      "priority": "critical",
+      "urgencyHours": 6,
+      "qty": 3,
+      "unitPrice": 250,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-MED-B",
+        "name": "PharmaLogix",
+        "slaHours": 24
+      },
+      "destination": "WH-2",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-022",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.955Z",
+      "dispatchedAt": "2026-08-08T14:45:48.006Z",
+      "receivedAt": "2026-08-08T14:47:34.790Z",
+      "reconciledAt": "2026-08-08T14:47:34.790Z"
+    },
+    {
+      "id": "ORD-023",
+      "sku": "SKU-FOOD-23",
+      "label": "food item 23",
+      "category": "food",
+      "priority": "critical",
+      "urgencyHours": 24,
+      "qty": 4,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-FOOD-A",
+        "name": "FreshChain Cold",
+        "slaHours": 6
+      },
+      "destination": "WH-3",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-023",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.955Z",
+      "dispatchedAt": "2026-08-08T14:45:48.008Z",
+      "receivedAt": "2026-08-08T14:47:34.792Z",
+      "reconciledAt": "2026-08-08T14:47:34.792Z"
+    },
+    {
+      "id": "ORD-024",
+      "sku": "SKU-PERISHABLE-24",
+      "label": "perishable item 24",
+      "category": "perishable",
+      "priority": "critical",
+      "urgencyHours": 24,
+      "qty": 5,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-FOOD-A",
+        "name": "FreshChain Cold",
+        "slaHours": 6
+      },
+      "destination": "WH-1",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-024",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.956Z",
+      "dispatchedAt": "2026-08-08T14:45:48.010Z",
+      "receivedAt": "2026-08-08T14:47:34.794Z",
+      "reconciledAt": "2026-08-08T14:47:34.794Z"
+    },
+    {
+      "id": "ORD-025",
+      "sku": "SKU-BULK-25",
+      "label": "bulk item 25",
+      "category": "bulk",
+      "priority": "bulk",
+      "urgencyHours": 120,
+      "qty": 75,
+      "unitPrice": 12,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-BULK-A",
+        "name": "BulkWare International",
+        "slaHours": 96
+      },
+      "destination": "WH-2",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-025",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.957Z",
+      "dispatchedAt": "2026-08-08T14:45:48.071Z",
+      "receivedAt": "2026-08-08T14:47:34.796Z",
+      "reconciledAt": "2026-08-08T14:47:34.796Z"
+    },
+    {
+      "id": "ORD-026",
+      "sku": "SKU-BULK-26",
+      "label": "bulk item 26",
+      "category": "bulk",
+      "priority": "bulk",
+      "urgencyHours": 120,
+      "qty": 76,
+      "unitPrice": 12,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-BULK-A",
+        "name": "BulkWare International",
+        "slaHours": 96
+      },
+      "destination": "WH-3",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-026",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.957Z",
+      "dispatchedAt": "2026-08-08T14:45:48.073Z",
+      "receivedAt": "2026-08-08T14:47:34.798Z",
+      "reconciledAt": "2026-08-08T14:47:34.798Z"
+    },
+    {
+      "id": "ORD-027",
+      "sku": "SKU-BULK-27",
+      "label": "bulk item 27",
+      "category": "bulk",
+      "priority": "bulk",
+      "urgencyHours": 120,
+      "qty": 77,
+      "unitPrice": 12,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-BULK-A",
+        "name": "BulkWare International",
+        "slaHours": 96
+      },
+      "destination": "WH-1",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-027",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.958Z",
+      "dispatchedAt": "2026-08-08T14:45:48.075Z",
+      "receivedAt": "2026-08-08T14:47:34.800Z",
+      "reconciledAt": "2026-08-08T14:47:34.800Z"
+    },
+    {
+      "id": "ORD-028",
+      "sku": "SKU-GENERAL-28",
+      "label": "general item 28",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 9,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-GEN-A",
+        "name": "General Distributors",
+        "slaHours": 72
+      },
+      "destination": "WH-2",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-028",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.959Z",
+      "dispatchedAt": "2026-08-08T14:45:48.077Z",
+      "receivedAt": "2026-08-08T14:47:34.802Z",
+      "reconciledAt": "2026-08-08T14:47:34.802Z"
+    },
+    {
+      "id": "ORD-029",
+      "sku": "SKU-GENERAL-29",
+      "label": "general item 29",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 10,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-GEN-A",
+        "name": "General Distributors",
+        "slaHours": 72
+      },
+      "destination": "WH-3",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-029",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.959Z",
+      "dispatchedAt": "2026-08-08T14:45:48.078Z",
+      "receivedAt": "2026-08-08T14:47:34.804Z",
+      "reconciledAt": "2026-08-08T14:47:34.804Z"
+    },
+    {
+      "id": "ORD-030",
+      "sku": "SKU-MEDICAL-30",
+      "label": "medical item 30",
+      "category": "medical",
+      "priority": "critical",
+      "urgencyHours": 6,
+      "qty": 1,
+      "unitPrice": 250,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-MED-B",
+        "name": "PharmaLogix",
+        "slaHours": 24
+      },
+      "destination": "WH-1",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-030",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.960Z",
+      "dispatchedAt": "2026-08-08T14:45:48.012Z",
+      "receivedAt": "2026-08-08T14:47:34.806Z",
+      "reconciledAt": "2026-08-08T14:47:34.806Z"
+    },
+    {
+      "id": "ORD-031",
+      "sku": "SKU-MEDICAL-31",
+      "label": "medical item 31",
+      "category": "medical",
+      "priority": "critical",
+      "urgencyHours": 6,
+      "qty": 2,
+      "unitPrice": 250,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-MED-A",
+        "name": "MedSupply Direct",
+        "slaHours": 12
+      },
+      "destination": "WH-2",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-031",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.961Z",
+      "dispatchedAt": "2026-08-08T14:45:48.014Z",
+      "receivedAt": "2026-08-08T14:47:34.808Z",
+      "reconciledAt": "2026-08-08T14:47:34.808Z"
+    },
+    {
+      "id": "ORD-032",
+      "sku": "SKU-MEDICAL-32",
+      "label": "medical item 32",
+      "category": "medical",
+      "priority": "critical",
+      "urgencyHours": 6,
+      "qty": 3,
+      "unitPrice": 250,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-MED-B",
+        "name": "PharmaLogix",
+        "slaHours": 24
+      },
+      "destination": "WH-3",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-032",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.962Z",
+      "dispatchedAt": "2026-08-08T14:45:48.016Z",
+      "receivedAt": "2026-08-08T14:47:34.810Z",
+      "reconciledAt": "2026-08-08T14:47:34.810Z"
+    },
+    {
+      "id": "ORD-033",
+      "sku": "SKU-FOOD-33",
+      "label": "food item 33",
+      "category": "food",
+      "priority": "critical",
+      "urgencyHours": 24,
+      "qty": 4,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-FOOD-A",
+        "name": "FreshChain Cold",
+        "slaHours": 6
+      },
+      "destination": "WH-1",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-033",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.963Z",
+      "dispatchedAt": "2026-08-08T14:45:48.018Z",
+      "receivedAt": "2026-08-08T14:47:34.814Z",
+      "reconciledAt": "2026-08-08T14:47:34.814Z"
+    },
+    {
+      "id": "ORD-034",
+      "sku": "SKU-PERISHABLE-34",
+      "label": "perishable item 34",
+      "category": "perishable",
+      "priority": "critical",
+      "urgencyHours": 24,
+      "qty": 5,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-FOOD-A",
+        "name": "FreshChain Cold",
+        "slaHours": 6
+      },
+      "destination": "WH-2",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-034",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.964Z",
+      "dispatchedAt": "2026-08-08T14:45:48.022Z",
+      "receivedAt": "2026-08-08T14:47:34.816Z",
+      "reconciledAt": "2026-08-08T14:47:34.816Z"
+    },
+    {
+      "id": "ORD-035",
+      "sku": "SKU-BULK-35",
+      "label": "bulk item 35",
+      "category": "bulk",
+      "priority": "bulk",
+      "urgencyHours": 120,
+      "qty": 85,
+      "unitPrice": 12,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-BULK-A",
+        "name": "BulkWare International",
+        "slaHours": 96
+      },
+      "destination": "WH-3",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-035",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.965Z",
+      "dispatchedAt": "2026-08-08T14:45:48.080Z",
+      "receivedAt": "2026-08-08T14:47:34.818Z",
+      "reconciledAt": "2026-08-08T14:47:34.818Z"
+    },
+    {
+      "id": "ORD-036",
+      "sku": "SKU-BULK-36",
+      "label": "bulk item 36",
+      "category": "bulk",
+      "priority": "bulk",
+      "urgencyHours": 120,
+      "qty": 86,
+      "unitPrice": 12,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-BULK-A",
+        "name": "BulkWare International",
+        "slaHours": 96
+      },
+      "destination": "WH-1",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-036",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.965Z",
+      "dispatchedAt": "2026-08-08T14:45:48.082Z",
+      "receivedAt": "2026-08-08T14:47:34.820Z",
+      "reconciledAt": "2026-08-08T14:47:34.820Z"
+    },
+    {
+      "id": "ORD-037",
+      "sku": "SKU-BULK-37",
+      "label": "bulk item 37",
+      "category": "bulk",
+      "priority": "bulk",
+      "urgencyHours": 120,
+      "qty": 87,
+      "unitPrice": 12,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-BULK-A",
+        "name": "BulkWare International",
+        "slaHours": 96
+      },
+      "destination": "WH-2",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-037",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.966Z",
+      "dispatchedAt": "2026-08-08T14:45:48.083Z",
+      "receivedAt": "2026-08-08T14:47:34.822Z",
+      "reconciledAt": "2026-08-08T14:47:34.822Z"
+    },
+    {
+      "id": "ORD-038",
+      "sku": "SKU-GENERAL-38",
+      "label": "general item 38",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 9,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-GEN-A",
+        "name": "General Distributors",
+        "slaHours": 72
+      },
+      "destination": "WH-3",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-038",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.967Z",
+      "dispatchedAt": "2026-08-08T14:45:48.086Z",
+      "receivedAt": "2026-08-08T14:47:34.824Z",
+      "reconciledAt": "2026-08-08T14:47:34.824Z"
+    },
+    {
+      "id": "ORD-039",
+      "sku": "SKU-GENERAL-39",
+      "label": "general item 39",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 10,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-GEN-A",
+        "name": "General Distributors",
+        "slaHours": 72
+      },
+      "destination": "WH-1",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-039",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.968Z",
+      "dispatchedAt": "2026-08-08T14:45:48.088Z",
+      "receivedAt": "2026-08-08T14:47:34.826Z",
+      "reconciledAt": "2026-08-08T14:47:34.826Z"
+    },
+    {
+      "id": "ORD-040",
+      "sku": "SKU-MEDICAL-40",
+      "label": "medical item 40",
+      "category": "medical",
+      "priority": "critical",
+      "urgencyHours": 6,
+      "qty": 1,
+      "unitPrice": 250,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-MED-B",
+        "name": "PharmaLogix",
+        "slaHours": 24
+      },
+      "destination": "WH-2",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-040",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.968Z",
+      "dispatchedAt": "2026-08-08T14:45:48.024Z",
+      "receivedAt": "2026-08-08T14:47:34.828Z",
+      "reconciledAt": "2026-08-08T14:47:34.828Z"
+    },
+    {
+      "id": "ORD-041",
+      "sku": "SKU-MEDICAL-41",
+      "label": "medical item 41",
+      "category": "medical",
+      "priority": "critical",
+      "urgencyHours": 6,
+      "qty": 2,
+      "unitPrice": 250,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-MED-A",
+        "name": "MedSupply Direct",
+        "slaHours": 12
+      },
+      "destination": "WH-3",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-041",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.969Z",
+      "dispatchedAt": "2026-08-08T14:45:48.027Z",
+      "receivedAt": "2026-08-08T14:47:34.829Z",
+      "reconciledAt": "2026-08-08T14:47:34.829Z"
+    },
+    {
+      "id": "ORD-042",
+      "sku": "SKU-MEDICAL-42",
+      "label": "medical item 42",
+      "category": "medical",
+      "priority": "critical",
+      "urgencyHours": 6,
+      "qty": 3,
+      "unitPrice": 250,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-MED-B",
+        "name": "PharmaLogix",
+        "slaHours": 24
+      },
+      "destination": "WH-1",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-042",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.970Z",
+      "dispatchedAt": "2026-08-08T14:45:48.029Z",
+      "receivedAt": "2026-08-08T14:47:34.831Z",
+      "reconciledAt": "2026-08-08T14:47:34.831Z"
+    },
+    {
+      "id": "ORD-043",
+      "sku": "SKU-FOOD-43",
+      "label": "food item 43",
+      "category": "food",
+      "priority": "critical",
+      "urgencyHours": 24,
+      "qty": 4,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-FOOD-A",
+        "name": "FreshChain Cold",
+        "slaHours": 6
+      },
+      "destination": "WH-2",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-043",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.970Z",
+      "dispatchedAt": "2026-08-08T14:45:48.032Z",
+      "receivedAt": "2026-08-08T14:47:34.833Z",
+      "reconciledAt": "2026-08-08T14:47:34.833Z"
+    },
+    {
+      "id": "ORD-044",
+      "sku": "SKU-PERISHABLE-44",
+      "label": "perishable item 44",
+      "category": "perishable",
+      "priority": "critical",
+      "urgencyHours": 24,
+      "qty": 5,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-FOOD-A",
+        "name": "FreshChain Cold",
+        "slaHours": 6
+      },
+      "destination": "WH-3",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-044",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.971Z",
+      "dispatchedAt": "2026-08-08T14:45:48.034Z",
+      "receivedAt": "2026-08-08T14:47:34.835Z",
+      "reconciledAt": "2026-08-08T14:47:34.835Z"
+    },
+    {
+      "id": "ORD-045",
+      "sku": "SKU-BULK-45",
+      "label": "bulk item 45",
+      "category": "bulk",
+      "priority": "bulk",
+      "urgencyHours": 120,
+      "qty": 95,
+      "unitPrice": 12,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-BULK-A",
+        "name": "BulkWare International",
+        "slaHours": 96
+      },
+      "destination": "WH-1",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-045",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.972Z",
+      "dispatchedAt": "2026-08-08T14:45:48.091Z",
+      "receivedAt": "2026-08-08T14:47:34.836Z",
+      "reconciledAt": "2026-08-08T14:47:34.836Z"
+    },
+    {
+      "id": "ORD-046",
+      "sku": "SKU-BULK-46",
+      "label": "bulk item 46",
+      "category": "bulk",
+      "priority": "bulk",
+      "urgencyHours": 120,
+      "qty": 96,
+      "unitPrice": 12,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-BULK-A",
+        "name": "BulkWare International",
+        "slaHours": 96
+      },
+      "destination": "WH-2",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-046",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.973Z",
+      "dispatchedAt": "2026-08-08T14:45:48.093Z",
+      "receivedAt": "2026-08-08T14:47:34.838Z",
+      "reconciledAt": "2026-08-08T14:47:34.838Z"
+    },
+    {
+      "id": "ORD-047",
+      "sku": "SKU-BULK-47",
+      "label": "bulk item 47",
+      "category": "bulk",
+      "priority": "bulk",
+      "urgencyHours": 120,
+      "qty": 97,
+      "unitPrice": 12,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-BULK-A",
+        "name": "BulkWare International",
+        "slaHours": 96
+      },
+      "destination": "WH-3",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-047",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.974Z",
+      "dispatchedAt": "2026-08-08T14:45:48.096Z",
+      "receivedAt": "2026-08-08T14:47:34.841Z",
+      "reconciledAt": "2026-08-08T14:47:34.841Z"
+    },
+    {
+      "id": "ORD-048",
+      "sku": "SKU-GENERAL-48",
+      "label": "general item 48",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 9,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-GEN-A",
+        "name": "General Distributors",
+        "slaHours": 72
+      },
+      "destination": "WH-1",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-048",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.974Z",
+      "dispatchedAt": "2026-08-08T14:45:48.099Z",
+      "receivedAt": "2026-08-08T14:47:34.842Z",
+      "reconciledAt": "2026-08-08T14:47:34.842Z"
+    },
+    {
+      "id": "ORD-049",
+      "sku": "SKU-GENERAL-49",
+      "label": "general item 49",
+      "category": "general",
+      "priority": "standard",
+      "urgencyHours": 168,
+      "qty": 10,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-GEN-A",
+        "name": "General Distributors",
+        "slaHours": 72
+      },
+      "destination": "WH-2",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-049",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.975Z",
+      "dispatchedAt": "2026-08-08T14:45:48.100Z",
+      "receivedAt": "2026-08-08T14:47:34.844Z",
+      "reconciledAt": "2026-08-08T14:47:34.844Z"
+    },
+    {
+      "id": "ORD-050",
+      "sku": "SKU-MEDICAL-50",
+      "label": "medical item 50",
+      "category": "medical",
+      "priority": "critical",
+      "urgencyHours": 6,
+      "qty": 1,
+      "unitPrice": 250,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-MED-B",
+        "name": "PharmaLogix",
+        "slaHours": 24
+      },
+      "destination": "WH-3",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-050",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.976Z",
+      "dispatchedAt": "2026-08-08T14:45:48.036Z",
+      "receivedAt": "2026-08-08T14:47:34.846Z",
+      "reconciledAt": "2026-08-08T14:47:34.846Z"
+    },
+    {
+      "id": "ORD-051",
+      "sku": "SKU-MEDICAL-51",
+      "label": "medical item 51",
+      "category": "medical",
+      "priority": "critical",
+      "urgencyHours": 6,
+      "qty": 2,
+      "unitPrice": 250,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-MED-A",
+        "name": "MedSupply Direct",
+        "slaHours": 12
+      },
+      "destination": "WH-1",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-051",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.977Z",
+      "dispatchedAt": "2026-08-08T14:45:48.038Z",
+      "receivedAt": "2026-08-08T14:47:34.849Z",
+      "reconciledAt": "2026-08-08T14:47:34.849Z"
+    },
+    {
+      "id": "ORD-052",
+      "sku": "SKU-MEDICAL-52",
+      "label": "medical item 52",
+      "category": "medical",
+      "priority": "critical",
+      "urgencyHours": 6,
+      "qty": 3,
+      "unitPrice": 250,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-MED-B",
+        "name": "PharmaLogix",
+        "slaHours": 24
+      },
+      "destination": "WH-2",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-052",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.977Z",
+      "dispatchedAt": "2026-08-08T14:45:48.040Z",
+      "receivedAt": "2026-08-08T14:47:34.850Z",
+      "reconciledAt": "2026-08-08T14:47:34.850Z"
+    },
+    {
+      "id": "ORD-053",
+      "sku": "SKU-FOOD-53",
+      "label": "food item 53",
+      "category": "food",
+      "priority": "critical",
+      "urgencyHours": 24,
+      "qty": 4,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-FOOD-A",
+        "name": "FreshChain Cold",
+        "slaHours": 6
+      },
+      "destination": "WH-3",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-053",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.978Z",
+      "dispatchedAt": "2026-08-08T14:45:48.043Z",
+      "receivedAt": "2026-08-08T14:47:34.852Z",
+      "reconciledAt": "2026-08-08T14:47:34.852Z"
+    },
+    {
+      "id": "ORD-054",
+      "sku": "SKU-PERISHABLE-54",
+      "label": "perishable item 54",
+      "category": "perishable",
+      "priority": "critical",
+      "urgencyHours": 24,
+      "qty": 5,
+      "unitPrice": 18,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-FOOD-A",
+        "name": "FreshChain Cold",
+        "slaHours": 6
+      },
+      "destination": "WH-1",
+      "phase": 1,
+      "status": "reconciled",
+      "batchId": null,
+      "poId": "PO-ORD-054",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.979Z",
+      "dispatchedAt": "2026-08-08T14:45:48.045Z",
+      "receivedAt": "2026-08-08T14:47:34.854Z",
+      "reconciledAt": "2026-08-08T14:47:34.854Z"
+    },
+    {
+      "id": "ORD-055",
+      "sku": "SKU-BULK-55",
+      "label": "bulk item 55",
+      "category": "bulk",
+      "priority": "bulk",
+      "urgencyHours": 120,
+      "qty": 105,
+      "unitPrice": 12,
+      "currency": "USD",
+      "vendor": {
+        "id": "VEN-BULK-A",
+        "name": "BulkWare International",
+        "slaHours": 96
+      },
+      "destination": "WH-2",
+      "phase": 2,
+      "status": "reconciled",
+      "batchId": "BATCH-2026-08-08-67C1ED",
+      "poId": "PO-ORD-055",
+      "approval": {
+        "mode": "auto",
+        "status": "dry_run_no_key",
+        "signedBy": null,
+        "signature": null,
+        "reason": "corporate purchasing key unavailable; drafted without live approval"
+      },
+      "createdAt": "2026-08-08T14:45:33.898Z",
+      "approvedAt": "2026-08-08T14:45:47.979Z",
+      "dispatchedAt": "2026-08-08T14:45:48.103Z",
+      "receivedAt": "2026-08-08T14:47:34.856Z",
+      "reconciledAt": "2026-08-08T14:47:34.856Z"
+    }
+  ],
+  "meta": {
+    "mode": "agentic",
+    "manualIntervention": "disabled",
+    "approvalGate": "auto-signed",
+    "live": false,
+    "cycle": 2,
+    "lastCycleAt": "2026-08-08T14:46:03.468Z"
+  },
+  "log": [
+    {
+      "ts": "2026-08-08T14:45:33.897Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-001 queued",
+      "meta": {
+        "phase": 1,
+        "category": "medical"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.897Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-002 queued",
+      "meta": {
+        "phase": 1,
+        "category": "medical"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.897Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-003 queued",
+      "meta": {
+        "phase": 1,
+        "category": "food"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.897Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-004 queued",
+      "meta": {
+        "phase": 1,
+        "category": "perishable"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.897Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-005 queued",
+      "meta": {
+        "phase": 2,
+        "category": "bulk"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.897Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-006 queued",
+      "meta": {
+        "phase": 2,
+        "category": "bulk"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.897Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-007 queued",
+      "meta": {
+        "phase": 2,
+        "category": "bulk"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.897Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-008 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.897Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-009 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-010 queued",
+      "meta": {
+        "phase": 1,
+        "category": "medical"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-011 queued",
+      "meta": {
+        "phase": 1,
+        "category": "medical"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-012 queued",
+      "meta": {
+        "phase": 1,
+        "category": "medical"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-013 queued",
+      "meta": {
+        "phase": 1,
+        "category": "food"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-014 queued",
+      "meta": {
+        "phase": 1,
+        "category": "perishable"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-015 queued",
+      "meta": {
+        "phase": 2,
+        "category": "bulk"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-016 queued",
+      "meta": {
+        "phase": 2,
+        "category": "bulk"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-017 queued",
+      "meta": {
+        "phase": 2,
+        "category": "bulk"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-018 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-019 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-020 queued",
+      "meta": {
+        "phase": 1,
+        "category": "medical"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-021 queued",
+      "meta": {
+        "phase": 1,
+        "category": "medical"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-022 queued",
+      "meta": {
+        "phase": 1,
+        "category": "medical"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-023 queued",
+      "meta": {
+        "phase": 1,
+        "category": "food"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-024 queued",
+      "meta": {
+        "phase": 1,
+        "category": "perishable"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-025 queued",
+      "meta": {
+        "phase": 2,
+        "category": "bulk"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-026 queued",
+      "meta": {
+        "phase": 2,
+        "category": "bulk"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-027 queued",
+      "meta": {
+        "phase": 2,
+        "category": "bulk"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-028 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-029 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-030 queued",
+      "meta": {
+        "phase": 1,
+        "category": "medical"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-031 queued",
+      "meta": {
+        "phase": 1,
+        "category": "medical"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-032 queued",
+      "meta": {
+        "phase": 1,
+        "category": "medical"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-033 queued",
+      "meta": {
+        "phase": 1,
+        "category": "food"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-034 queued",
+      "meta": {
+        "phase": 1,
+        "category": "perishable"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-035 queued",
+      "meta": {
+        "phase": 2,
+        "category": "bulk"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-036 queued",
+      "meta": {
+        "phase": 2,
+        "category": "bulk"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-037 queued",
+      "meta": {
+        "phase": 2,
+        "category": "bulk"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-038 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-039 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-040 queued",
+      "meta": {
+        "phase": 1,
+        "category": "medical"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-041 queued",
+      "meta": {
+        "phase": 1,
+        "category": "medical"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-042 queued",
+      "meta": {
+        "phase": 1,
+        "category": "medical"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-043 queued",
+      "meta": {
+        "phase": 1,
+        "category": "food"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-044 queued",
+      "meta": {
+        "phase": 1,
+        "category": "perishable"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-045 queued",
+      "meta": {
+        "phase": 2,
+        "category": "bulk"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-046 queued",
+      "meta": {
+        "phase": 2,
+        "category": "bulk"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-047 queued",
+      "meta": {
+        "phase": 2,
+        "category": "bulk"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-048 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-049 queued",
+      "meta": {
+        "phase": 2,
+        "category": "general"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-050 queued",
+      "meta": {
+        "phase": 1,
+        "category": "medical"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-051 queued",
+      "meta": {
+        "phase": 1,
+        "category": "medical"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-052 queued",
+      "meta": {
+        "phase": 1,
+        "category": "medical"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-053 queued",
+      "meta": {
+        "phase": 1,
+        "category": "food"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-054 queued",
+      "meta": {
+        "phase": 1,
+        "category": "perishable"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:33.898Z",
+      "level": "info",
+      "event": "ORDER_QUEUED",
+      "message": "Order ORD-055 queued",
+      "meta": {
+        "phase": 2,
+        "category": "bulk"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.935Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-001 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.936Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-002 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.938Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-003 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.939Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-004 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.940Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-005 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.941Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-006 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.943Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-007 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.943Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-008 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.944Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-009 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.945Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-010 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.946Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-011 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.947Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-012 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.948Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-013 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.949Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-014 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.950Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-015 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.951Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-016 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.952Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-017 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.952Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-018 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.953Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-019 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.954Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-020 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.955Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-021 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.955Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-022 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.956Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-023 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.957Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-024 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.957Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-025 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.958Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-026 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.959Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-027 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.959Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-028 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.960Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-029 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.961Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-030 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.962Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-031 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.963Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-032 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.964Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-033 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.965Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-034 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.965Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-035 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.966Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-036 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.967Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-037 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.968Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-038 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.968Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-039 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.969Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-040 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.970Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-041 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.970Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-042 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.971Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-043 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.972Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-044 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.973Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-045 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.974Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-046 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.974Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-047 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.975Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-048 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.976Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-049 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.977Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-050 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.977Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-051 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.978Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-052 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.979Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-053 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.979Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-054 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.980Z",
+      "level": "info",
+      "event": "ORDER_APPROVED",
+      "message": "Order ORD-055 auto-approved",
+      "meta": {
+        "approval": "dry_run_no_key"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.983Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-001 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.985Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-002 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.988Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-003 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.990Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-004 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.992Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-010 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.994Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-011 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:47.998Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-012 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.000Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-013 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.002Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-014 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.004Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-020 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.006Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-021 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.008Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-022 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.010Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-023 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.012Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-024 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.014Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-030 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.016Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-031 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.018Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-032 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.022Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-033 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.024Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-034 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.027Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-040 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.029Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-041 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.032Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-042 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.034Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-043 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.036Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-044 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.038Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-050 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.040Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-051 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.043Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-052 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.045Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-053 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.047Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-054 draft",
+      "meta": {
+        "phase": 1,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.050Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-005 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.052Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-006 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.055Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-007 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.057Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-008 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.061Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-009 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.063Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-015 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.065Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-016 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.067Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-017 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.069Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-018 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.071Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-019 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.073Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-025 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.075Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-026 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.076Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-027 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.078Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-028 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.080Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-029 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.082Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-035 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.083Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-036 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.086Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-037 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.088Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-038 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.091Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-039 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.093Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-045 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.096Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-046 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.099Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-047 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.100Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-048 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.103Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-049 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.104Z",
+      "level": "warn",
+      "event": "PO_ISSUED",
+      "message": "PO PO-ORD-055 draft",
+      "meta": {
+        "phase": 2,
+        "mode": "draft"
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.108Z",
+      "level": "info",
+      "event": "BATCH_DISPATCHED",
+      "message": "Batch BATCH-2026-08-08-67C1ED dispatched",
+      "meta": {
+        "count": 26
+      }
+    },
+    {
+      "ts": "2026-08-08T14:45:48.108Z",
+      "level": "info",
+      "event": "CYCLE_COMPLETE",
+      "message": "Cycle 1 complete",
+      "meta": {
+        "live": false
+      }
+    },
+    {
+      "ts": "2026-08-08T14:46:03.468Z",
+      "level": "info",
+      "event": "CYCLE_COMPLETE",
+      "message": "Cycle 2 complete",
+      "meta": {
+        "live": false
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.744Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-001 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.747Z",
+      "level": "warn",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-002 reconciled",
+      "meta": {
+        "quantityMatch": false
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.749Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-003 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.751Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-004 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.753Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-005 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.755Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-006 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.757Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-007 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.759Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-008 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.761Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-009 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.763Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-010 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.765Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-011 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.767Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-012 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.769Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-013 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.772Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-014 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.774Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-015 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.776Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-016 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.778Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-017 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.780Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-018 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.784Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-019 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.786Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-020 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.788Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-021 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.791Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-022 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.793Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-023 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.794Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-024 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.797Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-025 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.799Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-026 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.801Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-027 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.803Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-028 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.805Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-029 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.807Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-030 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.809Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-031 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.811Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-032 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.815Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-033 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.817Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-034 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.818Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-035 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.820Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-036 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.823Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-037 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.825Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-038 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.826Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-039 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.828Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-040 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.830Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-041 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.832Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-042 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.834Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-043 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.835Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-044 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.837Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-045 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.839Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-046 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.841Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-047 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.843Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-048 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.845Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-049 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.847Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-050 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.850Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-051 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.851Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-052 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.853Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-053 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.855Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-054 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    },
+    {
+      "ts": "2026-08-08T14:47:34.856Z",
+      "level": "info",
+      "event": "ORDER_RECONCILED",
+      "message": "Order ORD-055 reconciled",
+      "meta": {
+        "quantityMatch": true
+      }
+    }
+  ]
+}

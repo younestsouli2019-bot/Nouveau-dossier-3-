@@ -1,0 +1,29 @@
+{
+  "poId": "PO-ORD-038",
+  "orderId": "ORD-038",
+  "phase": 2,
+  "batchId": "BATCH-2026-08-08-67C1ED",
+  "sku": "SKU-GENERAL-38",
+  "label": "general item 38",
+  "qty": 9,
+  "unitPrice": 18,
+  "amount": 162,
+  "currency": "USD",
+  "vendor": {
+    "id": "VEN-GEN-A",
+    "name": "General Distributors",
+    "slaHours": 72
+  },
+  "destination": "WH-3",
+  "slaHours": 72,
+  "approval": {
+    "mode": "auto",
+    "status": "dry_run_no_key",
+    "signedBy": null,
+    "signature": null,
+    "reason": "corporate purchasing key unavailable; drafted without live approval"
+  },
+  "mode": "draft",
+  "status": "drafted",
+  "dispatchedAt": "2026-08-08T14:45:48.086Z"
+}

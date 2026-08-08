@@ -1,0 +1,29 @@
+{
+  "poId": "PO-ORD-023",
+  "orderId": "ORD-023",
+  "phase": 1,
+  "batchId": null,
+  "sku": "SKU-FOOD-23",
+  "label": "food item 23",
+  "qty": 4,
+  "unitPrice": 18,
+  "amount": 72,
+  "currency": "USD",
+  "vendor": {
+    "id": "VEN-FOOD-A",
+    "name": "FreshChain Cold",
+    "slaHours": 6
+  },
+  "destination": "WH-3",
+  "slaHours": 6,
+  "approval": {
+    "mode": "auto",
+    "status": "dry_run_no_key",
+    "signedBy": null,
+    "signature": null,
+    "reason": "corporate purchasing key unavailable; drafted without live approval"
+  },
+  "mode": "draft",
+  "status": "drafted",
+  "dispatchedAt": "2026-08-08T14:45:48.008Z"
+}

@@ -1,0 +1,29 @@
+{
+  "poId": "PO-ORD-045",
+  "orderId": "ORD-045",
+  "phase": 2,
+  "batchId": "BATCH-2026-08-08-67C1ED",
+  "sku": "SKU-BULK-45",
+  "label": "bulk item 45",
+  "qty": 95,
+  "unitPrice": 12,
+  "amount": 1140,
+  "currency": "USD",
+  "vendor": {
+    "id": "VEN-BULK-A",
+    "name": "BulkWare International",
+    "slaHours": 96
+  },
+  "destination": "WH-1",
+  "slaHours": 96,
+  "approval": {
+    "mode": "auto",
+    "status": "dry_run_no_key",
+    "signedBy": null,
+    "signature": null,
+    "reason": "corporate purchasing key unavailable; drafted without live approval"
+  },
+  "mode": "draft",
+  "status": "drafted",
+  "dispatchedAt": "2026-08-08T14:45:48.091Z"
+}

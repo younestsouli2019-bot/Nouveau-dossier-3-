@@ -1,0 +1,29 @@
+{
+  "poId": "PO-ORD-032",
+  "orderId": "ORD-032",
+  "phase": 1,
+  "batchId": null,
+  "sku": "SKU-MEDICAL-32",
+  "label": "medical item 32",
+  "qty": 3,
+  "unitPrice": 250,
+  "amount": 750,
+  "currency": "USD",
+  "vendor": {
+    "id": "VEN-MED-B",
+    "name": "PharmaLogix",
+    "slaHours": 24
+  },
+  "destination": "WH-3",
+  "slaHours": 24,
+  "approval": {
+    "mode": "auto",
+    "status": "dry_run_no_key",
+    "signedBy": null,
+    "signature": null,
+    "reason": "corporate purchasing key unavailable; drafted without live approval"
+  },
+  "mode": "draft",
+  "status": "drafted",
+  "dispatchedAt": "2026-08-08T14:45:48.016Z"
+}

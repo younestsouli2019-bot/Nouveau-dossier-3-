@@ -1,0 +1,29 @@
+{
+  "poId": "PO-ORD-049",
+  "orderId": "ORD-049",
+  "phase": 2,
+  "batchId": "BATCH-2026-08-08-67C1ED",
+  "sku": "SKU-GENERAL-49",
+  "label": "general item 49",
+  "qty": 10,
+  "unitPrice": 18,
+  "amount": 180,
+  "currency": "USD",
+  "vendor": {
+    "id": "VEN-GEN-A",
+    "name": "General Distributors",
+    "slaHours": 72
+  },
+  "destination": "WH-2",
+  "slaHours": 72,
+  "approval": {
+    "mode": "auto",
+    "status": "dry_run_no_key",
+    "signedBy": null,
+    "signature": null,
+    "reason": "corporate purchasing key unavailable; drafted without live approval"
+  },
+  "mode": "draft",
+  "status": "drafted",
+  "dispatchedAt": "2026-08-08T14:45:48.100Z"
+}

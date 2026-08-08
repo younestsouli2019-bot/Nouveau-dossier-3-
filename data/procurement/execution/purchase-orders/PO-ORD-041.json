@@ -1,0 +1,29 @@
+{
+  "poId": "PO-ORD-041",
+  "orderId": "ORD-041",
+  "phase": 1,
+  "batchId": null,
+  "sku": "SKU-MEDICAL-41",
+  "label": "medical item 41",
+  "qty": 2,
+  "unitPrice": 250,
+  "amount": 500,
+  "currency": "USD",
+  "vendor": {
+    "id": "VEN-MED-A",
+    "name": "MedSupply Direct",
+    "slaHours": 12
+  },
+  "destination": "WH-3",
+  "slaHours": 12,
+  "approval": {
+    "mode": "auto",
+    "status": "dry_run_no_key",
+    "signedBy": null,
+    "signature": null,
+    "reason": "corporate purchasing key unavailable; drafted without live approval"
+  },
+  "mode": "draft",
+  "status": "drafted",
+  "dispatchedAt": "2026-08-08T14:45:48.027Z"
+}
