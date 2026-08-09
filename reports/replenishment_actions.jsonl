@@ -64,3 +64,4 @@
 {"id":"replenish_1786227602999","timestamp":"2026-08-08T22:20:02.999Z","deficit_detected":50000,"assets_seized":65,"value_recovered":0,"status":"PARTIALLY_RECOVERED"}
 {"id":"replenish_1786231209700","timestamp":"2026-08-08T23:20:09.700Z","deficit_detected":50000,"assets_seized":65,"value_recovered":0,"status":"PARTIALLY_RECOVERED"}
 {"id":"replenish_1786237368500","timestamp":"2026-08-09T01:02:48.500Z","deficit_detected":50000,"assets_seized":65,"value_recovered":0,"status":"PARTIALLY_RECOVERED"}
+{"id":"replenish_1786245950164","timestamp":"2026-08-09T03:25:50.164Z","deficit_detected":50000,"assets_seized":65,"value_recovered":0,"status":"PARTIALLY_RECOVERED"}
