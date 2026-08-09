@@ -1,4 +1,4 @@
 # External Collections Report
-Generated: 2026-08-09T08:32:23.771Z
+Generated: 2026-08-09T09:30:53.030Z
 
 ✅ No overdue external payments detected.
