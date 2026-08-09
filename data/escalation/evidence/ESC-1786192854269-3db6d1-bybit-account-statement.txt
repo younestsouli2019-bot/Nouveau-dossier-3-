@@ -1,0 +1,42 @@
+BYBIT ACCOUNT STATEMENT — PROOF OF NON-RECEIPT OF CRYPTO (L2)
+Case: ESC-1786192854269-3db6d1
+Source file: account-statement_tradePerformancePnl_13275378_20251001_20260806_0.pdf
+
+Main Account: younestsouli2019@gmail.com
+Name: YOUNES TSOULI
+UID: 13275378, 267811557
+Snapshot taken on: 2026-08-06
+
+Asset Overview
+Account Type: Token Equity Balance Closing Price (USDT) Equity Value (USDT)
+Total Equity Value (USDT) 0
+
+Change in value
+Time period: -
+Total equity value in USDT (before) 0
+Total equity value in USDT (after) 0
+Total change in value (USDT) 0
+
+Account Statement — Page 1/3
+Trading PnL
+Time period 2025-10-01 ~ 2026-08-06
+Account Type: Realized trading PnL
+Spot 0.00
+Futures 0.00
+Options 0.00
+Total PnL (USDT) 0.00
+
+Notes (from statement):
+1. Snapshot of assets based on selected timeframe.
+2. Equity Value: total balance across Funding, Unified Trading, Trading Bot, and Launchpool accounts.
+3. Statement solely intended to verify transaction history on Bybit within the reference time.
+4. Bybit has not verified the account balance before or after the specified timeframe.
+5. Document issued at request of the client/user.
+6. Snapshot taken at 23:59 UTC on selected date; generation ~24h; download link valid 7 days.
+7. Statement provides a snapshot of account assets.
+
+Account Statement — Page 2/3 / Page 3/3 (notes only)
+
+Summary: Total equity value 0 USDT; total trading PnL 0.00 USDT across Spot/Futures/Options
+for the period 2025-10-01 ~ 2026-08-06 — supports the claim that no crypto (L2) proceeds
+were received into the Bybit account referenced by UID 13275378 / 267811557.

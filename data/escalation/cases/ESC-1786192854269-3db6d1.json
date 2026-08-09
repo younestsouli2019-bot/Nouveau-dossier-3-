@@ -203,6 +203,21 @@
     }
   ],
   "responses": [],
+  "evidence": [
+    {
+      "kind": "bybit_account_statement",
+      "label": "Bybit account statement - proof of non-receipt of crypto (L2)",
+      "source": "account-statement_tradePerformancePnl_13275378_20251001_20260806_0.pdf",
+      "account": "younestsouli2019@gmail.com",
+      "uid": "13275378, 267811557",
+      "snapshotAt": "2026-08-06",
+      "period": "2025-10-01 ~ 2026-08-06",
+      "totalEquityUsdt": 0,
+      "totalPnlUsdt": 0,
+      "file": "data\\escalation\\evidence\\ESC-1786192854269-3db6d1-bybit-account-statement.txt",
+      "addedAt": "2026-08-09T00:35:00.000Z"
+    }
+  ],
   "complianceFlags": [],
   "hitl": {
     "type": "Tier3HumanOps",
