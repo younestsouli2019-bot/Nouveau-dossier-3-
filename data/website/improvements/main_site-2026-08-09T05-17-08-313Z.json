@@ -1,0 +1,183 @@
+{
+  "status": "improvement_plan",
+  "target": {
+    "id": "main_site",
+    "name": "realworldcerts.com",
+    "kind": "public_site"
+  },
+  "model": null,
+  "provenance": "local_heuristics",
+  "summary": "Local heuristic audit (no model configured).",
+  "improvements": [
+    {
+      "id": "social-og-image",
+      "area": "schema",
+      "url": "https://www.realworldcerts.com",
+      "rationale": "No Open Graph image; links shared to Slack/Discord/WhatsApp render without preview art.",
+      "priority": "medium",
+      "current": "og:image missing",
+      "suggested": "<meta property=\"og:image\" content=\"https://www.realworldcerts.com/assets/og-default.png\">"
+    },
+    {
+      "id": "standard-seo_title",
+      "area": "copy",
+      "url": "https://www.realworldcerts.com",
+      "rationale": "Site standards audit failure: Unique meta title per course page.",
+      "priority": "medium",
+      "current": "fails standard audit",
+      "suggested": "Add a unique meta title (>10 chars) to the course page"
+    },
+    {
+      "id": "standard-seo_description",
+      "area": "copy",
+      "url": "https://www.realworldcerts.com",
+      "rationale": "Site standards audit failure: Meta description present and non-trivial.",
+      "priority": "medium",
+      "current": "fails standard audit",
+      "suggested": "Add a meta description (>40 chars) covering the cert objectives"
+    },
+    {
+      "id": "standard-pricing",
+      "area": "copy",
+      "url": "https://www.realworldcerts.com",
+      "rationale": "Site standards audit failure: Price visible and consistent with catalog.",
+      "priority": "medium",
+      "current": "fails standard audit",
+      "suggested": "Set a positive priceCents on the course listing"
+    },
+    {
+      "id": "standard-social_proof",
+      "area": "copy",
+      "url": "https://www.realworldcerts.com",
+      "rationale": "Site standards audit failure: Testimonials or student/review count shown.",
+      "priority": "medium",
+      "current": "fails standard audit",
+      "suggested": "Add testimonials or a student/review count to the landing page"
+    },
+    {
+      "id": "standard-cert_objectives",
+      "area": "copy",
+      "url": "https://www.realworldcerts.com",
+      "rationale": "Site standards audit failure: Certification exam codes/objectives referenced.",
+      "priority": "medium",
+      "current": "fails standard audit",
+      "suggested": "Reference the exam code and the domains covered"
+    },
+    {
+      "id": "standard-cta",
+      "area": "copy",
+      "url": "https://www.realworldcerts.com",
+      "rationale": "Site standards audit failure: Clear purchase CTA above the fold.",
+      "priority": "medium",
+      "current": "fails standard audit",
+      "suggested": "Add a primary purchase CTA above the fold"
+    },
+    {
+      "id": "standard-sales_mapping",
+      "area": "copy",
+      "url": "https://www.realworldcerts.com",
+      "rationale": "Site standards audit failure: Sales records map cleanly to product names.",
+      "priority": "medium",
+      "current": "fails standard audit",
+      "suggested": "Normalize sale records to product names before ingestion"
+    }
+  ],
+  "standards": {
+    "target": "realworldcerts.com",
+    "score": 0.36,
+    "grade": "D",
+    "passCount": 4,
+    "failCount": 7,
+    "checks": [
+      {
+        "id": "seo_title",
+        "label": "Unique meta title per course page",
+        "weight": 1,
+        "status": "fail",
+        "detail": "Add a unique meta title (>10 chars) to the course page"
+      },
+      {
+        "id": "seo_description",
+        "label": "Meta description present and non-trivial",
+        "weight": 1,
+        "status": "fail",
+        "detail": "Add a meta description (>40 chars) covering the cert objectives"
+      },
+      {
+        "id": "pricing",
+        "label": "Price visible and consistent with catalog",
+        "weight": 1,
+        "status": "fail",
+        "detail": "Set a positive priceCents on the course listing"
+      },
+      {
+        "id": "social_proof",
+        "label": "Testimonials or student/review count shown",
+        "weight": 1,
+        "status": "fail",
+        "detail": "Add testimonials or a student/review count to the landing page"
+      },
+      {
+        "id": "affiliate_program",
+        "label": "Affiliate program visible with commission terms",
+        "weight": 1,
+        "status": "pass",
+        "detail": "check passed"
+      },
+      {
+        "id": "cert_objectives",
+        "label": "Certification exam codes/objectives referenced",
+        "weight": 1,
+        "status": "fail",
+        "detail": "Reference the exam code and the domains covered"
+      },
+      {
+        "id": "trust",
+        "label": "HTTPS, support page, refund policy present",
+        "weight": 1,
+        "status": "pass",
+        "detail": "check passed"
+      },
+      {
+        "id": "cta",
+        "label": "Clear purchase CTA above the fold",
+        "weight": 1,
+        "status": "fail",
+        "detail": "Add a primary purchase CTA above the fold"
+      },
+      {
+        "id": "mobile",
+        "label": "Responsive layout declared",
+        "weight": 1,
+        "status": "pass",
+        "detail": "check passed"
+      },
+      {
+        "id": "human_copy",
+        "label": "No AI tells in course copy; real instructor persona",
+        "weight": 1,
+        "status": "pass",
+        "detail": "check passed"
+      },
+      {
+        "id": "sales_mapping",
+        "label": "Sales records map cleanly to product names",
+        "weight": 1,
+        "status": "fail",
+        "detail": "Normalize sale records to product names before ingestion"
+      }
+    ],
+    "failing": [
+      "seo_title",
+      "seo_description",
+      "pricing",
+      "social_proof",
+      "cert_objectives",
+      "cta",
+      "sales_mapping"
+    ],
+    "verdict": "needs_attention"
+  },
+  "collectedAt": "2026-08-09T05:17:08.309Z",
+  "pageCount": 4
+}

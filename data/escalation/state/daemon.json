@@ -1,23 +1,17 @@
 {
-  "runs": 7,
-  "lastRunAt": "2026-08-08T14:14:56.622Z",
+  "runs": 9,
+  "lastRunAt": "2026-08-08T23:26:02.364Z",
   "lastConnectivity": {
     "online": true,
     "status": "online",
     "lastOnlineAt": "2026-08-08T14:06:55.594Z",
     "lastOfflineAt": null,
     "offlineSince": null,
-    "lastProbedAt": "2026-08-08T14:14:56.546Z",
+    "lastProbedAt": "2026-08-08T23:26:02.356Z",
     "lastProbe": {
       "online": true,
-      "probedAt": "2026-08-08T14:14:56.544Z",
+      "probedAt": "2026-08-08T23:26:02.355Z",
       "results": [
-        {
-          "name": "smtp",
-          "host": "127.0.0.1",
-          "port": 2525,
-          "ok": false
-        },
         {
           "name": "dns",
           "host": "1.1.1.1",
@@ -65,8 +59,16 @@
       {
         "at": "2026-08-08T14:14:56.546Z",
         "status": "online"
+      },
+      {
+        "at": "2026-08-08T23:25:50.888Z",
+        "status": "online"
+      },
+      {
+        "at": "2026-08-08T23:26:02.356Z",
+        "status": "online"
       }
     ]
   },
-  "degradedRuns": 5
+  "degradedRuns": 7
 }

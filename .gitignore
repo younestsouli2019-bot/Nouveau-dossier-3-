@@ -16,3 +16,5 @@ node_modules/
  .keys/
  *.pem
 opencode.json
+.vercel
+.env*
