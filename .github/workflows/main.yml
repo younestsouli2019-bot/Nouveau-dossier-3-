@@ -1,0 +1,35 @@
+name: Download File from URL
+on:
+  workflow_dispatch: # run manually
+
+permissions:
+  contents: write
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Download file
+        run: |
+          # Use a timestamped filename to avoid accidental overwrites
+          FILENAME="Nouveau-dossier-3-$(date +'%Y-%m-%d').zip"
+          curl -fSL -o "$FILENAME" "https://preview-chat-c00bebd6-0736-4444-bdaf-950f1172cd81.space-z.ai/api/download"
+          echo "DOWNLOAD_FILENAME=$FILENAME" >> $GITHUB_ENV
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$DOWNLOAD_FILENAME" || true
+          # Only commit if there are staged changes
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Downloaded file from URL: $DOWNLOAD_FILENAME"
+            git push
+          fi
