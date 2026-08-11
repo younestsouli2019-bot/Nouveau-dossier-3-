@@ -1,0 +1,36 @@
+{
+  "ma_attijari_prod": {
+    "name": "Attijariwafa Bank",
+    "region": "Morocco",
+    "base_url": "https://attijariwafabank.com",
+    "auth_scheme": "OAuth2-Mutual-TLS",
+    "endpoints": {
+      "ais_path": "accounts",
+      "pis_path": "payments",
+      "token_url": "https://attijariwafabank.com/oauth2/token",
+      "scope": "accounts payments"
+    },
+    "crypto": {
+      "client_cert_path": "./certs/ma_attijari_qwsac.pem",
+      "private_key_path": "./certs/ma_attijari_private.key",
+      "eidas_ca_path": "./certs/morocco_root_ca.pem"
+    }
+  },
+  "eu_deutsche_prod": {
+    "name": "Deutsche Bank Core API",
+    "region": "Europe (Berlin Group)",
+    "base_url": "https://deutsche-bank.com",
+    "auth_scheme": "OAuth2-eIDAS",
+    "endpoints": {
+      "ais_path": "consents",
+      "pis_path": "payments/sepa-credit-transfers",
+      "token_url": "https://deutsche-bank.com/oauth2/token",
+      "scope": "ais pis"
+    },
+    "crypto": {
+      "client_cert_path": "./certs/eu_qwasc.pem",
+      "private_key_path": "./certs/eu_private.key",
+      "eidas_ca_path": "./certs/qtsp_validated_chain.pem"
+    }
+  }
+}

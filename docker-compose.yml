@@ -1,0 +1,17 @@
+version: "3.8"
+services:
+  autonomous-psd2:
+    build: .
+    image: autonomous-psd2:latest
+    restart: unless-stopped
+    environment:
+      - REGISTRY_PATH=/app/registry.json
+      - DB_PATH=/data/engine_state.sqlite
+      - HTTP_METRICS_PORT=8080
+      - CANARY_INTERVAL_SECONDS=60
+    volumes:
+      - ./registry.json:/app/registry.json:ro
+      - ./certs:/certs:ro
+      - ./data:/data
+    ports:
+      - "8080:8080"
