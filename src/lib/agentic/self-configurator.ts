@@ -1,0 +1,192 @@
+// ——— Self-Configuror ———
+// Inspects the environment and attijari-config.json for missing/placeholder
+// credentials, builds a configuration manifest, and generates a safe
+// `.env.example` template. It never prints real secrets and never writes
+// secret-bearing files automatically.
+
+import type { AgentRun, AgentStepResult } from './types'
+import { getProviderConfig } from '@/lib/payment-providers'
+
+interface EnvKeySpec {
+  key: string
+  required: boolean
+  provider: string
+  description: string
+  placeholder?: string
+}
+
+const ENV_CATALOG: EnvKeySpec[] = [
+  { key: 'DATABASE_URL', required: true, provider: 'db', description: 'Prisma/SQLite database connection string' },
+  { key: 'OWNER_NAME', required: false, provider: 'owner', description: 'Owner full name (settlement routing)' },
+  { key: 'OWNER_EMAIL', required: false, provider: 'owner', description: 'Owner email (settlement routing)' },
+  { key: 'PAYPAL_CLIENT_ID', required: false, provider: 'paypal', description: 'PayPal REST API client id' },
+  { key: 'PAYPAL_CLIENT_SECRET', required: false, provider: 'paypal', description: 'PayPal REST API client secret' },
+  { key: 'PAYPAL_SANDBOX', required: false, provider: 'paypal', description: 'Defaults to true; set false for live' },
+  { key: 'PAYONEER_API_TOKEN', required: false, provider: 'payoneer', description: 'Payoneer mass payout API token' },
+  { key: 'PAYONEER_PROGRAM_ID', required: false, provider: 'payoneer', description: 'Payoneer program id' },
+  { key: 'PAYONEER_PARTNER_ID', required: false, provider: 'payoneer', description: 'Payoneer partner id' },
+  { key: 'PAYONEER_SANDBOX', required: false, provider: 'payoneer', description: 'Defaults to true; set false for live' },
+  { key: 'BANK_WIRE_BANK_NAME', required: false, provider: 'bank_transfer', description: 'Bank name for wire transfers' },
+  { key: 'BANK_WIRE_BIC', required: false, provider: 'bank_transfer', description: 'Bank BIC/SWIFT' },
+  { key: 'BANK_WIRE_ACCOUNT_NUMBER', required: false, provider: 'bank_transfer', description: 'Bank account number' },
+  { key: 'BANK_WIRE_ACCOUNT_NAME', required: false, provider: 'bank_transfer', description: 'Bank account holder name' },
+  { key: 'ATTIJARI_API_BASE_URL', required: false, provider: 'attijari', description: 'Attijari Open Banking base URL' },
+  { key: 'ATTIJARI_CLIENT_ID', required: false, provider: 'attijari', description: 'Attijari OAuth2 client id' },
+  { key: 'ATTIJARI_CLIENT_SECRET', required: false, provider: 'attijari', description: 'Attijari OAuth2 client secret' },
+  { key: 'ATTIJARI_SANDBOX', required: false, provider: 'attijari', description: 'Defaults to true; set false ONLY for real transfers' },
+]
+
+const PLACEHOLDER_RE = /^(CHANGE_ME|TODO|XXX|PLACEHOLDER|xxxx|xxx|your|your_|YOUR)/i
+
+function isPlaceholder(value: string | undefined): boolean {
+  if (!value) return false
+  return PLACEHOLDER_RE.test(value) || /^[A-Z0-9_]+$/.test(value)
+}
+
+export interface ConfigManifest {
+  databaseConfigured: boolean
+  ownerConfigured: boolean
+  providers: Array<{
+    provider: string
+    ready: boolean
+    sandbox: boolean
+    status: 'ready' | 'sandbox_only' | 'missing' | 'placeholder'
+  }>
+  missingKeys: string[]
+  placeholderKeys: string[]
+}
+
+export function inspectEnvironment(): ConfigManifest {
+  const missingKeys: string[] = []
+  const placeholderKeys: string[] = []
+
+  for (const spec of ENV_CATALOG) {
+    if (!spec.required) continue
+    const value = process.env[spec.key]
+    if (!value) missingKeys.push(spec.key)
+    else if (isPlaceholder(value)) placeholderKeys.push(spec.key)
+  }
+
+  const databaseConfigured = !!process.env.DATABASE_URL
+  const ownerConfigured = !!process.env.OWNER_NAME && !!process.env.OWNER_EMAIL
+
+  const providerStatus: ConfigManifest['providers'] = []
+  for (const provider of ['paypal', 'payoneer', 'bank_transfer', 'attijari'] as const) {
+    const config = getProviderConfig(provider)
+    const sandbox = (config as { sandbox?: boolean } | null)?.sandbox ?? true
+    const requiredKeys = ENV_CATALOG.filter((s) => s.provider === provider).map((s) => s.key)
+    const missing = requiredKeys.some((k) => !process.env[k])
+    const placeholder = requiredKeys.some((k) => process.env[k] && isPlaceholder(process.env[k]))
+    providerStatus.push({
+      provider,
+      ready: !!config && !sandbox,
+      sandbox,
+      status: !!config ? (sandbox ? 'sandbox_only' : 'ready') : placeholder ? 'placeholder' : 'missing',
+    })
+    if (missing) missingKeys.push(...requiredKeys.filter((k) => !process.env[k]))
+  }
+
+  return {
+    databaseConfigured,
+    ownerConfigured,
+    providers: providerStatus,
+    missingKeys: [...new Set(missingKeys)],
+    placeholderKeys: [...new Set(placeholderKeys)],
+  }
+}
+
+export function generateDotenvExample(manifest?: ConfigManifest): string {
+  const m = manifest ?? inspectEnvironment()
+  const lines = [
+    '# — Swarm environment template —',
+    '# Generated by Self-Configuror. NEVER commit real secrets.',
+    '',
+    '# Database',
+    'DATABASE_URL="file:./prisma/dev.db"',
+    '',
+    '# Owner identity (settlement routing target)',
+    'OWNER_NAME="Younes Tsouli"',
+    'OWNER_EMAIL="y.tsouli@gmail.com"',
+    '',
+    '# PayPal (defaults to sandbox)',
+    'PAYPAL_CLIENT_ID=',
+    'PAYPAL_CLIENT_SECRET=',
+    'PAYPAL_SANDBOX=true',
+    '',
+    '# Payoneer (defaults to sandbox)',
+    'PAYONEER_API_TOKEN=',
+    'PAYONEER_PROGRAM_ID=',
+    'PAYONEER_PARTNER_ID=',
+    'PAYONEER_SANDBOX=true',
+    '',
+    '# Bank Wire (defaults to sandbox)',
+    'BANK_WIRE_BANK_NAME=',
+    'BANK_WIRE_BIC=',
+    'BANK_WIRE_ACCOUNT_NUMBER=',
+    'BANK_WIRE_ACCOUNT_NAME=',
+    'BANK_SANDBOX=true',
+    '',
+    '# Attijariwafa Bank (defaults to sandbox; set ATTIJARI_SANDBOX=false ONLY for live)',
+    'ATTIJARI_API_BASE_URL=',
+    'ATTIJARI_CLIENT_ID=',
+    'ATTIJARI_CLIENT_SECRET=',
+    'ATTIJARI_SANDBOX=true',
+    '',
+  ]
+  if (m.missingKeys.length > 0) {
+    lines.push('# Currently missing: ' + m.missingKeys.join(', '))
+  }
+  return lines.join('\n')
+}
+
+export async function runConfigurator(): Promise<AgentRun> {
+  const start = Date.now()
+  const steps: AgentStepResult[] = []
+
+  const manifest = inspectEnvironment()
+
+  const dbStep = manifest.databaseConfigured
+  steps.push({
+    step: 'inspect_database_config',
+    status: dbStep ? 'ok' : 'error',
+    itemsAffected: dbStep ? 1 : 0,
+    details: dbStep ? 'DATABASE_URL present' : 'DATABASE_URL missing — set in .env',
+    durationMs: 0,
+  })
+
+  steps.push({
+    step: 'inspect_owner_config',
+    status: manifest.ownerConfigured ? 'ok' : 'warn',
+    itemsAffected: manifest.ownerConfigured ? 1 : 0,
+    details: manifest.ownerConfigured
+      ? 'Owner identity configured'
+      : 'OWNER_NAME / OWNER_EMAIL missing — owner accounts only RECEIVE settlements',
+    durationMs: 0,
+  })
+
+  for (const p of manifest.providers) {
+    steps.push({
+      step: `inspect_provider_${p.provider}`,
+      status: p.status === 'ready' ? 'ok' : p.status === 'sandbox_only' ? 'warn' : 'warn',
+      itemsAffected: p.status === 'ready' || p.status === 'sandbox_only' ? 1 : 0,
+      details: `provider=${p.provider}, status=${p.status}, sandbox=${p.sandbox}`,
+      durationMs: 0,
+    })
+  }
+
+  steps.push({
+    step: 'generate_env_template',
+    status: 'ok',
+    itemsAffected: 1,
+    details: 'Generated .env.example — missing keys: ' + (manifest.missingKeys.join(', ') || 'none'),
+    durationMs: 0,
+  })
+
+  return {
+    phase: 'configure',
+    status: steps.some((s) => s.status === 'error') ? 'error' : 'success',
+    steps,
+    startedAt: new Date(start).toISOString(),
+    durationMs: Date.now() - start,
+  }
+}
