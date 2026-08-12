@@ -32,7 +32,7 @@
     "paypal:sync:payout": "node ./src/sync-paypal-payout-batch.mjs",
     "paypal:create:order": "node ./src/create-paypal-order.mjs",
     "paypal:links:generate": "node ./scripts/generate-paypal-links.mjs --csv ./archive/paypal_masspayout_ready.csv",
-    "paypal:links:confirm": "node ./scripts/confirm-paypal-links.mjs --csv ./archive/paypal_masspayout_ready.csv --out-json ./out/paypal/payer-links.json --confirm-out ./out/paypal/confirmation.json",
+    "paypal:links:confirm": "node ./scripts/confirm-paypal-links.mjs --csv ./archive/paypal_masspayout_ready.csv --out-json ./out/paypal/payer-links.json --confirm-out ./out/paypal/confirmation.js",
     "wise:webhook:start": "node ./src/wise-webhook-server.mjs --port 5056 --path /callback",
     "wise:webhook:subscribe": "node ./scripts/wise-subscribe-webhooks.mjs --client-key $env:WISE_CLIENT_KEY --url $env:WISE_WEBHOOK_URL",
     "plaid:webhook:start": "node ./src/plaid-webhook-server.mjs --port 5057 --path /plaid/webhook",
@@ -58,7 +58,7 @@
     "owner:routes:update": "node ./scripts/update-owner-routes.mjs",
     "env:bulk:update": "node ./scripts/env-bulk-update.mjs",
     "secrets:org:sync": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/gh-sync-org-secrets.ps1 -Org $env:GITHUB_ORG -Repos $env:GITHUB_REPOS -Visibility all",
-    "secrets:sync": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$m = $env:ORG_MODE; if (($m ?? 'false').ToString().ToLower() -eq 'true') { & ./scripts/gh-sync-org-secrets.ps1 -Org $env:GITHUB_ORG -Visibility all } else { Write-Output 'ORG_MODE_DISABLED' }\"",
+    "secrets:sync": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$m = $env:ORG_MODE; if (($m ?? 'false').ToString().ToLower() -eq 'true') { & ./scripts/gh-sync-org-secrets.ps1 -Org $env:GITHUB_ORG -Repos $env:GITHUB_REPOS -Visibility all } else { & ./scripts/gh-sync-repo-secrets.ps1 -Repo $env:GITHUB_REPO -Visibility all }\"",
     "swarm:replenish": "node ./scripts/replenish-agents.mjs",
     "swarm:supervise": "node ./src/swarm/supervisor.mjs",
     "swarm:add:agents": "node ./scripts/register-external-agents.mjs",
@@ -90,13 +90,16 @@
     "catalogue:ultimate": "node ./scripts/ultimateCatalogueSwarm.mjs",
     "backend:plumber": "node ./src/backend-pipework-plumber.mjs",
     "env:local:load": "node ./scripts/env-local-load.mjs",
-    "env:secretbox:load": "node ./scripts/env-secretbox-load.mjs"
+    "env:secretbox:load": "node ./scripts/env-secretbox-load.mjs",
+    "audit:security": "npm audit --audit-level=moderate",
+    "audit:security:fix": "npm audit fix --force",
+    "update:deps": "npm update --save"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.13",
     "@binance/connector": "^3.6.1",
     "base64-js": "^1.5.1",
-    "body-parser": "^2.2.1",
+    "body-parser": "^2.2.2",
     "ccxt": "^4.5.32",
     "csv-parse": "^6.1.0",
     "csv-stringify": "^6.6.0",
@@ -120,5 +123,9 @@
       "env:local:load": "node ./scripts/env-local-load.mjs",
       "env:secretbox:load": "node ./scripts/env-secretbox-load.mjs"
     }
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   }
 }
