@@ -21,7 +21,7 @@
         "sandboxed_end_to_end"
       ],
       "created_at": "2026-02-11T12:50:20.388Z",
-      "updated_at": "2026-08-12T09:03:24.631Z"
+      "updated_at": "2026-08-12T10:53:23.675Z"
     },
     {
       "id": "resolve_ai",
@@ -38,7 +38,7 @@
         "ops_autonomy"
       ],
       "created_at": "2026-02-11T12:50:20.398Z",
-      "updated_at": "2026-08-12T09:03:24.631Z"
+      "updated_at": "2026-08-12T10:53:23.675Z"
     },
     {
       "id": "mcp_connector",
@@ -55,7 +55,7 @@
         "secure_io"
       ],
       "created_at": "2026-02-11T12:50:20.398Z",
-      "updated_at": "2026-08-12T09:03:24.631Z"
+      "updated_at": "2026-08-12T10:53:23.675Z"
     },
     {
       "id": "air_dtg",
@@ -76,7 +76,7 @@
         "arXiv: Autonomous Issue Resolver (AIR) – DTG, 87.1% SWE-Verified"
       ],
       "created_at": "2026-08-06T23:51:30.144Z",
-      "updated_at": "2026-08-12T09:03:24.458Z"
+      "updated_at": "2026-08-12T10:53:23.499Z"
     },
     {
       "id": "dev_ai_llama_local",
@@ -98,7 +98,7 @@
         "Ollama library – Llama 3.1 variants"
       ],
       "created_at": "2026-08-06T23:51:30.144Z",
-      "updated_at": "2026-08-12T09:03:24.458Z"
+      "updated_at": "2026-08-12T10:53:23.499Z"
     },
     {
       "id": "aider_cli",
@@ -115,7 +115,7 @@
         "git_ops"
       ],
       "created_at": "2026-08-06T23:51:30.144Z",
-      "updated_at": "2026-08-12T09:03:24.458Z"
+      "updated_at": "2026-08-12T10:53:23.499Z"
     },
     {
       "id": "roocode",
@@ -132,7 +132,7 @@
         "power_user_workflows"
       ],
       "created_at": "2026-08-06T23:51:30.144Z",
-      "updated_at": "2026-08-12T09:03:24.458Z"
+      "updated_at": "2026-08-12T10:53:23.499Z"
     },
     {
       "id": "plandex",
@@ -149,7 +149,7 @@
         "large_repos"
       ],
       "created_at": "2026-08-06T23:51:30.144Z",
-      "updated_at": "2026-08-12T09:03:24.458Z"
+      "updated_at": "2026-08-12T10:53:23.499Z"
     },
     {
       "id": "polaris_ai",
@@ -166,7 +166,7 @@
         "design_optimization"
       ],
       "created_at": "2026-08-06T23:51:30.144Z",
-      "updated_at": "2026-08-12T09:03:24.458Z"
+      "updated_at": "2026-08-12T10:53:23.499Z"
     }
   ]
 }
