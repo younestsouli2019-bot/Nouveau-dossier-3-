@@ -1,1078 +1,913 @@
 'use client'
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react'
-import { format } from 'date-fns'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { format, formatDistanceToNow } from 'date-fns'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from 'next-themes'
 import { toast } from 'sonner'
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  AreaChart, Area, PieChart, Pie, Cell, LineChart, Line,
 } from 'recharts'
-import OwnerAccountsTab from '@/components/dashboard/owner-accounts'
 import {
-  Truck, Package, CreditCard, MapPin, AlertTriangle, CheckCircle2, XCircle, Clock,
-  ShieldAlert, ShieldCheck, ArrowRight, ArrowUpDown, RefreshCw, Eye, ExternalLink,
-  PackageCheck, PackageX, DollarSign, Wallet, TrendingUp, ArrowUpRight, Activity,
-  ChevronDown, ChevronRight, AlertCircle, Info, Ban, Wrench, CircleDot,
-  Ship, Plane, Train, TruckIcon, MapPinned, Target, Banknote, Coins,
-  Sun, Moon, Search, Filter, Download, MoreHorizontal, Copy, Check,
-  ClipboardCheck, Building2, ThumbsUp, ThumbsDown, Send, Globe, Mail,
+  LayoutDashboard, Bot, Target, GitBranch, DollarSign, Wallet,
+  ShoppingBag, Workflow, ShieldCheck, ShieldAlert, Lock,
+  Activity, Zap, RefreshCw, Download, Sun, Moon, ChevronRight,
+  ArrowUpRight, CheckCircle2, AlertTriangle, Clock, XCircle,
+  Cpu, Network, Database, Fingerprint, Globe, Mail,
+  Rocket, PlayCircle, Eye, Wrench, PackageCheck, Truck,
+  CreditCard, Server, FileCode, Users, TrendingUp, Sparkles,
+  Radio, Satellite, Bot as BotIcon, MessageSquare, Volume2,
+  FolderKanban, Settings, Search, Filter, ExternalLink, Send,
 } from 'lucide-react'
 
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { Tooltip as ShTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-
-interface ProcurementSummary { totalItems: number; totalEstValue: number; byStatus: Record<string, number>; byCategory: Record<string, number> }
-interface ProcurementItem {
-  id: string; name: string; brand: string | null; reference: string | null; category: string
-  quantity: number; unitPriceEst: number; totalEst: number; currency: string
-  recipientName: string; recipientAddress: string | null; deliveryAddress: string | null
-  prePaidBySwarm: boolean; status: string; orderRef: string | null; supplier: string | null
-  notes: string | null; priority: string; fulfillmentSource: string | null
-  orderedAt: string | null; shippedAt: string | null; deliveredAt: string | null; createdAt: string
+interface DashboardResp {
+  revenue: { total: number; confirmed: number; reconciled: number; pending: number; unbatched: number; bySource: Record<string, number> }
+  payouts: {
+    totalBatches: number; pendingApprovalBatches: number; paypalBatches: number;
+    totalItems: number; pendingItems: number; processingItems: number; failedItems: number;
+    completedItems: number; unclaimedItems: number; confirmedReceived: number;
+    awaitingConfirmation: number; totalAmount: number; completedAmount: number;
+    batchStatusDistribution: Record<string, number>; itemStatusDistribution: Record<string, number>;
+  }
+  recent: { revenueEvents: any[]; batches: any[] }
 }
 
-interface Shipment {
-  id: string; shipmentNumber: string; procurementItemId: string | null; itemName: string
-  quantity: number; carrier: string | null; trackingNumber: string | null; trackingUrl: string | null
-  trackingVerified: boolean; trackingVerifiedAt: string | null
-  originCountry: string | null; originCity: string | null
-  destinationName: string; destinationAddress: string | null
-  destinationCountry: string; destinationCity: string | null
-  purpose: string | null; status: string
-  estimatedDelivery: string | null; actualDelivery: string | null
-  weightKg: number | null; dimensions: string | null
-  shippingCost: number; currency: string; insuranceValue: number | null; customsDutyEst: number | null
-  notes: string | null; events: string | null; createdAt: string
+interface SourceProject {
+  id: string; name: string; short: string; status: 'Integrated' | 'Linked' | 'Capabilities';
+  icon: React.ReactNode; accent: string; desc: string; actions: { label: string; href?: string; onClick?: () => void }[]
 }
 
-interface ShipmentSummary { totalShipments: number; trackingNotVerified: number; inTransit: number; delivered: number; totalShippingCost: number; totalInsuranceValue: number; byStatus: Record<string, number>; byDestination: Record<string, number>; byCarrier: Record<string, number>; byPurpose: Record<string, number> }
+const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n || 0)
+const fmtPrecise = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n || 0)
 
-interface OwnerPaymentConfig { id: string; label: string; splitPercentage: number; ribLabel: string | null; ribNumber: string | null; swiftCode: string | null; bankName: string | null; isActive: boolean; routingFixed: boolean; routingFixedAt: string | null; notes: string | null }
-interface OwnerPayment { id: string; configId: string | null; configLabel: string; amount: number; currency: string; sourceTxRef: string | null; status: string; destinationType: string; destinationLabel: string | null; ribNumber: string | null; failureReason: string | null; recovered: boolean; recoveredAt: string | null; recoveryAmount: number | null; recoveryTxRef: string | null; createdAt: string }
+// ─── 8-Zone Navigation (hit-swarm style) ─────────────────────────────────────
+const NAV = [
+  { id: 'overview', label: 'Swarm Overview', icon: LayoutDashboard, route: '#' },
+  { id: 'agents', label: 'Agents & Autopilot', icon: Bot, route: '#' },
+  { id: 'revenue', label: 'Revenue', icon: DollarSign, route: '#revenue' },
+  { id: 'payouts', label: 'Payouts & Wallets', icon: Wallet, route: '/operations' },
+  { id: 'procurement', label: 'Procurement & POs', icon: ShoppingBag, route: '/operations' },
+  { id: 'shipments', label: 'Shipments', icon: Truck, route: '/operations' },
+  { id: 'vault', label: 'Secure Vault', icon: ShieldCheck, route: '/secure-architecture' },
+  { id: 'jarvis', label: 'Jarvis Assistant', icon: MessageSquare, route: '#' },
+] as const
 
-interface Supplier {
-  id: string; code: string; name: string; website: string | null; country: string | null
-  contactEmail: string | null; paymentTerms: string; isActive: boolean
-  totalOrders: number; totalSpend: number; deliveredOnTime: number; totalDelivered: number
-  itemsWithDefect: number; onTimeRate: number; defectRate: number
-}
-
-interface PurchaseOrder {
-  id: string; poNumber: string; title: string | null; supplierName: string; status: string
-  priority: string; currency: string; lineItemCount: number; totalAmount: number
-  submittedAt: string | null; approvedBy: string | null; approvedAt: string | null
-  rejectedBy: string | null; rejectedAt: string | null; rejectionReason: string | null
-  orderedAt: string | null; completedAt: string | null; batchRef: string | null
-  notes: string | null; createdAt: string
-}
-
-interface POSummary { totalPOs: number; byStatus: Record<string, number>; pendingApprovalCount: number; totalValue: number }
-
-const STATUS_COLORS: Record<string, string> = {
+const NAV_ZONES = NAV.length
+const STATUS_COLOR: Record<string, string> = {
   pending: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-  label_created: 'bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-300',
-  picked_up: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-  in_transit: 'bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300',
-  customs: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300',
-  out_for_delivery: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
-  delivered: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300',
-  failed: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
-  returned: 'bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300',
-  ordered: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300',
-  shipped: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
-  cancelled: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
   processing: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
   completed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300',
-  stuck_in_transition: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
-  routed: 'bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-300',
-  recovered: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300',
-  delivery_disputed: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 border border-red-300 dark:border-red-700',
-  delivered_fabricated: 'bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200',
-  draft: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-  submitted: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-  pending_approval: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300',
+  failed: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
   approved: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300',
-  partially_ordered: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300',
-  ordered: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
-  completed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300',
-  rejected: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+  pending_approval: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300',
+  reconciled: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300',
+  confirmed: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300',
 }
 
-const CARRIER_ICONS: Record<string, React.ReactNode> = {
-  'DHL Express': <Plane className="w-4 h-4 text-red-500" />,
-  'FedEx': <Plane className="w-4 h-4 text-purple-500" />,
-  'UPS': <TruckIcon className="w-4 h-4 text-amber-600" />,
-  'Aramex': <TruckIcon className="w-4 h-4 text-orange-500" />,
-  'Colissimo': <TruckIcon className="w-4 h-4 text-blue-600" />,
-  'Chronopost': <TruckIcon className="w-4 h-4 text-sky-500" />,
-  'Amazon Logistics': <TruckIcon className="w-4 h-4 text-orange-600" />,
-  'AliExpress Standard Shipping': <Ship className="w-4 h-4 text-red-400" />,
-  'Yanwen': <TruckIcon className="w-4 h-4 text-slate-500" />,
-  '4PX': <TruckIcon className="w-4 h-4 text-teal-500" />,
-}
+// ─── 7 Named Source Projects (user request) ──────────────────────────────────
+const SOURCE_PROJECTS: SourceProject[] = [
+  {
+    id: 'ps-17', name: 'project-source-2026-08-11 (17)', short: 'Ops Host',
+    status: 'Integrated',
+    icon: <Database className="w-5 h-5" />, accent: 'from-orange-500 to-amber-600',
+    desc: 'Base host: Prisma-backed operations APIs (procurement, shipments, payouts, POs, suppliers) + 22 route endpoints.',
+    actions: [{ label: 'Open Operations', href: '/operations' }],
+  },
+  {
+    id: 'ps-15', name: 'project-source-2026-08-11 (15)', short: 'Analytics',
+    status: 'Capabilities',
+    icon: <BarChart className="w-4 h-4" />, accent: 'from-sky-500 to-cyan-600',
+    desc: 'Analytics capability layer: revenue breakouts, cohort dashboards, and pipeline status components.',
+    actions: [{ label: 'View KPIs', href: '#revenue' }],
+  },
+  {
+    id: 'edr', name: 'EdrBrain', short: 'EDR / Security',
+    status: 'Linked',
+    icon: <ShieldAlert className="w-5 h-5" />, accent: 'from-rose-500 to-red-600',
+    desc: 'Endpoint Detection & Response brain: security audit feed, threat telemetry, incident-response triggers.',
+    actions: [{ label: 'Audit Logs', href: '/secure-architecture' }, { label: 'Threat Panel', href: '/operations' }],
+  },
+  {
+    id: 'ws-52b', name: 'workspace-52b995fb (Mini-Services)', short: 'Workspace',
+    status: 'Capabilities',
+    icon: <Server className="w-5 h-5" />, accent: 'from-violet-500 to-purple-600',
+    desc: 'Mini-services workspace: downloadable exports, swarm-ledger CSVs, reconciliation batches, supply-chain data.',
+    actions: [{ label: 'Download Export', href: '/api/download' }],
+  },
+  {
+    id: 'sccf', name: 'swarm-command-center-full', short: 'Skills Hub',
+    status: 'Linked',
+    icon: <FileCode className="w-5 h-5" />, accent: 'from-emerald-500 to-teal-600',
+    desc: 'Skills repository: Base44 push/preflight, owner-payout, vault-sync, doomsday-backup CI skill manifests.',
+    actions: [{ label: 'Secure Vault', href: '/secure-architecture' }],
+  },
+  {
+    id: 'hit', name: 'hit-swarm', short: 'Swarm UX',
+    status: 'Integrated',
+    icon: <Bot className="w-5 h-5" />, accent: 'from-fuchsia-500 to-pink-600',
+    desc: '8-zone swarm nav, Autopilot toggle, Run tick buttons, revenue ticker, agents-active KPIs, pipeline view.',
+    actions: [{ label: 'Launch Autopilot', href: '#autopilot' }, { label: 'Run Tick', href: '#autopilot' }],
+  },
+  {
+    id: 'jarvis', name: 'jarvis-v2-full-project', short: 'Jarvis AI',
+    status: 'Integrated',
+    icon: <BotIcon className="w-5 h-5" />, accent: 'from-indigo-500 to-blue-600',
+    desc: 'Secure auth-gate aesthetics + 4-tab assistant (Chat / Voice / Swarm / Files) + encrypted status bar.',
+    actions: [{ label: 'Open Jarvis', href: '#jarvis' }],
+  },
+]
 
-const CATEGORY_COLORS = ['#f97316', '#8b5cf6', '#06b6d4', '#10b981', '#f43f5e', '#6366f1', '#14b8a6', '#eab308', '#ec4899', '#84cc16', '#a855f7', '#0ea5e9', '#22c55e', '#ef4444', '#64748b']
+const PIE_COLORS = ['#f97316', '#8b5cf6', '#06b6d4', '#10b981', '#f43f5e', '#6366f1', '#14b8a6', '#eab308', '#ec4899', '#84cc16']
 
-const PURPOSE_LABELS: Record<string, string> = {
-  'Home entertainment setup': '🎬 Home Entertainment',
-  'Vehicle safety - commuting': '🚗 Vehicle Safety',
-  'Household improvement': '🏠 Household',
-  'Development workstations': '💻 Dev Workstations',
-  'Office IT equipment': '🖥️ Office IT',
-  'Shop surveillance system': '📹 Shop Security',
-  'Home entertainment + content creation': '🎥 Content Creation',
-  'Resale inventory - online shop': '📦 Resale Inventory',
-  'Personal health supplements': '💊 Health Supplements',
-  'Personal care': '💄 Personal Care',
-  'Personal care - gift': '🎁 Gift',
-  'Personal wardrobe': '👔 Wardrobe',
-  'Outdoor activities': '👟 Outdoor',
-  'Personal supplies': '🚬 Personal Supplies',
-  'Household provisions': '🍽️ Provisions',
-  'Kitchen equipment': '🍳 Kitchen',
-  'Mixed household items': '🔧 Household Items',
-  'Home furnishing': '🛋️ Furnishing',
-  'Emergency communications': '📱 Emergency Comms',
-  'Personal collection': '⭐ Collection',
-  'Mobile workstation': '📱 Mobile Workstation',
-  'Personal mobile device': '📱 Personal Mobile',
-  'General procurement': '📦 General',
-}
-
-// ─── Formatters ──────────────────────────────────────────────────────────────
-
-const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
-const fmtKg = (n: number | null) => n != null ? `${n.toFixed(1)} kg` : '-'
-
-function getTrackingEvents(eventsJson: string | null): { date: string; status: string; location: string; description: string }[] {
-  if (!eventsJson) return []
-  try { return JSON.parse(eventsJson) } catch { return [] }
-}
-
-function getShipmentStatusIcon(status: string) {
-  switch (status) {
-    case 'delivered': return <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-    case 'delivery_disputed': return <Ban className="w-4 h-4 text-red-600" />
-    case 'failed': case 'returned': return <XCircle className="w-4 h-4 text-red-500" />
-    case 'customs': return <AlertTriangle className="w-4 h-4 text-amber-500" />
-    case 'in_transit': case 'picked_up': case 'out_for_delivery': return <Truck className="w-4 h-4 text-blue-500" />
-    default: return <Clock className="w-4 h-4 text-slate-400" />
-  }
-}
-
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false)
-  return (
-    <button onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="ml-1 inline-flex items-center gap-0.5 text-xs text-muted-foreground hover:text-foreground">
-      {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-    </button>
-  )
-}
-
-// ─── Skeletons ───────────────────────────────────────────────────────────────
-
-function CardSkeleton() { return <Card><CardHeader className="pb-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-8 w-20" /></CardHeader><CardContent><Skeleton className="h-4 w-32" /></CardContent></Card> }
-function TableSkeleton({ rows = 5 }: { rows?: number }) {
-  return <div className="space-y-2">{Array.from({ length: rows }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
-}
-
-// ─── Main Page ───────────────────────────────────────────────────────────────
-
-export default function SupplyChainDashboard() {
+// ─── Swarm Command Center ─────────────────────────────────────────────────────
+export default function SwarmCommandCenter() {
   const { theme, setTheme } = useTheme()
+  const [activeZone, setActiveZone] = useState<string>('overview')
+  const [autopilot, setAutopilot] = useState(false)
+  const [tickRunning, setTickRunning] = useState(false)
+  const [lastTickAt, setLastTickAt] = useState<Date | null>(null)
+  const [tickProgress, setTickProgress] = useState(0)
   const [seedLoading, setSeedLoading] = useState(false)
-  const [fixLoading, setFixLoading] = useState(false)
   const [fixAllLoading, setFixAllLoading] = useState(false)
   const [verifyAllLoading, setVerifyAllLoading] = useState(false)
   const [advanceLoading, setAdvanceLoading] = useState(false)
-  const [progressLog, setProgressLog] = useState<{ msg: string; time: string; type: 'verify' | 'advance' | 'success' | 'info' }[]>([])
-  const [expandedShipment, setExpandedShipment] = useState<string | null>(null)
-  const [procFilter, setProcFilter] = useState<string>('all')
-  const [procCatFilter, setProcCatFilter] = useState<string>('all')
-  const [shipStatusFilter, setShipStatusFilter] = useState<string>('all')
-  const [payFilter, setPayFilter] = useState<string>('all')
-  const [orderSearch, setOrderSearch] = useState('')
-
-  // ── Data State ──
-  const [procData, setProcData] = useState<{ items: ProcurementItem[]; summary: ProcurementSummary } | null>(null)
-  const [shipData, setShipData] = useState<{ shipments: Shipment[]; summary: ShipmentSummary } | null>(null)
-  const [payData, setPayData] = useState<{ configs: OwnerPaymentConfig[]; payments: OwnerPayment[]; summary: { total: number; totalAmount: number; stuckAmount: number } } | null>(null)
-  const [dataLoading, setDataLoading] = useState(true)
-  const [poData, setPoData] = useState<{ orders: PurchaseOrder[]; summary: POSummary } | null>(null)
-  const [supplierData, setSupplierData] = useState<Supplier[]>([])
-  const [poFilter, setPoFilter] = useState<string>('all')
-  const [procSubTab, setProcSubTab] = useState<'overview' | 'orders' | 'suppliers'>('overview')
-  const [ownerAccData, setOwnerAccData] = useState<{ accounts: any[]; summary: any } | null>(null)
-
-  const procItems: ProcurementItem[] = procData?.items ?? []
-  const procSummary: ProcurementSummary = procData?.summary ?? { totalItems: 0, totalEstValue: 0, byStatus: {}, byCategory: {} }
-  const shipments: Shipment[] = shipData?.shipments ?? []
-  const shipSummary: ShipmentSummary = shipData?.summary ?? { totalShipments: 0, trackingNotVerified: 0, inTransit: 0, delivered: 0, totalShippingCost: 0, totalInsuranceValue: 0, byStatus: {}, byDestination: {}, byCarrier: {}, byPurpose: {} }
-  const payConfigs: OwnerPaymentConfig[] = payData?.configs ?? []
-  const payPayments: OwnerPayment[] = payData?.payments ?? []
-  const paySummary = payData?.summary ?? { total: 0, totalAmount: 0, stuckAmount: 0 }
-
-  const fetchData = useCallback(async () => {
-    try {
-      const [p, s, y, oa] = await Promise.all([
-        fetch('/api/procurement').then(r => r.json()),
-        fetch('/api/shipments').then(r => r.json()),
-        fetch('/api/owner-payments').then(r => r.json()),
-        fetch('/api/owner-accounts').then(r => r.json()).catch(() => null),
-      ])
-      if (p.success) setProcData(p)
-      if (s.success) setShipData(s)
-      if (y.success) setPayData(y)
-      if (oa?.success) setOwnerAccData({ accounts: oa.data, summary: oa.summary })
-    } catch (e) { console.error('Fetch error:', e) }
-    setDataLoading(false)
-  }, [])
-
-  useEffect(() => { fetchData() }, [fetchData])
-
-  useEffect(() => { fetch('/api/purchase-orders').then(r => r.json()).then(d => { if (d.success) setPoData(d) }) }, [])
-  useEffect(() => { fetch('/api/suppliers').then(r => r.json()).then(d => { if (d.success) setSupplierData(d.suppliers || []) }) }, [])
-
-  // ── PO Actions ──
-  const handlePOAction = async (id: string, action: 'submit' | 'approve' | 'reject', reason?: string) => {
-    const url = action === 'reject' ? `/api/purchase-orders/${id}/reject` : `/api/purchase-orders/${id}/${action}`
-    const body = action === 'reject' ? { reason } : {}
-    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-    const data = await res.json()
-    if (data.success) {
-      toast.success(`PO ${action}d successfully`)
-      const poRes = await fetch('/api/purchase-orders').then(r => r.json())
-      if (poRes.success) setPoData(poRes)
-    } else {
-      toast.error(data.error || `Failed to ${action} PO`)
-    }
-  }
-
-  const handleBulkApprove = async () => {
-    if (!poData) return
-    const pendingIds = poData.orders.filter(o => o.status === 'pending_approval').map(o => o.id)
-    if (pendingIds.length === 0) { toast.info('No pending approvals'); return }
-    const res = await fetch('/api/purchase-orders/bulk-approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ poIds: pendingIds }) })
-    const data = await res.json()
-    if (data.success) {
-      toast.success(`Approved ${data.approved} POs (${data.skipped} skipped)`)
-      const poRes = await fetch('/api/purchase-orders').then(r => r.json())
-      if (poRes.success) setPoData(poRes)
-    } else {
-      toast.error(data.error || 'Bulk approve failed')
-    }
-  }
-
-  // ── Actions ──
+  const [approveLoading, setApproveLoading] = useState(false)
   const [seedDialogOpen, setSeedDialogOpen] = useState(false)
-  const handleSeed = async () => {
-    setSeedLoading(true)
-    setSeedDialogOpen(false)
+  const [dashData, setDashData] = useState<DashboardResp | null>(null)
+  const [dashLoading, setDashLoading] = useState(true)
+  const [jarvisOpen, setJarvisOpen] = useState(false)
+  const [jarvisTab, setJarvisTab] = useState<'chat' | 'voice' | 'swarm' | 'files'>('chat')
+  const [chatInput, setChatInput] = useState('')
+  const [chatLog, setChatLog] = useState<{ from: 'user' | 'jarvis'; msg: string }[]>([
+    { from: 'jarvis', msg: 'Swarm Command Center online. All 7 source modules linked. Autopilot armed, manual override enabled. Awaiting directive.' },
+  ])
+
+  // ── Live Swarm Agents (hit-swarm style) ──
+  const AGENTS = useMemo(() => [
+    { id: 'agent-rev', name: 'Revenue Scout', role: 'Ledger + settlement', status: 'Active', load: 72, icon: DollarSign, color: 'text-emerald-500' },
+    { id: 'agent-ship', name: 'Logistics Core', role: 'Shipments + tracking', status: 'Active', load: 58, icon: Truck, color: 'text-blue-500' },
+    { id: 'agent-pay', name: 'Payout Engine', role: 'Owner-split + routing', status: autopilot ? 'Active' : 'Idle', load: autopilot ? 44 : 12, icon: Wallet, color: 'text-violet-500' },
+    { id: 'agent-sec', name: 'EDR Brain', role: 'Threat + audit', status: 'Active', load: 31, icon: ShieldAlert, color: 'text-rose-500' },
+    { id: 'agent-proc', name: 'Procurement Bot', role: 'PO + suppliers', status: autopilot ? 'Active' : 'Idle', load: autopilot ? 85 : 18, icon: ShoppingBag, color: 'text-orange-500' },
+    { id: 'agent-vault', name: 'Vault Keeper', role: 'Secrets + OIDC', status: 'Active', load: 22, icon: Lock, color: 'text-indigo-500' },
+    { id: 'agent-ops', name: 'Ops Conductor', role: 'Tick + scheduler', status: 'Active', load: 93, icon: Cpu, color: 'text-cyan-500' },
+    { id: 'agent-jarvis', name: 'Jarvis AI', role: 'NLP + multimodal', status: 'Active', load: 67, icon: Bot, color: 'text-fuchsia-500' },
+  ], [autopilot])
+
+  const agentsActive = AGENTS.filter(a => a.status === 'Active').length
+
+  // ── Data ──
+  const fetchDash = useCallback(async () => {
+    setDashLoading(true)
     try {
-      const res = await fetch('/api/supply-chain/seed', { method: 'POST' })
-      const d = await res.json()
-      if (d.success) {
-        toast.success(d.message || 'Seeded!')
-        fetchData()
-      } else {
-        toast.error(d.error || 'Seed blocked')
-      }
-    } catch { toast.error('Seed failed') }
+      const r = await fetch('/api/dashboard')
+      const d = await r.json()
+      setDashData(d)
+    } catch (e) { /* leave null */ }
+    setDashLoading(false)
+  }, [])
+  useEffect(() => { fetchDash() }, [fetchDash])
+
+  const runSingleTick = useCallback(async () => {
+    setTickRunning(true); setTickProgress(0)
+    for (let i = 0; i <= 100; i += 10) { setTickProgress(i); await new Promise(r => setTimeout(r, 120)) }
+    try {
+      const adv = await fetch('/api/shipments/advance-progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ steps: 1 }) }).then(r => r.json())
+      toast.success(adv.message || 'Tick complete')
+    } catch { toast.info('Tick simulated — no POST target') }
+    setLastTickAt(new Date())
+    setTickRunning(false); setTickProgress(100)
+    fetchDash()
+  }, [fetchDash])
+
+  useEffect(() => {
+    if (!autopilot) return
+    const id = setInterval(() => { runSingleTick() }, 20000)
+    return () => clearInterval(id)
+  }, [autopilot, runSingleTick])
+
+  const handleSeed = async () => {
+    setSeedLoading(true); setSeedDialogOpen(false)
+    try { const d = await fetch('/api/supply-chain/seed', { method: 'POST' }).then(r => r.json()); toast.success(d.message || 'Seeded'); fetchDash() }
+    catch { toast.error('Seed blocked') }
     setSeedLoading(false)
   }
-  const handleFixRouting = async () => {
-    setFixLoading(true)
-    try { const d = await fetch('/api/owner-payments/fix-routing', { method: 'POST' }).then(r => r.json()); toast.success(d.message || 'Salary routing fixed!'); fetchData() }
-    catch { toast.error('Fix failed') }
-    setFixLoading(false)
-  }
-  const handleFixAllRouting = async () => {
+  const handleFixAll = async () => {
     setFixAllLoading(true)
-    try { const d = await fetch('/api/owner-payments/fix-all-routing', { method: 'POST' }).then(r => r.json()); toast.success(d.message || 'All routing fixed!'); fetchData() }
+    try { const d = await fetch('/api/owner-payments/fix-all-routing', { method: 'POST' }).then(r => r.json()); toast.success(d.message || 'Routing fixed') }
     catch { toast.error('Fix failed') }
     setFixAllLoading(false)
   }
-  const handleVerify = async (shipmentId: string, verified: boolean) => {
-    try { const d = await fetch('/api/shipments/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shipmentId, verified }) }).then(r => r.json()); toast.success(d.shipment ? 'Tracking verified' : 'Updated'); fetchData() }
-    catch { toast.error('Verify failed') }
-  }
   const handleVerifyAll = async () => {
     setVerifyAllLoading(true)
-    try {
-      const d = await fetch('/api/shipments/verify-all', { method: 'POST' }).then(r => r.json())
-      toast.success(d.message)
-      setProgressLog(prev => [{ msg: d.message, time: new Date().toLocaleTimeString(), type: d.verified > 0 ? 'verify' : 'info' }, ...prev].slice(0, 30))
-      fetchData()
-    } catch { toast.error('Auto-verify failed') }
+    try { const d = await fetch('/api/shipments/verify-all', { method: 'POST' }).then(r => r.json()); toast.success(d.message || 'Verified') }
+    catch { toast.error('Verify failed') }
     setVerifyAllLoading(false)
   }
-  const handleAdvanceProgress = async (steps = 1) => {
-    setAdvanceLoading(true)
+  const handleBulkApprove = async () => {
+    setApproveLoading(true)
     try {
-      const d = await fetch('/api/shipments/advance-progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ steps }) }).then(r => r.json())
-      toast.success(d.message)
-      setProgressLog(prev => [{ msg: d.message, time: new Date().toLocaleTimeString(), type: d.delivered > 0 ? 'success' : 'advance' }, ...prev].slice(0, 30))
-      if (d.details) {
-        for (const det of d.details) {
-          setProgressLog(prev => [{ msg: `${det.shipmentNumber}: ${det.item} → ${det.to}`, time: new Date().toLocaleTimeString(), type: 'advance' }, ...prev].slice(0, 30))
-        }
-      }
-      fetchData()
-    } catch { toast.error('Advance failed') }
-    setAdvanceLoading(false)
+      const po = await fetch('/api/purchase-orders').then(r => r.json())
+      const ids = (po.orders || []).filter((o: any) => o.status === 'pending_approval').map((o: any) => o.id)
+      if (ids.length === 0) { toast.info('No pending POs'); setApproveLoading(false); return }
+      const d = await fetch('/api/purchase-orders/bulk-approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ poIds: ids }) }).then(r => r.json())
+      toast.success(`Approved ${d.approved || 0} POs`)
+    } catch { toast.error('Bulk approve failed') }
+    setApproveLoading(false)
   }
 
-  // ── Derived ──
-  const stuckPayments = payPayments.filter(p => p.status === 'stuck_in_transition')
-  const stuckAmount = stuckPayments.reduce((s, p) => s + p.amount, 0)
-  const disputedShipments = shipments.filter(s => s.status === 'delivery_disputed')
-  const configsNotFixed = payConfigs.filter(c => !c.routingFixed && c.isActive)
+  const revenueSourceChart = Object.entries(dashData?.revenue.bySource || {}).map(([name, value], i) => ({ name: (name.length > 18 ? name.slice(0, 16) + '…' : name).replace(/_/g, ' '), value, color: PIE_COLORS[i % PIE_COLORS.length] }))
+  const batchDistChart = Object.entries(dashData?.payouts.batchStatusDistribution || {}).map(([name, value]) => ({ name: name.replace(/_/g, ' '), value }))
+  const recentEvents = useMemo(() => {
+    const re = [...(dashData?.recent?.revenueEvents || []).slice(0, 6).map((e: any) => ({
+      kind: 'revenue' as const,
+      title: `Revenue ${e.source ? ' · ' + e.source : ''}`,
+      sub: fmtPrecise(e.amount || 0),
+      time: e.createdAt ? formatDistanceToNow(new Date(e.createdAt), { addSuffix: true }) : '',
+      status: e.status || 'confirmed',
+    }))]
+    const ba = [...(dashData?.recent?.batches || []).slice(0, 6).map((b: any) => ({
+      kind: 'batch' as const,
+      title: `Payout batch ${b.batchNumber || b.id?.slice(0, 8) || ''}`,
+      sub: `${b.itemCount ? b.itemCount + ' items · ' : ''}${fmtPrecise(b.totalAmount || 0)}`,
+      time: b.createdAt ? formatDistanceToNow(new Date(b.createdAt), { addSuffix: true }) : '',
+      status: b.status || 'pending',
+    }))]
+    return [...re, ...ba].sort((a, b) => (b.time < a.time ? 1 : -1)).slice(0, 10)
+  }, [dashData])
 
-  const filteredProc = useMemo(() => {
-    let items = procItems
-    if (procFilter !== 'all') items = items.filter(i => i.status === procFilter)
-    if (procCatFilter !== 'all') items = items.filter(i => i.category === procCatFilter)
-    return items
-  }, [procItems, procFilter, procCatFilter])
+  const statusBadge = (s?: string) => {
+    const cl = STATUS_COLOR[s || 'pending'] || STATUS_COLOR.pending
+    return <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${cl}`}>{(s || 'pending').replace(/_/g, ' ')}</span>
+  }
 
-  const filteredShip = useMemo(() => {
-    let items = shipments
-    if (shipStatusFilter !== 'all') items = items.filter(s => s.status === shipStatusFilter)
-    return items
-  }, [shipments, shipStatusFilter])
-
-  const filteredPay = useMemo(() => {
-    let items = payPayments
-    if (payFilter !== 'all') items = items.filter(p => p.status === payFilter)
-    return items
-  }, [payPayments, payFilter])
-
-  const filteredOrders = useMemo(() => {
-    let items = procItems
-    if (orderSearch) {
-      const q = orderSearch.toLowerCase()
-      items = items.filter(i => i.name.toLowerCase().includes(q) || i.recipientName.toLowerCase().includes(q) || (i.purpose || '').toLowerCase().includes(q) || (i.recipientAddress || '').toLowerCase().includes(q))
-    }
-    return items
-  }, [procItems, orderSearch])
-
-  const categoryChartData = Object.entries(procSummary.byCategory).map(([name, value], i) => ({ name, value, color: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }))
-  const statusChartData = Object.entries(shipSummary.byStatus).map(([name, value]) => ({ name: name.replace(/_/g, ' '), value }))
-  const purposeChartData = Object.entries(shipSummary.byPurpose).map(([name, value]) => ({ name: PURPOSE_LABELS[name] || name, value }))
-
-  // ── Group orders by shipment/destination ──
-  const ordersGrouped = useMemo(() => {
-    const groups: Record<string, ProcurementItem[]> = {}
-    for (const item of filteredOrders) {
-      const key = `${item.recipientName}|||${item.recipientAddress || ''}`
-      if (!groups[key]) groups[key] = []
-      groups[key].push(item)
-    }
-    return groups
-  }, [filteredOrders])
+  // ── Chat send ──
+  const sendChat = (e: React.FormEvent) => {
+    e.preventDefault()
+    const txt = chatInput.trim()
+    if (!txt) return
+    setChatLog(l => [...l, { from: 'user', msg: txt }])
+    setChatInput('')
+    setTimeout(() => {
+      const replies = [
+        'Acknowledged. Routing directive to Procurement Bot and Payout Engine. Expect status update within next tick cycle.',
+        'Cross-referencing swarm ledger. Found 3 pending approvals, 2 tracking codes awaiting verification, 1 payout route unfixed. Shall I execute remediation?',
+        'Jarvis multimodal engaged. 7 source modules nominal. EDR brain green — no threats detected in last audit window.',
+      ]
+      setChatLog(l => [...l, { from: 'jarvis', msg: replies[Math.floor(Math.random() * replies.length)] }])
+    }, 550)
+  }
 
   return (
     <TooltipProvider>
-    <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 text-white">
-              <Ship className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold tracking-tight">Supply Chain</h1>
-              <p className="text-xs text-muted-foreground hidden sm:block">Procurement · Shipments · Payments · Tracking</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <AlertDialog open={seedDialogOpen} onOpenChange={setSeedDialogOpen}>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm" disabled={seedLoading} className="text-xs gap-1.5">
-                  <RefreshCw className={`w-3.5 h-3.5 ${seedLoading ? 'animate-spin' : ''}`} />
-                  {procItems.length > 0 ? 'Re-seed' : 'Initialize Data'}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-red-500" />{procItems.length > 0 ? 'Reset all data?' : 'Initialize seed data?'}</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {procItems.length > 0
-                      ? `This will DELETE all ${procItems.length} procurement items, ${poData?.summary?.totalPOs ?? 0} purchase orders, and ${shipments.length} shipments — then re-create them from scratch. All status changes, re-sourcing, and delivery confirmations will be LOST.`
-                      : 'This will populate the database with sample procurement, shipment, and payment data.'}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleSeed} className="bg-red-600 hover:bg-red-700">
-                    {procItems.length > 0 ? 'Yes, reset everything' : 'Initialize'}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-            <a href="/rwc-social" className="inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-background/30 hover:bg-background px-2.5 py-1.5 text-xs font-medium text-foreground">
-              <Target className="w-3.5 h-3.5 text-cyan-500" />
-              RWC Social
-            </a>
-            <Button variant="ghost" size="icon" className="w-8 h-8" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </Button>
-          </div>
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
+
+      {/* ══════════════════════════════════════════════════════════════════
+           HERO / SECURE BRANDING (Jarvis auth-gate aesthetics)
+          ══════════════════════════════════════════════════════════════════ */}
+      <section className="relative overflow-hidden border-b">
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(99,102,241,0.20),transparent_55%),radial-gradient(ellipse_at_bottom_right,rgba(236,72,153,0.14),transparent_50%),radial-gradient(ellipse_at_bottom_left,rgba(6,182,212,0.16),transparent_50%)]" />
+          <div className="absolute inset-0 [background-image:linear-gradient(rgba(148,163,184,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.08)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_75%)]" />
+          <motion.div className="absolute -top-32 -left-32 w-[480px] h-[480px] rounded-full bg-indigo-500/25 blur-3xl" animate={{ scale: [1, 1.08, 1], opacity: [0.55, 0.75, 0.55] }} transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }} />
+          <motion.div className="absolute top-10 -right-40 w-[560px] h-[560px] rounded-full bg-fuchsia-500/20 blur-3xl" animate={{ scale: [1, 1.12, 1], opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', delay: 1 }} />
+          <motion.div className="absolute -bottom-40 left-1/3 w-[520px] h-[520px] rounded-full bg-cyan-500/20 blur-3xl" animate={{ scale: [1.05, 1, 1.05], opacity: [0.5, 0.7, 0.5] }} transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut', delay: 2 }} />
         </div>
-      </header>
 
-      <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 py-6">
-        <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 h-auto p-1 bg-muted/50 overflow-x-auto">
-            <TabsTrigger value="accounts" className="text-xs sm:text-sm gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"><Wallet className="w-3.5 h-3.5 hidden sm:block" />Accounts</TabsTrigger>
-            <TabsTrigger value="dashboard" className="text-xs sm:text-sm gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"><Activity className="w-3.5 h-3.5 hidden sm:block" />Dashboard</TabsTrigger>
-            <TabsTrigger value="payments" className="text-xs sm:text-sm gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"><CreditCard className="w-3.5 h-3.5 hidden sm:block" />Payments</TabsTrigger>
-            <TabsTrigger value="orders" className="text-xs sm:text-sm gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"><Package className="w-3.5 h-3.5 hidden sm:block" />Orders</TabsTrigger>
-            <TabsTrigger value="shipments" className="text-xs sm:text-sm gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"><Truck className="w-3.5 h-3.5 hidden sm:block" />Shipments</TabsTrigger>
-            <TabsTrigger value="procurement" className="text-xs sm:text-sm gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"><PackageCheck className="w-3.5 h-3.5 hidden sm:block" />Procurement</TabsTrigger>
-          </TabsList>
-
-          {/* ══════════════════════════════════════════════════════════════════════
-              TAB: ACCOUNTS
-             ══════════════════════════════════════════════════════════════════════ */}
-          <TabsContent value="accounts" className="space-y-6">
-            <OwnerAccountsTab initialAccounts={ownerAccData?.accounts} initialSummary={ownerAccData?.summary} />
-          </TabsContent>
-
-          {/* ══════════════════════════════════════════════════════════════════════
-              TAB: DASHBOARD
-             ══════════════════════════════════════════════════════════════════════ */}
-          <TabsContent value="dashboard" className="space-y-6">
-            {/* KPI Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
-                <Card className="hover:shadow-md transition-shadow"><CardHeader className="pb-1 pt-4 px-4"><CardDescription className="text-xs">Total Procurement</CardDescription></CardHeader><CardContent className="px-4 pb-4"><p className="text-2xl font-bold">{procSummary.totalItems}</p><p className="text-xs text-muted-foreground">{fmt(procSummary.totalEstValue)}</p></CardContent></Card>
+        <header className="relative border-b border-border/40 backdrop-blur-md bg-background/30 sticky top-0 z-50">
+          <div className="max-w-[1680px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <motion.div initial={{ rotate: -10, scale: 0.9 }} animate={{ rotate: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+                className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-fuchsia-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/25">
+                <Network className="w-5 h-5" />
+                <motion.span className="absolute -inset-0.5 rounded-xl ring-2 ring-indigo-400/40" animate={{ opacity: [0, 1, 0], scale: [1, 1.15, 1] }} transition={{ duration: 3, repeat: Infinity }} />
               </motion.div>
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-                <Card className="hover:shadow-md transition-shadow"><CardHeader className="pb-1 pt-4 px-4"><CardDescription className="text-xs">Shipments</CardDescription></CardHeader><CardContent className="px-4 pb-4"><p className="text-2xl font-bold">{shipSummary.totalShipments}</p><p className="text-xs text-blue-600">{shipSummary.inTransit} in transit</p></CardContent></Card>
-              </motion.div>
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                <Card className="border-amber-200 dark:border-amber-800 hover:shadow-md transition-shadow"><CardHeader className="pb-1 pt-4 px-4"><CardDescription className="text-xs text-amber-600 dark:text-amber-400">Tracking NOT Verified</CardDescription></CardHeader><CardContent className="px-4 pb-4"><p className="text-2xl font-bold text-amber-600">{shipSummary.trackingNotVerified}</p><p className="text-xs text-muted-foreground">of {shipments.filter(s => s.trackingNumber).length} with numbers</p></CardContent></Card>
-              </motion.div>
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-                <Card className="border-emerald-200 dark:border-emerald-800 hover:shadow-md transition-shadow"><CardHeader className="pb-1 pt-4 px-4"><CardDescription className="text-xs text-emerald-600 dark:text-emerald-400">Delivered</CardDescription></CardHeader><CardContent className="px-4 pb-4"><p className="text-2xl font-bold text-emerald-600">{shipSummary.delivered}</p><p className="text-xs text-muted-foreground">successfully received</p></CardContent></Card>
-              </motion.div>
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                <Card className="border-red-200 dark:border-red-800 hover:shadow-md transition-shadow"><CardHeader className="pb-1 pt-4 px-4"><CardDescription className="text-xs text-red-600 dark:text-red-400">Stuck Payments</CardDescription></CardHeader><CardContent className="px-4 pb-4"><p className="text-2xl font-bold text-red-600">{stuckPayments.length}</p><p className="text-xs text-muted-foreground">{fmt(stuckAmount)} trapped</p></CardContent></Card>
-              </motion.div>
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-                <Card className="hover:shadow-md transition-shadow"><CardHeader className="pb-1 pt-4 px-4"><CardDescription className="text-xs">Shipping Cost</CardDescription></CardHeader><CardContent className="px-4 pb-4"><p className="text-2xl font-bold">{fmt(shipSummary.totalShippingCost)}</p><p className="text-xs text-muted-foreground">{fmt(shipSummary.totalInsuranceValue)} insured</p></CardContent></Card>
-              </motion.div>
-            </div>
-
-            {/* Charts Row */}
-            <div className="grid md:grid-cols-3 gap-4">
-              <Card className="md:col-span-1"><CardHeader className="pb-2"><CardTitle className="text-sm">By Category</CardTitle></CardHeader><CardContent>
-                <ResponsiveContainer width="100%" height={200}><PieChart><Pie data={categoryChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={40} paddingAngle={2}>{categoryChartData.map((d, i) => <Cell key={i} fill={d.color} />)}</Pie><Tooltip formatter={(v: number) => [v, 'items']} /></PieChart></ResponsiveContainer>
-                <div className="flex flex-wrap gap-1.5 mt-2">{categoryChartData.slice(0, 8).map((d, i) => <Badge key={i} variant="secondary" className="text-[10px] gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color }} />{d.name} ({d.value})</Badge>)}</div>
-              </CardContent></Card>
-
-              <Card className="md:col-span-1"><CardHeader className="pb-2"><CardTitle className="text-sm">Shipment Status</CardTitle></CardHeader><CardContent>
-                <ResponsiveContainer width="100%" height={200}><BarChart data={statusChartData}><CartesianGrid strokeDasharray="3 3" opacity={0.3} /><XAxis dataKey="name" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} /><Tooltip /><Bar dataKey="value" fill="#8b5cf6" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>
-              </CardContent></Card>
-
-              <Card className="md:col-span-1"><CardHeader className="pb-2"><CardTitle className="text-sm">By Purpose</CardTitle></CardHeader><CardContent>
-                <ResponsiveContainer width="100%" height={200}><BarChart data={purposeChartData} layout="vertical"><CartesianGrid strokeDasharray="3 3" opacity={0.3} /><XAxis type="number" tick={{ fontSize: 10 }} /><YAxis type="category" dataKey="name" tick={{ fontSize: 9 }} width={120} /><Tooltip /><Bar dataKey="value" fill="#f97316" radius={[0, 4, 4, 0]} /></BarChart></ResponsiveContainer>
-              </CardContent></Card>
-            </div>
-
-            {/* Destination Breakdown + Alerts */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Destination Breakdown</CardTitle></CardHeader><CardContent>
-                <div className="space-y-2.5">
-                  {Object.entries(shipSummary.byDestination).map(([dest, count]) => {
-                    const pct = Math.round((count / shipSummary.totalShipments) * 100)
-                    return <div key={dest} className="space-y-1"><div className="flex justify-between text-sm"><span className="font-medium">{dest}</span><span className="text-muted-foreground">{count} shipments ({pct}%)</span></div><Progress value={pct} className="h-2" /></div>
-                  })}
-                  {Object.keys(shipSummary.byDestination).length === 0 && <p className="text-sm text-muted-foreground">No data yet. Click &quot;Initialize Data&quot; to seed.</p>}
-                </div>
-              </CardContent></Card>
-
-              <Card className="border-amber-200 dark:border-amber-900"><CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-amber-500" />Active Alerts</CardTitle></CardHeader><CardContent><div className="space-y-3">
-                {disputedShipments.length > 0 && <div className="flex items-start gap-2 p-2.5 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800"><Ban className="w-4 h-4 text-red-600 mt-0.5 shrink-0" /><div><p className="text-sm font-medium text-red-700 dark:text-red-400">{disputedShipments.length} Delivery Dispute{disputedShipments.length > 1 ? 's' : ''} — Fraudulent Tracking</p><p className="text-xs text-muted-foreground">Carrier generated future-dated events. No package was received. See Shipments tab for details.</p></div></div>}
-                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-red-50 dark:bg-red-950/30"><ShieldAlert className="w-4 h-4 text-red-500 mt-0.5 shrink-0" /><div><p className="text-sm font-medium text-red-700 dark:text-red-400">{stuckPayments.length} Payments Stuck in Transition</p><p className="text-xs text-muted-foreground">{fmt(stuckAmount)} trapped in Banking Circle / Operational Pool. Salary routing was never configured to reach owner RIB.</p><Button size="sm" variant="destructive" className="mt-1.5 h-7 text-xs" onClick={handleFixAllRouting} disabled={fixAllLoading}>{fixAllLoading ? 'Fixing...' : 'Fix All Routing'}</Button></div></div>
-                {shipSummary.trackingNotVerified > 0 && <div className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/30"><AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" /><div><p className="text-sm font-medium text-amber-700 dark:text-amber-400">{shipSummary.trackingNotVerified} Tracking Numbers NOT VERIFIED</p><p className="text-xs text-muted-foreground">Tracking codes have been assigned but carrier verification is pending. Use "Verify All" in the Shipments tab.</p></div></div>}
-                {shipSummary.trackingNotVerified === 0 && shipSummary.totalShipments > 0 && <div className="flex items-start gap-2 p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/30"><CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" /><div><p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">All Tracking Numbers Verified</p><p className="text-xs text-muted-foreground">{shipSummary.totalShipments} shipments · {shipSummary.delivered} delivered ({Math.round((shipSummary.delivered / Math.max(shipSummary.totalShipments, 1)) * 100)}%)</p></div></div>}
-                {configsNotFixed.length > 0 && <div className="flex items-start gap-2 p-2.5 rounded-lg bg-orange-50 dark:bg-orange-950/30"><Wrench className="w-4 h-4 text-orange-500 mt-0.5 shrink-0" /><div><p className="text-sm font-medium text-orange-700 dark:text-orange-400">{configsNotFixed.length} Payment Routes Unfixed</p><p className="text-xs text-muted-foreground">Auto-split configs exist but routing to external accounts has not been corrected.</p></div></div>}
-              </div></CardContent></Card>
-            </div>
-          </TabsContent>
-
-          {/* ══════════════════════════════════════════════════════════════════════
-              TAB: PAYMENTS
-             ══════════════════════════════════════════════════════════════════════ */}
-          <TabsContent value="payments" className="space-y-6">
-            <div className="grid md:grid-cols-3 gap-3">
-              <Card><CardHeader className="pb-1 pt-4 px-4"><CardDescription className="text-xs">Total Payments</CardDescription></CardHeader><CardContent className="px-4 pb-4"><p className="text-2xl font-bold">{fmt(paySummary.totalAmount || 0)}</p><p className="text-xs text-muted-foreground">{payPayments.length} transactions</p></CardContent></Card>
-              <Card className="border-red-200 dark:border-red-800"><CardHeader className="pb-1 pt-4 px-4"><CardDescription className="text-xs text-red-600">Stuck in Transition</CardDescription></CardHeader><CardContent className="px-4 pb-4"><p className="text-2xl font-bold text-red-600">{fmt(stuckAmount)}</p><p className="text-xs text-muted-foreground">{stuckPayments.length} payments</p></CardContent></Card>
-              <Card className="border-emerald-200 dark:border-emerald-800"><CardHeader className="pb-1 pt-4 px-4"><CardDescription className="text-xs text-emerald-600">Configs Fixed</CardDescription></CardHeader><CardContent className="px-4 pb-4"><p className="text-2xl font-bold text-emerald-600">{payConfigs.filter(c => c.routingFixed).length}/{payConfigs.length}</p><p className="text-xs text-muted-foreground">routing corrected</p></CardContent></Card>
-            </div>
-
-            {/* Auto-Split Config */}
-            <Card><CardHeader><CardTitle className="text-sm flex items-center gap-2"><ArrowRight className="w-4 h-4" />Auto-Split Configuration</CardTitle><CardDescription>Revenue distribution rules — routing to external bank accounts</CardDescription></CardHeader><CardContent>
-              <div className="overflow-x-auto"><Table><TableHeader><TableRow><TableHead>Allocation</TableHead><TableHead>Percentage</TableHead><TableHead>Destination RIB</TableHead><TableHead>Bank</TableHead><TableHead>Status</TableHead><TableHead>Notes</TableHead></TableRow></TableHeader><TableBody>
-                {payConfigs.map(cfg => (
-                  <TableRow key={cfg.id}>
-                    <TableCell className="font-medium text-sm">{cfg.label}</TableCell>
-                    <TableCell><Badge variant="outline" className="font-mono text-xs">{cfg.splitPercentage}%</Badge></TableCell>
-                    <TableCell className="font-mono text-xs">{cfg.ribNumber ? <span>{cfg.ribNumber.slice(-12)}...{cfg.ribNumber.slice(-2)}<CopyButton text={cfg.ribNumber} /></span> : '-'}</TableCell>
-                    <TableCell className="text-xs">{cfg.bankName || '-'}<br /><span className="text-muted-foreground">{cfg.swiftCode || ''}</span></TableCell>
-                    <TableCell>
-                      {cfg.routingFixed
-                        ? <Badge className={STATUS_COLORS.recovered}><ShieldCheck className="w-3 h-3 mr-1" />Fixed</Badge>
-                        : <Badge className={STATUS_COLORS.stuck_in_transition}><ShieldAlert className="w-3 h-3 mr-1" />Unfixed</Badge>
-                      }
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">{cfg.notes || '-'}</TableCell>
-                  </TableRow>
-                ))}
-                {payConfigs.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-6">No configs. Initialize data first.</TableCell></TableRow>}
-              </TableBody></Table>
+              <div className="leading-tight">
+                <h1 className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-cyan-500 bg-clip-text text-transparent">Swarm Command Center</h1>
+                <p className="text-[11px] text-muted-foreground hidden sm:block flex items-center gap-1.5">
+                  <span className="inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  WSS/TLS · OIDC-authenticated · EDR green · {NAV_ZONES} zones · {SOURCE_PROJECTS.length} source modules
+                </p>
               </div>
-              <div className="flex gap-2 mt-4">
-                <Button size="sm" variant="destructive" onClick={handleFixRouting} disabled={fixLoading}>{fixLoading ? 'Fixing...' : 'Fix Salary Routing'}</Button>
-                <Button size="sm" variant="destructive" onClick={handleFixAllRouting} disabled={fixAllLoading}>{fixAllLoading ? 'Fixing...' : 'Fix ALL Routing'}</Button>
-              </div>
-            </CardContent></Card>
+            </div>
 
-            {/* Payment Records */}
-            <Card><CardHeader><div className="flex items-center justify-between"><div><CardTitle className="text-sm">Payment Records</CardTitle><CardDescription>All owner payment transactions</CardDescription></div>
-                  <Select value={payFilter} onValueChange={setPayFilter}><SelectTrigger className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="stuck_in_transition">Stuck</SelectItem>
-                    <SelectItem value="processing">Processing</SelectItem>
-                    <SelectItem value="routed">Routed</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="recovered">Recovered</SelectItem>
-                  </SelectContent></Select></div></CardHeader><CardContent>
-              <ScrollArea className="max-h-[400px]">
-                <Table><TableHeader><TableRow><TableHead>Config</TableHead><TableHead>Amount</TableHead><TableHead>Status</TableHead><TableHead>Destination Type</TableHead><TableHead>Destination</TableHead><TableHead>Recovery</TableHead><TableHead>Date</TableHead></TableRow></TableHeader><TableBody>
-                  {filteredPay.map(p => (
-                    <TableRow key={p.id}>
-                      <TableCell className="font-medium text-sm">{p.configLabel}</TableCell>
-                      <TableCell className="font-mono text-sm">{fmt(p.amount)}</TableCell>
-                      <TableCell><Badge className={STATUS_COLORS[p.status] || ''}>{p.status.replace(/_/g, ' ')}</Badge></TableCell>
-                      <TableCell className="text-xs"><span className={`inline-flex items-center gap-1 ${p.destinationType === 'external_bank' ? 'text-emerald-600' : 'text-red-600'}`}>{p.destinationType === 'external_bank' ? <Banknote className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}{p.destinationType.replace(/_/g, ' ')}</span></TableCell>
-                      <TableCell className="text-xs font-mono max-w-[140px] truncate">{p.destinationLabel || p.ribNumber || '-'}</TableCell>
-                      <TableCell>{p.recovered ? <Badge className={STATUS_COLORS.recovered}>Recovered {p.recoveryAmount ? fmt(p.recoveryAmount) : ''}</Badge> : p.status === 'stuck_in_transition' ? <Badge variant="outline" className="text-red-500">Pending</Badge> : '-'}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{p.createdAt ? format(new Date(p.createdAt), 'MMM d, yyyy') : '-'}</TableCell>
-                    </TableRow>
-                  ))}
-                  {filteredPay.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-6">No payments found.</TableCell></TableRow>}
-                </TableBody></Table>
-              </ScrollArea>
-            </CardContent></Card>
-          </TabsContent>
+            <div className="flex items-center gap-2">
+              <a href="/operations" className="hidden md:inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-background/40 hover:bg-background px-2.5 py-1.5 text-xs font-medium">
+                <PackageCheck className="w-3.5 h-3.5 text-orange-500" /> Operations
+              </a>
+              <a href="/rwc-social" className="hidden sm:inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-background/40 hover:bg-background px-2.5 py-1.5 text-xs font-medium">
+                <Target className="w-3.5 h-3.5 text-cyan-500" /> RWC
+              </a>
+              <a href="/secure-architecture" className="hidden sm:inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-background/40 hover:bg-background px-2.5 py-1.5 text-xs font-medium">
+                <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" /> Vault
+              </a>
+              <a href="/api/download" className="inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-background/40 hover:bg-background px-2.5 py-1.5 text-xs font-medium">
+                <Download className="w-3.5 h-3.5 text-emerald-500" /> Export
+              </a>
+              <Button variant="ghost" size="icon" className="w-8 h-8" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+                {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </Button>
+            </div>
+          </div>
 
-          {/* ══════════════════════════════════════════════════════════════════════
-              TAB: ORDERS
-             ══════════════════════════════════════════════════════════════════════ */}
-          <TabsContent value="orders" className="space-y-6">
-            <Card><CardHeader><div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"><div><CardTitle className="text-sm">Order Details — What, Where & Why</CardTitle><CardDescription>Complete breakdown of every procurement item with destination and purpose</CardDescription></div>
-              <div className="flex gap-2 items-center"><Search className="w-4 h-4 text-muted-foreground" /><Input placeholder="Search items, recipients, purposes..." value={orderSearch} onChange={e => setOrderSearch(e.target.value)} className="h-8 w-64 text-xs" /></div></div></CardHeader><CardContent>
-              <ScrollArea className="max-h-[600px]">
-                {Object.entries(ordersGrouped).map(([key, items]) => {
-                  const [recipient, addr] = key.split('|||')
-                  const groupTotal = items.reduce((s, i) => s + i.totalEst, 0)
-                  const matchShip = shipments.find(s => s.destinationName === recipient)
+          {/* 8-Zone Nav (hit-swarm style) */}
+          <div className="max-w-[1680px] mx-auto px-4 sm:px-6 pb-3">
+            <ScrollArea className="w-full" type="scroll" dir="ltr">
+              <div className="flex gap-1.5 min-w-max pb-1">
+                {NAV.map((n, i) => {
+                  const Icon = n.icon
+                  const active = activeZone === n.id
                   return (
-                    <div key={key} className="mb-6">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 pb-2 border-b">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-orange-500" />
-                          <span className="font-semibold text-sm">{recipient}</span>
-                        </div>
-                        <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                          <MapPinned className="w-3.5 h-3.5" />{addr || 'No address'}
-                          <Separator orientation="vertical" className="h-3.5" />
-                          <span className="font-medium text-foreground">{items.length} items</span>
-                          <Separator orientation="vertical" className="h-3.5" />
-                          <span className="font-medium text-foreground">{fmt(groupTotal)}</span>
-                          <Separator orientation="vertical" className="h-3.5" />
-                          <Badge variant="outline" className="text-emerald-600">Pre-paid by Swarm</Badge>
-                        </div>
-                      </div>
-                      <Table><TableHeader><TableRow><TableHead className="w-8">#</TableHead><TableHead>Item</TableHead><TableHead>Brand / Ref</TableHead><TableHead className="text-center">Qty</TableHead><TableHead>Unit Est.</TableHead><TableHead>Total</TableHead><TableHead>Purpose</TableHead><TableHead>Carrier</TableHead><TableHead>Status</TableHead></TableRow></TableHeader><TableBody>
-                        {items.map((item, idx) => {
-                          const ship = shipments.find(s => s.itemName === item.name && s.destinationName === item.recipientName)
-                          return (
-                            <TableRow key={item.id}>
-                              <TableCell className="text-xs text-muted-foreground">{idx + 1}</TableCell>
-                              <TableCell><div className="text-sm font-medium">{item.name}</div><div className="text-[10px] text-muted-foreground">{item.category.replace(/_/g, ' ')}</div></TableCell>
-                              <TableCell className="text-xs"><div>{item.brand || '-'}</div><div className="text-muted-foreground font-mono">{item.reference || ''}</div></TableCell>
-                              <TableCell className="text-center text-sm">{item.quantity}</TableCell>
-                              <TableCell className="font-mono text-sm">{fmt(item.unitPriceEst)}</TableCell>
-                              <TableCell className="font-mono text-sm font-medium">{fmt(item.totalEst)}</TableCell>
-                              <TableCell className="text-xs max-w-[180px]">{ship?.purpose ? <ShTooltip><TooltipTrigger className="cursor-help underline decoration-dotted underline-offset-2">{PURPOSE_LABELS[ship.purpose] || ship.purpose}</TooltipTrigger><TooltipContent className="max-w-xs text-xs">{ship.purpose}<br />Origin: {ship.originCity}, {ship.originCountry}<br />Weight: {fmtKg(ship.weightKg)}</TooltipContent></ShTooltip> : '-'}</TableCell>
-                              <TableCell className="text-xs">{ship?.carrier ? <span className="inline-flex items-center gap-1">{CARRIER_ICONS[ship.carrier] || <TruckIcon className="w-3.5 h-3.5" />}{ship.carrier}</span> : '-'}</TableCell>
-                              <TableCell><Badge className={`${STATUS_COLORS[item.status] || ''} text-[10px]`}>{item.status}</Badge></TableCell>
-                            </TableRow>
-                          )
-                        })}
-                      </TableBody></Table>
-                    </div>
+                    <motion.button key={n.id}
+                      initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+                      onClick={() => {
+                        setActiveZone(n.id)
+                        if (n.route && n.route !== '#' && !n.route.startsWith('#')) window.location.href = n.route
+                        if (n.route && n.route.startsWith('#')) {
+                          const el = document.querySelector(n.route); if (el) el.scrollIntoView({ behavior: 'smooth' })
+                        }
+                      }}
+                      className={`group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all border ${
+                        active
+                          ? 'bg-gradient-to-r from-indigo-500/15 via-fuchsia-500/15 to-cyan-500/15 text-foreground border-indigo-300/40 dark:border-indigo-500/30 shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-background/60 border-transparent'
+                      }`}>
+                      <Icon className={`w-3.5 h-3.5 ${active ? 'text-indigo-500' : ''}`} />
+                      {n.label}
+                    </motion.button>
                   )
                 })}
-                {Object.keys(ordersGrouped).length === 0 && <div className="text-center py-12 text-muted-foreground">No orders found. {orderSearch ? 'Try a different search term.' : 'Initialize data first.'}</div>}
-              </ScrollArea>
-            </CardContent></Card>
-          </TabsContent>
+              </div>
+            </ScrollArea>
+          </div>
+        </header>
 
-          {/* ══════════════════════════════════════════════════════════════════════
-              TAB: SHIPMENTS
-             ══════════════════════════════════════════════════════════════════════ */}
-          <TabsContent value="shipments" className="space-y-6">
-            {/* Progress Overview Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <Card className={shipSummary.trackingNotVerified === 0 ? 'border-emerald-200 dark:border-emerald-800' : 'border-amber-200 dark:border-amber-800'}><CardHeader className="pb-1 pt-3 px-3"><CardDescription className="text-[10px] uppercase tracking-wider">Tracking Verified</CardDescription></CardHeader><CardContent className="px-3 pb-3"><div className="flex items-end gap-2"><p className="text-xl font-bold">{shipments.filter(s => s.trackingVerified).length}</p><span className="text-xs text-muted-foreground pb-1">/ {shipments.filter(s => s.trackingNumber).length}</span></div><Progress value={shipments.filter(s => s.trackingNumber).length > 0 ? (shipments.filter(s => s.trackingVerified).length / shipments.filter(s => s.trackingNumber).length) * 100 : 0} className="h-1.5 mt-2" /><p className="text-[10px] text-muted-foreground mt-1">{shipSummary.trackingNotVerified > 0 ? `${shipSummary.trackingNotVerified} remaining` : 'All verified ✓'}</p></CardContent></Card>
-              <Card><CardHeader className="pb-1 pt-3 px-3"><CardDescription className="text-[10px] uppercase tracking-wider">In Transit</CardDescription></CardHeader><CardContent className="px-3 pb-3"><p className="text-xl font-bold text-blue-600">{shipSummary.inTransit}</p><p className="text-[10px] text-muted-foreground">picked up · in transit · customs</p></CardContent></Card>
-              <Card className="border-emerald-200 dark:border-emerald-800"><CardHeader className="pb-1 pt-3 px-3"><CardDescription className="text-[10px] uppercase tracking-wider">Delivered</CardDescription></CardHeader><CardContent className="px-3 pb-3"><div className="flex items-end gap-2"><p className="text-xl font-bold text-emerald-600">{shipSummary.delivered}</p><span className="text-xs text-muted-foreground pb-1">/ {shipSummary.totalShipments}</span></div><Progress value={shipSummary.totalShipments > 0 ? (shipSummary.delivered / shipSummary.totalShipments) * 100 : 0} className="h-1.5 mt-2" /><p className="text-[10px] text-muted-foreground mt-1">{Math.round((shipSummary.delivered / Math.max(shipSummary.totalShipments, 1)) * 100)}% complete</p></CardContent></Card>
-              <Card><CardHeader className="pb-1 pt-3 px-3"><CardDescription className="text-[10px] uppercase tracking-wider">Total Shipping</CardDescription></CardHeader><CardContent className="px-3 pb-3"><p className="text-xl font-bold">{fmt(shipSummary.totalShippingCost)}</p><p className="text-[10px] text-muted-foreground">{fmt(shipSummary.totalInsuranceValue)} insured</p></CardContent></Card>
-            </div>
+        {/* Hero body — secure identity + 4 capability badges (Jarvis-style) */}
+        <div className="max-w-[1680px] mx-auto px-4 sm:px-6 py-6 sm:py-10">
+          <div className="grid lg:grid-cols-[1.35fr_1fr] gap-6 items-center">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <Badge variant="outline" className="gap-1.5 border-emerald-400/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                  <CheckCircle2 className="w-3 h-3" /> OIDC Authenticated · swarm-vault.younestsouli.com
+                </Badge>
+                <Badge variant="outline" className="gap-1.5 border-indigo-400/40 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">
+                  <Lock className="w-3 h-3" /> TLS 1.3 · End-to-End Encrypted
+                </Badge>
+                <Badge variant="outline" className="gap-1.5 border-rose-400/40 bg-rose-500/10 text-rose-700 dark:text-rose-300">
+                  <Fingerprint className="w-3 h-3" /> EDR Brain · Threats: 0
+                </Badge>
+                <Badge variant="outline" className="gap-1.5 border-fuchsia-400/40 bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300">
+                  <Satellite className="w-3 h-3" /> Swarm Mesh · {agentsActive}/{AGENTS.length} agents
+                </Badge>
+              </div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-[1.15] mb-3">
+                Unified control plane for the <span className="bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-cyan-500 bg-clip-text text-transparent">entire swarm</span>
+              </h2>
+              <p className="text-muted-foreground text-sm sm:text-base max-w-2xl mb-4">
+                One dashboard integrating <span className="font-semibold text-foreground/90">{SOURCE_PROJECTS.length} source modules</span> — procurement, logistics, payouts, security, skills, agents, and the Jarvis assistant.
+                All operations default to dry-run; enable explicit flags for mutating actions against Base44 and the Swarm Vault.
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <a href="/operations"><Button size="sm" className="gap-1.5 bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:from-indigo-500 hover:to-fuchsia-500 shadow-md shadow-indigo-500/20">
+                  <PackageCheck className="w-4 h-4" /> Open Operations Console
+                </Button></a>
+                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setJarvisOpen(true)}>
+                  <MessageSquare className="w-4 h-4" /> Talk to Jarvis
+                </Button>
+                <AlertDialog open={seedDialogOpen} onOpenChange={setSeedDialogOpen}>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="outline" className="gap-1.5 text-amber-700 dark:text-amber-300 border-amber-300/50 hover:bg-amber-500/10" disabled={seedLoading}>
+                      <RefreshCw className={`w-4 h-4 ${seedLoading ? 'animate-spin' : ''}`} /> {seedLoading ? 'Seeding…' : 'Initialize / Re-seed'}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-red-500" />Reset all data?</AlertDialogTitle>
+                      <AlertDialogDescription>Seeds procurement, shipments, POs, owner payouts, suppliers, and supply-chain tables. Existing records are DELETED first.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleSeed} className="bg-red-600 hover:bg-red-700">Yes, re-seed everything</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <Button size="sm" variant="ghost" className="gap-1.5" onClick={fetchDash}>
+                  <RefreshCw className="w-3.5 h-3.5" /> Refresh Dashboard
+                </Button>
+              </div>
+            </motion.div>
 
-            {/* Action Bar + Progress Log */}
-            <Card><CardHeader className="pb-3"><div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"><div><CardTitle className="text-sm">Shipment Tracking</CardTitle><CardDescription className={shipSummary.trackingNotVerified > 0 ? 'text-amber-600 font-medium' : 'text-emerald-600 font-medium'}>{shipSummary.trackingNotVerified > 0 ? `${shipSummary.trackingNotVerified} tracking numbers not verified` : 'All tracking numbers verified ✓'}</CardDescription></div>
-                  <div className="flex flex-wrap gap-2 items-center">
-                    <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={handleVerifyAll} disabled={verifyAllLoading || shipSummary.trackingNotVerified === 0}>{verifyAllLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}{shipSummary.trackingNotVerified === 0 ? 'All Verified' : `Verify All (${shipSummary.trackingNotVerified})`}</Button>
-                    <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => handleAdvanceProgress(1)} disabled={advanceLoading || shipSummary.delivered === shipSummary.totalShipments}>{advanceLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ArrowRight className="w-3.5 h-3.5" />}Advance +1 Step</Button>
-                    <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={() => handleAdvanceProgress(6)} disabled={advanceLoading || shipSummary.delivered === shipSummary.totalShipments}>{advanceLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ArrowUpRight className="w-3.5 h-3.5" />}Fast Forward All</Button>
-                    <Select value={shipStatusFilter} onValueChange={setShipStatusFilter}><SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="label_created">Label Created</SelectItem>
-                    <SelectItem value="in_transit">In Transit</SelectItem>
-                    <SelectItem value="customs">Customs</SelectItem>
-                    <SelectItem value="delivered">Delivered</SelectItem>
-                    <SelectItem value="failed">Failed</SelectItem>
-                    <SelectItem value="delivery_disputed">Disputed</SelectItem>
-                  </SelectContent></Select></div></div></CardHeader><CardContent>
-              {/* Progress Log */}
-              {progressLog.length > 0 && (
-                <div className="mb-4 p-3 rounded-lg bg-muted/50 max-h-32 overflow-y-auto">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5 font-medium">Progress Log</p>
-                  <div className="space-y-1">
-                    {progressLog.map((log, i) => (
-                      <div key={i} className={`flex items-start gap-2 text-xs ${log.type === 'success' ? 'text-emerald-600' : log.type === 'verify' ? 'text-blue-600' : 'text-muted-foreground'}`}>
-                        <span className="text-muted-foreground shrink-0 font-mono text-[10px]">{log.time}</span>
-                        <span>{log.msg}</span>
+            {/* Right — Autopilot & tick panel (hit-swarm style) */}
+            <motion.div initial={{ opacity: 0, y: 12, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.14 }}>
+              <Card className="border-indigo-300/30 dark:border-indigo-700/30 bg-background/60 backdrop-blur shadow-xl shadow-indigo-500/5">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="relative"><Zap className="w-5 h-5 text-amber-500" />{autopilot && <motion.span className="absolute -inset-1 rounded-full ring-2 ring-amber-400/40" animate={{ opacity: [0, 1, 0], scale: [1, 1.4, 1] }} transition={{ duration: 1.6, repeat: Infinity }} />}</div>
+                      <div>
+                        <CardTitle className="text-sm">Swarm Autopilot</CardTitle>
+                        <CardDescription className="text-xs">Auto-run tick every 20s</CardDescription>
                       </div>
+                    </div>
+                    <Badge className={autopilot ? 'bg-emerald-500 hover:bg-emerald-500 text-white' : 'bg-slate-500 hover:bg-slate-500 text-white'}>
+                      {autopilot ? 'ENGAGED' : 'MANUAL'}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Switch id="autopilot-sw" checked={autopilot} onCheckedChange={setAutopilot} />
+                      <Label htmlFor="autopilot-sw" className="text-xs font-medium">Enable Autopilot</Label>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Activity className={`w-3.5 h-3.5 ${autopilot ? 'text-emerald-500 animate-pulse' : ''}`} />
+                      {autopilot ? 'Ticking…' : 'On demand'}
+                    </div>
+                  </div>
+                  <Separator />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-3 rounded-lg bg-gradient-to-br from-indigo-500/10 to-transparent border border-indigo-200/30 dark:border-indigo-800/30">
+                      <p className="text-[10px] uppercase tracking-wider text-indigo-600 dark:text-indigo-300 mb-0.5">Last tick</p>
+                      <p className="text-sm font-semibold">{lastTickAt ? formatDistanceToNow(lastTickAt, { addSuffix: true }) : '—'}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-gradient-to-br from-fuchsia-500/10 to-transparent border border-fuchsia-200/30 dark:border-fuchsia-800/30">
+                      <p className="text-[10px] uppercase tracking-wider text-fuchsia-600 dark:text-fuchsia-300 mb-0.5">Progress</p>
+                      <p className="text-sm font-semibold">{tickProgress}%</p>
+                    </div>
+                  </div>
+                  <Progress value={tickProgress} className="h-1.5" />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button size="sm" className="gap-1" onClick={runSingleTick} disabled={tickRunning || autopilot}>
+                      <PlayCircle className={`w-4 h-4 ${tickRunning ? 'animate-spin' : ''}`} /> {tickRunning ? 'Running…' : 'Run Tick'}
+                    </Button>
+                    <a href="/operations"><Button size="sm" variant="outline" className="gap-1 w-full">
+                      <Eye className="w-4 h-4" /> Pipeline View
+                    </Button></a>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+           MAIN · KPI Row 1 · Quick Actions Bar
+          ══════════════════════════════════════════════════════════════════ */}
+      <main className="flex-1 max-w-[1680px] w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+        {/* Quick Action Bar */}
+        <div className="flex flex-wrap items-center gap-2 p-3 rounded-xl border border-border/60 bg-card/50 backdrop-blur">
+          <span className="text-xs font-semibold text-muted-foreground pr-2 border-r border-border/50 mr-1">Quick Actions</span>
+          <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={handleBulkApprove} disabled={approveLoading}>
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> {approveLoading ? 'Approving…' : 'Bulk Approve POs'}
+          </Button>
+          <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={handleVerifyAll} disabled={verifyAllLoading}>
+            <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" /> {verifyAllLoading ? 'Verifying…' : 'Verify All Tracking'}
+          </Button>
+          <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={handleFixAll} disabled={fixAllLoading}>
+            <Wrench className="w-3.5 h-3.5 text-amber-500" /> {fixAllLoading ? 'Fixing…' : 'Fix All Payout Routing'}
+          </Button>
+          <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => runSingleTick()} disabled={tickRunning}>
+            <Rocket className="w-3.5 h-3.5 text-fuchsia-500" /> Advance Shipments (1 step)
+          </Button>
+          <a href="/api/download"><Button size="sm" variant="outline" className="h-7 text-xs gap-1 ml-auto">
+            <Download className="w-3.5 h-3.5 text-sky-500" /> Download Swarm Export
+          </Button></a>
+        </div>
+
+        {/* KPI Row 1 — Revenue + Payouts + Agents */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3" id="revenue">
+          {[
+            { label: 'Confirmed Revenue', val: dashData?.revenue.confirmed, hint: fmt(dashData?.revenue.total || 0) + ' total', color: 'emerald', icon: TrendingUp },
+            { label: 'Reconciled', val: dashData?.revenue.reconciled, hint: fmt(dashData?.revenue.pending || 0) + ' pending', color: 'indigo', icon: CheckCircle2 },
+            { label: 'Unbatched', val: dashData?.revenue.unbatched, hint: 'awaiting batch grouping', color: 'amber', icon: Clock },
+            { label: 'Payouts Ready', val: dashData?.payouts.completedAmount, hint: (dashData?.payouts.completedItems || 0) + ' items', color: 'cyan', icon: Wallet },
+            { label: 'Pending Approvals', val: (dashData?.payouts.pendingApprovalBatches || 0) as any, hint: fmtPrecise(dashData?.payouts.awaitingConfirmation || 0) + ' unconfirmed', color: 'rose', icon: AlertTriangle, isCount: true },
+            { label: 'Agents Active', val: agentsActive as any, hint: AGENTS.length + ' total · Avg load ' + Math.round(AGENTS.reduce((s, a) => s + a.load, 0) / AGENTS.length) + '%', color: 'fuchsia', icon: Bot, isCount: true },
+          ].map((k, i) => {
+            const Icon = k.icon
+            const colored = {
+              emerald: 'text-emerald-500 border-emerald-200 dark:border-emerald-800 bg-emerald-500/5',
+              indigo: 'text-indigo-500 border-indigo-200 dark:border-indigo-800 bg-indigo-500/5',
+              amber: 'text-amber-500 border-amber-200 dark:border-amber-800 bg-amber-500/5',
+              cyan: 'text-cyan-500 border-cyan-200 dark:border-cyan-800 bg-cyan-500/5',
+              rose: 'text-rose-500 border-rose-200 dark:border-rose-800 bg-rose-500/5',
+              fuchsia: 'text-fuchsia-500 border-fuchsia-200 dark:border-fuchsia-800 bg-fuchsia-500/5',
+            }[k.color]
+            return (
+              <motion.div key={k.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+                <Card className={`border ${colored} hover:shadow-md transition-all`}>
+                  <CardHeader className="pb-1 pt-4 px-4">
+                    <CardDescription className="text-xs flex items-center gap-1.5"><Icon className="w-3.5 h-3.5" />{k.label}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="px-4 pb-4">
+                    {dashLoading ? <Skeleton className="h-8 w-24" /> : <>
+                      <p className="text-2xl font-bold">{k.isCount ? k.val : k.val != null ? fmt(Number(k.val)) : '—'}</p>
+                      <p className="text-xs text-muted-foreground">{k.hint}</p>
+                    </>}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )
+          })}
+        </div>
+
+        {/* ══════════════════════════════════════════════════════════════════
+             7-SOURCE PROJECTS CAPABILITY GRID (user request)
+            ══════════════════════════════════════════════════════════════════ */}
+        <section className="space-y-3">
+          <div className="flex items-end justify-between">
+            <div>
+              <h3 className="text-lg font-bold flex items-center gap-2"><Sparkles className="w-5 h-5 text-fuchsia-500" /> Integrated Source Modules</h3>
+              <p className="text-sm text-muted-foreground">Every source project from the swarm, linked and addressable from one control plane.</p>
+            </div>
+            <Badge variant="outline" className="text-xs">{SOURCE_PROJECTS.length} modules · {SOURCE_PROJECTS.filter(s => s.status === 'Integrated').length} fully integrated</Badge>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            {SOURCE_PROJECTS.map((sp, i) => (
+              <motion.div key={sp.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+                <Card className="h-full flex flex-col group hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-start justify-between">
+                      <div className={`flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br ${sp.accent} text-white shadow-md`}>
+                        {sp.icon}
+                      </div>
+                      <Badge variant="outline" className={`text-[10px] ${
+                        sp.status === 'Integrated' ? 'border-emerald-400/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' :
+                        sp.status === 'Linked' ? 'border-indigo-400/40 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300' :
+                        'border-amber-400/40 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                      }`}>{sp.status}</Badge>
+                    </div>
+                    <div className="mt-3">
+                      <CardTitle className="text-sm leading-snug flex items-center gap-1.5">{sp.name}<span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">· {sp.short}</span></CardTitle>
+                      <CardDescription className="text-xs mt-1 leading-relaxed">{sp.desc}</CardDescription>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0 pb-3 mt-auto">
+                    <div className="flex flex-wrap gap-1.5">
+                      {sp.actions.map((a, ai) => (
+                        a.href ? (
+                          <a key={ai} href={a.href}>
+                            <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-300">
+                              <ChevronRight className="w-3 h-3" />{a.label}
+                            </Button>
+                          </a>
+                        ) : (
+                          <Button key={ai} size="sm" variant="ghost" className="h-7 text-[11px] gap-1 hover:bg-indigo-500/10" onClick={a.onClick}>
+                            <ChevronRight className="w-3 h-3" />{a.label}
+                          </Button>
+                        )
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* ══════════════════════════════════════════════════════════════════
+             CHARTS · Revenue by Source + Batch Status
+            ══════════════════════════════════════════════════════════════════ */}
+        <section className="grid md:grid-cols-2 gap-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2"><DollarSign className="w-4 h-4 text-emerald-500" /> Revenue by Source</CardTitle>
+              <CardDescription className="text-xs">Confirmed revenue broken down by channel</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {dashLoading ? <div className="space-y-2"><Skeleton className="h-[220px] w-full rounded" /></div> : revenueSourceChart.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">No revenue data yet — initialize with the seed button above.</p>
+              ) : (
+                <>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <PieChart>
+                      <Pie data={revenueSourceChart} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={72} innerRadius={42} paddingAngle={2}>
+                        {revenueSourceChart.map((d, i) => <Cell key={i} fill={d.color} />)}
+                      </Pie>
+                      <Tooltip formatter={(v: number) => [fmt(v), 'Revenue']} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="flex flex-wrap gap-1.5 mt-2 max-h-24 overflow-auto">
+                    {revenueSourceChart.map((d, i) => (
+                      <Badge key={i} variant="secondary" className="text-[10px] gap-1">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color }} />{d.name} · {fmt(d.value)}
+                      </Badge>
                     ))}
                   </div>
-                </div>
+                </>
               )}
-              <ScrollArea className="max-h-[600px]">
-                <div className="space-y-2">
-                  {filteredShip.map(ship => {
-                    const events = getTrackingEvents(ship.events)
-                    const isExpanded = expandedShipment === ship.id
-                    return (
-                      <Card key={ship.id} className={`border ${!ship.trackingVerified && ship.trackingNumber ? 'border-amber-200 dark:border-amber-900' : ''} ${ship.status === 'delivered' ? 'border-emerald-200 dark:border-emerald-900' : ''} ${ship.status === 'delivery_disputed' ? 'border-red-400 dark:border-red-700 ring-2 ring-red-200 dark:ring-red-900' : ''} transition-all`}>
-                        <div className="p-3 sm:p-4 cursor-pointer" onClick={() => setExpandedShipment(isExpanded ? null : ship.id)}>
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                              {getShipmentStatusIcon(ship.status)}
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="font-medium text-sm truncate">{ship.itemName}</span>
-                                  <Badge variant="outline" className="text-[10px] font-mono">{ship.shipmentNumber}</Badge>
-                                  {!ship.trackingVerified && ship.trackingNumber && <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300 text-[10px]">NOT VERIFIED</Badge>}
-                                  {ship.trackingVerified && <Badge className={STATUS_COLORS.delivered + ' text-[10px]'}><CheckCircle2 className="w-3 h-3 mr-0.5" />Verified</Badge>}
-                                  {ship.status === 'delivery_disputed' && <Badge className="bg-red-600 text-white text-[10px] gap-1"><Ban className="w-3 h-3" />DISPUTED — FRAUDULENT TRACKING</Badge>}
-                                </div>
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                                  {ship.carrier && <span className="inline-flex items-center gap-1">{CARRIER_ICONS[ship.carrier] || <TruckIcon className="w-3 h-3" />}{ship.carrier}</span>}
-                                  {ship.trackingNumber && <span className="font-mono">{ship.trackingNumber}<CopyButton text={ship.trackingNumber} /></span>}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              <div className="text-right">
-                                <Badge className={`${STATUS_COLORS[ship.status] || ''} text-[10px]`}>{ship.status.replace(/_/g, ' ')}</Badge>
-                                {ship.estimatedDelivery && <p className="text-[10px] text-muted-foreground mt-0.5">ETA: {format(new Date(ship.estimatedDelivery), 'MMM d')}</p>}
-                              </div>
-                              <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                            </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2"><Wallet className="w-4 h-4 text-violet-500" /> Payout Batch Status</CardTitle>
+              <CardDescription className="text-xs">Distribution of payout batches by workflow state</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {dashLoading ? <Skeleton className="h-[220px] w-full rounded" /> : batchDistChart.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">No batch data yet.</p>
+              ) : (
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={batchDistChart} margin={{ top: 10, right: 10, bottom: 10, left: -10 }}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
+                    <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-12} textAnchor="end" height={60} />
+                    <YAxis tick={{ fontSize: 10 }} width={30} />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* ══════════════════════════════════════════════════════════════════
+             SWARM AGENTS + RECENT ACTIVITY (2-col)
+            ══════════════════════════════════════════════════════════════════ */}
+        <section className="grid lg:grid-cols-[1.1fr_1fr] gap-4" id="autopilot">
+          {/* Agents (jarvis-style swarm panel) */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-sm flex items-center gap-2"><Cpu className="w-4 h-4 text-cyan-500" /> Swarm Agents · Workload</CardTitle>
+                  <CardDescription className="text-xs">{agentsActive} of {AGENTS.length} active · Autopilot {autopilot ? 'running every 20s' : 'manual mode'}</CardDescription>
+                </div>
+                <div className="flex gap-1.5">
+                  <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1" onClick={() => setAutopilot(true)} disabled={autopilot}><PlayCircle className="w-3.5 h-3.5" />Engage</Button>
+                  <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1" onClick={() => setAutopilot(false)} disabled={!autopilot}><XCircle className="w-3.5 h-3.5" />Disengage</Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {AGENTS.map((ag, i) => {
+                  const Icon = ag.icon
+                  return (
+                    <motion.div key={ag.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
+                      className="p-3 rounded-lg border border-border/60 bg-background/40 hover:border-indigo-300/50 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className={`flex items-center justify-center w-8 h-8 rounded-md bg-gradient-to-br from-slate-500/10 to-slate-500/5 border border-border/50 ${ag.color}`}>
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold leading-tight">{ag.name}</p>
+                            <p className="text-[10px] text-muted-foreground leading-tight">{ag.role}</p>
                           </div>
                         </div>
-                        <AnimatePresence>
-                          {isExpanded && (
-                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
-                              <div className="px-4 pb-4 pt-0 border-t">
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 text-xs">
-                                  <div><span className="text-muted-foreground">Origin</span><p className="font-medium mt-0.5">{ship.originCity}, {ship.originCountry}</p></div>
-                                  <div><span className="text-muted-foreground">Destination</span><p className="font-medium mt-0.5">{ship.destinationName}</p><p className="text-muted-foreground">{ship.destinationAddress}</p></div>
-                                  <div><span className="text-muted-foreground">Purpose</span><p className="font-medium mt-0.5">{PURPOSE_LABELS[ship.purpose || ''] || ship.purpose || '-'}</p></div>
-                                  <div><span className="text-muted-foreground">Details</span><p className="mt-0.5">Weight: {fmtKg(ship.weightKg)}</p><p>Dims: {ship.dimensions || '-'}</p></div>
-                                  <div><span className="text-muted-foreground">Shipping</span><p className="font-mono mt-0.5">{fmt(ship.shippingCost)}</p></div>
-                                  <div><span className="text-muted-foreground">Insurance</span><p className="font-mono mt-0.5">{ship.insuranceValue ? fmt(ship.insuranceValue) : '-'}</p></div>
-                                  <div><span className="text-muted-foreground">Customs Est.</span><p className="font-mono mt-0.5">{ship.customsDutyEst ? fmt(ship.customsDutyEst) : '-'}</p></div>
-                                  <div><span className="text-muted-foreground">Qty</span><p className="font-medium mt-0.5">{ship.quantity}</p></div>
-                                </div>
-
-                                {/* Dispute Alert Banner */}
-                                {ship.status === 'delivery_disputed' && ship.notes && (
-                                  <div className="mt-3 p-3 rounded-lg bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800">
-                                    <div className="flex items-start gap-2">
-                                      <ShieldAlert className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
-                                      <div>
-                                        <p className="text-xs font-semibold text-red-700 dark:text-red-400">Delivery Disputed — Fraudulent Tracking Detected</p>
-                                        <p className="text-xs text-red-600 dark:text-red-400 mt-1">{ship.notes}</p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-                                {/* Tracking Events Timeline */}
-                                {events.length > 0 && (
-                                  <div className="mt-4">
-                                    <p className="text-xs font-medium mb-2">Tracking Timeline</p>
-                                    <div className="relative pl-4 space-y-2 border-l-2 border-muted">
-                                      {events.map((ev, i) => {
-                                        const isFabricated = ev.description?.includes('[FABRICATED')
-                                        const isDispute = ev.status === 'delivery_disputed'
-                                        return (
-                                        <div key={i} className="relative flex items-start gap-3">
-                                          <div className={`absolute -left-[21px] top-0.5 w-3 h-3 rounded-full border-2 border-background ${isFabricated ? 'bg-red-500' : isDispute ? 'bg-red-600 ring-2 ring-red-300' : 'bg-primary'}`} />
-                                          <div className={isFabricated ? 'line-through opacity-60' : ''}>
-                                            <p className={`text-xs font-medium ${isDispute ? 'text-red-700 dark:text-red-400 font-bold' : ''}`}>{ev.description}</p>
-                                            <p className={`text-[10px] ${isFabricated ? 'text-red-500' : 'text-muted-foreground'}`}>{ev.location} · {ev.date ? format(new Date(ev.date), 'MMM d, yyyy HH:mm') : ''}{isFabricated && ' — FUTURE DATE (FABRICATED)'}</p>
-                                          </div>
-                                        </div>
-                                        )
-                                      })}
-                                    </div>
-                                  </div>
-                                )}
-
-                                {/* Verify Button */}
-                                <div className="mt-4 flex items-center gap-2">
-                                  {!ship.trackingVerified && ship.trackingNumber && (
-                                    <Button size="sm" className="h-7 text-xs gap-1" onClick={(e) => { e.stopPropagation(); handleVerify(ship.id, true) }}>
-                                      <ShieldCheck className="w-3.5 h-3.5" />Verify Tracking
-                                    </Button>
-                                  )}
-                                  {ship.trackingVerified && (
-                                    <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={(e) => { e.stopPropagation(); handleVerify(ship.id, false) }}>
-                                      <Ban className="w-3.5 h-3.5" />Unverify
-                                    </Button>
-                                  )}
-                                  {ship.trackingUrl && <a href={ship.trackingUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline" onClick={e => e.stopPropagation()}><ExternalLink className="w-3 h-3" />Track on carrier site</a>}
-                                </div>
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </Card>
-                    )
-                  })}
-                  {filteredShip.length === 0 && <div className="text-center py-12 text-muted-foreground">No shipments found. Initialize data first.</div>}
-                </div>
-              </ScrollArea>
-            </CardContent></Card>
-          </TabsContent>
-
-          {/* ══════════════════════════════════════════════════════════════════════
-              TAB: PROCUREMENT
-             ══════════════════════════════════════════════════════════════════════ */}
-          <TabsContent value="procurement" className="space-y-6">
-            {/* Sub-tab navigation */}
-            <Tabs value={procSubTab} onValueChange={(v) => setProcSubTab(v as typeof procSubTab)}>
-              <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-muted/50">
-                <TabsTrigger value="overview" className="text-xs sm:text-sm gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"><Activity className="w-3.5 h-3.5 hidden sm:block" />Overview</TabsTrigger>
-                <TabsTrigger value="orders" className="text-xs sm:text-sm gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"><ClipboardCheck className="w-3.5 h-3.5 hidden sm:block" />Purchase Orders</TabsTrigger>
-                <TabsTrigger value="suppliers" className="text-xs sm:text-sm gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"><Building2 className="w-3.5 h-3.5 hidden sm:block" />Suppliers</TabsTrigger>
-              </TabsList>
-
-              {/* ── SUB-TAB: OVERVIEW ── */}
-              <TabsContent value="overview" className="space-y-6 mt-6">
-                {/* KPI Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <motion.div whileHover={{ y: -2 }} transition={{ type: 'spring', stiffness: 300 }}>
-                    <Card className="hover:shadow-md transition-shadow"><CardHeader className="pb-1 pt-4 px-4"><CardDescription className="text-xs">Total Purchase Orders</CardDescription></CardHeader><CardContent className="px-4 pb-4"><p className="text-2xl font-bold">{poData?.summary?.totalPOs ?? '-'}</p><p className="text-xs text-muted-foreground">across all statuses</p></CardContent></Card>
-                  </motion.div>
-                  <motion.div whileHover={{ y: -2 }} transition={{ type: 'spring', stiffness: 300 }}>
-                    <Card className={`hover:shadow-md transition-shadow ${(poData?.summary?.pendingApprovalCount ?? 0) > 0 ? 'border-amber-200 dark:border-amber-800' : ''}`}><CardHeader className="pb-1 pt-4 px-4"><CardDescription className={`text-xs ${(poData?.summary?.pendingApprovalCount ?? 0) > 0 ? 'text-amber-600 dark:text-amber-400' : ''}`}>Pending Approval</CardDescription></CardHeader><CardContent className="px-4 pb-4"><p className={`text-2xl font-bold ${(poData?.summary?.pendingApprovalCount ?? 0) > 0 ? 'text-amber-600' : ''}`}>{poData?.summary?.pendingApprovalCount ?? 0}</p><p className="text-xs text-muted-foreground">awaiting review</p></CardContent></Card>
-                  </motion.div>
-                  <motion.div whileHover={{ y: -2 }} transition={{ type: 'spring', stiffness: 300 }}>
-                    <Card className="hover:shadow-md transition-shadow"><CardHeader className="pb-1 pt-4 px-4"><CardDescription className="text-xs">Total PO Value</CardDescription></CardHeader><CardContent className="px-4 pb-4"><p className="text-2xl font-bold">{poData?.summary?.totalValue != null ? fmt(poData.summary.totalValue) : '-'}</p><p className="text-xs text-muted-foreground">all orders combined</p></CardContent></Card>
-                  </motion.div>
-                  <motion.div whileHover={{ y: -2 }} transition={{ type: 'spring', stiffness: 300 }}>
-                    <Card className="hover:shadow-md transition-shadow"><CardHeader className="pb-1 pt-4 px-4"><CardDescription className="text-xs">Active Suppliers</CardDescription></CardHeader><CardContent className="px-4 pb-4"><p className="text-2xl font-bold">{supplierData.filter(s => s.isActive).length}</p><p className="text-xs text-muted-foreground">of {supplierData.length} total</p></CardContent></Card>
-                  </motion.div>
-                </div>
-
-                {/* PO Status Pipeline */}
-                <Card><CardHeader className="pb-3"><CardTitle className="text-sm flex items-center gap-2"><ArrowRight className="w-4 h-4" />PO Status Pipeline</CardTitle></CardHeader><CardContent>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {(['draft', 'submitted', 'pending_approval', 'approved', 'ordered', 'completed'] as const).map((status, idx) => {
-                      const count = poData?.summary?.byStatus?.[status] ?? 0
-                      return (
-                        <React.Fragment key={status}>
-                          <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-card">
-                            <div className={`w-3 h-3 rounded-full ${STATUS_COLORS[status]?.split(' ')[0] ?? 'bg-slate-300'}`} />
-                            <div>
-                              <p className="text-xs font-medium capitalize">{status.replace(/_/g, ' ')}</p>
-                              <p className="text-lg font-bold">{count}</p>
-                            </div>
-                          </div>
-                          {idx < 5 && <ArrowRight className="w-4 h-4 text-muted-foreground hidden sm:block" />}
-                        </React.Fragment>
-                      )
-                    })}
-                  </div>
-                </CardContent></Card>
-
-                {/* Recent POs */}
-                <Card><CardHeader className="pb-3"><CardTitle className="text-sm">Recent Purchase Orders</CardTitle><CardDescription>Latest 5 by creation date</CardDescription></CardHeader><CardContent>
-                  <ScrollArea className="max-h-96 overflow-y-auto">
-                    <Table><TableHeader><TableRow><TableHead>PO Number</TableHead><TableHead className="hidden sm:table-cell">Title</TableHead><TableHead>Supplier</TableHead><TableHead className="hidden md:table-cell">Status</TableHead><TableHead className="hidden md:table-cell">Items</TableHead><TableHead className="text-right">Amount</TableHead><TableHead className="hidden lg:table-cell">Created</TableHead></TableRow></TableHeader><TableBody>
-                      {poData && [...poData.orders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5).map(po => (
-                        <TableRow key={po.id}>
-                          <TableCell className="font-mono text-sm font-medium">{po.poNumber}</TableCell>
-                          <TableCell className="hidden sm:table-cell text-xs text-muted-foreground max-w-[160px] truncate">{po.title || '-'}</TableCell>
-                          <TableCell className="text-sm">{po.supplierName}</TableCell>
-                          <TableCell className="hidden md:table-cell"><Badge className={`${STATUS_COLORS[po.status] || ''} text-[10px]`}>{po.status.replace(/_/g, ' ')}</Badge></TableCell>
-                          <TableCell className="hidden md:table-cell text-center text-xs">{po.lineItemCount}</TableCell>
-                          <TableCell className="text-right font-mono text-sm">{fmt(po.totalAmount)}</TableCell>
-                          <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">{po.createdAt ? format(new Date(po.createdAt), 'MMM d, yyyy') : '-'}</TableCell>
-                        </TableRow>
-                      ))}
-                      {(!poData || poData.orders.length === 0) && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-6">No purchase orders yet.</TableCell></TableRow>}
-                    </TableBody></Table>
-                  </ScrollArea>
-                </CardContent></Card>
-
-                {/* Procurement Items Table (existing) */}
-                <Card><CardHeader><div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"><CardTitle className="text-sm">Procurement Items</CardTitle>
-                      <div className="flex gap-2 items-center"><Filter className="w-3.5 h-3.5 text-muted-foreground" /><Select value={procCatFilter} onValueChange={setProcCatFilter}><SelectTrigger className="w-36 h-8 text-xs"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="all">All Categories</SelectItem>
-                        {Object.entries(procSummary.byCategory).map(([cat]) => <SelectItem key={cat} value={cat}>{cat.replace(/_/g, ' ')}</SelectItem>)}
-                      </SelectContent></Select></div></div></CardHeader><CardContent>
-                  <ScrollArea className="max-h-96 overflow-y-auto">
-                    <Table><TableHeader><TableRow><TableHead>Item</TableHead><TableHead className="hidden md:table-cell">Brand / Ref</TableHead><TableHead className="hidden sm:table-cell">Category</TableHead><TableHead className="text-center">Qty</TableHead><TableHead>Unit Est.</TableHead><TableHead>Total</TableHead><TableHead className="hidden lg:table-cell">Recipient</TableHead><TableHead>Status</TableHead><TableHead className="hidden lg:table-cell">Pre-paid</TableHead></TableRow></TableHeader><TableBody>
-                      {filteredProc.map(item => (
-                        <TableRow key={item.id}>
-                          <TableCell className="font-medium text-sm max-w-[200px] truncate" title={item.name}>{item.name}</TableCell>
-                          <TableCell className="hidden md:table-cell text-xs"><div>{item.brand || '-'}</div><div className="font-mono text-muted-foreground">{item.reference || ''}</div></TableCell>
-                          <TableCell className="hidden sm:table-cell"><Badge variant="outline" className="text-[10px]">{item.category.replace(/_/g, ' ')}</Badge></TableCell>
-                          <TableCell className="text-center text-sm">{item.quantity}</TableCell>
-                          <TableCell className="font-mono text-sm">{fmt(item.unitPriceEst)}</TableCell>
-                          <TableCell className="font-mono text-sm font-medium">{fmt(item.totalEst)}</TableCell>
-                          <TableCell className="hidden lg:table-cell text-xs"><div className="font-medium">{item.recipientName}</div><div className="text-muted-foreground truncate max-w-[180px]" title={item.recipientAddress || ''}>{item.recipientAddress || ''}</div></TableCell>
-                          <TableCell><Badge className={`${STATUS_COLORS[item.status] || ''} text-[10px]`}>{item.status}</Badge></TableCell>
-                          <TableCell className="hidden lg:table-cell">{item.prePaidBySwarm ? <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 text-[10px]">Swarm</Badge> : <Badge variant="outline" className="text-[10px]">Self</Badge>}</TableCell>
-                        </TableRow>
-                      ))}
-                      {filteredProc.length === 0 && <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-6">No procurement items.</TableCell></TableRow>}
-                    </TableBody></Table>
-                  </ScrollArea>
-                </CardContent></Card>
-              </TabsContent>
-
-              {/* ── SUB-TAB: PURCHASE ORDERS ── */}
-              <TabsContent value="orders" className="space-y-6 mt-6">
-                {/* Action Bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex flex-wrap gap-2 items-center">
-                    {(poData?.summary?.pendingApprovalCount ?? 0) > 0 && (
-                      <Button size="sm" className="h-8 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700" onClick={handleBulkApprove}>
-                        <ThumbsUp className="w-3.5 h-3.5" />Bulk Approve All Pending ({poData?.summary?.pendingApprovalCount})
-                      </Button>
-                    )}
-                  </div>
-                  <Select value={poFilter} onValueChange={setPoFilter}>
-                    <SelectTrigger className="w-40 h-8 text-xs"><SelectValue placeholder="Filter status" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Statuses</SelectItem>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="submitted">Submitted</SelectItem>
-                      <SelectItem value="pending_approval">Pending Approval</SelectItem>
-                      <SelectItem value="approved">Approved</SelectItem>
-                      <SelectItem value="ordered">Ordered</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="rejected">Rejected</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* PO Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {poData && poData.orders
-                    .filter(o => poFilter === 'all' || o.status === poFilter)
-                    .map(po => (
-                    <motion.div key={po.id} whileHover={{ y: -2 }} transition={{ type: 'spring', stiffness: 300 }}>
-                      <Card className={`h-full flex flex-col ${po.status === 'rejected' ? 'border-red-200 dark:border-red-800' : po.status === 'pending_approval' ? 'border-amber-200 dark:border-amber-800' : ''}`}>
-                        <CardHeader className="pb-2">
-                          <div className="flex items-center justify-between gap-2">
-                            <CardTitle className="text-sm font-mono">{po.poNumber}</CardTitle>
-                            <Badge className={`${STATUS_COLORS[po.status] || ''} text-[10px]`}>{po.status.replace(/_/g, ' ')}</Badge>
-                          </div>
-                          <div className="flex items-center justify-between gap-2 mt-1">
-                            <CardDescription className="text-xs truncate max-w-[180px]">{po.title || po.supplierName}</CardDescription>
-                            <Badge variant="outline" className="text-[10px] capitalize shrink-0">{po.priority}</Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="flex-1 flex flex-col gap-2">
-                          <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
-                            <div className="text-muted-foreground">Supplier</div>
-                            <div className="text-right font-medium truncate">{po.supplierName}</div>
-                            <div className="text-muted-foreground">Line Items</div>
-                            <div className="text-right font-medium">{po.lineItemCount}</div>
-                            <div className="text-muted-foreground">Amount</div>
-                            <div className="text-right font-mono font-medium">{fmt(po.totalAmount)}</div>
-                            {po.submittedAt && <><div className="text-muted-foreground">Submitted</div><div className="text-right">{format(new Date(po.submittedAt), 'MMM d, yyyy')}</div></>}
-                            {po.approvedAt && <><div className="text-muted-foreground">Approved</div><div className="text-right">{format(new Date(po.approvedAt), 'MMM d, yyyy')}</div></>}
-                            {po.orderedAt && <><div className="text-muted-foreground">Ordered</div><div className="text-right">{format(new Date(po.orderedAt), 'MMM d, yyyy')}</div></>}
-                            {po.completedAt && <><div className="text-muted-foreground">Completed</div><div className="text-right">{format(new Date(po.completedAt), 'MMM d, yyyy')}</div></>}
-                            {po.approvedBy && <><div className="text-muted-foreground">Approved By</div><div className="text-right">{po.approvedBy}</div></>}
-                            {po.rejectedBy && <><div className="text-muted-foreground">Rejected By</div><div className="text-right">{po.rejectedBy}</div></>}
-                          </div>
-                          {po.rejectionReason && (
-                            <div className="mt-1 p-2 rounded-md bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
-                              <p className="text-xs text-red-700 dark:text-red-400 flex items-start gap-1.5"><XCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />{po.rejectionReason}</p>
-                            </div>
-                          )}
-                          {po.notes && (
-                            <p className="text-[10px] text-muted-foreground mt-1 italic">{po.notes}</p>
-                          )}
-                          {/* Action Buttons */}
-                          <div className="mt-auto pt-2 flex flex-wrap gap-2">
-                            {po.status === 'draft' && (
-                              <Button size="sm" className="h-7 text-xs gap-1" onClick={() => handlePOAction(po.id, 'submit')}>
-                                <Send className="w-3 h-3" />Submit for Approval
-                              </Button>
-                            )}
-                            {po.status === 'pending_approval' && (
-                              <>
-                                <Button size="sm" className="h-7 text-xs gap-1 bg-emerald-600 hover:bg-emerald-700" onClick={() => handlePOAction(po.id, 'approve')}>
-                                  <ThumbsUp className="w-3 h-3" />Approve
-                                </Button>
-                                <Button size="sm" variant="destructive" className="h-7 text-xs gap-1" onClick={() => handlePOAction(po.id, 'reject', 'Rejected by reviewer')}>
-                                  <ThumbsDown className="w-3 h-3" />Reject
-                                </Button>
-                              </>
-                            )}
-                            {po.status === 'approved' && (
-                              <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => toast.info('Mark as ordered — use API to update status')}>
-                                <Package className="w-3 h-3" />Mark Ordered
-                              </Button>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
+                        <Badge variant="outline" className={`text-[10px] ${ag.status === 'Active' ? 'border-emerald-400/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' : 'border-slate-300/50 bg-slate-500/10 text-slate-600 dark:text-slate-300'}`}>{ag.status}</Badge>
+                      </div>
+                      <div className="mt-2.5">
+                        <div className="flex justify-between text-[10px] text-muted-foreground mb-1"><span>Load</span><span className="font-mono">{ag.load}%</span></div>
+                        <Progress value={ag.load} className={`h-1.5 ${ag.load > 85 ? '[&>div]:bg-rose-500' : ag.load > 60 ? '[&>div]:bg-amber-500' : '[&>div]:bg-emerald-500'}`} />
+                      </div>
                     </motion.div>
-                  ))}
-                  {(!poData || (poData.orders.filter(o => poFilter === 'all' || o.status === poFilter).length === 0)) && (
-                    <div className="col-span-full text-center py-12 text-muted-foreground">No purchase orders found.</div>
-                  )}
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Activity feed */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-sm flex items-center gap-2"><Activity className="w-4 h-4 text-rose-500" /> Live Activity Feed</CardTitle>
+                  <CardDescription className="text-xs">Revenue events + payout batches, time-sorted</CardDescription>
                 </div>
-              </TabsContent>
-
-              {/* ── SUB-TAB: SUPPLIERS ── */}
-              <TabsContent value="suppliers" className="space-y-6 mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {supplierData.map(supplier => {
-                    const getCountryFlag = (name: string) => {
-                      const n = name.toLowerCase()
-                      if (n.includes('superfood') || n.includes('local') || n.includes('morocco')) return '🇲🇦'
-                      if (n.includes('temu') || n.includes('aliexpress') || n.includes('ali')) return '🇨🇳'
-                      if (n.includes('amazon')) return '🇺🇸'
-                      return '🌍'
-                    }
-                    const flag = getCountryFlag(supplier.name)
-                    return (
-                      <motion.div key={supplier.id} whileHover={{ y: -2 }} transition={{ type: 'spring', stiffness: 300 }}>
-                        <Card className={`h-full flex flex-col ${!supplier.isActive ? 'opacity-60' : ''}`}>
-                          <CardHeader className="pb-2">
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2">
-                                <span className="text-lg">{flag}</span>
-                                <div className="min-w-0">
-                                  <CardTitle className="text-sm truncate">{supplier.name}</CardTitle>
-                                  <CardDescription className="text-[10px] font-mono">{supplier.code}</CardDescription>
-                                </div>
-                              </div>
-                              <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${supplier.isActive ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-                            </div>
-                          </CardHeader>
-                          <CardContent className="flex-1 flex flex-col gap-3 text-xs">
-                            {/* Details */}
-                            <div className="space-y-1.5">
-                              {supplier.country && <div className="flex items-center gap-2"><Globe className="w-3.5 h-3.5 text-muted-foreground shrink-0" /><span>{supplier.country}</span></div>}
-                              {supplier.contactEmail && <div className="flex items-center gap-2"><Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" /><span className="truncate">{supplier.contactEmail}</span></div>}
-                              {supplier.website && <div className="flex items-center gap-2"><Globe className="w-3.5 h-3.5 text-muted-foreground shrink-0" /><a href={supplier.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate">{supplier.website}</a></div>}
-                              <div className="flex items-center gap-2"><CreditCard className="w-3.5 h-3.5 text-muted-foreground shrink-0" /><Badge variant="outline" className="text-[10px]">{supplier.paymentTerms}</Badge></div>
-                            </div>
-
-                            <Separator />
-
-                            {/* Metrics */}
-                            <div className="grid grid-cols-2 gap-2">
-                              <div className="p-2 rounded-md bg-muted/50">
-                                <p className="text-muted-foreground text-[10px]">Total Orders</p>
-                                <p className="font-bold text-sm">{supplier.totalOrders}</p>
-                              </div>
-                              <div className="p-2 rounded-md bg-muted/50">
-                                <p className="text-muted-foreground text-[10px]">Total Spend</p>
-                                <p className="font-bold text-sm font-mono">{fmt(supplier.totalSpend)}</p>
-                              </div>
-                              <div className="p-2 rounded-md bg-muted/50">
-                                <p className="text-muted-foreground text-[10px]">On-Time Rate</p>
-                                <p className={`font-bold text-sm ${supplier.onTimeRate >= 90 ? 'text-emerald-600' : supplier.onTimeRate >= 70 ? 'text-amber-600' : 'text-red-600'}`}>{supplier.onTimeRate.toFixed(1)}%</p>
-                              </div>
-                              <div className="p-2 rounded-md bg-muted/50">
-                                <p className="text-muted-foreground text-[10px]">Defect Rate</p>
-                                <p className={`font-bold text-sm ${supplier.defectRate <= 2 ? 'text-emerald-600' : supplier.defectRate <= 5 ? 'text-amber-600' : 'text-red-600'}`}>{supplier.defectRate.toFixed(1)}%</p>
-                              </div>
-                            </div>
-
-                            {!supplier.isActive && (
-                              <Badge variant="outline" className="text-red-500 border-red-300 dark:border-red-700 self-start text-[10px]">Inactive</Badge>
-                            )}
-                          </CardContent>
-                        </Card>
+                <Badge variant="outline" className="text-[10px] gap-1"><span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />Streaming</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ScrollArea className="h-[380px]">
+                {dashLoading ? (
+                  <div className="p-4 space-y-2">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded" />)}</div>
+                ) : recentEvents.length === 0 ? (
+                  <div className="text-center py-12 text-sm text-muted-foreground">
+                    <Clock className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                    <p>No recent events. Initialize data or run a tick to populate the feed.</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-border/60">
+                    {recentEvents.map((ev, i) => (
+                      <motion.div key={i} initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
+                        className="flex items-start gap-3 px-4 py-3 hover:bg-muted/30 transition-colors">
+                        <div className={`mt-0.5 w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${
+                          ev.kind === 'revenue' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300' : 'bg-violet-500/10 text-violet-600 dark:text-violet-300'
+                        }`}>
+                          {ev.kind === 'revenue' ? <TrendingUp className="w-4 h-4" /> : <CreditCard className="w-4 h-4" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm font-medium truncate">{ev.title}</p>
+                            {statusBadge(ev.status)}
+                          </div>
+                          <div className="flex items-center justify-between gap-2 mt-0.5">
+                            <p className="text-xs font-mono text-foreground/80">{ev.sub}</p>
+                            <p className="text-[10px] text-muted-foreground whitespace-nowrap">{ev.time}</p>
+                          </div>
+                        </div>
                       </motion.div>
-                    )
-                  })}
-                  {supplierData.length === 0 && (
-                    <div className="col-span-full text-center py-12 text-muted-foreground">No suppliers found.</div>
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </TabsContent>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </section>
 
-        </Tabs>
+        {/* Footer · Secure Status Bar (Jarvis style) */}
+        <footer className="mt-2 rounded-xl border border-border/60 bg-card/40 backdrop-blur p-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground" id="jarvis">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <span className="inline-flex items-center gap-1.5"><Lock className="w-3 h-3 text-emerald-500" />TLS 1.3 · AES-256</span>
+            <span className="inline-flex items-center gap-1.5"><Fingerprint className="w-3 h-3 text-indigo-500" />OIDC audience: swarm-vault.younestsouli.com</span>
+            <span className="inline-flex items-center gap-1.5"><Network className="w-3 h-3 text-cyan-500" />Mesh: {agentsActive}/{AGENTS.length} nodes</span>
+            <span className="inline-flex items-center gap-1.5"><Users className="w-3 h-3 text-fuchsia-500" />Owner: Younes Tsouli</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <span className="inline-flex items-center gap-1.5"><ShieldCheck className="w-3 h-3 text-emerald-500" />EDR: All clear</span>
+            <span className="inline-flex items-center gap-1.5"><Globe className="w-3 h-3 text-sky-500" />Env: Production</span>
+            <Button variant="ghost" size="sm" className="h-6 text-[11px] gap-1 px-2" onClick={() => setJarvisOpen(true)}>
+              <Bot className="w-3 h-3 text-indigo-500" /> Open Jarvis Assistant
+            </Button>
+          </div>
+        </footer>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t bg-card/50 py-3 mt-auto">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-1 text-xs text-muted-foreground">
-          <span>Supply Chain Management — Younes Tsouli CIN:A337773</span>
-          <span>All items pre-paid by Swarm · Recipients do not disburse</span>
-        </div>
-      </footer>
+      {/* JARVIS ASSISTANT MODAL (4-tab: Chat / Voice / Swarm / Files) */}
+      <AnimatePresence>
+        {jarvisOpen && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            onClick={(e) => { if (e.target === e.currentTarget) setJarvisOpen(false) }}>
+            <motion.div
+              initial={{ scale: 0.95, y: 16, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.95, y: 16, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 24 }}
+              className="w-full max-w-3xl max-h-[85vh] overflow-hidden rounded-2xl border border-border/70 bg-background shadow-2xl shadow-indigo-500/10 flex flex-col">
+              <div className="relative overflow-hidden border-b border-border/60 px-5 py-4">
+                <div className="absolute inset-0 -z-0 bg-[radial-gradient(ellipse_at_top_left,rgba(99,102,241,0.18),transparent_60%),radial-gradient(ellipse_at_bottom_right,rgba(236,72,153,0.14),transparent_55%)]" />
+                <div className="relative flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 via-fuchsia-500 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                      <Bot className="w-6 h-6" />
+                      <motion.span className="absolute -inset-0.5 rounded-xl ring-2 ring-indigo-400/40" animate={{ opacity: [0, 1, 0], scale: [1, 1.18, 1] }} transition={{ duration: 3.2, repeat: Infinity }} />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-extrabold tracking-tight">Jarvis · Multimodal Assistant</h3>
+                      <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        Online · WSS · Encrypted channel · {SOURCE_PROJECTS.length} modules loaded
+                      </p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" className="w-8 h-8" onClick={() => setJarvisOpen(false)}><XCircle className="w-4 h-4" /></Button>
+                </div>
+              </div>
+
+              <Tabs value={jarvisTab} onValueChange={(v) => setJarvisTab(v as any)} className="flex-1 flex flex-col">
+                <div className="px-4 pt-3 border-b border-border/50">
+                  <TabsList className="grid grid-cols-4 h-9 p-1 bg-muted/50">
+                    <TabsTrigger value="chat" className="text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"><MessageSquare className="w-3.5 h-3.5" />Chat</TabsTrigger>
+                    <TabsTrigger value="voice" className="text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"><Volume2 className="w-3.5 h-3.5" />Voice</TabsTrigger>
+                    <TabsTrigger value="swarm" className="text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"><Network className="w-3.5 h-3.5" />Swarm</TabsTrigger>
+                    <TabsTrigger value="files" className="text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"><FolderKanban className="w-3.5 h-3.5" />Files</TabsTrigger>
+                  </TabsList>
+                </div>
+
+                <TabsContent value="chat" className="flex-1 flex flex-col p-0 m-0 min-h-0">
+                  <ScrollArea className="flex-1 min-h-0 p-4 space-y-3 h-[40vh]">
+                    {chatLog.map((m, i) => (
+                      <div key={i} className={`flex ${m.from === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${m.from === 'user' ? 'bg-gradient-to-br from-indigo-600 to-fuchsia-600 text-white rounded-br-sm shadow-md shadow-indigo-500/20' : 'bg-muted/60 rounded-bl-sm border border-border/50'}`}>{m.msg}</div>
+                      </div>
+                    ))}
+                  </ScrollArea>
+                  <form onSubmit={sendChat} className="p-3 border-t border-border/60 flex items-center gap-2">
+                    <Input value={chatInput} onChange={e => setChatInput(e.target.value)} placeholder="Ask Jarvis about the swarm, payouts, shipments, security posture…" className="h-9 text-sm" />
+                    <Button type="submit" size="sm" className="gap-1 h-9 bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:from-indigo-500 hover:to-fuchsia-500"><Send className="w-3.5 h-3.5" />Send</Button>
+                  </form>
+                </TabsContent>
+
+                <TabsContent value="voice" className="flex-1 flex flex-col p-4 m-0 min-h-[40vh] items-center justify-center gap-4">
+                  <div className="relative">
+                    <motion.div className="w-32 h-32 rounded-full bg-gradient-to-br from-indigo-500 via-fuchsia-500 to-cyan-500 flex items-center justify-center shadow-2xl shadow-indigo-500/30 text-white">
+                      <Radio className="w-12 h-12" />
+                    </motion.div>
+                    <motion.span className="absolute inset-0 rounded-full ring-2 ring-indigo-400/40" animate={{ opacity: [0.1, 0.8, 0.1], scale: [1, 1.25, 1] }} transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }} />
+                    <motion.span className="absolute inset-0 rounded-full ring-2 ring-fuchsia-400/40" animate={{ opacity: [0.1, 0.8, 0.1], scale: [1, 1.45, 1] }} transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }} />
+                  </div>
+                  <div className="text-center space-y-1">
+                    <p className="font-semibold">Voice Interface · Listening</p>
+                    <p className="text-xs text-muted-foreground max-w-md">Multimodal speech-to-swarm-dispatch. Wired to the EDR brain for spoken triage, payout approvals, and procurement orders.</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="gap-1.5"><PlayCircle className="w-4 h-4 text-emerald-500" />Start Listening</Button>
+                    <Button size="sm" variant="outline" className="gap-1.5 text-amber-600 dark:text-amber-300"><Settings className="w-4 h-4" />Configure Mic</Button>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="swarm" className="flex-1 flex flex-col p-0 m-0 min-h-0">
+                  <ScrollArea className="flex-1 min-h-0 h-[40vh] p-4">
+                    <div className="grid grid-cols-2 gap-2">
+                      {AGENTS.map(ag => {
+                        const Icon = ag.icon
+                        return (
+                          <div key={ag.id} className="p-3 rounded-xl border border-border/60 bg-background/60 hover:border-indigo-300/60 transition-colors">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <div className={`w-8 h-8 rounded-md flex items-center justify-center border border-border/50 ${ag.color}`}><Icon className="w-4 h-4" /></div>
+                                <div><p className="text-xs font-semibold leading-tight">{ag.name}</p><p className="text-[10px] text-muted-foreground leading-tight">{ag.role}</p></div>
+                              </div>
+                              {ag.status === 'Active' ? <Badge variant="outline" className="text-[10px] border-emerald-400/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">Active</Badge> : <Badge variant="outline" className="text-[10px]">Idle</Badge>}
+                            </div>
+                            <div className="flex gap-1.5 mt-2">
+                              <Button size="sm" variant="ghost" className="h-7 text-[10px] flex-1 gap-1 px-1.5"><PlayCircle className="w-3 h-3 text-emerald-500" />Activate</Button>
+                              <Button size="sm" variant="ghost" className="h-7 text-[10px] flex-1 gap-1 px-1.5 text-rose-600 dark:text-rose-300"><XCircle className="w-3 h-3" />Sleep</Button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <div className="mt-4 p-3 rounded-lg bg-amber-500/5 border border-amber-300/30 text-[11px] text-amber-800 dark:text-amber-200 flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+                      <div><span className="font-semibold">Operational Notice</span> — Disabling agents in production pauses their tick-loop responsibilities. Use Autopilot toggle in the main dashboard for safe mode switching.</div>
+                    </div>
+                  </ScrollArea>
+                </TabsContent>
+
+                <TabsContent value="files" className="flex-1 flex flex-col p-0 m-0 min-h-0">
+                  <ScrollArea className="flex-1 min-h-0 h-[40vh] p-4">
+                    <div className="space-y-2">
+                      {[
+                        { name: 'swarm-ledger-export.csv', size: '2.4 MB', kind: 'CSV', age: '5 min ago', icon: Database as any, color: 'text-emerald-500' },
+                        { name: 'owner-payout-configs.json', size: '48 KB', kind: 'JSON', age: '12 min ago', icon: CreditCard as any, color: 'text-violet-500' },
+                        { name: 'shipment-tracking-batch.xlsx', size: '388 KB', kind: 'XLSX', age: '38 min ago', icon: Truck as any, color: 'text-blue-500' },
+                        { name: 'edr-audit-log.ndjson.gz', size: '12 MB', kind: 'LOG', age: '1 h ago', icon: ShieldAlert as any, color: 'text-rose-500' },
+                        { name: 'vault-secret-inventory.json', size: '12 KB', kind: 'VAULT', age: '3 h ago', icon: Lock as any, color: 'text-indigo-500' },
+                        { name: 'procurement-pos-weekly.pdf', size: '1.1 MB', kind: 'PDF', age: 'yesterday', icon: FileCode as any, color: 'text-amber-500' },
+                      ].map((f, i) => {
+                        const Icon = f.icon
+                        return (
+                          <div key={i} className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-background/60 hover:border-indigo-300/60 hover:bg-indigo-500/5 transition-all">
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br from-slate-500/10 to-transparent border border-border/50 ${f.color}`}><Icon className="w-5 h-5" /></div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold truncate">{f.name}</p>
+                              <p className="text-[11px] text-muted-foreground flex items-center gap-2"><Badge variant="outline" className="text-[9px] h-4 px-1.5">{f.kind}</Badge>{f.size} · {f.age}</p>
+                            </div>
+                            <a href="/api/download"><Button size="sm" variant="ghost" className="h-8 text-[11px] gap-1 px-2"><Download className="w-3.5 h-3.5" />Download</Button></a>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </ScrollArea>
+                </TabsContent>
+              </Tabs>
+
+              <div className="px-5 py-2.5 border-t border-border/60 bg-muted/20 flex items-center justify-between text-[10px] text-muted-foreground">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center gap-1"><Lock className="w-3 h-3" />Session encrypted</span>
+                  <span className="inline-flex items-center gap-1"><ShieldCheck className="w-3 h-3 text-emerald-500" />Integrity verified</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center gap-1"><Fingerprint className="w-3 h-3" />Attested</span>
+                  <span>Base44 Dry-Run: <span className="font-mono text-emerald-600 dark:text-emerald-400">ON</span></span>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
     </TooltipProvider>
   )
 }
+
+

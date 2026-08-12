@@ -5,8 +5,8 @@ import { Toaster } from "@/components/ui/sonner"
 import Providers from '@/components/providers'
 
 export const metadata: Metadata = {
-  title: "Supply Chain Management — Procurement, Shipments & Payments",
-  description: "Comprehensive supply chain management with procurement tracking, shipment verification, and owner payment routing.",
+  title: "Swarm Command Center — Unified Ops, Security & AI Assistant",
+  description: "Unified swarm control plane integrating procurement, logistics, payouts, EDR security, Base44 skills, swarm agents, and the Jarvis multimodal assistant. Extra-secure with OIDC, TLS, and default dry-run gates.",
   icons: { icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg" },
 }
 
