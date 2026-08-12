@@ -291,7 +291,7 @@ create_jwt_role() {
         policies='${POLICY_NAME}' \
         ttl='1h' \
         max_ttl='8h' \
-        bound_claims='{\"repository\":\"${REPO_OWNER}/${REPO_NAME}\"}'"
+        bound_claims='{\"repository\":\"${REPO_OWNER}/${REPO_NAME}\"'"
 
     if [ "$DRY_RUN" = true ]; then
         log_info "[DRY-RUN] $role_cmd"
