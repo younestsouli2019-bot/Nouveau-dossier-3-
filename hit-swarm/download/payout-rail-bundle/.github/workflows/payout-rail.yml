@@ -1,0 +1,118 @@
+# .github/workflows/payout-rail.yml
+#
+# Manual payout dispatch workflow. NEVER scheduled — must be triggered
+# explicitly with `workflow_dispatch` and requires an approval review.
+#
+# Safety contract:
+#   - The workflow runs in dry-run mode by default (PAYOUT_MODE=dry).
+#   - To actually move money, set PAYOUT_MODE=live in the workflow input
+#     AND ensure PAYOUT_MODE=live is set in the runner environment. Both
+#     must agree (defence in depth).
+#   - Secrets (PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, etc.) must be stored
+#     in GitHub Actions secrets — NEVER in the repo.
+#   - The workflow reads .autonomous-offline-store.json + data/security/
+#     receivables-audit-latest.json from the repo. If the audit is missing,
+#     the workflow fails.
+
+name: Payout Rail
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: 'Command: pay | pay-batch'
+        required: true
+        default: 'pay'
+        type: choice
+        options: ['pay', 'pay-batch']
+      target:
+        description: 'item_id (for pay) or batch_id (for pay-batch)'
+        required: true
+        type: string
+      rail:
+        description: 'Payout rail'
+        required: true
+        default: 'paypal'
+        type: choice
+        options: ['paypal', 'payoneer']
+      mode:
+        description: 'dry = simulate, live = actually move money'
+        required: true
+        default: 'dry'
+        type: choice
+        options: ['dry', 'live']
+      limit:
+        description: 'Max items to pay (pay-batch only)'
+        required: false
+        default: '5'
+        type: string
+
+jobs:
+  payout:
+    name: Dispatch payout (${{ github.event.inputs.mode }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Require manual approval via environment protection rules.
+    # Configure a 'payout-approval' environment in repo settings with required reviewers.
+    environment:
+      name: ${{ github.event.inputs.mode == 'live' && 'payout-live' || 'payout-dry' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+
+      - name: Verify audit file exists
+        run: |
+          if [ ! -f data/security/receivables-audit-latest.json ]; then
+            echo "::error::Receivables audit missing. Run audit_receivables.mjs locally and commit the output."
+            exit 1
+          fi
+          if [ ! -f .autonomous-offline-store.json ]; then
+            echo "::error::Live store missing (.autonomous-offline-store.json)"
+            exit 1
+          fi
+
+      - name: Defence-in-depth mode check
+        run: |
+          if [ "${{ github.event.inputs.mode }}" = "live" ] && [ -z "$PAYOUT_MODE_ENV" ]; then
+            echo "::error::--mode live selected but PAYOUT_MODE env var not set to 'live' in the runner"
+            exit 1
+          fi
+        env:
+          PAYOUT_MODE_ENV: ${{ secrets.PAYOUT_MODE_LIVE }}
+
+      - name: Run payout CLI
+        env:
+          PAYOUT_MODE: ${{ github.event.inputs.mode == 'live' && secrets.PAYOUT_MODE_LIVE || 'dry' }}
+          PAYOUT_OPERATOR: ${{ github.actor }}
+          PAYOUT_RAIL: ${{ github.event.inputs.rail }}
+          PAYPAL_CLIENT_ID: ${{ secrets.PAYPAL_CLIENT_ID }}
+          PAYPAL_CLIENT_SECRET: ${{ secrets.PAYPAL_CLIENT_SECRET }}
+          PAYPAL_ENVIRONMENT: ${{ secrets.PAYPAL_ENVIRONMENT }}
+          PAYONEER_PARTNER_ID: ${{ secrets.PAYONEER_PARTNER_ID }}
+          PAYONEER_API_KEY: ${{ secrets.PAYONEER_API_KEY }}
+          PAYONEER_ENVIRONMENT: ${{ secrets.PAYONEER_ENVIRONMENT }}
+          KYC_DB_PATH: data/kyc/kyc-db.json
+          PAYOUT_LOG_DIR: data/payouts
+        run: |
+          args=""
+          if [ "${{ github.event.inputs.command }}" = "pay" ]; then
+            args="pay ${{ github.event.inputs.target }} --rail ${{ github.event.inputs.rail }}"
+          else
+            args="pay-batch ${{ github.event.inputs.target }} --rail ${{ github.event.inputs.rail }} --limit ${{ github.event.inputs.limit }}"
+          fi
+          if [ "${{ github.event.inputs.mode }}" = "live" ]; then
+            args="$args --mode live"
+          fi
+          node src/payouts/cli.mjs $args
+
+      - name: Upload audit log artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: payout-audit-${{ github.run_id }}
+          path: |
+            data/payouts/audit.jsonl
+            data/kyc/kyc-db.json
+          retention-days: 90

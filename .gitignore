@@ -128,4 +128,12 @@ src/charibaas-bootstrap.*
 /data/secure-cloud/sync-manifest.json
 /data/secure-cloud/mirror-state.json
 /data/secure-cloud/snapshot-*
+/data/rwc-social/
+/data/revenue-engines/
+
+# nested next.js / sqlite artifacts
+**/.next/
+*.db
+*.db-journal
+
 

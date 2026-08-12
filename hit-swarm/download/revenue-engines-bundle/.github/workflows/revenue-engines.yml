@@ -1,0 +1,106 @@
+name: Revenue Engines Sweep
+
+on:
+  schedule:
+    # Every 30 minutes — discovers + emits new earnings from all enabled engines
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+    inputs:
+      engine:
+        description: Specific engine to run (leave empty to run all)
+        type: string
+        required: false
+      mode:
+        description: Run mode (observe | live)
+        type: choice
+        options: [observe, live]
+        default: observe
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: revenue-engines-sweep
+      cancel-in-progress: false
+    env:
+      # Global mode — overridden by workflow_dispatch input if provided
+      REVENUE_ENGINE_MODE: ${{ inputs.mode || 'observe' }}
+      SWARM_LIVE: ${{ inputs.mode == 'live' && 'true' || 'false' }}
+      # ===== HAiO Solana engines =====
+      HAIO_AGENT_WALLET: ${{ secrets.HAIO_AGENT_WALLET }}
+      HAIO_RPC_URL: ${{ secrets.HAIO_RPC_URL }}
+      HAIO_REVENUE_SAFE: ${{ secrets.HAIO_REVENUE_SAFE }}
+      HAIO_BURN_PCT: ${{ secrets.HAIO_BURN_PCT }}
+      HAIO_OPERATIONAL_PCT: ${{ secrets.HAIO_OPERATIONAL_PCT }}
+      SOLANA_PRIVATE_KEY: ${{ secrets.SOLANA_PRIVATE_KEY }}
+      # ===== HAiO Transaction Gateway =====
+      HAIO_TX_GATEWAY_PROGRAM: ${{ secrets.HAIO_TX_GATEWAY_PROGRAM }}
+      HAIO_TREASURY_WALLET: ${{ secrets.HAIO_TREASURY_WALLET }}
+      # ===== HAiO AgentNFT (EVM) =====
+      HAIO_AGENT_NFT_ADDRESS: ${{ secrets.HAIO_AGENT_NFT_ADDRESS }}
+      HAIO_EVM_RPC_URL: ${{ secrets.HAIO_EVM_RPC_URL }}
+      HAIO_FEE_RECIPIENT: ${{ secrets.HAIO_FEE_RECIPIENT }}
+      EVM_PRIVATE_KEY: ${{ secrets.EVM_PRIVATE_KEY }}
+      # ===== HAiO Vesting =====
+      HAIO_VESTING_PROGRAM: ${{ secrets.HAIO_VESTING_PROGRAM }}
+      HAIO_VESTING_RECIPIENT: ${{ secrets.HAIO_VESTING_RECIPIENT }}
+      # ===== AI Pipeline Router =====
+      AIPROFILE_USAGE_LOG_PATH: ${{ secrets.AIPROFILE_USAGE_LOG_PATH }}
+      AIPROFILE_PRICING_TABLE_PATH: ${{ secrets.AIPROFILE_PRICING_TABLE_PATH }}
+      # ===== Foreman Coding =====
+      FOREMAN_TASK_LEDGER_PATH: ${{ secrets.FOREMAN_TASK_LEDGER_PATH }}
+      FOREMAN_RATE_CARD_PATH: ${{ secrets.FOREMAN_RATE_CARD_PATH }}
+      # ===== ShipStack PR =====
+      SHIPSTACK_PR_LEDGER_PATH: ${{ secrets.SHIPSTACK_PR_LEDGER_PATH }}
+      SHIPSTACK_RATE_CARD_PATH: ${{ secrets.SHIPSTACK_RATE_CARD_PATH }}
+      # ===== ApplyPilot Jobs =====
+      APPLYPILOT_LEDGER_PATH: ${{ secrets.APPLYPILOT_LEDGER_PATH }}
+      # ===== Owner payout routing =====
+      OWNER_PAYPAL_EMAIL: ${{ secrets.PAYPAL_OWNER_EMAIL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+
+      - name: Install
+        run: npm ci --no-audit --no-fund || npm i --no-audit --no-fund
+
+      - name: Run revenue engine sweep
+        id: sweep
+        run: |
+          set -euo pipefail
+          if [ -n "${{ inputs.engine }}" ]; then
+            node ./src/revenue-engines/registry.mjs run "${{ inputs.engine }}" > sweep-result.json
+          else
+            node ./src/revenue-engines/registry.mjs run-all > sweep-result.json
+          fi
+          cat sweep-result.json
+
+      - name: Upload sweep artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: revenue-engines-sweep-${{ github.run_id }}
+          path: |
+            sweep-result.json
+            data/revenue-engines/
+
+      - name: Commit new earnings + run reports
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "chore: revenue engines sweep — $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            git push
+          else
+            echo "No new earnings to commit."
+          fi

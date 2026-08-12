@@ -1,0 +1,87 @@
+{
+  "run_id": "AUDIT_1785493783560",
+  "audited_at": "2026-07-31T10:29:43.604Z",
+  "repo_root": "/tmp/Nouveau-dossier-3-",
+  "input": {
+    "total_items": 1778,
+    "failed_recoverable_audited": 1778,
+    "batches_in_store": 1713,
+    "earnings_in_store": 3,
+    "backup_store_present": true
+  },
+  "classification": {
+    "A_withdrawal_eligible": {
+      "count": 0,
+      "total_usd_approx": 0,
+      "description": "Backed by a real settled merchant event AND a verified merchant identity. Eligible for payout via a confirmed rail."
+    },
+    "B_plausible_unconfirmed": {
+      "count": 0,
+      "total_usd_approx": 0,
+      "description": "Has a plausible receivable but missing either settlement proof or merchant identity. Requires manual verification before any payout."
+    },
+    "C_phantom": {
+      "count": 1778,
+      "total_usd_approx": 35542.96,
+      "description": "No backing evidence. The payout was queued but no real money was ever due. Must NOT be paid out — would be fabrication."
+    }
+  },
+  "by_source": {
+    "unknown": {
+      "A": 0,
+      "B": 0,
+      "C": 1778,
+      "total": 35542.96000000087
+    }
+  },
+  "by_currency": {
+    "USD": {
+      "A": 0,
+      "B": 0,
+      "C": 1778,
+      "total": 35542.96000000087
+    }
+  },
+  "by_revenue_event_id": {
+    "1": {
+      "count": 37,
+      "total": 370,
+      "classes": {
+        "A": 0,
+        "B": 0,
+        "C": 37
+      }
+    },
+    "3": {
+      "count": 37,
+      "total": 1110,
+      "classes": {
+        "A": 0,
+        "B": 0,
+        "C": 37
+      }
+    },
+    "rwc_SIM_1774902945454": {
+      "count": 1704,
+      "total": 34062.960000001025,
+      "classes": {
+        "A": 0,
+        "B": 0,
+        "C": 1704
+      }
+    }
+  },
+  "withdrawal_eligible_shortlist": {
+    "count": 0,
+    "total_usd_approx": 0,
+    "item_ids": []
+  },
+  "honest_assessment": "Of 1778 failed_recoverable items audited, 0 are class A (withdrawal-eligible: backed by a real settled merchant event with verified merchant identity), 0 are class B (plausible but unconfirmed — needs manual verification), and 1778 are class C (phantom — no backing evidence; paying these out would be fabrication). Only class A items should ever be sent through a confirmed payout rail. Class B must be manually verified (request settlement statements from the named merchant). Class C must be voided, not paid.",
+  "next_steps": [
+    "1. VOID all class C items (1778 items, ~$35542.96) — they are not real receivables.",
+    "2. HOLD class B items (0 items, ~$0.00) — request settlement statements from the named merchant before paying.",
+    "3. PAY class A items (0 items, ~$0.00) — through a confirmed rail only (PayPal Payouts API, Stripe Connect, Payoneer Mass Pay, real bank wire).",
+    "4. For every paid item, capture the real transaction ID (PAYID-*, po_*, MassPay-*, 0x...) in gateway_ref and only then mark status=settled.",
+    "5. Do not unfreeze the swarm (freeze.active=true) until steps 1-4 are complete for the entire queue."
+  ]
+}
