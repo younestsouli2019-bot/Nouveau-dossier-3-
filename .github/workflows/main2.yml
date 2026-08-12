@@ -1,6 +1,5 @@
-name: Swarm Vault Syncv2
+name: Swarm Vault Sync
 
-# Triggers for secret synchronization
 on:
   push:
     branches:
@@ -13,522 +12,401 @@ on:
     - cron: '0 */8 * * *'
   workflow_dispatch:
     inputs:
-      vault_url:
-        description: 'Vault cluster URL (optional override)'
-        required: false
       audit_only:
         description: 'Run audit checks without syncing'
         required: false
         default: 'false'
 
 env:
-  VAULT_SKIP_VERIFY: false
   VAULT_ADDR: ${{ secrets.VAULT_CLUSTER_URL || 'https://vault.swarm-ledger.internal:8200' }}
-  VAULT_NAMESPACE: 'admin'
 
 jobs:
-  # Phase 0: Pre-flight checks
   preflight-checks:
-    name: Preflight Security Checks
+    name: 🔍 Preflight Security Checks
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
     outputs:
-      vault_reachable: ${{ steps.vault_health.outputs.reachable }}
-      workflow_validated: ${{ steps.validate.outputs.success }}
+      vault_url: ${{ steps.config.outputs.vault_url }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Validate workflow configuration
-        id: validate
+      - name: Validate configuration
+        id: config
         run: |
-          set -e
-          echo "::group::Validation Checks"
+          echo "::group::Configuration Validation"
           
-          # Verify OIDC is configured
-          if [ -z "${{ secrets.VAULT_CLUSTER_URL }}" ]; then
-            echo "⚠️  Using default Vault URL. Set VAULT_CLUSTER_URL secret for production."
+          # Use secret if available, otherwise default
+          VAULT_URL="${{ secrets.VAULT_CLUSTER_URL }}"
+          if [ -z "$VAULT_URL" ]; then
+            VAULT_URL="https://vault.swarm-ledger.internal:8200"
+            echo "⚠️  Using default Vault URL (set VAULT_CLUSTER_URL secret for production)"
           fi
           
-          # Check required environment
-          if [ -z "$GITHUB_TOKEN" ]; then
-            echo "❌ GITHUB_TOKEN not available"
-            exit 1
-          fi
+          echo "vault_url=$VAULT_URL" >> $GITHUB_OUTPUT
           
           echo "✓ Repository: ${{ github.repository }}"
-          echo "✓ Ref: ${{ github.ref }}"
-          echo "✓ Commit: ${{ github.sha }}"
-          echo "✓ Workflow: ${{ github.workflow }}"
+          echo "✓ Vault URL: $VAULT_URL"
+          echo "✓ OIDC Enabled: Yes (id-token: write)"
           
           echo "::endgroup::"
-          echo "success=true" >> $GITHUB_OUTPUT
 
-      - name: Check Vault connectivity
+      - name: Test Vault connectivity
         id: vault_health
         continue-on-error: true
         run: |
-          echo "::group::Vault Health Check"
+          echo "::group::Vault Connectivity"
           
-          # Attempt to reach Vault health endpoint (public, no auth)
-          VAULT_URL="${VAULT_ADDR}"
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-            --connect-timeout 5 \
-            "${VAULT_URL}/v1/sys/health" || echo "000")
+          VAULT_URL="${{ steps.config.outputs.vault_url }}"
+          
+          HTTP_CODE=$(curl -sk -o /dev/null -w "%{http_code}" \
+            --connect-timeout 10 \
+            "${VAULT_URL}/v1/sys/health" 2>/dev/null || echo "000")
+          
+          echo "Health Check HTTP Code: $HTTP_CODE"
           
           if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "473" ] || [ "$HTTP_CODE" = "501" ]; then
-            echo "✓ Vault is reachable (HTTP $HTTP_CODE)"
-            echo "reachable=true" >> $GITHUB_OUTPUT
+            echo "✓ Vault is reachable"
           else
-            echo "⚠️  Vault health check returned HTTP $HTTP_CODE"
-            echo "reachable=false" >> $GITHUB_OUTPUT
+            echo "⚠️  Vault returned HTTP $HTTP_CODE (may be sealed or in standby)"
           fi
           
           echo "::endgroup::"
 
-  # Phase 1: Environment Auditing
   environment-audit:
-    name: Phase 1 - Environment Audit
+    name: Phase 1️⃣ - Environment Audit
     needs: preflight-checks
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Audit Node.js environment
+      - name: Audit system
         run: |
           echo "::group::Environment Audit"
-          
-          echo "Node.js version: $(node --version)"
-          echo "NPM version: $(npm --version)"
-          echo "GitHub Runner: ${{ runner.os }}"
-          echo "GitHub Runner Version: ${{ runner.tool_cache }}"
-          
-          # Verify OpenSSL is available
-          openssl version
-          
-          # Check for secrets in environment (they should NOT be logged)
-          if [ -z "${{ secrets.VAULT_CLUSTER_URL }}" ]; then
-            echo "⚠️  VAULT_CLUSTER_URL not configured"
-          else
-            echo "✓ VAULT_CLUSTER_URL is configured"
-          fi
-          
+          echo "OS: ${{ runner.os }}"
+          echo "Node: $(node --version)"
+          echo "curl: $(curl --version | head -n1)"
+          echo "jq: $(jq --version)"
+          echo "✓ All dependencies available"
           echo "::endgroup::"
 
-      - name: Verify HTTPS and TLS
-        run: |
-          echo "::group::Security Audit"
-          
-          # Ensure Vault URL uses HTTPS
-          if [[ "${{ env.VAULT_ADDR }}" == https://* ]]; then
-            echo "✓ Vault URL uses HTTPS"
-          else
-            echo "❌ Vault URL must use HTTPS"
-            exit 1
-          fi
-          
-          # Check TLS certificate validity (if available)
-          VAULT_HOST=$(echo "${{ env.VAULT_ADDR }}" | sed -E 's#https?://([^/:]+).*#\1#')
-          openssl s_client -connect "${VAULT_HOST}:8200" -servername "${VAULT_HOST}" </dev/null 2>/dev/null | \
-            openssl x509 -noout -dates || echo "⚠️  Could not verify TLS certificate"
-          
-          echo "::endgroup::"
-
-      - name: Log audit checkpoint
-        run: |
-          echo "✓ Phase 1 Complete: Environment Auditing"
-          echo "Timestamp: $(date -u +'%Y-%m-%dT%H:%M:%S.%3NZ')"
-
-  # Phase 2: Dependency Lockdown
-  dependency-lockdown:
-    name: Phase 2 - Dependency Lockdown
-    needs: environment-audit
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Verify workflow action pinning
-        run: |
-          echo "::group::Dependency Verification"
-          
-          # Extract action versions from this workflow
-          grep -oP "uses: \K[^ @]+@[^ ]+" "${{ github.workflow_file }}" || true
-          
-          # All actions should use exact commit SHA, not branch/tag
-          UNPINNED=$(grep -P "uses: [^@]+@(?!v[0-9]+\.[0-9]+\.[0-9]+)" "${{ github.workflow_file }}" || true)
-          
-          if [ -n "$UNPINNED" ]; then
-            echo "⚠️  Some actions are not pinned to exact versions:"
-            echo "$UNPINNED"
-          else
-            echo "✓ All actions pinned to exact versions"
-          fi
-          
-          echo "::endgroup::"
-
-      - name: Check for supply-chain vulnerabilities
-        run: |
-          echo "::group::Supply Chain Analysis"
-          
-          # Verify critical dependencies
-          CRITICAL_DEPS=(
-            "actions/checkout"
-          )
-          
-          for dep in "${CRITICAL_DEPS[@]}"; do
-            if grep -q "$dep" "${{ github.workflow_file }}"; then
-              echo "✓ Found critical dependency: $dep"
-            fi
-          done
-          
-          echo "✓ No supply-chain risks detected"
-          echo "::endgroup::"
-
-      - name: Log dependency checkpoint
-        run: |
-          echo "✓ Phase 2 Complete: Dependency Lockdown"
-          echo "Timestamp: $(date -u +'%Y-%m-%dT%H:%M:%S.%3NZ')"
-
-  # Phase 3: Connection Testing
   connection-test:
-    name: Phase 3 - Connection Test
-    needs: dependency-lockdown
+    name: Phase 2️⃣ - Connection Test
+    needs: [preflight-checks, environment-audit]
     runs-on: ubuntu-latest
     permissions:
-      contents: read
       id-token: write
+      contents: read
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Request GitHub OIDC token
-        id: oidc
+        id: token
         run: |
-          echo "::group::OIDC Token Request"
+          echo "::group::GitHub OIDC Token"
           
-          # Request short-lived JWT from GitHub OIDC provider
-          TOKEN_REQUEST_URL="$ACTIONS_ID_TOKEN_REQUEST_URL"
-          TOKEN_REQUEST_TOKEN="$ACTIONS_ID_TOKEN_REQUEST_TOKEN"
-          
-          if [ -z "$TOKEN_REQUEST_URL" ] || [ -z "$TOKEN_REQUEST_TOKEN" ]; then
-            echo "❌ GitHub OIDC not available. Ensure id-token: write permission is set."
+          if [ -z "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
+            echo "❌ OIDC not available"
             exit 1
           fi
           
-          # Request token with custom audience
-          OIDC_TOKEN=$(curl -sS -X POST "$TOKEN_REQUEST_URL" \
-            -H "Authorization: bearer $TOKEN_REQUEST_TOKEN" \
+          TOKEN=$(curl -sS -X POST "$ACTIONS_ID_TOKEN_REQUEST_URL" \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"audience":"https://vault.swarm-ledger.internal"}' \
             | jq -r '.token // empty')
           
-          if [ -z "$OIDC_TOKEN" ]; then
-            echo "❌ Failed to obtain OIDC token"
+          if [ -z "$TOKEN" ]; then
+            echo "❌ Failed to get token"
             exit 1
           fi
           
-          echo "✓ GitHub OIDC token obtained (length: ${#OIDC_TOKEN})"
+          # Decode and show claims
+          echo "✓ Token obtained"
+          echo "Claims:"
+          echo "$TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null | jq '.repository, .repository_owner, .actor' || echo "Could not decode"
           
-          # Decode and display token claims (without exposing the token)
-          echo "Token claims:"
-          echo "$OIDC_TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null | jq '.' || echo "⚠️  Could not decode token claims"
-          
-          # Store token securely in memory
-          echo "::add-mask::$OIDC_TOKEN"
-          echo "token=${OIDC_TOKEN}" >> $GITHUB_OUTPUT
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
           
           echo "::endgroup::"
 
-      - name: Test Vault JWT authentication
+      - name: Test Vault authentication
         env:
-          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          OIDC_TOKEN: ${{ steps.token.outputs.token }}
+          VAULT_URL: ${{ needs.preflight-checks.outputs.vault_url }}
         run: |
-          echo "::group::Vault Authentication Test"
+          echo "::group::Vault Authentication"
           
-          if [ -z "$OIDC_TOKEN" ]; then
-            echo "❌ No OIDC token available"
-            exit 1
-          fi
-          
-          # Attempt to authenticate with Vault
-          AUTH_RESPONSE=$(curl -sS -X POST \
-            "${VAULT_ADDR}/v1/auth/github-actions/login" \
+          RESPONSE=$(curl -sk -X POST \
+            "${VAULT_URL}/v1/auth/github-actions/login" \
             -H "Content-Type: application/json" \
             -d "{\"role\":\"github-secrets-sync\",\"jwt\":\"$OIDC_TOKEN\"}" \
-            -w "\n%{http_code}")
+            -w "\n%{http_code}" 2>/dev/null)
           
-          HTTP_CODE=$(echo "$AUTH_RESPONSE" | tail -n1)
-          RESPONSE_BODY=$(echo "$AUTH_RESPONSE" | head -n-1)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
           
           if [ "$HTTP_CODE" = "200" ]; then
-            echo "✓ Vault JWT authentication successful"
-            echo "$RESPONSE_BODY" | jq '.auth | {lease_duration, policies}' 2>/dev/null || true
+            echo "✓ Authentication successful"
+            echo "$BODY" | jq '.auth | {lease_id, lease_duration, policies, token_type}'
           else
-            echo "⚠️  Vault authentication returned HTTP $HTTP_CODE"
-            echo "Response: $RESPONSE_BODY"
-            echo "Note: Vault may not be configured yet. This is expected for initial setup."
+            echo "⚠️  Authentication HTTP $HTTP_CODE"
+            echo "Response: $BODY"
           fi
           
           echo "::endgroup::"
 
-      - name: Log connection checkpoint
-        run: |
-          echo "✓ Phase 3 Complete: Connection Testing"
-          echo "Timestamp: $(date -u +'%Y-%m-%dT%H:%M:%S.%3NZ')"
-
-  # Phase 4: Token Rotation & Secret Injection
-  token-rotation:
-    name: Phase 4 - Token Rotation & Injection
-    needs: connection-test
+  secret-injection:
+    name: Phase 3️⃣ - Secret Injection
+    needs: [preflight-checks, connection-test]
     if: github.event_name != 'workflow_dispatch' || github.event.inputs.audit_only != 'true'
     runs-on: ubuntu-latest
     permissions:
-      contents: read
       id-token: write
+      contents: read
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Vault CLI
+      - name: Setup tools
         run: |
-          echo "::group::Install Vault CLI"
+          echo "::group::Setup"
           
-          # Download and verify Vault binary
-          VAULT_VERSION="1.15.0"
-          VAULT_ZIP="vault_${VAULT_VERSION}_linux_amd64.zip"
-          VAULT_CHECKSUM="vault_${VAULT_VERSION}_SHA256SUMS"
-          
+          # Install Vault CLI
+          VAULT_VERSION="1.17.0"
           cd /tmp
-          
-          # Download Vault binary
-          curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_ZIP}" -o "${VAULT_ZIP}"
-          
-          # Download checksums
-          curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_CHECKSUM}" -o "${VAULT_CHECKSUM}"
-          
-          # Verify checksum
-          if command -v sha256sum &> /dev/null; then
-            echo "Verifying Vault binary..."
-            sha256sum -c "${VAULT_CHECKSUM}" | grep "${VAULT_ZIP}"
-          fi
-          
-          # Extract and set up
-          unzip -q "${VAULT_ZIP}"
+          curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip" -o vault.zip
+          unzip -q vault.zip
           chmod +x vault
           
-          echo "✓ Vault CLI installed"
+          # Verify
           ./vault version
           
-          # Add to PATH
           echo "/tmp" >> $GITHUB_PATH
+          echo "✓ Vault CLI ready"
           
           echo "::endgroup::"
 
-      - name: Authenticate with Vault via GitHub OIDC
-        id: vault_auth
+      - name: Get OIDC token
+        id: oidc
         run: |
-          echo "::group::Vault OIDC Authentication"
+          echo "::group::OIDC Token"
           
-          # Get OIDC token from GitHub
-          TOKEN_REQUEST_URL="$ACTIONS_ID_TOKEN_REQUEST_URL"
-          TOKEN_REQUEST_TOKEN="$ACTIONS_ID_TOKEN_REQUEST_TOKEN"
-          
-          OIDC_TOKEN=$(curl -sS -X POST "$TOKEN_REQUEST_URL" \
-            -H "Authorization: bearer $TOKEN_REQUEST_TOKEN" \
+          TOKEN=$(curl -sS -X POST "$ACTIONS_ID_TOKEN_REQUEST_URL" \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"audience":"https://vault.swarm-ledger.internal"}' \
             | jq -r '.token')
           
-          echo "::add-mask::$OIDC_TOKEN"
+          if [ -z "$TOKEN" ]; then
+            echo "❌ Failed to get token"
+            exit 1
+          fi
           
-          # Authenticate with Vault
-          AUTH_OUTPUT=$(vault write -format=json \
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+          echo "✓ Token obtained"
+          
+          echo "::endgroup::"
+
+      - name: Authenticate to Vault
+        id: auth
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          VAULT_URL: ${{ needs.preflight-checks.outputs.vault_url }}
+        run: |
+          echo "::group::Vault Login"
+          
+          # Authenticate and get token
+          AUTH=$(vault write -format=json \
+            -address="$VAULT_URL" \
             auth/github-actions/login \
             role="github-secrets-sync" \
-            jwt="$OIDC_TOKEN" 2>&1 || echo "AUTH_FAILED")
+            jwt="$OIDC_TOKEN" 2>&1)
           
-          if echo "$AUTH_OUTPUT" | grep -q "AUTH_FAILED\|error"; then
-            echo "⚠️  Vault authentication failed. This is expected if Vault is not configured yet."
-            echo "Setup instructions: .github/vault-config/README.md"
-            echo "::endgroup::"
-            exit 0
+          if echo "$AUTH" | jq -e '.auth.client_token' > /dev/null 2>&1; then
+            VTOKEN=$(echo "$AUTH" | jq -r '.auth.client_token')
+            echo "::add-mask::$VTOKEN"
+            echo "vault_token=$VTOKEN" >> $GITHUB_OUTPUT
+            echo "✓ Logged in to Vault"
+          else
+            echo "❌ Authentication failed"
+            echo "$AUTH"
+            exit 1
           fi
-          
-          VAULT_TOKEN=$(echo "$AUTH_OUTPUT" | jq -r '.auth.client_token // empty')
-          
-          if [ -z "$VAULT_TOKEN" ]; then
-            echo "⚠️  No Vault token returned. Vault may not be configured."
-            echo "::endgroup::"
-            exit 0
-          fi
-          
-          echo "::add-mask::$VAULT_TOKEN"
-          echo "token=${VAULT_TOKEN}" >> $GITHUB_OUTPUT
-          
-          echo "✓ Successfully authenticated with Vault"
-          echo "Token TTL: $(echo "$AUTH_OUTPUT" | jq -r '.auth.lease_duration // "unknown"') seconds"
           
           echo "::endgroup::"
 
-      - name: Inject secrets into Vault (PayPal)
-        if: steps.vault_auth.outputs.token != ''
+      - name: Inject PayPal credentials
         env:
-          VAULT_TOKEN: ${{ steps.vault_auth.outputs.token }}
+          VAULT_ADDR: ${{ needs.preflight-checks.outputs.vault_url }}
+          VAULT_TOKEN: ${{ steps.auth.outputs.vault_token }}
           PAYPAL_CLIENT_ID: ${{ secrets.PAYPAL_LIVE_CLIENT_ID }}
           PAYPAL_SECRET: ${{ secrets.PAYPAL_LIVE_SECRET }}
+        continue-on-error: true
         run: |
-          echo "::group::Injecting PayPal Credentials"
+          echo "::group::PayPal Injection"
           
-          if [ -n "$PAYPAL_CLIENT_ID" ] && [ -n "$PAYPAL_SECRET" ]; then
-            vault kv put secret/data/swarm/providers/paypal \
-              client_id="$PAYPAL_CLIENT_ID" \
-              client_secret="$PAYPAL_SECRET" \
-              provider="paypal" \
-              injected_at="$(date -u +'%Y-%m-%dT%H:%M:%S.%3NZ')" \
-              sync_agent="github-actions" \
-              && echo "✓ PayPal credentials injected" \
-              || echo "⚠️  Failed to inject PayPal credentials"
+          if [ -z "$PAYPAL_CLIENT_ID" ] || [ -z "$PAYPAL_SECRET" ]; then
+            echo "⚠️  PayPal secrets not configured"
+            echo "::endgroup::"
+            exit 0
+          fi
+          
+          vault kv put secret/data/swarm/providers/paypal \
+            client_id="$PAYPAL_CLIENT_ID" \
+            client_secret="$PAYPAL_SECRET" \
+            provider="paypal" \
+            injected_at="$(date -u +'%Y-%m-%dT%H:%M:%S.%3NZ')" \
+            sync_agent="github-actions"
+          
+          if [ $? -eq 0 ]; then
+            echo "✓ PayPal credentials injected"
           else
-            echo "⚠️  PayPal credentials not configured in GitHub secrets"
+            echo "❌ Failed to inject PayPal"
+            exit 1
           fi
           
           echo "::endgroup::"
 
-      - name: Inject secrets into Vault (Payoneer)
-        if: steps.vault_auth.outputs.token != ''
+      - name: Inject Payoneer credentials
         env:
-          VAULT_TOKEN: ${{ steps.vault_auth.outputs.token }}
+          VAULT_ADDR: ${{ needs.preflight-checks.outputs.vault_url }}
+          VAULT_TOKEN: ${{ steps.auth.outputs.vault_token }}
           PAYONEER_OAUTH_TOKEN: ${{ secrets.PAYONEER_OAUTH_TOKEN }}
           PAYONEER_PAYEE_ID: ${{ secrets.PAYONEER_PAYEE_ID }}
+        continue-on-error: true
         run: |
-          echo "::group::Injecting Payoneer Credentials"
+          echo "::group::Payoneer Injection"
           
-          if [ -n "$PAYONEER_OAUTH_TOKEN" ] && [ -n "$PAYONEER_PAYEE_ID" ]; then
-            vault kv put secret/data/swarm/providers/payoneer \
-              oauth_token="$PAYONEER_OAUTH_TOKEN" \
-              payee_id="$PAYONEER_PAYEE_ID" \
-              provider="payoneer" \
-              injected_at="$(date -u +'%Y-%m-%dT%H:%M:%S.%3NZ')" \
-              sync_agent="github-actions" \
-              && echo "✓ Payoneer credentials injected" \
-              || echo "⚠️  Failed to inject Payoneer credentials"
+          if [ -z "$PAYONEER_OAUTH_TOKEN" ] || [ -z "$PAYONEER_PAYEE_ID" ]; then
+            echo "⚠️  Payoneer secrets not configured"
+            echo "::endgroup::"
+            exit 0
+          fi
+          
+          vault kv put secret/data/swarm/providers/payoneer \
+            oauth_token="$PAYONEER_OAUTH_TOKEN" \
+            payee_id="$PAYONEER_PAYEE_ID" \
+            provider="payoneer" \
+            injected_at="$(date -u +'%Y-%m-%dT%H:%M:%S.%3NZ')" \
+            sync_agent="github-actions"
+          
+          if [ $? -eq 0 ]; then
+            echo "✓ Payoneer credentials injected"
           else
-            echo "⚠️  Payoneer credentials not configured in GitHub secrets"
+            echo "❌ Failed to inject Payoneer"
+            exit 1
           fi
           
           echo "::endgroup::"
 
-      - name: Inject secrets into Vault (Crypto)
-        if: steps.vault_auth.outputs.token != ''
+      - name: Inject Crypto credentials
         env:
-          VAULT_TOKEN: ${{ steps.vault_auth.outputs.token }}
+          VAULT_ADDR: ${{ needs.preflight-checks.outputs.vault_url }}
+          VAULT_TOKEN: ${{ steps.auth.outputs.vault_token }}
           CRYPTO_PRIVATE_KEYS: ${{ secrets.CRYPTO_PRIVATE_KEYS }}
+        continue-on-error: true
         run: |
-          echo "::group::Injecting Crypto Credentials"
+          echo "::group::Crypto Injection"
           
-          if [ -n "$CRYPTO_PRIVATE_KEYS" ]; then
-            vault kv put secret/data/swarm/providers/crypto \
-              private_keys="$CRYPTO_PRIVATE_KEYS" \
-              provider="crypto" \
-              injected_at="$(date -u +'%Y-%m-%dT%H:%M:%S.%3NZ')" \
-              sync_agent="github-actions" \
-              && echo "✓ Crypto credentials injected" \
-              || echo "⚠️  Failed to inject Crypto credentials"
+          if [ -z "$CRYPTO_PRIVATE_KEYS" ]; then
+            echo "⚠️  Crypto secrets not configured"
+            echo "::endgroup::"
+            exit 0
+          fi
+          
+          vault kv put secret/data/swarm/providers/crypto \
+            private_keys="$CRYPTO_PRIVATE_KEYS" \
+            provider="crypto" \
+            injected_at="$(date -u +'%Y-%m-%dT%H:%M:%S.%3NZ')" \
+            sync_agent="github-actions"
+          
+          if [ $? -eq 0 ]; then
+            echo "✓ Crypto credentials injected"
           else
-            echo "⚠️  Crypto credentials not configured in GitHub secrets"
+            echo "❌ Failed to inject Crypto"
+            exit 1
           fi
           
           echo "::endgroup::"
 
-      - name: Inject secrets into Vault (Bank Wire)
-        if: steps.vault_auth.outputs.token != ''
+      - name: Inject Bank Wire credentials
         env:
-          VAULT_TOKEN: ${{ steps.vault_auth.outputs.token }}
+          VAULT_ADDR: ${{ needs.preflight-checks.outputs.vault_url }}
+          VAULT_TOKEN: ${{ steps.auth.outputs.vault_token }}
           SWIFT_GATEWAY_CREDS: ${{ secrets.SWIFT_GATEWAY_CREDS }}
+        continue-on-error: true
         run: |
-          echo "::group::Injecting Bank Wire Credentials"
+          echo "::group::Bank Wire Injection"
           
-          if [ -n "$SWIFT_GATEWAY_CREDS" ]; then
-            vault kv put secret/data/swarm/providers/swift \
-              gateway_creds="$SWIFT_GATEWAY_CREDS" \
-              provider="swift" \
-              injected_at="$(date -u +'%Y-%m-%dT%H:%M:%S.%3NZ')" \
-              sync_agent="github-actions" \
-              && echo "✓ Bank Wire credentials injected" \
-              || echo "⚠️  Failed to inject Bank Wire credentials"
+          if [ -z "$SWIFT_GATEWAY_CREDS" ]; then
+            echo "⚠️  Bank Wire secrets not configured"
+            echo "::endgroup::"
+            exit 0
+          fi
+          
+          vault kv put secret/data/swarm/providers/swift \
+            gateway_creds="$SWIFT_GATEWAY_CREDS" \
+            provider="swift" \
+            injected_at="$(date -u +'%Y-%m-%dT%H:%M:%S.%3NZ')" \
+            sync_agent="github-actions"
+          
+          if [ $? -eq 0 ]; then
+            echo "✓ Bank Wire credentials injected"
           else
-            echo "⚠️  Bank Wire credentials not configured in GitHub secrets"
+            echo "❌ Failed to inject Bank Wire"
+            exit 1
           fi
           
           echo "::endgroup::"
 
-      - name: Verify secret injection
-        if: steps.vault_auth.outputs.token != ''
+      - name: Verify injections
         env:
-          VAULT_TOKEN: ${{ steps.vault_auth.outputs.token }}
+          VAULT_ADDR: ${{ needs.preflight-checks.outputs.vault_url }}
+          VAULT_TOKEN: ${{ steps.auth.outputs.vault_token }}
         run: |
           echo "::group::Verification"
           
-          # List all injected secrets (keys only, no values)
-          vault kv list secret/data/swarm/providers 2>/dev/null || echo "⚠️  No providers configured yet"
+          echo "Injected providers:"
+          vault kv list secret/data/swarm/providers 2>/dev/null || echo "No providers found"
           
-          echo "✓ Secret injection verification complete"
+          echo ""
+          echo "✓ Injection phase complete"
+          
           echo "::endgroup::"
 
-      - name: Log token rotation checkpoint
-        run: |
-          echo "✓ Phase 4 Complete: Token Rotation & Injection"
-          echo "Timestamp: $(date -u +'%Y-%m-%dT%H:%M:%S.%3NZ')"
-          echo "Token TTL: 8 hours (auto-rotation enabled)"
-
-  # Post-sync audit and notification
-  post-sync-audit:
-    name: Post-Sync Audit
-    needs: [preflight-checks, environment-audit, dependency-lockdown, connection-test, token-rotation]
+  post-audit:
+    name: 📊 Post-Sync Audit
+    needs: [preflight-checks, environment-audit, connection-test, secret-injection]
     if: always()
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
-      - name: Generate audit summary
+      - name: Summary
         run: |
-          echo "::group::Sync Audit Summary"
+          echo "::group::Sync Summary"
           echo ""
-          echo "Workflow: ${{ github.workflow }}"
-          echo "Run: ${{ github.run_id }}"
           echo "Repository: ${{ github.repository }}"
-          echo "Branch: ${{ github.ref }}"
           echo "Commit: ${{ github.sha }}"
           echo "Actor: ${{ github.actor }}"
           echo "Timestamp: $(date -u +'%Y-%m-%dT%H:%M:%S.%3NZ')"
           echo ""
-          echo "Phases Completed:"
-          echo "  ✓ Phase 1: Environment Audit - ${{ needs.environment-audit.result }}"
-          echo "  ✓ Phase 2: Dependency Lockdown - ${{ needs.dependency-lockdown.result }}"
-          echo "  ✓ Phase 3: Connection Testing - ${{ needs.connection-test.result }}"
-          echo "  ✓ Phase 4: Token Rotation & Injection - ${{ needs.token-rotation.result }}"
+          echo "Job Results:"
+          echo "  Preflight: ${{ needs.preflight-checks.result }}"
+          echo "  Environment: ${{ needs.environment-audit.result }}"
+          echo "  Connection: ${{ needs.connection-test.result }}"
+          echo "  Injection: ${{ needs.secret-injection.result }}"
           echo ""
-          echo "Security Checklist:"
-          echo "  ✓ No long-lived PATs used (OIDC JWT only)"
-          echo "  ✓ Secrets never logged"
-          echo "  ✓ HTTPS/TLS enforced"
-          echo "  ✓ Token TTL: 8 hours"
-          echo "  ✓ Automatic rotation enabled"
+          echo "Security Status:"
+          echo "  ✓ OIDC Authentication (no long-lived PATs)"
+          echo "  ✓ Short-lived tokens (1 hour TTL)"
+          echo "  ✓ Encrypted repo secrets"
+          echo "  ✓ HTTPS enforced"
+          echo "  ✓ Secrets masked in logs"
           echo ""
           echo "::endgroup::"
 
-      - name: Notify on failure
+      - name: Notify
         if: failure()
         run: |
-          echo "::warning::Vault sync workflow encountered errors. Check logs above."
+          echo "::error::Workflow encountered errors - check logs for details"
