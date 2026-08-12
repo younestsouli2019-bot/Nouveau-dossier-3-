@@ -34,11 +34,12 @@ jobs:
       audience: ${{ steps.config.outputs.audience }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Validate configuration
         id: config
         run: |
+          set -euo pipefail
           echo "::group::Configuration Validation"
 
           VAULT_URL="${{ secrets.VAULT_CLUSTER_URL }}"
@@ -53,15 +54,16 @@ jobs:
           fi
 
           AUDIENCE="${{ secrets.VAULT_OIDC_AUDIENCE || 'swarm-vault.younestsouli.com' }}"
+          AUDIENCE_CLEAN="$(printf '%s' "$AUDIENCE" | tr -d '\u200b' | tr -d '\r')"
 
           echo "vault_url=$VAULT_URL" >> $GITHUB_OUTPUT
           echo "swarm_vault_url=$SWARM_VAULT_URL" >> $GITHUB_OUTPUT
-          echo "audience=$AUDIENCE" >> $GITHUB_OUTPUT
+          echo "audience=$AUDIENCE_CLEAN" >> $GITHUB_OUTPUT
 
           echo "✓ Repository: ${{ github.repository }}"
           echo "✓ Vault URL: $VAULT_URL"
           echo "✓ Swarm Vault API URL configured: $([ -n "$SWARM_VAULT_URL" ] && echo yes || echo no)"
-          echo "✓ OIDC Audience: $AUDIENCE"
+          echo "✓ OIDC Audience (clean): $AUDIENCE_CLEAN"
           echo "✓ OIDC Enabled: Yes (id-token: write)"
 
           echo "::endgroup::"
@@ -105,7 +107,7 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Get GitHub OIDC Token
         id: github-oidc
@@ -113,7 +115,7 @@ jobs:
           AUDIENCE: ${{ needs.preflight-checks.outputs.audience }}
         run: |
           echo "::group::GitHub OIDC Token"
-          AUDIENCE_CLEAN="$(echo "$AUDIENCE" | tr -d '\u200b')"
+          AUDIENCE_CLEAN="$AUDIENCE"
           if [ -z "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
             echo "❌ OIDC not available in this context"
             echo "oidc_available=false" >> $GITHUB_OUTPUT
@@ -134,6 +136,7 @@ jobs:
             echo "✓ OIDC token retrieved successfully (audience=${AUDIENCE_CLEAN})"
             echo "oidc_available=true" >> $GITHUB_OUTPUT
             echo "oidc_token=$TOKEN" >> $GITHUB_OUTPUT
+            echo "::add-mask::$TOKEN"
           fi
 
           echo "::endgroup::"
@@ -148,7 +151,7 @@ jobs:
 
           if [ -d ".github/vault-config" ]; then
             echo "✓ Vault config directory found"
-            find .github/vault-config -type f -name "*.json" -o -name "*.yaml" -o -name "*.yml" | wc -l | xargs echo "Found configs:"
+            find .github/vault-config -type f \( -name "*.json" -o -name "*.yaml" -o -name "*.yml" \) | wc -l | xargs echo "Found configs:"
           else
             echo "⚠️  No vault config directory found"
           fi
@@ -160,7 +163,6 @@ jobs:
         env:
           SWARM_VAULT_API_URL: ${{ needs.preflight-checks.outputs.swarm_vault_url }}
           OIDC_TOKEN: ${{ steps.github-oidc.outputs.oidc_token }}
-          # Encrypted repo secret values (never logged) — enumerate explicitly to avoid printing:
           SEC_BASE44_APP_ID: ${{ secrets.BASE44_APP_ID }}
           SEC_BASE44_SERVICE_TOKEN: ${{ secrets.BASE44_SERVICE_TOKEN }}
           SEC_PLAIDBOX_KEY: ${{ secrets.PLAIDBOX_KEY }}
@@ -170,19 +172,30 @@ jobs:
           SEC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           SEC_PAYPAL_CLIENT_ID: ${{ secrets.PAYPAL_CLIENT_ID }}
           SEC_PAYPAL_CLIENT_SECRET: ${{ secrets.PAYPAL_CLIENT_SECRET }}
+          SEC_PAYPAL_WEBHOOK_ID: ${{ secrets.PAYPAL_WEBHOOK_ID }}
+          SEC_OWNER_WISE_API_TOKEN: ${{ secrets.OWNER_WISE_API_TOKEN }}
+          SEC_BITGET_API_KEY: ${{ secrets.BITGET_API_KEY }}
+          SEC_BITGET_API_SECRET: ${{ secrets.BITGET_API_SECRET }}
+          SEC_BITGET_PASSPHRASE: ${{ secrets.BITGET_PASSPHRASE }}
+          SEC_BYBIT_API_KEY: ${{ secrets.BYBIT_API_KEY }}
+          SEC_BYBIT_API_SECRET: ${{ secrets.BYBIT_API_SECRET }}
+          SEC_BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
+          SEC_BINANCE_API_SECRET: ${{ secrets.BINANCE_API_SECRET }}
+          SEC_BINANCE_ED25519_PRIVATE_KEY: ${{ secrets.BINANCE_ED25519_PRIVATE_KEY }}
+          SEC_BINANCE_SIGNATURE_ENCODING: ${{ secrets.BINANCE_SIGNATURE_ENCODING }}
           SEC_VAULT_CLUSTER_URL: ${{ secrets.VAULT_CLUSTER_URL }}
           SEC_DOOMSDAY_ARCHIVE_PASSPHRASE: ${{ secrets.DOOMSDAY_ARCHIVE_PASSPHRASE }}
           SEC_REPO_MAINTAINER_TOKEN: ${{ secrets.REPO_MAINTAINER_TOKEN }}
         run: |
           echo "::group::Inject Secrets into Swarm Vault (action=inject-oidc)"
-          BASE_URL="$(echo "$SWARM_VAULT_API_URL" | tr -d '\u200b' | sed 's|/*$||')"
+          BASE_URL="$(printf '%s' "$SWARM_VAULT_API_URL" | tr -d '\u200b' | tr -d '\r' | sed 's|/*$||')"
           if [ -z "$BASE_URL" ]; then
             echo "SWARM_VAULT_API_URL is empty after cleaning — aborting inject step"
             echo "::endgroup::"
             exit 0
           fi
 
-          PAYLOAD=$(jq -n \
+          PAYLOAD=$(jq -cn \
             --arg action "inject-oidc" \
             --arg repo "${GITHUB_REPOSITORY}" \
             --arg run_id "${GITHUB_RUN_ID}" \
@@ -198,6 +211,17 @@ jobs:
             --arg supabase_anon_key "$SEC_SUPABASE_ANON_KEY" \
             --arg paypal_client_id "$SEC_PAYPAL_CLIENT_ID" \
             --arg paypal_client_secret "$SEC_PAYPAL_CLIENT_SECRET" \
+            --arg paypal_webhook_id "$SEC_PAYPAL_WEBHOOK_ID" \
+            --arg owner_wise_api_token "$SEC_OWNER_WISE_API_TOKEN" \
+            --arg bitget_api_key "$SEC_BITGET_API_KEY" \
+            --arg bitget_api_secret "$SEC_BITGET_API_SECRET" \
+            --arg bitget_passphrase "$SEC_BITGET_PASSPHRASE" \
+            --arg bybit_api_key "$SEC_BYBIT_API_KEY" \
+            --arg bybit_api_secret "$SEC_BYBIT_API_SECRET" \
+            --arg binance_api_key "$SEC_BINANCE_API_KEY" \
+            --arg binance_api_secret "$SEC_BINANCE_API_SECRET" \
+            --arg binance_ed25519_private_key "$SEC_BINANCE_ED25519_PRIVATE_KEY" \
+            --arg binance_signature_encoding "$SEC_BINANCE_SIGNATURE_ENCODING" \
             --arg vault_cluster_url "$SEC_VAULT_CLUSTER_URL" \
             --arg doomsday_archive_passphrase "$SEC_DOOMSDAY_ARCHIVE_PASSPHRASE" \
             --arg repo_maintainer_token "$SEC_REPO_MAINTAINER_TOKEN" \
@@ -214,6 +238,17 @@ jobs:
                 SUPABASE_ANON_KEY: $supabase_anon_key,
                 PAYPAL_CLIENT_ID: $paypal_client_id,
                 PAYPAL_CLIENT_SECRET: $paypal_client_secret,
+                PAYPAL_WEBHOOK_ID: $paypal_webhook_id,
+                OWNER_WISE_API_TOKEN: $owner_wise_api_token,
+                BITGET_API_KEY: $bitget_api_key,
+                BITGET_API_SECRET: $bitget_api_secret,
+                BITGET_PASSPHRASE: $bitget_passphrase,
+                BYBIT_API_KEY: $bybit_api_key,
+                BYBIT_API_SECRET: $bybit_api_secret,
+                BINANCE_API_KEY: $binance_api_key,
+                BINANCE_API_SECRET: $binance_api_secret,
+                BINANCE_ED25519_PRIVATE_KEY: $binance_ed25519_private_key,
+                BINANCE_SIGNATURE_ENCODING: $binance_signature_encoding,
                 VAULT_CLUSTER_URL: $vault_cluster_url,
                 DOOMSDAY_ARCHIVE_PASSPHRASE: $doomsday_archive_passphrase,
                 REPO_MAINTAINER_TOKEN: $repo_maintainer_token
@@ -226,32 +261,42 @@ jobs:
             -H "Authorization: Bearer ${OIDC_TOKEN}" \
             -H "Content-Type: application/json" \
             -H "Accept: application/json" \
-            -d "$PAYLOAD" \
+            --data-binary "$PAYLOAD" \
             "${BASE_URL}/api/swarm-ledger/vault" || echo "000")
 
           echo "Response HTTP: $HTTP_CODE"
           if [ -f /tmp/sv_resp.txt ]; then
-            # Never print raw secret values; print only response metadata keys
             python3 - <<'PY' 2>/dev/null || true
-            import json, sys
+            import json
             try:
                 with open('/tmp/sv_resp.txt','r',encoding='utf-8') as f:
                     data = json.load(f)
                 if isinstance(data, dict):
-                    safe = {k: (v if not isinstance(v,(dict,list)) and len(str(v)) < 200 else type(v).__name__) for k,v in data.items()}
+                    def _safe(v):
+                        if isinstance(v, (dict, list)):
+                            return type(v).__name__
+                        s = str(v)
+                        if len(s) > 200:
+                            return s[:180] + '…'
+                        return s
+                    safe = {k: _safe(v) for k, v in data.items()}
                     print(json.dumps(safe, indent=2))
                 else:
-                    print("<non-object response, len=%d>" % len(json.dumps(data)))
+                    print("<non-object response>")
             except Exception as e:
-                print("<parse-failed: %s>" % e)
+                print(f"<parse-failed: {e}>")
 PY
+            rm -f /tmp/sv_resp.txt
           fi
 
-          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "202" ] || [ "$HTTP_CODE" = "204" ]; then
-            echo "✓ Swarm Vault injection accepted (HTTP $HTTP_CODE)"
-          else
-            echo "::warning::Swarm Vault injection returned HTTP $HTTP_CODE — check vault logs"
-          fi
+          case "$HTTP_CODE" in
+            200|201|202|204)
+              echo "✓ Swarm Vault injection accepted (HTTP $HTTP_CODE)"
+              ;;
+            *)
+              echo "::warning::Swarm Vault injection returned HTTP $HTTP_CODE — check vault logs"
+              ;;
+          esac
           echo "::endgroup::"
 
       - name: Audit Mode

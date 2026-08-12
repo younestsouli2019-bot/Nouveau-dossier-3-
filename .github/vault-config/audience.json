@@ -1,6 +1,14 @@
 {
   "audience": "swarm-vault.younestsouli.com",
-  "roles": ["admin", "owner-payout", "procurement", "etl-base44", "workflow-operator"],
+  "roles": [
+    "admin",
+    "owner-payout",
+    "owner-crypto-withdraw",
+    "autonomous-scheduler",
+    "procurement",
+    "etl-base44",
+    "workflow-operator"
+  ],
   "inject_endpoint": "/api/swarm-ledger/vault",
   "actions": ["inject-oidc"],
   "secret_keys": [
@@ -13,8 +21,21 @@
     "SUPABASE_ANON_KEY",
     "PAYPAL_CLIENT_ID",
     "PAYPAL_CLIENT_SECRET",
+    "PAYPAL_WEBHOOK_ID",
+    "OWNER_WISE_API_TOKEN",
+    "BITGET_API_KEY",
+    "BITGET_API_SECRET",
+    "BITGET_PASSPHRASE",
+    "BYBIT_API_KEY",
+    "BYBIT_API_SECRET",
+    "BINANCE_API_KEY",
+    "BINANCE_API_SECRET",
+    "BINANCE_ED25519_PRIVATE_KEY",
+    "BINANCE_SIGNATURE_ENCODING",
     "VAULT_CLUSTER_URL",
     "DOOMSDAY_ARCHIVE_PASSPHRASE",
-    "REPO_MAINTAINER_TOKEN"
+    "REPO_MAINTAINER_TOKEN",
+    "CRYPTO_ALLOWED_ADDRESSES",
+    "CRYPTO_WITHDRAW_ENABLE"
   ]
 }

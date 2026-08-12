@@ -24,21 +24,27 @@ Expected layout (examples):
 
 Set the following in **Settings → Secrets and variables → Actions**:
 
-| Secret name             | Purpose                                                    | Required for injection? |
-| ----------------------- | ---------------------------------------------------------- | ----------------------- |
-| `SWARM_VAULT_API_URL`   | Base URL for the vault injection endpoint (without trailing slash). | ✅ Yes — injection step skips cleanly if missing |
-| `VAULT_CLUSTER_URL`     | Vault cluster URL for `/v1/sys/health` reachability check. | ❌ Optional |
-| `VAULT_OIDC_AUDIENCE`   | Override for OIDC audience. Defaults to `swarm-vault.younestsouli.com`. | ❌ Optional |
+| Secret name             | Purpose                                                                 | Required for injection? |
+| ----------------------- | ----------------------------------------------------------------------- | ----------------------- |
+| `SWARM_VAULT_API_URL`   | Base URL for the vault injection endpoint (no trailing slash).          | ✅ Yes — injection step skips cleanly if missing |
+| `VAULT_CLUSTER_URL`     | Vault cluster URL for `/v1/sys/health` reachability check.             | ❌ Optional |
+| `VAULT_OIDC_AUDIENCE`   | Override OIDC audience. Defaults to `swarm-vault.younestsouli.com`.    | ❌ Optional |
 
-Additionally, the injection step forwards these values (if present):
+### Owner payout / rails secrets (for autonomous workflows)
 
-- `BASE44_APP_ID`, `BASE44_SERVICE_TOKEN`
-- `PLAIDBOX_KEY`, `ENVBOX_KEY`
-- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`
-- `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`
-- `DOOMSDAY_ARCHIVE_PASSPHRASE`
-- `REPO_MAINTAINER_TOKEN`
-- `VAULT_CLUSTER_URL`
+These secrets are consumed by workflows and are also forwarded through the vault injection step so downstream consumers can rely on a single source of truth managed by Swarm Vault:
+
+- FinTech / ETL: `BASE44_APP_ID`, `BASE44_SERVICE_TOKEN`, `PLAIDBOX_KEY`, `ENVBOX_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`
+- Payment rails: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `OWNER_WISE_API_TOKEN`
+- Crypto rails (Binance / Bitget / Bybit): `BITGET_API_KEY`, `BITGET_API_SECRET`, `BITGET_PASSPHRASE`, `BYBIT_API_KEY`, `BYBIT_API_SECRET`, `BINANCE_API_KEY`, `BINANCE_API_SECRET`, `BINANCE_ED25519_PRIVATE_KEY`, `BINANCE_SIGNATURE_ENCODING`
+- Operator / crypto controls: `CRYPTO_ALLOWED_ADDRESSES` (comma-separated), `CRYPTO_WITHDRAW_ENABLE` (set to literal string `true` to allow)
+- Archive / CI: `VAULT_CLUSTER_URL`, `DOOMSDAY_ARCHIVE_PASSPHRASE`, `REPO_MAINTAINER_TOKEN`
+
+### GitHub Variables (not secrets)
+
+The following repo-level *variables* are used to control autonomous behavior. Set them in **Settings → Secrets and variables → Actions → Variables**:
+
+- `AUTOCOMMIT_ENABLE` — set to literal string `true` to allow the autonomous scheduler (`autonomous-scheduler.yml`) to write back whitelisted paths. Default is `false` (write-disabled, safe).
 
 ## Endpoint contract
 
@@ -68,3 +74,5 @@ Vault should verify:
 
 Workflows that consume this directory:
 - [main2.yml](../workflows/main2.yml) — Swarm Vault Sync (preflight + sync + inject-oidc)
+- [autonomous-scheduler.yml](../workflows/autonomous-scheduler.yml) — Hourly autonomous tick (Node 24, writes whitelisted paths only when `AUTOCOMMIT_ENABLE=true`)
+- [owner-crypto-withdraw.yml](../workflows/owner-crypto-withdraw.yml) — Owner crypto withdraw (Node 24, CRYPTO_ALLOWED_ADDRESSES guard + CRYPTO_WITHDRAW_ENABLE gate)

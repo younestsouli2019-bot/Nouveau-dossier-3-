@@ -2,7 +2,7 @@ name: Autonomous Scheduler
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "0 * * *"
 permissions:
   contents: write
 jobs:
@@ -12,6 +12,7 @@ jobs:
       group: autonomous-scheduler
       cancel-in-progress: true
     env:
+      AUTOCOMMIT_ENABLE: ${{ vars.AUTOCOMMIT_ENABLE || 'false' }}
       BASE44_APP_ID: ${{ secrets.BASE44_APP_ID }}
       BASE44_SERVICE_TOKEN: ${{ secrets.BASE44_SERVICE_TOKEN }}
       PAYPAL_CLIENT_ID: ${{ secrets.PAYPAL_CLIENT_ID }}
@@ -35,44 +36,74 @@ jobs:
       AUTONOMOUS_ALLOWED_PAYOUT_RECIPIENTS_JSON: ${{ secrets.AUTONOMOUS_ALLOWED_PAYOUT_RECIPIENTS_JSON }}
       OWNER_PAYPAL_EMAIL: ${{ secrets.OWNER_PAYPAL_EMAIL }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: "20"
-      - run: npm ci
-      - name: Register baseline agents
-        run: npm run swarm:add:agents
-      - name: Headhunter discovery
-        run: npm run swarm:headhunter:once
-      - name: Autonomous once
-        run: npm run autonomous:once
-      - name: Rail health probe
-        run: node ./scripts/rail-health-probe.mjs
-      - name: Health readiness ping
-        run: npm run live:readiness:ping
-      - name: Build catalogue (ultimate)
-        run: npm run catalogue:ultimate
-      - name: Build catalogue (advanced)
-        run: npm run catalogue:pdfkit
-      - name: Sync catalogue PDF into static artifact
-        run: node ./scripts/sync-catalogue-to-static.mjs
+          node-version: "24"
+          cache: "npm"
+      - name: Install dependencies (with retries)
+        run: |
+          set -euo pipefail
+          n=0
+          until [ $n -ge 3 ]; do
+            if npm ci --no-audit --no-fund 2>/dev/null; then break; fi
+            n=$((n+1))
+            echo "npm ci failed; retrying ($n)..."
+            sleep 5
+          done
+      - name: Register baseline agents (continue on error)
+        run: npm run swarm:add:agents || echo "swarm:add:agents failed but continuing"
+      - name: Headhunter discovery (continue on error)
+        run: npm run swarm:headhunter:once || echo "headhunter:once failed but continuing"
+      - name: Autonomous once (continue on error)
+        run: npm run autonomous:once || echo "autonomous:once failed but continuing"
+      - name: Rail health probe (continue on error)
+        run: node ./scripts/rail-health-probe.mjs || echo "rail-health-probe failed but continuing"
+      - name: Health readiness ping (continue on error)
+        run: npm run live:readiness:ping || echo "live:readiness:ping failed but continuing"
+      - name: Build catalogue (ultimate) (continue on error)
+        run: npm run catalogue:ultimate || echo "catalogue:ultimate failed but continuing"
+      - name: Build catalogue (advanced) (continue on error)
+        run: npm run catalogue:pdfkit || echo "catalogue:pdfkit failed but continuing"
+      - name: Sync catalogue PDF into static artifact (continue on error)
+        run: node ./scripts/sync-catalogue-to-static.mjs || echo "sync-catalogue-to-static failed but continuing"
       - name: Fallback placeholder if missing
         run: |
           if [ ! -f "catalogue/catalogue_master.pdf" ]; then
-            node ./scripts/generate-catalogue-placeholder.mjs
+            node ./scripts/generate-catalogue-placeholder.mjs || echo "placeholder generation failed"
           fi
-      - name: Write real-world truth marker
-        run: node ./scripts/realworld-truth.mjs
-      - name: Commit and push changes
+      - name: Write real-world truth marker (continue on error)
+        run: node ./scripts/realworld-truth.mjs || echo "realworld-truth failed but continuing"
+      - name: Commit and push changes (whitelist only)
         run: |
+          set -euo pipefail
+          if [ "${AUTOCOMMIT_ENABLE}" != "true" ]; then
+            echo "Autocommit disabled (AUTOCOMMIT_ENABLE != true). Skipping commit/push."
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          if ! git diff --cached --quiet; then
-            git commit -m "autonomous tick: agents, readiness, and state updates"
-            git push origin HEAD:${{ github.ref_name }}
-          else
-            echo "No changes to commit."
+          # Whitelist of files the autonomous scheduler is allowed to write back
+          ALLOWED=(
+            "rank/output/site-data"
+            "catalogue/catalogue_master.pdf"
+            "catalogue/static"
+            "logs/mirror-status.json"
+            "logs/realworld-truth.json"
+            "logs/swarm-sync"
+            "logs/payouts"
+            "data/swarm"
+          )
+          for p in "${ALLOWED[@]}"; do
+            if [ -e "$p" ]; then git add -- "$p" 2>/dev/null || true; fi
+          done
+          if git diff --cached --quiet; then
+            echo "No whitelisted changes to commit."
+            exit 0
           fi
+          echo "Whitelisted staged changes:"
+          git --no-pager diff --cached --stat || true
+          git commit -m "autonomous tick: agents, readiness, and state updates"
+          git push origin "HEAD:${{ github.ref_name }}"
