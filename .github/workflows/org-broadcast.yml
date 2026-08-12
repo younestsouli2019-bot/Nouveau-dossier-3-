@@ -7,18 +7,19 @@ jobs:
   broadcast:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup gh auth if ORG_PAT present
+      - uses: actions/checkout@v5
+      - name: Setup gh auth using bot/App token
         env:
-          ORG_PAT: ${{ secrets.ORG_PAT }}
+          ORG_TOKEN: ${{ secrets.ORG_APP_TOKEN || secrets.ORG_BOT_PAT || secrets.ORG_PAT }}
         run: |
-          if [ -n "${ORG_PAT}" ]; then
-            echo "${ORG_PAT}" | gh auth login --with-token
+          set -euo pipefail
+          if [ -n "${ORG_TOKEN}" ]; then
+            echo "${ORG_TOKEN}" | gh auth login --with-token
           else
-            echo "ORG_PAT missing; broadcast will be skipped."
+            echo "ORG token missing; broadcast will be skipped."
           fi
       - name: Broadcast repository_dispatch to org repos
-        if: ${{ secrets.ORG_PAT != '' && env.GITHUB_ORG != '' }}
+        if: ${{ env.ORG_TOKEN != '' && env.GITHUB_ORG != '' }}
         env:
           GITHUB_ORG: ${{ secrets.GITHUB_ORG }}
           GITHUB_REPOS: ${{ secrets.GITHUB_REPOS }}

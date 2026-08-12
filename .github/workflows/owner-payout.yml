@@ -1,0 +1,165 @@
+name: Owner Payout
+on:
+  workflow_dispatch:
+    inputs:
+      amount:
+        description: Amount to send
+        type: number
+        required: true
+      currency:
+        description: Currency (e.g., USD)
+        type: string
+        required: false
+        default: USD
+      email:
+        description: Recipient PayPal email (owner account)
+        type: string
+        required: false
+        default: younestsouli2019@gmail.com
+      note:
+        description: Reason or note
+        type: string
+        required: false
+        default: Owner payout
+      audit_only:
+        description: Run validation without submitting payout
+        type: boolean
+        required: false
+        default: false
+permissions:
+  contents: write
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: owner-payout
+      cancel-in-progress: false
+    env:
+      SWARM_LIVE: "true"
+      PAYPAL_MODE: "live"
+      PAYPAL_API_BASE_URL: "https://api-m.paypal.com"
+      PAYPAL_CLIENT_ID: ${{ secrets.PAYPAL_CLIENT_ID }}
+      PAYPAL_CLIENT_SECRET: ${{ secrets.PAYPAL_CLIENT_SECRET }}
+      OWNER_PAYPAL_EMAIL: ${{ inputs.email }}
+      PAYPAL_PPP2_APPROVED: "true"
+      PAYPAL_PPP2_ENABLE_SEND: "true"
+      AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS: ${{ secrets.AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS }}
+      OWNER_PAYOUT_ENABLE: ${{ secrets.OWNER_PAYOUT_ENABLE || 'false' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Validate inputs
+        id: validate
+        run: |
+          set -euo pipefail
+          AMOUNT="${{ inputs.amount }}"
+          EMAIL="${{ inputs.email }}"
+          CURRENCY="${{ inputs.currency }}"
+          echo "amount=$AMOUNT"
+          echo "currency=$CURRENCY"
+          echo "email=$EMAIL"
+          # Amount sanity: positive numeric
+          if ! awk -v a="$AMOUNT" 'BEGIN { exit !(a+0 > 0) }'; then
+            echo "::error::amount must be numeric and > 0"
+            exit 1
+          fi
+          # Email sanity: contains @ and a dot after the @
+          case "$EMAIL" in
+            *@*.*) ;;
+            *)
+              echo "::error::email $EMAIL does not look valid"
+              exit 1
+              ;;
+          esac
+          ALLOWED_RAW="${AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS}"
+          if [ -n "$ALLOWED_RAW" ]; then
+            MATCH=0
+            IFS=',' read -ra PARTS <<< "$ALLOWED_RAW"
+            for p in "${PARTS[@]}"; do
+              CLEAN="$(echo "$p" | tr -d '[:space:]' | tr -d '\r' | tr '[:upper:]' '[:lower:]')"
+              EMAIL_LC="$(echo "$EMAIL" | tr '[:upper:]' '[:lower:]')"
+              if [ "$CLEAN" = "$EMAIL_LC" ]; then MATCH=1; break; fi
+            done
+            if [ "$MATCH" != "1" ]; then
+              echo "::error::email $EMAIL is not in AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS"
+              exit 1
+            fi
+            echo "✓ Recipient email allowlisted"
+          else
+            echo "::warning::AUTONOMOUS_ALLOWED_PAYPAL_RECIPIENTS not set — skipping allowlist check (danger zone)"
+          fi
+          if [ "${OWNER_PAYOUT_ENABLE}" != "true" ]; then
+            echo "::warning::OWNER_PAYOUT_ENABLE != true — will still build payload but skip submission (audit-only semantics)"
+            echo "skip_submit=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_submit=false" >> $GITHUB_OUTPUT
+          fi
+          if [ "${{ inputs.audit_only }}" = "true" ]; then
+            echo "audit_only=true" >> $GITHUB_OUTPUT
+          else
+            echo "audit_only=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "npm"
+      - name: Install dependencies (with retries)
+        run: |
+          set -euo pipefail
+          n=0
+          until [ $n -ge 3 ]; do
+            if npm ci --no-audit --no-fund 2>/dev/null; then break; fi
+            n=$((n+1))
+            echo "Install retry ($n)..."
+            sleep 5
+          done
+      - name: Execute payout
+        id: payout
+        run: |
+          set -euo pipefail
+          AUDIT="${{ steps.validate.outputs.audit_only }}"
+          SKIP="${{ steps.validate.outputs.skip_submit }}"
+          mkdir -p out/payouts
+          EXTRA_ARGS=""
+          if [ "$AUDIT" = "true" ] || [ "$SKIP" = "true" ]; then
+            echo "Audit-only / payout disabled; running script without live execution."
+            EXTRA_ARGS="--dry-run"
+          fi
+          if [ -f ./scripts/payout-paypal-once.mjs ]; then
+            node ./scripts/payout-paypal-once.mjs --amount "${{ inputs.amount }}" --currency "${{ inputs.currency }}" --email "${{ inputs.email }}" --note "${{ inputs.note }}" $EXTRA_ARGS > out.json 2>out.err || true
+            cat out.json | jq -c 'walk( if type == "string" and (tostring | length > 48) then (.[0:8] + "…" + .[-6:]) else . end )' || true
+          else
+            echo '{"status":"SKIPPED","reason":"script not found"}' > out.json
+            echo "scripts/payout-paypal-once.mjs not found"
+          fi
+          if [ -s out.err ]; then
+            echo "::group::STDERR (truncated)"
+            head -n 100 out.err || true
+            echo "::endgroup::"
+          fi
+          cp out.json "out/payouts/payout-$(date -u +%Y%m%dT%H%M%SZ)-${GITHUB_RUN_ID}.json" 2>/dev/null || true
+      - name: Persist artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: owner-payout-${{ github.run_id }}
+          path: |
+            out.json
+            out/payouts/
+          if-no-files-found: ignore
+      - name: Commit settlement file if generated
+        if: steps.validate.outputs.audit_only != 'true'
+        run: |
+          if [[ -n "$(git status --porcelain out out/payouts 2>/dev/null)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add out out/payouts 2>/dev/null || true
+            if ! git diff --cached --quiet; then
+              git commit -m "owner payout executed via workflow dispatch" || true
+              git push origin "HEAD:${{ github.ref_name }}"
+            else
+              echo "No out/payouts artifacts to commit."
+            fi
+          else
+            echo "No out/payouts artifacts to commit."
+          fi

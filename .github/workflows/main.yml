@@ -10,15 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           persist-credentials: true
           fetch-depth: 0
 
       - name: Download file
         run: |
+          set -euo pipefail
           FILENAME="Nouveau-dossier-3-$(date +'%Y-%m-%d').zip"
-          curl -fSL -o "$FILENAME" "https://preview-chat-c00bebd6-0736-4444-bdaf-950f1172cd81.space-z.ai/api/download"
+          curl -fSL --connect-timeout 30 --max-time 300 -o "$FILENAME" "https://preview-chat-c00bebd6-0736-4444-bdaf-950f1172cd81.space-z.ai/api/download"
           echo "DOWNLOAD_FILENAME=$FILENAME" >> $GITHUB_ENV
 
       - name: Debug git state
@@ -32,6 +33,7 @@ jobs:
       - name: Commit file (if changed)
         id: commit
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add "$DOWNLOAD_FILENAME" || true
@@ -40,12 +42,14 @@ jobs:
             echo "No changes to commit"
             exit 0
           fi
+          git --no-pager diff --cached --stat || true
           git commit -m "Downloaded file from URL: $DOWNLOAD_FILENAME"
           echo "no_changes=false" >> $GITHUB_OUTPUT
 
       - name: Push or create PR (safe)
         if: steps.commit.outputs.no_changes != 'true'
         run: |
+          set -euo pipefail
           TARGET_BRANCH="${{ github.ref_name || 'main' }}"
           # Try a direct push first
           if git push origin "HEAD:${TARGET_BRANCH}"; then
