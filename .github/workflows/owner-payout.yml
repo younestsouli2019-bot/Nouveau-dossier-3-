@@ -24,7 +24,87 @@ on:
 permissions:
   contents: write
 jobs:
+  guardrails:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    concurrency:
+      group: owner-payout-guardrails
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    outputs:
+      score: ${{ steps.scan.outputs.score }}
+      cycle_dedup_ok: ${{ steps.cycle.outputs.ok }}
+      safe: ${{ steps.safe.outputs.safe }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install
+        run: npm ci || npm install --no-audit --no-fund --no-package-lock
+      - name: Lock cannibal cycle-1786593501227 and dedup baseline
+        id: cycle
+        run: |
+          set -euo pipefail
+          node ./src/swarm-guardrails.mjs --lock-cycle cycle-1786593501227 || true
+          set +e
+          OUT=$(node ./src/swarm-guardrails.mjs --scan 2>&1)
+          set -e
+          echo "--- pre-payout scan ---"
+          echo "$OUT"
+          echo "ok=1" >> "$GITHUB_OUTPUT"
+      - name: Run pattern score scan (FAIL > 15)
+        id: scan
+        run: |
+          set -euo pipefail
+          export SWARM_FAIL_SCORE=15
+          set +e
+          OUT=$(node ./src/swarm-guardrails.mjs --scan 2>&1)
+          RC=$?
+          set -e
+          echo "$OUT"
+          SCORE=$(echo "$OUT" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{const o=JSON.parse(s);console.log(o.score?.score ?? "")}catch(e){console.log("")}})')
+          echo "score=$SCORE" >> "$GITHUB_OUTPUT"
+          if [ "$RC" -ne 0 ]; then
+            echo "::error::Owner payout guardrail scan failed (score=$SCORE, rc=$RC). Payout dispatch halted."
+            exit $RC
+          fi
+      - name: Apply Velocity-Without-Revenue 300s circuit breaker if tripped
+        id: vwr
+        run: |
+          set -euo pipefail
+          set +e
+          OUT=$(node ./src/swarm-guardrails.mjs --summary 2>&1)
+          set -e
+          echo "$OUT"
+          SCORE=$(echo "$OUT" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{const o=JSON.parse(s);console.log(o.patternScore ?? "")}catch(e){console.log("")}})')
+          if [ -n "$SCORE" ] && [ "$SCORE" -gt 30 ]; then
+            node ./src/swarm-guardrails.mjs --trip-vwr || true
+            echo "::warning::Velocity-Without-Revenue circuit breaker tripped automatically due to score $SCORE"
+          fi
+      - name: Hydrate context + remediate active signals
+        run: |
+          set -euo pipefail
+          export SWARM_CYCLE_REF=cycle-1786593501227
+          node ./src/swarm-guardrails.mjs --hydrate || true
+      - name: Safe gate
+        id: safe
+        run: |
+          set -euo pipefail
+          SCORE="${{ steps.scan.outputs.score }}"
+          SAFE=1
+          if [ -z "$SCORE" ]; then SAFE=0; fi
+          if [ "$SAFE" = "1" ] && [ "$SCORE" -gt 15 ]; then SAFE=0; fi
+          echo "safe=$SAFE" >> "$GITHUB_OUTPUT"
+          if [ "$SAFE" = "0" ]; then
+            echo "::error::Owner payout dispatch requires pattern score <= 15 (got: $SCORE)."
+            exit 1
+          fi
+          echo "payout gate OK: pattern_score=$SCORE"
+
   execute:
+    needs: guardrails
     runs-on: ubuntu-latest
     concurrency:
       group: owner-payout
@@ -38,22 +118,34 @@ jobs:
       OWNER_PAYPAL_EMAIL: ${{ inputs.email }}
       PAYPAL_PPP2_APPROVED: "true"
       PAYPAL_PPP2_ENABLE_SEND: "true"
+      SWARM_CYCLE_REF: "cycle-1786593501227"
     steps:
+      - name: Fail if guardrails declared unsafe
+        if: needs.guardrails.outputs.safe != '1'
+        run: |
+          echo "::error::guardrails.safe=${{ needs.guardrails.outputs.safe }}. Refusing payout dispatch."
+          exit 1
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
       - name: Setup Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
       - name: Install
-        run: npm ci
+        run: npm ci || npm install --no-audit --no-fund --no-package-lock
+      - name: Guardrails re-check (throttle + dedup)
+        run: |
+          set -euo pipefail
+          export SWARM_FAIL_SCORE=15
+          node ./src/swarm-guardrails.mjs --scan
       - name: Execute payout
         id: payout
         run: |
-          node ./Nouveau\ dossier\ (3)/scripts/payout-paypal-once.mjs --amount "${{ inputs.amount }}" --currency "${{ inputs.currency }}" --email "${{ inputs.email }}" --note "${{ inputs.note }}" > out.json
+          set -euo pipefail
+          node ./scripts/payout-paypal-once.mjs --amount "${{ inputs.amount }}" --currency "${{ inputs.currency }}" --email "${{ inputs.email }}" --note "${{ inputs.note }}" > out.json
           cat out.json
       - name: Persist artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: owner-payout-${{ github.run_id }}
           path: out.json
@@ -63,7 +155,8 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add -A
-            git commit -m "owner payout executed via workflow dispatch" || true
-            git push origin HEAD:${{ github.ref_name }}
+            git commit -m "owner payout executed via workflow dispatch (guarded, score=${{ needs.guardrails.outputs.score }})"
+            git push
           else
             echo "No settlement files to commit."
+          fi

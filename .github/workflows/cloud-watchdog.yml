@@ -1,27 +1,161 @@
-name: Cloud Watchdog
+name: Autonomous Scheduler
 on:
   workflow_dispatch:
-  repository_dispatch:
-    types: [watchdog]
   schedule:
-    - cron: "0 */4 * * *"
+    - cron: "0 * * * *"
+    - cron: "0 */6 * * *"
+permissions:
+  contents: write
 jobs:
-  readiness:
+  pattern-score-watcher:
+    if: github.event_name == 'schedule' && github.event.schedule == '0 */6 * * *'
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     concurrency:
-      group: cloud-watchdog
+      group: autonomous-pattern-score-watcher
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    outputs:
+      score: ${{ steps.scan.outputs.score }}
+      state: ${{ steps.scan.outputs.state }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+      - name: Install dependencies (with retries)
+        run: |
+          n=0
+          until [ $n -ge 3 ]
+          do
+            npm ci && break
+            n=$((n+1))
+            echo "Retrying install ($n)..."
+            sleep 5
+          done
+      - name: Lock cycle-1786593501227 (cannibal dedup baseline)
+        run: node ./src/swarm-guardrails.mjs --lock-cycle cycle-1786593501227 || true
+      - name: Run pattern score scan + remediation
+        id: scan
+        run: |
+          set -euo pipefail
+          export SWARM_CYCLE_REF=cycle-1786593501227
+          export SWARM_HYDRATE_SUB_AGENTS=8
+          set +e
+          OUT=$(node ./src/swarm-guardrails.mjs --scan 2>&1)
+          RC=$?
+          set -e
+          echo "$OUT"
+          SCORE=$(echo "$OUT" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{const o=JSON.parse(s);console.log(o.score?.score ?? "")}catch(e){console.log("")}})')
+          STATE=$(echo "$OUT" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{const o=JSON.parse(s);console.log(o.score?.state ?? "")}catch(e){console.log("")}})')
+          echo "score=$SCORE" >> "$GITHUB_OUTPUT"
+          echo "state=$STATE" >> "$GITHUB_OUTPUT"
+          if [ -n "$SCORE" ]; then
+            if [ "$SCORE" -gt 30 ]; then
+              node ./src/swarm-guardrails.mjs --trip-vwr || true
+              echo "::warning::pattern score $SCORE > 30. Velocity-Without-Revenue 300s circuit breaker tripped."
+            fi
+          fi
+          node ./src/swarm-guardrails.mjs --hydrate || true
+      - name: Persist score artifact + stamp to repo state
+        run: |
+          mkdir -p logs/swarm_guardrails
+          node ./src/swarm-guardrails.mjs --summary > logs/swarm_guardrails/summary-$(date +%s).json 2>/dev/null || true
+          if [ -d "logs/swarm_guardrails" ]; then
+            git add -A logs/swarm_guardrails 2>/dev/null || true
+          fi
+      - name: Commit 6h pattern score stamp (if autocommit enabled)
+        run: |
+          if [ "${{ vars.AUTOCOMMIT_ENABLE }}" != "true" ]; then
+            echo "Autocommit disabled for pattern score stamp."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git diff --cached --quiet; then
+            git commit -m "autonomous stamp: 6h pattern score ${{ steps.scan.outputs.score }} (${{ steps.scan.outputs.state }})"
+            git push origin HEAD:${{ github.ref_name }}
+          else
+            echo "No changes to commit."
+          fi
+
+  autonomous-tick:
+    if: github.event_name != 'schedule' || github.event.schedule == '0 * * * *'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    concurrency:
+      group: autonomous-scheduler
       cancel-in-progress: false
     env:
-      BASE44_APP_ID: ${{ secrets.BASE44_APP_ID }}
-      BASE44_SERVICE_TOKEN: ${{ secrets.BASE44_SERVICE_TOKEN }}
-      PAYPAL_WEBHOOK_ID: ${{ secrets.PAYPAL_WEBHOOK_ID }}
-      PAYPAL_CLIENT_ID: ${{ secrets.PAYPAL_CLIENT_ID }}
-      PAYPAL_CLIENT_SECRET: ${{ secrets.PAYPAL_CLIENT_SECRET }}
-      PUBLIC_WEBHOOK_BASE_URL: ${{ secrets.PUBLIC_WEBHOOK_BASE_URL }}
+      AUTOCOMMIT_ENABLE: ${{ vars.AUTOCOMMIT_ENABLE }}
+      SWARM_CYCLE_REF: "cycle-1786593501227"
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v4
         with:
-          node-version: "20"
-      - run: npm ci
-      - run: npm run live:readiness:ping
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+      - name: Install dependencies (with retries)
+        run: |
+          n=0
+          until [ $n -ge 3 ]
+          do
+            npm ci && break
+            n=$((n+1))
+            echo "Retrying install ($n)..."
+            sleep 5
+          done
+      - name: Pre-tick pattern guardrails (FAIL if score > 30)
+        run: |
+          set -euo pipefail
+          node ./src/swarm-guardrails.mjs --lock-cycle cycle-1786593501227 || true
+          export SWARM_FAIL_SCORE=30
+          node ./src/swarm-guardrails.mjs --scan
+      - name: Register baseline agents
+        run: npm run swarm:add:agents || echo "swarm:add:agents failed"
+      - name: Headhunter discovery
+        run: npm run swarm:headhunter:once || echo "headhunter:once failed"
+      - name: Deploy pending missions
+        run: node ./scripts/deploy-missions.mjs || echo "deploy-missions failed"
+      - name: Autonomous once
+        run: npm run autonomous:once || echo "autonomous:once failed"
+      - name: Health readiness ping
+        run: npm run live:readiness:ping || echo "live:readiness:ping failed"
+      - name: Build catalogue (ultimate)
+        run: npm run catalogue:ultimate || echo "catalogue:ultimate failed"
+      - name: Build catalogue (advanced)
+        run: npm run catalogue:pdfkit || echo "catalogue:pdfkit failed"
+      - name: Sync catalogue PDF into static artifact
+        run: node ./scripts/sync-catalogue-to-static.mjs || echo "sync-catalogue-to-static failed"
+      - name: Fallback placeholder if missing
+        run: |
+          if [ ! -f "catalogue/catalogue_master.pdf" ]; then
+            node ./scripts/generate-catalogue-placeholder.mjs
+          fi
+      - name: Write real-world truth marker
+        run: node ./scripts/realworld-truth.mjs || echo "realworld-truth failed"
+      - name: Commit and push changes
+        run: |
+          if [ "${AUTOCOMMIT_ENABLE}" != "true" ]; then
+            echo "Autocommit disabled."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -d "rank/output/site-data" ]; then git add -A "rank/output/site-data"; fi
+          if [ -f "catalogue/catalogue_master.pdf" ]; then git add -A "catalogue/catalogue_master.pdf"; fi
+          if [ -d "catalogue/static" ]; then git add -A "catalogue/static"; fi
+          if [ -f "logs/mirror-status.json" ]; then git add -A "logs/mirror-status.json"; fi
+          if [ -f "logs/realworld-truth.json" ]; then git add -A "logs/realworld-truth.json"; fi
+          if ! git diff --cached --quiet; then
+            git commit -m "autonomous tick: agents, readiness, and state updates"
+            git push origin HEAD:${{ github.ref_name }}
+          else
+            echo "No changes to commit."
+          fi

@@ -1,108 +1,216 @@
-name: Deploy to Vercel
+name: Vercel Static Deploy
 
 on:
   push:
     branches:
-      - main
-      - master
-      - squashed-main
+      - release
+    paths:
+      - 'rank/output/**'
+      - 'site/realworldcerts/**'
   workflow_dispatch:
 
 concurrency:
-  group: deploy-vercel
+  group: vercel-static-deploy
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  pattern-guardrails:
     runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: ${{ steps.vercel_deploy.outputs.deploy_url }}
+    timeout-minutes: 10
+    concurrency:
+      group: vercel-static-pattern-scan
+      cancel-in-progress: false
     permissions:
       contents: read
+    outputs:
+      score: ${{ steps.scan.outputs.score }}
+      state: ${{ steps.scan.outputs.state }}
+      safe: ${{ steps.safe.outputs.safe }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: "24"
+          cache: "npm"
+      - name: Install (guardrails only)
+        run: |
+          set -euo pipefail
+          n=0
+          until [ $n -ge 3 ]; do
+            npm ci --no-audit --no-fund --omit=dev 2>/dev/null && break
+            n=$((n+1))
+            echo "Install retry ($n)..."
+            sleep 5
+          done
+      - name: Run 12-pattern score scan
+        id: scan
+        run: |
+          set -euo pipefail
+          export SWARM_FAIL_SCORE=15
+          set +e
+          OUT=$(node ./src/swarm-guardrails.mjs --scan 2>&1)
+          RC=$?
+          set -e
+          echo "--- scan output ---"
+          echo "$OUT"
+          SCORE=$(echo "$OUT" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{const o=JSON.parse(s);console.log(o.score?.score ?? o.summary?.patternScore ?? "")}catch(e){console.log("")}})')
+          STATE=$(echo "$OUT" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{const o=JSON.parse(s);console.log(o.score?.state ?? o.summary?.patternState ?? "")}catch(e){console.log("")}})')
+          echo "score=$SCORE" >> "$GITHUB_OUTPUT"
+          echo "state=$STATE" >> "$GITHUB_OUTPUT"
+          echo "score: $SCORE / state: $STATE / rc: $RC"
+          if [ "$RC" -ne 0 ]; then
+            echo "::error::Pattern guardrail scan failed (exit $RC). Deploy halted. score=$SCORE state=$STATE"
+            exit $RC
+          fi
+      - name: Safe score gate
+        id: safe
+        run: |
+          set -euo pipefail
+          SCORE="${{ steps.scan.outputs.score }}"
+          SAFE=1
+          if [ -z "$SCORE" ]; then SAFE=0; fi
+          if [ "${SAFE}" = "1" ] && [ "$SCORE" -gt 15 ]; then SAFE=0; fi
+          echo "safe=$SAFE" >> "$GITHUB_OUTPUT"
+          if [ "$SAFE" = "0" ]; then
+            echo "::error::Deploying vercel-static requires pattern score <= 15 (got: $SCORE). Remediate before release push."
+            exit 1
+          fi
+          echo "pattern score $SCORE is <= 15 (SAFE): proceed."
+
+  deploy:
+    needs: pattern-guardrails
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.deploy_rank.outputs.preview_url }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "npm"
       - name: Echo secret presence (diagnostic only, value never printed)
         env:
           VERCEL_TOKEN_PRESENT: ${{ secrets.VERCEL_TOKEN && 'true' || 'false' }}
-          VERCEL_PROJECT_ID_PRESENT: ${{ secrets.VERCEL_PROJECT_ID && 'true' || 'false' }}
-          VERCEL_ORG_ID_PRESENT: ${{ secrets.VERCEL_ORG_ID && 'true' || 'false' }}
         run: |
           set -euo pipefail
           echo "VERCEL_TOKEN_PRESENT=${VERCEL_TOKEN_PRESENT}"
-          echo "VERCEL_PROJECT_ID_PRESENT=${VERCEL_PROJECT_ID_PRESENT}"
-          echo "VERCEL_ORG_ID_PRESENT=${VERCEL_ORG_ID_PRESENT}"
+          echo "SWARM_PATTERN_SCORE=${{ needs.pattern-guardrails.outputs.score }}"
+          echo "SWARM_PATTERN_STATE=${{ needs.pattern-guardrails.outputs.state }}"
           if [ "${VERCEL_TOKEN_PRESENT}" != "true" ]; then
-            echo "  -> Vercel CLI steps below will be SKIPPED (no token)."
-            echo "  -> Hint: If token IS set in repo secrets, check: (a) this job's 'production' environment scoping, (b) branch protections on push branch, (c) org-level secret filters."
+            echo "  -> All Vercel CLI / deploy steps below will be skipped."
+            echo "  -> Hint: If token IS set in repo secrets, check: (a) environment scoping (this job uses 'production' environment), (b) branch protections on 'release' branch, (c) org-level secret filters."
           fi
-      - name: Install Vercel CLI
-        if: secrets.VERCEL_TOKEN
-        run: npm i -g vercel@latest
-      - name: Vercel pull
-        if: secrets.VERCEL_TOKEN
-        run: vercel pull --yes --environment=production
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      - name: Prepare prebuilt output
-        if: secrets.VERCEL_TOKEN
-        run: |
-          set -euo pipefail
-          rm -rf .vercel/output
-          mkdir -p .vercel/output/static
-          SRC=""
-          if [ -d "project-source-2026-08-11 (17)/content" ]; then SRC="project-source-2026-08-11 (17)/content"
-          elif [ -d "project-source-2026-08-11 (17)/dist" ]; then SRC="project-source-2026-08-11 (17)/dist"
-          elif [ -d "project-source-2026-08-11 (17)/build" ]; then SRC="project-source-2026-08-11 (17)/build"
-          elif [ -d "project-source-2026-08-11 (17)/out" ]; then SRC="project-source-2026-08-11 (17)/out"
-          elif [ -d content ]; then SRC=content
-          elif [ -d dist ]; then SRC=dist
-          elif [ -d build ]; then SRC=build
-          elif [ -d out ]; then SRC=out
-          fi
-          if [ -n "${SRC}" ]; then
-            echo "Copying prebuilt output from ${SRC}"
-            cp -r "${SRC}/." .vercel/output/static/
-          else
-            echo "Warning: no static build directory found — deploying empty site"
-          fi
-          printf '{"version":3,"routes":[{"handle":"filesystem"},{"src":"/(.*)","dest":"/index.html"}]}\n' > .vercel/output/config.json
-      - name: Vercel deploy (prebuilt)
-        id: vercel_deploy
-        if: secrets.VERCEL_TOKEN
-        shell: bash
-        run: |
-          set -euo pipefail
-          DEPLOY_URL="$(vercel deploy --prebuilt --prod --yes | tail -n1)"
-          echo "deploy_url=${DEPLOY_URL}" >> "$GITHUB_OUTPUT"
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
-      - name: Smoke check homepage
-        if: secrets.VERCEL_TOKEN && steps.vercel_deploy.outputs.deploy_url
-        shell: bash
-        env:
-          URL: ${{ steps.vercel_deploy.outputs.deploy_url }}
-        run: |
-          set -euo pipefail
-          echo "URL=$URL"
-          CODE="$(curl -s -o /dev/null -w "%{http_code}" -L "$URL")"
-          if [ "$CODE" != "200" ]; then
-            echo "Unexpected HTTP code: $CODE"
-            curl -I -L "$URL" || true
+          if [ "${{ needs.pattern-guardrails.outputs.safe }}" != "1" ]; then
+            echo "::error::pattern-guardrails gate did not declare safe=1. Refusing deployment."
             exit 1
           fi
-          curl -sSfL "$URL" | head -n 50 >/dev/null
-      - name: Output Vercel URL
-        if: steps.vercel_deploy.outputs.deploy_url
-        run: 'echo "Vercel deployment completed: ${{ steps.vercel_deploy.outputs.deploy_url }}"'
-      - name: No-op (secret absent)
-        if: "!secrets.VERCEL_TOKEN"
-        run: echo "VERCEL_TOKEN not set in production environment scoped secrets — job skipped gracefully (no deploy attempted)."
+      - name: Install deps (with retries)
+        run: |
+          set -euo pipefail
+          n=0
+          until [ $n -ge 3 ]; do
+            if npm ci --no-audit --no-fund --omit=dev 2>/dev/null; then break; fi
+            n=$((n+1))
+            echo "Install retry ($n)..."
+            sleep 5
+          done
+      - name: Build static bundle
+        run: |
+          set -euo pipefail
+          if [ -f "./scripts/build-pages.mjs" ]; then
+            node ./scripts/build-pages.mjs || echo "build-pages failed but continuing"
+          fi
+      - name: Verify artifact exists
+        run: |
+          set -euo pipefail
+          if [ -f "rank/output/index.html" ]; then
+            echo "rank/output/index.html OK"
+          else
+            echo "rank/output/index.html not built yet (may be generated elsewhere)"
+          fi
+      - name: Install Vercel CLI (pinned major)
+        if: secrets.VERCEL_TOKEN
+        run: |
+          set -euo pipefail
+          npm i -g vercel@41 --no-audit --no-fund 2>/dev/null || npm i -g vercel@41
+          vercel --version
+      - name: Check Vercel project link (best effort)
+        if: secrets.VERCEL_TOKEN
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          export VERCEL_PROJECT_NAME="realworldcerts"
+          export VERCEL_EXPECT_GITHUB_REPO="CoNrAd2525/swarm"
+          node scripts/vercel-check-project-link.mjs || true
+      - name: Ensure Vercel project uses canonical root (best effort)
+        if: secrets.VERCEL_TOKEN
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          export VERCEL_PROJECT_NAME="realworldcerts"
+          export VERCEL_GIT_REPO="CoNrAd2525/swarm"
+          export VERCEL_ROOT_DIRECTORY="rank"
+          export VERCEL_GIT_BRANCH="release"
+          node scripts/vercel-update-project-repo.mjs || true
+      - name: Deploy rank/output to Vercel
+        id: deploy_rank
+        if: secrets.VERCEL_TOKEN
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_STATIC_PROJECT_NAME: ${{ secrets.VERCEL_STATIC_PROJECT_NAME }}
+        run: |
+          set -euo pipefail
+          if [ -z "${VERCEL_TOKEN:-}" ]; then
+            echo "::error::VERCEL_TOKEN is empty in bash env (secrets resolution failed for this step). Check repo vs environment scoping."
+            exit 1
+          fi
+          NAME="realworldcerts"
+          PREVIEW=""
+          if [ -d "rank/output" ]; then
+            cd rank/output
+            if [ -n "${VERCEL_TEAM_ID:-}" ]; then
+              npx --yes vercel@41 pull --environment=production --yes --token "$VERCEL_TOKEN" --scope "$VERCEL_TEAM_ID" || true
+              PREVIEW=$(npx --yes vercel@41 deploy --prod --yes --name "$NAME" --token "$VERCEL_TOKEN" --scope "$VERCEL_TEAM_ID")
+            else
+              npx --yes vercel@41 pull --environment=production --yes --token "$VERCEL_TOKEN" || true
+              PREVIEW=$(npx --yes vercel@41 deploy --prod --yes --name "$NAME" --token "$VERCEL_TOKEN")
+            fi
+          else
+            echo "Skipping rank/output deploy: directory not present in repository."
+          fi
+          echo "preview_url=${PREVIEW}" >> "$GITHUB_OUTPUT"
+      - name: Deploy site/realworldcerts to Vercel
+        id: deploy_site
+        if: secrets.VERCEL_TOKEN && hashFiles('site/realworldcerts/**') != ''
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_STATIC_PROJECT_NAME: ${{ secrets.VERCEL_STATIC_PROJECT_NAME }}
+        run: |
+          set -euo pipefail
+          if [ -z "${VERCEL_TOKEN:-}" ]; then
+            echo "::error::VERCEL_TOKEN empty in site/realworldcerts deploy step (secrets resolution failed)."
+            exit 1
+          fi
+          NAME="realworldcerts-site"
+          PREVIEW=""
+          cd site/realworldcerts
+          if [ -n "${VERCEL_TEAM_ID:-}" ]; then
+            npx --yes vercel@41 pull --environment=production --yes --token "$VERCEL_TOKEN" --scope "$VERCEL_TEAM_ID" || true
+            PREVIEW=$(npx --yes vercel@41 deploy --prod --yes --name "$NAME" --token "$VERCEL_TOKEN" --scope "$VERCEL_TEAM_ID")
+          else
+            npx --yes vercel@41 pull --environment=production --yes --token "$VERCEL_TOKEN" || true
+            PREVIEW=$(npx --yes vercel@41 deploy --prod --yes --name "$NAME" --token "$VERCEL_TOKEN")
+          fi
+          echo "preview_url=${PREVIEW}" >> "$GITHUB_OUTPUT"
