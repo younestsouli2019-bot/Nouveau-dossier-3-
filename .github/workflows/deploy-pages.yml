@@ -80,9 +80,16 @@ jobs:
   deploy:
     needs: pattern-guardrails
     runs-on: ubuntu-latest
+    env:
+      SWARM_PRODUCTION_URL: "https://t1trn6kunnv1-d.space-z.ai"
+      SWARM_PREVIEW_DOWNLOAD_A: "https://preview-chat-c00bebd6-0736-4444-bdaf-950f1172cd81.space-z.ai/api/download"
+      SWARM_PREVIEW_DOWNLOAD_B: "https://preview-chat-52b995fb-7bc4-47b5-8597-83766cbf7229.space-z.ai/api/download"
     environment:
       name: production
-      url: ${{ steps.deploy_rank.outputs.preview_url }}
+      url: https://t1trn6kunnv1-d.space-z.ai
+    outputs:
+      production_url: ${{ steps.resolve_url.outputs.production_url }}
+      preview_url: ${{ steps.resolve_url.outputs.preview_url }}
     permissions:
       contents: read
     steps:
@@ -100,6 +107,9 @@ jobs:
           echo "VERCEL_TOKEN_PRESENT=${VERCEL_TOKEN_PRESENT}"
           echo "SWARM_PATTERN_SCORE=${{ needs.pattern-guardrails.outputs.score }}"
           echo "SWARM_PATTERN_STATE=${{ needs.pattern-guardrails.outputs.state }}"
+          echo "SWARM_PRODUCTION_URL=${SWARM_PRODUCTION_URL}"
+          echo "SWARM_PREVIEW_DOWNLOAD_A=${SWARM_PREVIEW_DOWNLOAD_A}"
+          echo "SWARM_PREVIEW_DOWNLOAD_B=${SWARM_PREVIEW_DOWNLOAD_B}"
           if [ "${VERCEL_TOKEN_PRESENT}" != "true" ]; then
             echo "  -> All Vercel CLI / deploy steps below will be skipped."
             echo "  -> Hint: If token IS set in repo secrets, check: (a) environment scoping (this job uses 'production' environment), (b) branch protections on 'release' branch, (c) org-level secret filters."
@@ -108,6 +118,16 @@ jobs:
             echo "::error::pattern-guardrails gate did not declare safe=1. Refusing deployment."
             exit 1
           fi
+      - name: Resolve production URL (pinned) + preview fallback
+        id: resolve_url
+        run: |
+          set -euo pipefail
+          PINNED="${SWARM_PRODUCTION_URL}"
+          echo "production_url=${PINNED}" >> "$GITHUB_OUTPUT"
+          echo "preview_url=${PINNED}" >> "$GITHUB_OUTPUT"
+          echo "  -> Production URL pinned: ${PINNED}"
+          echo "  -> Download A: ${SWARM_PREVIEW_DOWNLOAD_A}"
+          echo "  -> Download B: ${SWARM_PREVIEW_DOWNLOAD_B}"
       - name: Install deps (with retries)
         run: |
           set -euo pipefail
@@ -188,7 +208,9 @@ jobs:
           else
             echo "Skipping rank/output deploy: directory not present in repository."
           fi
-          echo "preview_url=${PREVIEW}" >> "$GITHUB_OUTPUT"
+          FINAL_PREVIEW="${PREVIEW:-${SWARM_PRODUCTION_URL}}"
+          echo "preview_url=${FINAL_PREVIEW}" >> "$GITHUB_OUTPUT"
+          echo "  -> rank deploy output: ${PREVIEW:-<skipped>}, fallback pinned=${SWARM_PRODUCTION_URL}"
       - name: Deploy site/realworldcerts to Vercel
         id: deploy_site
         if: secrets.VERCEL_TOKEN && hashFiles('site/realworldcerts/**') != ''
@@ -213,4 +235,6 @@ jobs:
             npx --yes vercel@41 pull --environment=production --yes --token "$VERCEL_TOKEN" || true
             PREVIEW=$(npx --yes vercel@41 deploy --prod --yes --name "$NAME" --token "$VERCEL_TOKEN")
           fi
-          echo "preview_url=${PREVIEW}" >> "$GITHUB_OUTPUT"
+          FINAL_PREVIEW="${PREVIEW:-${SWARM_PRODUCTION_URL}}"
+          echo "preview_url=${FINAL_PREVIEW}" >> "$GITHUB_OUTPUT"
+          echo "  -> site deploy output: ${PREVIEW:-<skipped>}, fallback pinned=${SWARM_PRODUCTION_URL}"
