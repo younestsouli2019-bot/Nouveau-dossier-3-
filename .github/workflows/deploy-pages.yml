@@ -153,13 +153,11 @@ jobs:
             echo "rank/output/index.html not built yet (may be generated elsewhere)"
           fi
       - name: Install Vercel CLI (pinned major)
-        if: secrets.VERCEL_TOKEN
         run: |
           set -euo pipefail
           npm i -g vercel@41 --no-audit --no-fund 2>/dev/null || npm i -g vercel@41
           vercel --version
       - name: Check Vercel project link (best effort)
-        if: secrets.VERCEL_TOKEN
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
@@ -169,7 +167,6 @@ jobs:
           export VERCEL_EXPECT_GITHUB_REPO="CoNrAd2525/swarm"
           node scripts/vercel-check-project-link.mjs || true
       - name: Ensure Vercel project uses canonical root (best effort)
-        if: secrets.VERCEL_TOKEN
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
@@ -182,7 +179,6 @@ jobs:
           node scripts/vercel-update-project-repo.mjs || true
       - name: Deploy rank/output to Vercel
         id: deploy_rank
-        if: secrets.VERCEL_TOKEN
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
@@ -213,7 +209,7 @@ jobs:
           echo "  -> rank deploy output: ${PREVIEW:-<skipped>}, fallback pinned=${SWARM_PRODUCTION_URL}"
       - name: Deploy site/realworldcerts to Vercel
         id: deploy_site
-        if: secrets.VERCEL_TOKEN && hashFiles('site/realworldcerts/**') != ''
+        if: hashFiles('site/realworldcerts/**') != ''
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
