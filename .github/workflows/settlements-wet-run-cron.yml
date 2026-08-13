@@ -1,0 +1,142 @@
+name: Settlements WET-RUN (PRE-SET Owner Accounts)
+on:
+  schedule:
+    # Every 6 hours — DRY RUN ONLY (SIMULATED confirm cards, no money moves)
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      includeLive:
+        description: "Attempt LIVE submission? (requires: SWARM_LIVE_PAYMENTS secret = true + vault secrets injected + CONFIRM word below"
+        type: boolean
+        default: false
+        required: false
+      confirmWord:
+        description: 'Type EXACTLY the word CONFIRM to allow any LIVE execution (safety gate)'
+        type: string
+        default: ""
+        required: false
+      ownerAccountIds:
+        description: "Optional comma-separated PRE-SET OwnerAccount IDs to target (empty = all 10 PRE-SET accounts)"
+        type: string
+        default: ""
+        required: false
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: settlements-wet-run
+  cancel-in-progress: false
+jobs:
+  wet-run:
+    runs-on: ubuntu-latest
+    environment:
+      # NOTE: to enable LIVE, production environment must have SWARM_LIVE_PAYMENTS=true
+      # plus the 5 vault-source connector secrets (PAYPAL_LIVE_*, PAYONEER_*,
+      # BANK_API_*, CRYPTO_SIGNING_*, ATTIJARI_*) scoped to this environment.
+      name: ${{ github.event.inputs.includeLive == 'true' && github.event.inputs.confirmWord == 'CONFIRM' && 'production' || 'dry-run' }}
+    env:
+      # ─── Owner identity PRE-SET (from GitHub Secrets scoped to environment) ───────
+      OWNER_NAME: ${{ secrets.OWNER_NAME }}
+      OWNER_EMAIL: ${{ secrets.OWNER_EMAIL }}
+      OWNER_WALLET_ARBITRUM: ${{ secrets.OWNER_WALLET_ARBITRUM }}
+      OWNER_WALLET_OPTIMISM: ${{ secrets.OWNER_WALLET_OPTIMISM }}
+      OWNER_WALLET_BASE: ${{ secrets.OWNER_WALLET_BASE }}
+      OWNER_WALLET_POLYGON_ZKEVM: ${{ secrets.OWNER_WALLET_POLYGON_ZKEVM }}
+      OWNER_WALLET_LINEA: ${{ secrets.OWNER_WALLET_LINEA }}
+      OWNER_WALLET_SCROLL: ${{ secrets.OWNER_WALLET_SCROLL }}
+      OWNER_ATTIJARI_RIB_1: ${{ secrets.OWNER_ATTIJARI_RIB_1 }}
+      OWNER_ATTIJARI_RIB_2: ${{ secrets.OWNER_ATTIJARI_RIB_2 }}
+      OWNER_ATTIJARI_RIB_3: ${{ secrets.OWNER_ATTIJARI_RIB_3 }}
+      # ─── Safety gate ───────────────────────────────────────────────────
+      # Only set to 'true' IFF (1) workflow_dispatch + includeLive + confirmWord=CONFIRM.
+      # Scheduled runs NEVER set this env var (always empty -> dry runs).
+      SWARM_LIVE_PAYMENTS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.includeLive == 'true' && github.event.inputs.confirmWord == 'CONFIRM' && secrets.SWARM_LIVE_PAYMENTS || '' }}
+      # ─── 5 Connectors — vault-source credentials (dry even if set, env-only)
+      PAYPAL_LIVE_CLIENT_ID: ${{ secrets.PAYPAL_LIVE_CLIENT_ID }}
+      PAYPAL_LIVE_SECRET: ${{ secrets.PAYPAL_LIVE_SECRET }}
+      PAYONEER_API_TOKEN: ${{ secrets.PAYONEER_API_TOKEN }}
+      PAYONEER_PROGRAM_ID: ${{ secrets.PAYONEER_PROGRAM_ID }}
+      PAYONEER_PARTNER_ID: ${{ secrets.PAYONEER_PARTNER_ID }}
+      BANK_API_KEY: ${{ secrets.BANK_API_KEY }}
+      BANK_API_ENDPOINT: ${{ secrets.BANK_API_ENDPOINT }}
+      CRYPTO_SIGNING_URL: ${{ secrets.CRYPTO_SIGNING_URL }}
+      CRYPTO_SIGNING_HMAC: ${{ secrets.CRYPTO_SIGNING_HMAC }}
+      ATTIJARI_CLIENT_ID: ${{ secrets.ATTIJARI_CLIENT_ID }}
+      ATTIJARI_CLIENT_SECRET: ${{ secrets.ATTIJARI_CLIENT_SECRET }}
+      ATTIJARI_CLIENT_CERT: ${{ secrets.ATTIJARI_CLIENT_CERT }}
+      ATTIJARI_CLIENT_KEY: ${{ secrets.ATTIJARI_CLIENT_KEY }}
+      # Extra safety: GitHub-standard reference prefix for runs
+      SETTLEMENT_REF_PREFIX: "GHWET-${{ github.run_id }}-"
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Safety gate — validate CONFIRM word (only when LIVE requested)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.includeLive == 'true' && github.event.inputs.confirmWord != 'CONFIRM'
+        run: |
+          echo "::error title=LIVE execution requested but confirmWord input != CONFIRM. Rejecting for safety."
+          exit 2
+      - name: Locate wet-run diagnostics driver
+        id: locate_driver
+        run: |
+          set -euo pipefail
+          DRIVER=""
+          if [ -f "./Nouveau dossier (3)/scripts/wet-run-diagnostics.mjs" ]; then
+            DRIVER="./Nouveau dossier (3)/scripts/wet-run-diagnostics.mjs"
+          elif [ -f "./scripts/wet-run-diagnostics.mjs" ]; then
+            DRIVER="./scripts/wet-run-diagnostics.mjs"
+          elif [ -f "./project-source-2026-08-11 (17)/scripts/wet-run-diagnostics.mjs" ]; then
+            DRIVER="./project-source-2026-08-11 (17)/scripts/wet-run-diagnostics.mjs"
+          else
+            echo "::warning:: wet-run-diagnostics.mjs driver not found in known locations"
+          fi
+          echo "driver_path=${DRIVER}" >> "$GITHUB_OUTPUT"
+          test -n "${DRIVER}"
+      - name: Owner PRE-SET accounts + 5-connector WET-RUN (DRY always; LIVE only when all 3 gates open)
+        id: wetrun
+        env:
+          SETTLEMENT_OWNER_IDS: ${{ github.event.inputs.ownerAccountIds }}
+        run: |
+          set -euo pipefail
+          TS="$(date +%s)000"
+          REPORT_DIR="scripts/settlements"
+          mkdir -p "${REPORT_DIR}"
+          REPORT_FILE="${REPORT_DIR}/wet-run-report-${TS}.json"
+          export REPORT_FILE
+          LOG_FILE="${REPORT_DIR}/wet-run-log-${TS}.log"
+          node "${{ steps.locate_driver.outputs.driver_path }}" 2>&1 | tee "${LOG_FILE}" | tail -n 200
+          echo "report_file=${REPORT_FILE}" >> "$GITHUB_OUTPUT"
+          echo "log_file=${LOG_FILE}" >> "$GITHUB_OUTPUT"
+      - name: Upload wet-run JSON report
+        uses: actions/upload-artifact@v5
+        with:
+          name: settlements-wet-run-${{ github.run_id }}
+          path: |
+            scripts/settlements/*.json
+            scripts/settlements/*.log
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Summary — PRE-SET routing matrix
+        run: |
+          set -euo pipefail
+          RF="${{ steps.wetrun.outputs.report_file }}"
+          if [ -f "${RF}" ]; then
+            echo "## Settlements WET-RUN report :white_check_mark:" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            node -e "
+              const r=require('fs').readFileSync(process.argv[1],'utf8');
+              const j=JSON.parse(r);
+              const lines = [];
+              lines.push('**PRE-SET owner accounts**: ' + (j.summary?.presetAccounts || '?') + '  ');
+              lines.push('**Matched**: ' + (j.summary?.matchedAccounts || '?') + ' routes  ');
+              lines.push('**Total routed (× connector)**: ' + (j.summary?.routedRuns || '?') + ' runs  ');
+              lines.push('**SIMULATED (owner-ok)**: ' + (j.summary?.drySimulated || '0') + '  ');
+              lines.push('**REJECTED (non-owner)**: ' + (j.summary?.dryRejected || '0') + '  ');
+              lines.push('**LIVE submitted**: ' + (j.summary?.liveSubmitted || '0') + '  ');
+              lines.push('**SWARM_LIVE flag**: ' + (j.summary?.liveFlag ? ':warning: **ON**' : ':information_source: OFF (dry)'));
+              lines.push('**Connectors LIVE READY / CONFIGURED**: ' + (j.summary?.connectorsLive || '0') + ' / ' + (j.summary?.connectorsConfigured || '0') + ' of 5');
+              process.stdout.write(lines.join('\n') + '\n');
+            " "${RF}" >> "$GITHUB_STEP_SUMMARY" || true
+          fi

@@ -5,38 +5,76 @@ on:
     branches:
       - main
       - master
+      - squashed-main
   workflow_dispatch:
+
+concurrency:
+  group: deploy-vercel
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.vercel_deploy.outputs.deploy_url }}
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
-          node-version: 18
+          node-version: 20
+      - name: Echo secret presence (diagnostic only, value never printed)
+        env:
+          VERCEL_TOKEN_PRESENT: ${{ secrets.VERCEL_TOKEN && 'true' || 'false' }}
+          VERCEL_PROJECT_ID_PRESENT: ${{ secrets.VERCEL_PROJECT_ID && 'true' || 'false' }}
+          VERCEL_ORG_ID_PRESENT: ${{ secrets.VERCEL_ORG_ID && 'true' || 'false' }}
+        run: |
+          set -euo pipefail
+          echo "VERCEL_TOKEN_PRESENT=${VERCEL_TOKEN_PRESENT}"
+          echo "VERCEL_PROJECT_ID_PRESENT=${VERCEL_PROJECT_ID_PRESENT}"
+          echo "VERCEL_ORG_ID_PRESENT=${VERCEL_ORG_ID_PRESENT}"
+          if [ "${VERCEL_TOKEN_PRESENT}" != "true" ]; then
+            echo "  -> Vercel CLI steps below will be SKIPPED (no token)."
+            echo "  -> Hint: If token IS set in repo secrets, check: (a) this job's 'production' environment scoping, (b) branch protections on push branch, (c) org-level secret filters."
+          fi
       - name: Install Vercel CLI
+        if: secrets.VERCEL_TOKEN
         run: npm i -g vercel@latest
       - name: Vercel pull
+        if: secrets.VERCEL_TOKEN
         run: vercel pull --yes --environment=production
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       - name: Prepare prebuilt output
+        if: secrets.VERCEL_TOKEN
         run: |
+          set -euo pipefail
           rm -rf .vercel/output
           mkdir -p .vercel/output/static
-          if [ -d content ]; then
-            cp -r content/. .vercel/output/static/
-          elif [ -d dist ]; then
-            cp -r dist/. .vercel/output/static/
-          elif [ -d build ]; then
-            cp -r build/. .vercel/output/static/
+          SRC=""
+          if [ -d "project-source-2026-08-11 (17)/content" ]; then SRC="project-source-2026-08-11 (17)/content"
+          elif [ -d "project-source-2026-08-11 (17)/dist" ]; then SRC="project-source-2026-08-11 (17)/dist"
+          elif [ -d "project-source-2026-08-11 (17)/build" ]; then SRC="project-source-2026-08-11 (17)/build"
+          elif [ -d "project-source-2026-08-11 (17)/out" ]; then SRC="project-source-2026-08-11 (17)/out"
+          elif [ -d content ]; then SRC=content
+          elif [ -d dist ]; then SRC=dist
+          elif [ -d build ]; then SRC=build
+          elif [ -d out ]; then SRC=out
+          fi
+          if [ -n "${SRC}" ]; then
+            echo "Copying prebuilt output from ${SRC}"
+            cp -r "${SRC}/." .vercel/output/static/
           else
             echo "Warning: no static build directory found — deploying empty site"
           fi
           printf '{"version":3,"routes":[{"handle":"filesystem"},{"src":"/(.*)","dest":"/index.html"}]}\n' > .vercel/output/config.json
       - name: Vercel deploy (prebuilt)
         id: vercel_deploy
+        if: secrets.VERCEL_TOKEN
         shell: bash
         run: |
           set -euo pipefail
@@ -48,6 +86,7 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
       - name: Smoke check homepage
+        if: secrets.VERCEL_TOKEN && steps.vercel_deploy.outputs.deploy_url
         shell: bash
         env:
           URL: ${{ steps.vercel_deploy.outputs.deploy_url }}
@@ -62,4 +101,8 @@ jobs:
           fi
           curl -sSfL "$URL" | head -n 50 >/dev/null
       - name: Output Vercel URL
+        if: steps.vercel_deploy.outputs.deploy_url
         run: 'echo "Vercel deployment completed: ${{ steps.vercel_deploy.outputs.deploy_url }}"'
+      - name: No-op (secret absent)
+        if: "!secrets.VERCEL_TOKEN"
+        run: echo "VERCEL_TOKEN not set in production environment scoped secrets — job skipped gracefully (no deploy attempted)."

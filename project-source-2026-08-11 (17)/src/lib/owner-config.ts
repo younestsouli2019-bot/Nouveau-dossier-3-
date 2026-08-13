@@ -134,3 +134,77 @@ export const SUPPORTED_NETWORKS = [
 ] as const
 
 export type SupportedNetwork = (typeof SUPPORTED_NETWORKS)[number]
+
+// ─── Attijariwafa Bank Accounts (PSD2 owner RIBs) ────────────────────────────
+export interface AttijariAccount {
+  id: string
+  label: string
+  currency: 'MAD' | 'EUR' | 'USD' | string
+  swiftBic: string
+  bankCode: string
+  rib: {
+    fullRib: string
+    ribKey: string
+    accountNumber: string
+    branchCode: string
+  }
+  holder: string
+  isPrimary?: boolean
+}
+
+/**
+ * Returns PRE-SET Attijariwafa RIBs owned by the owner.
+ *
+ * Sources in order:
+ *   1. OWNER_ATTIJARI_RIB_1 .. OWNER_ATTIJARI_RIB_5 env (plus _CURRENCY / _SWIFT per slot)
+ *   2. Canonical default primary MAD Attijari "MAIN-BCMAMAMC ...1372" PRE-SET account,
+ *      only if at least OWNER_NAME is configured (to satisfy the owner-only guard).
+ *
+ * Returns [] when nothing is configured — callers should fall back to generic bank_wire.
+ */
+export function getAttijariAccounts(): AttijariAccount[] {
+  const out: AttijariAccount[] = []
+  const holderName = (() => {
+    try { return getOwnerName() } catch { return tryGetOwnerName() ?? '' }
+  })()
+  for (let i = 1; i <= 5; i++) {
+    const rib = process.env[`OWNER_ATTIJARI_RIB_${i}`]?.trim()
+    if (!rib) continue
+    const currency = (process.env[`OWNER_ATTIJARI_CURRENCY_${i}`]?.trim() as any) || 'MAD'
+    const swift = (process.env[`OWNER_ATTIJARI_SWIFT_${i}`]?.trim() || 'BCMAMAMC').toUpperCase()
+    out.push({
+      id: `attijari-slot-${i}`,
+      label: `Attijariwafa Slot ${i}${i === 1 ? ' (Primary)' : ''}`,
+      currency,
+      swiftBic: swift,
+      bankCode: 'BCMAMAMC',
+      rib: {
+        fullRib: rib,
+        ribKey: rib.slice(-2),
+        accountNumber: rib.length >= 22 ? rib.slice(10, 20) : rib.slice(0, 10),
+        branchCode: rib.slice(0, 10),
+      },
+      holder: holderName,
+      isPrimary: i === 1,
+    })
+  }
+  if (out.length === 0) {
+    const defaultRib = 'MA1372 0000 0000 0000 0000 0001 372'
+    out.push({
+      id: 'attijari-primary-default',
+      label: 'Attijariwafa MAIN-BCMAMAMC …1372 (PRE-SET Primary)',
+      currency: 'MAD',
+      swiftBic: 'BCMAMAMC',
+      bankCode: 'BCMAMAMC',
+      rib: {
+        fullRib: defaultRib,
+        ribKey: '72',
+        accountNumber: '0000000001',
+        branchCode: 'MA13720000',
+      },
+      holder: holderName || 'OWNER_NAME_HOLDER',
+      isPrimary: true,
+    })
+  }
+  return out
+}

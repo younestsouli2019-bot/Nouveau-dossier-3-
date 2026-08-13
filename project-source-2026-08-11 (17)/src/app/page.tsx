@@ -19,6 +19,7 @@ import {
   CreditCard, Server, FileCode, Users, TrendingUp, Sparkles,
   Radio, Satellite, Bot as BotIcon, MessageSquare, Volume2,
   FolderKanban, Settings, Search, Filter, ExternalLink, Send,
+  Copy, Check, Link2, ArrowRightLeft, Loader2,
 } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
@@ -160,6 +161,11 @@ export default function SwarmCommandCenter() {
   const [chatLog, setChatLog] = useState<{ from: 'user' | 'jarvis'; msg: string }[]>([
     { from: 'jarvis', msg: 'Swarm Command Center online. All 7 source modules linked. Autopilot armed, manual override enabled. Awaiting directive.' },
   ])
+  const [settleOpen, setSettleOpen] = useState(false)
+  const [settleLoading, setSettleLoading] = useState(false)
+  const [settleIncludeLive, setSettleIncludeLive] = useState(false)
+  const [settleConfirmLive, setSettleConfirmLive] = useState('')
+  const [settleData, setSettleData] = useState<any>(null)
 
   // ── Live Swarm Agents (hit-swarm style) ──
   const AGENTS = useMemo(() => [
@@ -174,6 +180,15 @@ export default function SwarmCommandCenter() {
   ], [autopilot])
 
   const agentsActive = AGENTS.filter(a => a.status === 'Active').length
+
+  // ── Payment connectors (for wet-run matrix) ──
+  const CONNECTORS = [
+    { id: 'paypal', label: 'PayPal Business', icon: Wallet },
+    { id: 'payoneer', label: 'Payoneer API', icon: Wallet },
+    { id: 'bank_wire', label: 'Bank Wire (generic SWIFT/ACH)', icon: CreditCard },
+    { id: 'attijari', label: 'Attijariwafa PSD2', icon: ShieldCheck },
+    { id: 'crypto', label: 'Crypto Signing Service (L2)', icon: Network },
+  ]
 
   // ── Data ──
   const fetchDash = useCallback(async () => {
@@ -234,6 +249,29 @@ export default function SwarmCommandCenter() {
     } catch { toast.error('Bulk approve failed') }
     setApproveLoading(false)
   }
+  const runSettlementWetRun = useCallback(async () => {
+    setSettleLoading(true)
+    try {
+      const body: any = {}
+      if (settleIncludeLive) {
+        if (settleConfirmLive !== 'CONFIRM') {
+          toast.error('Type exactly the word CONFIRM to enable LIVE settlements')
+          setSettleLoading(false)
+          return
+        }
+        body.includeLive = true
+      }
+      const d = await fetch('/api/ops/wet-run-settlements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }).then(r => r.json())
+      setSettleData(d)
+      if (d.ok) toast.success(`Wet-run complete — ${d.summary?.routedRuns || 0} runs, ${d.summary?.drySimulated || 0} simulated`)
+      else toast.error(d.error || 'Wet-run failed')
+    } catch (e: any) { toast.error(e?.message || 'Wet-run failed') }
+    setSettleLoading(false)
+  }, [settleIncludeLive, settleConfirmLive])
 
   const revenueSourceChart = Object.entries(dashData?.revenue.bySource || {}).map(([name, value], i) => ({ name: (name.length > 18 ? name.slice(0, 16) + '…' : name).replace(/_/g, ' '), value, color: PIE_COLORS[i % PIE_COLORS.length] }))
   const batchDistChart = Object.entries(dashData?.payouts.batchStatusDistribution || {}).map(([name, value]) => ({ name: name.replace(/_/g, ' '), value }))
@@ -479,6 +517,9 @@ export default function SwarmCommandCenter() {
         {/* Quick Action Bar */}
         <div className="flex flex-wrap items-center gap-2 p-3 rounded-xl border border-border/60 bg-card/50 backdrop-blur">
           <span className="text-xs font-semibold text-muted-foreground pr-2 border-r border-border/50 mr-1">Quick Actions</span>
+          <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => setSettleOpen(true)}>
+            <ArrowRightLeft className="w-3.5 h-3.5 text-emerald-500" /> Settlements WET-RUN
+          </Button>
           <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={handleBulkApprove} disabled={approveLoading}>
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> {approveLoading ? 'Approving…' : 'Bulk Approve POs'}
           </Button>
@@ -495,6 +536,36 @@ export default function SwarmCommandCenter() {
             <Download className="w-3.5 h-3.5 text-sky-500" /> Download Swarm Export
           </Button></a>
         </div>
+
+        {/* Settlements WET-RUN banner */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }}>
+          <Card className="border-emerald-500/20 dark:border-emerald-700/30 bg-gradient-to-br from-emerald-500/5 via-background to-transparent shadow-sm">
+            <CardContent className="pt-5 pb-5 px-5 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+              <div className="flex items-start gap-3">
+                <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+                  <ArrowRightLeft className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm font-semibold">Settlements WET-RUN — PRE-SET Owner Accounts</h3>
+                    <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-700 dark:text-emerald-300">Owner-only routing</Badge>
+                    <Badge variant="outline" className="text-[10px] border-sky-500/30 text-sky-700 dark:text-sky-300">5 connectors · PayPal · Payoneer · Bank Wire · Attijari · Crypto</Badge>
+                    <Badge variant="outline" className="text-[10px] border-amber-500/30 text-amber-700 dark:text-amber-300">Dry-run by default</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Builds confirmation cards for every PRE-SET owner account × applicable connector. Optionally raises LIVE flag when <code className="font-mono text-[10px] px-1 py-0.5 rounded bg-amber-500/10 text-amber-700 dark:text-amber-300">SWARM_LIVE_PAYMENTS=true</code>, vault keys are injected, AND you type the word <b>CONFIRM</b>.</p>
+                </div>
+              </div>
+              <div className="flex gap-2 shrink-0">
+                <Button size="sm" variant="default" className="h-8 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white" onClick={() => setSettleOpen(true)}>
+                  <Zap className="w-3.5 h-3.5" /> Run Wet-Run
+                </Button>
+                <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" asChild>
+                  <a href="/operations#payouts"><ExternalLink className="w-3.5 h-3.5" /> Payout Console</a>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* KPI Row 1 — Revenue + Payouts + Agents */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3" id="revenue">
@@ -899,6 +970,177 @@ export default function SwarmCommandCenter() {
                   <span className="inline-flex items-center gap-1"><Fingerprint className="w-3 h-3" />Attested</span>
                   <span>Base44 Dry-Run: <span className="font-mono text-emerald-600 dark:text-emerald-400">ON</span></span>
                 </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Settlements WET-RUN modal */}
+        {settleOpen && (
+          <motion.div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          >
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSettleOpen(false)} />
+            <motion.div
+              className="relative w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-2xl border border-border bg-background shadow-2xl flex flex-col"
+              initial={{ opacity: 0, scale: 0.96, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98, y: 10 }} transition={{ duration: 0.2 }}
+            >
+              <div className="relative p-5 sm:p-6 border-b border-border bg-gradient-to-br from-emerald-500/10 via-background to-indigo-500/5">
+                <div className="absolute -top-20 -left-10 w-60 h-60 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none" />
+                <div className="absolute -top-24 right-0 w-72 h-72 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
+                <div className="relative flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0">
+                      <ArrowRightLeft className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="text-lg font-semibold">Settlements WET-RUN</h2>
+                        <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20">PRE-SET Owner Accounts</Badge>
+                        <Badge className="bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20">5 Connectors</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">Confirm every route before any money moves. Non-owner recipients are automatically rejected. Dry-run by default — LIVE requires vault keys + CONFIRM.</p>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-lg shrink-0" onClick={() => setSettleOpen(false)}>
+                    <XCircle className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="relative mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+                  <div className="rounded-lg border border-border/60 bg-card/60 p-2.5">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">SWARM_LIVE</p>
+                    <p className="text-sm font-semibold mt-0.5 flex items-center gap-1.5"><span className={`w-1.5 h-1.5 rounded-full ${settleData?.summary?.liveFlag ? 'bg-emerald-500' : 'bg-slate-400'}`} /> {settleData?.summary?.liveFlag ? 'ENABLED' : 'OFF (dry-run only)'}</p>
+                  </div>
+                  <div className="rounded-lg border border-border/60 bg-card/60 p-2.5">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Owner Config</p>
+                    <p className="text-sm font-semibold mt-0.5 truncate">{settleData?.summary?.ownerConfigured ? 'COMPLETE' : 'PARTIAL'}</p>
+                  </div>
+                  <div className="rounded-lg border border-border/60 bg-card/60 p-2.5">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Routed Runs</p>
+                    <p className="text-sm font-semibold mt-0.5">{settleData ? `${settleData.summary?.routedRuns || 0} runs` : '—'}</p>
+                  </div>
+                  <div className="rounded-lg border border-border/60 bg-card/60 p-2.5">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">SIMULATED / LIVE</p>
+                    <p className="text-sm font-semibold mt-0.5">{settleData ? `${settleData.summary?.drySimulated || 0} sim · ${settleData.summary?.liveSubmitted || 0} live` : '—'}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-5 border-b border-border/60 flex flex-wrap gap-3 items-end">
+                <div className="flex items-start gap-3 flex-wrap">
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="settle-include-live" className="text-xs flex items-center gap-1.5"><Lock className="w-3 h-3" /> Include LIVE execution</Label>
+                    <div className="flex items-center h-8 gap-2 px-2 rounded-md border border-border/60 bg-card/50">
+                      <Switch id="settle-include-live" checked={settleIncludeLive} onCheckedChange={setSettleIncludeLive} />
+                      <span className="text-[11px] text-muted-foreground">{settleIncludeLive ? (<span className="text-amber-600 dark:text-amber-400 font-medium">⚠️ LIVE will execute when SWARM_LIVE_PAYMENTS=true + vault keys</span>) : 'Dry-run only (no money moves)'}</span>
+                    </div>
+                  </div>
+                  {settleIncludeLive && (
+                    <div className="flex flex-col gap-1.5">
+                      <Label htmlFor="settle-confirm" className="text-xs text-amber-600 dark:text-amber-400">Type <span className="font-mono">CONFIRM</span> to enable LIVE</Label>
+                      <Input id="settle-confirm" value={settleConfirmLive} onChange={(e) => setSettleConfirmLive(e.target.value.toUpperCase().trim())} placeholder="CONFIRM" className="h-8 w-48 font-mono text-sm" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-2 ml-auto">
+                  <Button size="sm" variant="outline" className="h-9 text-xs gap-1.5" onClick={() => setSettleData(null)} disabled={settleLoading}>
+                    <RefreshCw className="w-3.5 h-3.5" /> Reset
+                  </Button>
+                  <Button size="sm" variant="default" className="h-9 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white" onClick={runSettlementWetRun} disabled={settleLoading}>
+                    {settleLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+                    {settleLoading ? 'Running…' : settleIncludeLive ? 'Run DRY + LIVE' : 'Run Dry-Run Now'}
+                  </Button>
+                </div>
+              </div>
+
+              <ScrollArea className="flex-1 min-h-0">
+                <div className="p-5 space-y-6">
+                  {/* Connectors */}
+                  <section>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5"><Network className="w-3.5 h-3.5" /> Connector Matrix</h3>
+                    <div className="mt-2 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-2">
+                      {(settleData?.connectors || CONNECTORS.map((c) => ({ id: c.id, label: c.label, configured: false, source: null, liveReady: false, details: 'Run wet-run to refresh' }))).map((c: any, i: number) => {
+                        const mark = c.liveReady ? 'LIVE READY' : c.configured ? 'CONFIGURED (dry)' : 'NOT CONFIGURED'
+                        const color = c.liveReady ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25' : c.configured ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/25' : 'bg-slate-500/10 text-slate-600 dark:text-slate-300 border-slate-500/25'
+                        return (
+                          <motion.div key={c.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
+                            <Card className={`overflow-hidden border ${c.liveReady ? 'border-emerald-500/20' : ''}`}>
+                              <CardContent className="p-3">
+                                <div className="flex items-center justify-between">
+                                  <p className="text-sm font-medium">{c.label}</p>
+                                  <Badge variant="outline" className={`text-[10px] ${color}`}>{mark}</Badge>
+                                </div>
+                                <p className="text-[11px] text-muted-foreground mt-1.5 line-clamp-2">{c.details || '(diagnostics pending)'}</p>
+                                {c.source && <p className="text-[10px] text-muted-foreground mt-1">source: <span className="font-medium">{c.source}</span></p>}
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        )
+                      })}
+                    </div>
+                  </section>
+
+                  {/* Confirmation cards (per run) */}
+                  <section>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5"><CreditCard className="w-3.5 h-3.5" /> Confirmation Cards × PRE-SET Accounts</h3>
+                    <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {(settleData?.runs || []).length === 0 && !settleData && (
+                        <div className="md:col-span-2 flex flex-col items-center justify-center text-center py-10 rounded-xl border border-dashed border-border/60 bg-card/30">
+                          <CreditCard className="w-9 h-9 text-muted-foreground/60" />
+                          <p className="mt-2 text-sm font-medium">No confirmation cards yet</p>
+                          <p className="text-xs text-muted-foreground max-w-xs mt-1">Click <b>Run Dry-Run Now</b>. The engine will build a card for every PRE-SET owner account × applicable connector (PayPal, Payoneer, Bank Wire, Attijari, Crypto) — NO money moves at this stage.</p>
+                        </div>
+                      )}
+                      {(settleData?.runs || []).map((r: any, i: number) => {
+                        const status = r.dryRun?.status === 'SIMULATED' || r.status === 'SIMULATED' ? 'SIMULATED' : r.dryRun?.status || r.status || 'PENDING'
+                        const statusBadge = status === 'SIMULATED' || status === 'SUBMITTED' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25' : status === 'REJECTED' ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/25' : 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/25'
+                        return (
+                          <motion.div key={r.reference || i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.015, 0.3) }}>
+                            <Card className="overflow-hidden hover:shadow-md transition-all">
+                              <CardContent className="p-4">
+                                <div className="flex items-center justify-between gap-2 mb-2">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center shrink-0">
+                                      <Wallet className="w-4 h-4" />
+                                    </div>
+                                    <div className="min-w-0">
+                                      <p className="text-sm font-semibold truncate">{r.label}</p>
+                                      <p className="text-[10px] text-muted-foreground truncate font-mono">{r.reference}</p>
+                                    </div>
+                                  </div>
+                                  <Badge variant="outline" className={`text-[10px] shrink-0 ${statusBadge}`}>{status}{r.liveRun ? ` · LIVE` : ''}</Badge>
+                                </div>
+                                <Separator className="my-2.5" />
+                                <div className="grid grid-cols-2 gap-y-1.5 gap-x-4 text-[11px]">
+                                  <div className="text-muted-foreground">Asset</div><div className="text-right font-medium">{r.confirmCard?.asset || r.currency}</div>
+                                  <div className="text-muted-foreground">Amount</div><div className="text-right font-medium">{r.confirmCard?.amount || `${r.currency} ${Number(r.plannedAmount || 0).toFixed(2)}`}</div>
+                                  <div className="text-muted-foreground">Connector</div><div className="text-right font-medium flex items-center justify-end gap-1"><ArrowRightLeft className="w-3 h-3" />{r.confirmCard?.connector || r.connector}</div>
+                                  <div className="text-muted-foreground">Recipient</div><div className="text-right font-medium truncate font-mono">{r.confirmCard?.recipientMasked || r.recipientMasked || '—'}</div>
+                                  <div className="text-muted-foreground">Cost</div><div className="text-right">{r.confirmCard?.estimatedCost || '—'}</div>
+                                  <div className="text-muted-foreground">Owner route</div><div className="text-right">{r.dryRun?.recipientOwner || r.ownerMatch ? (<span className="text-emerald-600 dark:text-emerald-400 font-medium">✅  owner-only</span>) : (<span className="text-rose-600 dark:text-rose-400 font-medium">❌  blocked</span>)}</div>
+                                </div>
+                                {(r.dryRun?.reason || r.liveRun?.reason) && (
+                                  <p className="mt-2 text-[11px] text-rose-600 dark:text-rose-400 bg-rose-500/5 border border-rose-500/15 rounded-md p-2">Note: {r.liveRun?.reason || r.dryRun?.reason}</p>
+                                )}
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        )
+                      })}
+                    </div>
+                  </section>
+                </div>
+              </ScrollArea>
+
+              <div className="p-4 border-t border-border/60 flex flex-wrap items-center justify-between gap-3 bg-card/40">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+                  <span className="inline-flex items-center gap-1"><Fingerprint className="w-3 h-3" /> Session encrypted</span>
+                  <span className="inline-flex items-center gap-1"><ShieldCheck className="w-3 h-3 text-emerald-500" /> Owner-only gate applied</span>
+                  <span className="inline-flex items-center gap-1"><Lock className="w-3 h-3" /> Secrets masked first5…last4</span>
+                  <span>Base44 Dry-Run: <span className="font-mono text-emerald-600 dark:text-emerald-400">{settleData?.summary?.liveExecuted ? 'PARTIAL LIVE' : 'ON'}</span></span>
+                </div>
+                <Button size="sm" variant="default" className="h-8 text-xs gap-1" onClick={() => setSettleOpen(false)}>Close</Button>
               </div>
             </motion.div>
           </motion.div>
