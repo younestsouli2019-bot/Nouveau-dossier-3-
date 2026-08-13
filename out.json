@@ -1,6 +1,6 @@
 {
-  "status": "SIMULATED",
+  "status": "SKIPPED",
+  "reason": "BINANCE_API_KEY/SECRET not configured",
   "network": "BEP20",
-  "address": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
-  "timestamp": "2026-07-31T18:23:59.666Z"
+  "address": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7"
 }

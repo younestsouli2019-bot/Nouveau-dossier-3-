@@ -128,39 +128,7 @@ src/charibaas-bootstrap.*
 /data/secure-cloud/sync-manifest.json
 /data/secure-cloud/mirror-state.json
 /data/secure-cloud/snapshot-*
-/data/rwc-social/
-/data/revenue-engines/
-
-# nested next.js / sqlite artifacts
-**/.next/
-*.db
-*.db-journal
-
-# ==============================
-# GIT EXTENSIONS: WORKTREE ARTIFACTS IGNORED
-# ==============================
-# Huge zip/tar dumps left over from the 7-source merge (never committed)
-*.zip
-*.tar
-*.tgz
-*.tar.gz
-*.7z
-*.rar
-# MS Office work-in-progress scratch
-*.doc
-*.docx
-*.xls
-*.xlsx
-*.ppt
-*.pptx
-*.pdf
-# Bybit local flow session tokens + env (MAINNET PKCE verifier expires in 15 min anyway)
-.bybit-session.json
-.env.bybit.local
-# Local settlements WET-RUN diagnostic JSON + log reports (server-side workflow runs upload to Actions Artifacts instead)
-scripts/settlements/wet-run-report-*.json
-scripts/settlements/wet-run-log-*.log
-scripts/settlements/
-settlements/
 
 
+# swarm guardrails runtime state
+data/swarm_guardrails/

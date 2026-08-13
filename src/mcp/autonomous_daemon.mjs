@@ -5,7 +5,6 @@ import http from 'http';
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import contingencyEngine from '../contingency.mjs';
-import { chainWalletMonitor } from './chain-wallet-monitor.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -234,17 +233,23 @@ async function evaluateAndPayout(balanceMAD, source) {
 }
 
 async function checkWallet() {
-  const result = await chainWalletMonitor.checkAll();
-  if (!result.ok) return null;
-  return {
-    balance: result.totalUSDT,
-    totalUSDT: result.totalUSDT,
-    totalUSDC: result.totalUSDC,
-    currency: 'USDT',
-    source: 'wallet',
-    chains: result.chains,
-    address: result.address,
-  };
+  const address = '0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7';
+  const usdtContract = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
+  const balanceOf = '0x70a08231' + address.slice(2).padStart(64, '0');
+  const rpcUrl = 'https://ethereum-rpc.publicnode.com';
+  const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to: usdtContract, data: balanceOf }, 'latest'] });
+  try {
+    const resp = await fetch(rpcUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, signal: AbortSignal.timeout(10000) });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    if (data.result && data.result !== '0x') {
+      const balance = parseInt(data.result, 16) / 1e6;
+      return { balance, currency: 'USDT', source: 'wallet' };
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 async function checkStripe() {
@@ -409,14 +414,10 @@ async function pollRevenue() {
 
   const walletData = await checkWallet();
   if (walletData) {
-    const usdt = walletData.totalUSDT || 0;
-    const usdc = walletData.totalUSDC || 0;
-    const total = usdt + usdc;
-    pipelineHealth.wallet = { ok: true, lastOk: new Date().toISOString(), failures: 0, reason: `${total} USDT+USDC (${walletData.chains?.length || 0} chains)` };
-    const usdtMAD = total * 10;
-    ev.sources.wallet = { balance: total, usdt, usdc, currency: 'USDT+USDC', madTotal: usdtMAD, chains: walletData.chains };
-    const chainDetail = (walletData.chains || []).map(c => `${c.label}:${c.usdt ?? 'err'}`).join(' | ');
-    log(`[poll] Wallet OK: ${total} USDT+USDC (USDT ${usdt} / USDC ${usdc}) = ${usdtMAD} MAD [${chainDetail}]`);
+    pipelineHealth.wallet = { ok: true, lastOk: new Date().toISOString(), failures: 0, reason: `${walletData.balance} USDT` };
+    const usdtMAD = walletData.balance * 10;
+    ev.sources.wallet = { balance: walletData.balance, currency: 'USDT', madTotal: usdtMAD };
+    log(`[poll] Wallet OK: ${walletData.balance} USDT = ${usdtMAD} MAD`);
     state.totalRevenueMAD = Math.max(state.totalRevenueMAD, usdtMAD);
     const result = await evaluateAndPayout(state.totalRevenueMAD, 'wallet');
     ev.payoutResult = result;
@@ -424,7 +425,7 @@ async function pollRevenue() {
       log(`[poll] Wallet balance ${state.totalRevenueMAD} MAD < threshold ${THRESHOLD_MAD} MAD`);
     }
   } else {
-    pipelineHealth.wallet = { ok: false, failures: (pipelineHealth.wallet.failures || 0) + 1, reason: 'multi_chain_unreachable_or_no_address' };
+    pipelineHealth.wallet = { ok: false, failures: (pipelineHealth.wallet.failures || 0) + 1, reason: 'etherscan_unreachable_or_empty' };
     log(`[poll] Wallet SKIP: ${pipelineHealth.wallet.reason}`);
   }
 
