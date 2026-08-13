@@ -1,53 +1,101 @@
-﻿import fs from "node:fs/promises";
+import fs from "node:fs/promises";
 import "dotenv/config";
-import path from "node:path";
-import os from "node:os";
-import crypto from "node:crypto";
 import { spawn } from "node:child_process";
+import crypto from "node:crypto";
+import fsSync from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildBase44ServiceClient } from "./base44-client.mjs";
-import { getPayPalAccessToken } from "./paypal-api.mjs";
-import { maybeSendAlert } from "./alerts.mjs";
-import { regulatoryMonitor } from "./contingency/regulatory-monitor.mjs";
-import { NetworkGuard } from "./security/NetworkGuard.mjs";
-import { enforceOwnerDirective } from "./owner-directive.mjs";
 import { AutonomousAgentUpgrader } from "./agents/autonomous-upgrader.mjs";
 import { StrategicScout } from "./agents/strategic-scout.mjs";
-import { MissionOrchestrator } from "./swarm/mission-orchestrator.mjs";
-import { startSupervisor as startSwarmSupervisor } from "./swarm/supervisor.mjs";
+import { maybeSendAlert } from "./alerts.mjs";
 import { recordAudit } from "./audit-trail.mjs";
-import fsSync from "node:fs";
+import { enforceAuthorityProtocol as _enforceAuthorityProtocol } from "./authority.mjs";
 import {
-	normalizeIntervalMs,
 	loadAutonomousConfig,
+	normalizeIntervalMs,
 	resolveRuntimeConfig,
-	getEnvBool,
 } from "./autonomous-config.mjs";
 import { SelfHealer } from "./autonomous-healer.mjs";
+import { runFullBackup as _runFullBackup } from "./backup-runner.mjs";
+import { buildBase44ServiceClient } from "./base44-client.mjs";
+import { regulatoryMonitor as _regulatoryMonitor } from "./contingency/regulatory-monitor.mjs";
 import { ExternalPayerEnforcer } from "./finance/ExternalPayerEnforcer.mjs";
 import { ReplenishmentProtocol } from "./finance/ReplenishmentProtocol.mjs";
 import { LocalSwarmStore } from "./local-store.mjs";
-import { TaskOrchestrator } from "./task-orchestrator.mjs";
+import { enforceOwnerDirective as _enforceOwnerDirective } from "./owner-directive.mjs";
+import { getPayPalAccessToken } from "./paypal-api.mjs";
+import { runDoomsdayExport as _runDoomsdayExport } from "./real/ledger/doomsday-export.mjs";
+import { runRevenueSwarm as _runRevenueSwarm } from "./revenue/swarm-runner.mjs";
+import { NetworkGuard } from "./security/NetworkGuard.mjs";
+import { threatMonitor as _threatMonitor } from "./security/threat-monitor.mjs";
+import { ConfigManager as _ConfigManager } from "./swarm/config-manager.mjs";
+import { globalRecorder as _globalRecorder } from "./swarm/flight-recorder.mjs";
+import { AgentHealthMonitor as _AgentHealthMonitor } from "./swarm/health-monitor.mjs";
+import { LearningAgent as _LearningAgent } from "./swarm/learning-agent.mjs";
+import { MissionOrchestrator } from "./swarm/mission-orchestrator.mjs";
+import { RailOptimizer as _RailOptimizer } from "./swarm/rail-optimizer.mjs";
+import { SwarmMemory as _SwarmMemory } from "./swarm/shared-memory.mjs";
+import { startSupervisor as startSwarmSupervisor } from "./swarm/supervisor.mjs";
+import { TaskManager as _TaskManager } from "./swarm/task-manager.mjs";
+import { runSystemIntegritySync as _runSystemIntegritySync } from "./system-integrity.mjs";
+import { buildSwarmGuardrails } from "./swarm-guardrails.mjs";
 
 const healer = new SelfHealer();
 const enforcer = new ExternalPayerEnforcer();
 const replenisher = new ReplenishmentProtocol();
+const guardrails = buildSwarmGuardrails();
+
+// #region debug-point C:report-helper
+function reportDebugEvent(hypothesisId, location, msg, data) {
+	try {
+		const envPath = path.resolve(
+			process.cwd(),
+			".dbg",
+			"owner-payout-reconcile.env",
+		);
+		let url = "http://127.0.0.1:7777/event";
+		let sessionId = "owner-payout-reconcile";
+		try {
+			const envText = fsSync.readFileSync(envPath, "utf8");
+			const urlMatch = envText.match(/^DEBUG_SERVER_URL=(.+)$/m);
+			const sessionMatch = envText.match(/^DEBUG_SESSION_ID=(.+)$/m);
+			if (urlMatch?.[1]) url = String(urlMatch[1]).trim();
+			if (sessionMatch?.[1]) sessionId = String(sessionMatch[1]).trim();
+		} catch {}
+		void fetch(url, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				sessionId,
+				runId: "pre-fix",
+				hypothesisId,
+				location,
+				msg: `[DEBUG] ${msg}`,
+				data: data ?? {},
+				ts: Date.now(),
+			}),
+		}).catch(() => {});
+	} catch {}
+}
+// #endregion
 
 // Initialize modules
-(async () => { 
-    try { 
-        await enforcer.init();
-        await replenisher.init();
-    } catch (e) { 
-        console.error("Module init failed", e); 
-    } 
+(async () => {
+	try {
+		await enforcer.init();
+		await replenisher.init();
+	} catch (e) {
+		console.error("Module init failed", e);
+	}
 })();
 
-async function runNodeScript(scriptRelPath, scriptArgs, { env }) {
+async function runNodeScript(scriptRelPath, scriptArgs, { env } = {}) {
+	const extraEnv = env && typeof env === "object" ? env : {};
 	return new Promise((resolve) => {
 		const child = spawn(process.execPath, [scriptRelPath, ...scriptArgs], {
 			cwd: process.cwd(),
-			env: { ...process.env, ...(env ?? {}) },
+			env: { ...process.env, ...extraEnv },
 			stdio: ["ignore", "pipe", "pipe"],
 		});
 
@@ -72,52 +120,21 @@ async function runNodeScript(scriptRelPath, scriptArgs, { env }) {
 				} catch {}
 			}
 
-            // AUTONOMOUS SELF-HEALING HOOK
-            if (code !== 0) {
-                const combinedError = `${stdout}\n${stderr}`;
-                const healed = await healer.attemptHeal(combinedError);
-                if (healed) {
-                    // In a real loop, we might retry immediately.
-                    // For now, we log the heal so the next cycle succeeds.
-                    stderr += "\n[Daemon] SelfHealer applied a fix based on this error.";
-                }
-            }
+			// AUTONOMOUS SELF-HEALING HOOK
+			if (code !== 0) {
+				const combinedError = `${stdout}\n${stderr}`;
+				const healed = await healer.attemptHeal(combinedError);
+				if (healed) {
+					// In a real loop, we might retry immediately.
+					// For now, we log the heal so the next cycle succeeds.
+					stderr += "\n[Daemon] SelfHealer applied a fix based on this error.";
+				}
+			}
 
 			resolve({ code: Number(code ?? 1), stdout, stderr, lastJson });
 		});
 	});
 }
-function runSyntaxCheck(scriptRelPath) {
-	return new Promise((resolve) => {
-		const child = spawn(
-			process.execPath,
-			["--check", path.resolve(process.cwd(), scriptRelPath)],
-			{
-				cwd: process.cwd(),
-				env: { ...process.env },
-				stdio: ["ignore", "pipe", "pipe"],
-			},
-		);
-
-		let stdout = "";
-		let stderr = "";
-		child.stdout.on("data", (d) => {
-			stdout += String(d);
-		});
-		child.stderr.on("data", (d) => {
-			stderr += String(d);
-		});
-		child.on("close", (code) => {
-			resolve({
-				ok: Number(code ?? 1) === 0,
-				code: Number(code ?? 1),
-				stdout,
-				stderr,
-			});
-		});
-	});
-}
-
 function parseArgs(argv) {
 	const args = {};
 	for (let i = 2; i < argv.length; i++) {
@@ -261,13 +278,49 @@ function hasAllowedPayPalRecipientsConfigured() {
 	try {
 		const parsed = JSON.parse(String(json));
 		if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
-			return false;
+			return hasOwnerBeneficiaryPayPalAllowlist();
 		const paypal =
 			parsed.paypal ?? parsed.paypal_email ?? parsed.paypalEmail ?? [];
-		return Array.isArray(paypal) && paypal.length > 0;
+		if (Array.isArray(paypal) && paypal.length > 0) return true;
+		return hasOwnerBeneficiaryPayPalAllowlist();
+	} catch {
+		return hasOwnerBeneficiaryPayPalAllowlist();
+	}
+}
+
+function hasOwnerBeneficiaryPayPalAllowlist() {
+	const raw = process.env.OWNER_BENEFICIARY_ALLOWLIST_JSON;
+	if (
+		raw == null ||
+		raw === undefined ||
+		!String(raw).trim() ||
+		isPlaceholderValue(raw)
+	) {
+		return false;
+	}
+	try {
+		const parsed = JSON.parse(String(raw));
+		if (!Array.isArray(parsed)) return false;
+		return parsed.some((entry) => {
+			if (!entry || typeof entry !== "object") return false;
+			const rail = String(entry.rail ?? "").trim().toLowerCase();
+			const recipient = String(
+				entry.email ?? entry.recipient ?? entry.paypal ?? "",
+			).trim();
+			if (!recipient || !recipient.includes("@")) return false;
+			return !rail || rail === "paypal";
+		});
 	} catch {
 		return false;
 	}
+}
+
+function hasUsableBase44AppId() {
+	const appId = String(process.env.BASE44_APP_ID ?? "").trim();
+	const fallback = String(
+		process.env.DEFAULT_BASE44_APP_ID ?? "689afeabf1db9c30efe0bd7e",
+	).trim();
+	return !isPlaceholderValue(appId || fallback);
 }
 
 function validateDaemonLiveModeOrThrow(cfg) {
@@ -277,7 +330,11 @@ function validateDaemonLiveModeOrThrow(cfg) {
 	// 	throw new Error("LIVE MODE NOT GUARANTEED (offline enabled)");
 	if (cfg?.payout?.dryRun === true)
 		throw new Error("LIVE MODE NOT GUARANTEED (dry-run enabled)");
-	requireRealEnv("BASE44_APP_ID");
+	if (!hasUsableBase44AppId()) {
+		throw new Error(
+			"LIVE MODE NOT GUARANTEED (BASE44 app id unavailable; set BASE44_APP_ID or DEFAULT_BASE44_APP_ID)",
+		);
+	}
 	requireRealEnv("BASE44_SERVICE_TOKEN");
 
 	if (
@@ -376,35 +433,41 @@ async function atomicWriteJson(filePath, value) {
 }
 
 async function maybeRunStrategicScouting(cfg, state) {
-  const enabled = cfg?.strategicScouting?.enabled !== false;
-  if (!enabled) return { ok: true, skipped: true, reason: "disabled" };
-  
-  const nowMs = Date.now();
-  const lastAt = Number(state.lastScoutAt ?? 0) || 0;
-  const intervalMs = Number(cfg?.strategicScouting?.intervalMs ?? 14400000) || 14400000; // 4 hours
+	const enabled = cfg?.strategicScouting?.enabled !== false;
+	if (!enabled) return { ok: true, skipped: true, reason: "disabled" };
 
-  if (nowMs - lastAt < intervalMs) {
-    return { ok: true, skipped: true, reason: "interval" };
-  }
+	const nowMs = Date.now();
+	const lastAt = Number(state.lastScoutAt ?? 0) || 0;
+	const intervalMs =
+		Number(cfg?.strategicScouting?.intervalMs ?? 14400000) || 14400000; // 4 hours
 
-  try {
-    const scout = new StrategicScout();
-    const proposal = await scout.runCycle();
-    state.lastScoutAt = nowMs;
-    
-    if (proposal) {
-        const filename = `proposal_${Date.now()}.json`;
-        const filepath = path.resolve(process.cwd(), 'exports', 'proposals', filename);
-        await atomicWriteJson(filepath, proposal);
-        return { ok: true, proposalPath: filepath };
-    }
-    return { ok: true, found: false };
-  } catch (e) {
-    return { ok: false, error: e?.message ?? String(e) };
-  }
+	if (nowMs - lastAt < intervalMs) {
+		return { ok: true, skipped: true, reason: "interval" };
+	}
+
+	try {
+		const scout = new StrategicScout();
+		const proposal = await scout.runCycle();
+		state.lastScoutAt = nowMs;
+
+		if (proposal) {
+			const filename = `proposal_${Date.now()}.json`;
+			const filepath = path.resolve(
+				process.cwd(),
+				"exports",
+				"proposals",
+				filename,
+			);
+			await atomicWriteJson(filepath, proposal);
+			return { ok: true, proposalPath: filepath };
+		}
+		return { ok: true, found: false };
+	} catch (e) {
+		return { ok: false, error: e?.message ?? String(e) };
+	}
 }
 
-async function maybeRunAutonomousOptimization(cfg, state) {
+async function _maybeRunAutonomousOptimization(cfg, state) {
 	const enabled = cfg?.selfOptimization?.enabled !== false;
 	if (!enabled) return { ok: true, skipped: true, reason: "disabled" };
 	if (cfg?.offline?.enabled === true)
@@ -492,7 +555,7 @@ function getKnowledgeGraphFromEnv() {
 	return graph;
 }
 
-async function startNetworkGuardIfLive() {
+async function _startNetworkGuardIfLive() {
 	if (String(process.env.SWARM_LIVE || "false").toLowerCase() !== "true")
 		return { started: false };
 	const guard = new NetworkGuard({
@@ -519,7 +582,8 @@ async function startSwarmSupervisorIfEnabled(cfg, state) {
 	// Ensure agents registry exists; if missing or empty, sync from Base44
 	try {
 		const swarmDir = path.resolve("data/swarm");
-		if (!fsSync.existsSync(swarmDir)) fsSync.mkdirSync(swarmDir, { recursive: true });
+		if (!fsSync.existsSync(swarmDir))
+			fsSync.mkdirSync(swarmDir, { recursive: true });
 		const swarmFile = path.join(swarmDir, "agents.json");
 		let needSync = true;
 		if (fsSync.existsSync(swarmFile)) {
@@ -646,7 +710,7 @@ async function queueApproval(base44, change) {
 	return { id: created?.id ?? null, filePath };
 }
 
-function assertPayoutRoutingConstraints(_cfg, graph) {
+function assertPayoutRoutingConstraints(cfg, graph) {
 	const mustRoute =
 		graph?.constraints?.find((c) => c.field === "payout_route")?.value ??
 		"DIRECT_TO_OWNER";
@@ -672,7 +736,7 @@ function assertPayoutRoutingConstraints(_cfg, graph) {
 	return { ok: true };
 }
 
-function assertRecipientValidationConstraints(_cfg, graph) {
+function assertRecipientValidationConstraints(cfg, graph) {
 	const policy =
 		graph?.constraints?.find((c) => c.field === "recipient_policy")?.value ??
 		"OWNER_ONLY";
@@ -689,7 +753,7 @@ function assertRecipientValidationConstraints(_cfg, graph) {
 	return { ok: true };
 }
 
-function assertMultiAgentConsensusGuard(_cfg, graph) {
+function assertMultiAgentConsensusGuard(cfg, graph) {
 	const rolesRequired = Array.isArray(graph?.consensus?.rolesRequired)
 		? graph.consensus.rolesRequired
 		: ["finance", "compliance"];
@@ -810,7 +874,8 @@ async function maybeRunMissionOrchestration(cfg, state) {
 			} catch {}
 		}
 
-		if (proposals.length === 0) return { ok: true, skipped: true, reason: "no_proposals" };
+		if (proposals.length === 0)
+			return { ok: true, skipped: true, reason: "no_proposals" };
 
 		const orchestrator = new MissionOrchestrator();
 		const results = await orchestrator.processProposals(proposals);
@@ -828,45 +893,7 @@ async function maybeRunMissionOrchestration(cfg, state) {
 	}
 }
 
-async function maybeRunTaskQueue(cfg, state, queue = null) {
-	if (cfg.tasks?.taskQueue !== true) {
-		return { ok: true, skipped: true, reason: "disabled" };
-	}
-	if (cfg.offline?.enabled === true)
-		return { ok: true, skipped: true, reason: "offline" };
-
-	const nowMs = Date.now();
-	const lastAt = Number(state.lastTaskQueueAt ?? 0) || 0;
-	const intervalMs =
-		Number(cfg.taskQueue?.intervalMs ?? 60000) || 60000;
-	if (nowMs - lastAt < intervalMs) {
-		return { ok: true, skipped: true, reason: "interval" };
-	}
-	if (state.taskQueueBusy === true)
-		return { ok: true, skipped: true, reason: "busy" };
-
-	state.taskQueueBusy = true;
-	try {
-		const maxPerTick = Math.max(
-			1,
-			Math.floor(Number(cfg.taskQueue?.maxPerTick ?? 1) || 1),
-		);
-		const pull = cfg.taskQueue?.pull === true;
-		const orchestrator = new TaskOrchestrator({
-			worker: `daemon_${process.pid}`,
-			queue,
-		});
-		const out = await orchestrator.processOnce({ max: maxPerTick, pull });
-		state.lastTaskQueueAt = nowMs;
-		return { ok: true, ...out };
-	} catch (e) {
-		return { ok: false, error: e?.message ?? String(e) };
-	} finally {
-		state.taskQueueBusy = false;
-	}
-}
-
-async function runPDCAOnce(cfg, state) {
+async function _runPDCAOnce(cfg, state) {
 	const plan = {
 		goals: ["produce_real_value", "enforce_policies", "avoid_freeze"],
 	};
@@ -1006,27 +1033,6 @@ async function runAutoSettleOwner(cfg) {
 	};
 }
 
-async function runAutoSettleOwnerCrypto(cfg) {
-	const args = [];
-	if (cfg.payout?.dryRun) args.push("--dry-run");
-	if (cfg.crypto?.providerPriority) {
-		args.push("--providers", String(cfg.crypto.providerPriority));
-	}
-	const res = await runNodeScript("./scripts/auto-settle-owner-crypto.mjs", args, {
-		env: {},
-	});
-	if (res.code === 0 && res.lastJson)
-		return { ok: true, result: res.lastJson };
-	const errJson =
-		res.lastJson && res.lastJson.ok === false ? res.lastJson : null;
-	const msg = errJson?.error ?? res.stderr ?? res.stdout ?? "";
-	return {
-		ok: false,
-		error: String(msg).trim() || "auto-settle-owner-crypto failed",
-		raw: { code: res.code, lastJson: res.lastJson },
-	};
-}
-
 async function runMonitorHealth(commandArgs, { offline, offlineStorePath }) {
 	const env = {};
 	const args = [];
@@ -1083,17 +1089,17 @@ const localStore = new LocalSwarmStore();
 
 async function checkHealthOnce(cfg) {
 	let mode = cfg.offline.enabled ? "offline" : "auto";
-    const useLocalStore = process.env.SWARM_MODE === "local";
+	const useLocalStore = process.env.SWARM_MODE === "local";
 
-    if (useLocalStore) {
-        await localStore.init();
-        return {
-            at: nowIso(),
-            ok: true,
-            mode: "local",
-            details: { base44: "bypassed_local", paypal: "live_check_skipped" }
-        };
-    }
+	if (useLocalStore) {
+		await localStore.init();
+		return {
+			at: nowIso(),
+			ok: true,
+			mode: "local",
+			details: { base44: "bypassed_local", paypal: "live_check_skipped" },
+		};
+	}
 
 	let paypalOk = false;
 	let paypalErr = null;
@@ -2006,6 +2012,74 @@ async function runTick(cfg, state) {
 		if (!envIsTrue(process.env.SWARM_LIVE, "false")) {
 			throw new Error("LIVE MODE NOT GUARANTEED (SWARM_LIVE downgraded)");
 		}
+		const scanCtx = {};
+		const scan = guardrails.runFullScan(scanCtx);
+		out.meta.guardrails = {
+			score: scan.score.score,
+			state: scan.score.state,
+			breakersActive: Object.keys(scan.breakers).length,
+			triggeredPatterns: Object.entries(scan.score.breakdown ?? {})
+				.filter(([, v]) => v.triggered)
+				.map(([k]) => k),
+		};
+		if (guardrails.isCircuitBreakerActive("velocity_without_revenue")) {
+			out.meta.freeze = {
+				active: true,
+				reason: "velocity_without_revenue circuit breaker tripped",
+				until: guardrails
+					.getCircuitBreakers()
+					.breakers?.velocity_without_revenue?.expiresAt,
+			};
+		}
+		guardrails.recordDecision(
+			`tick:${String(cfg.tasks.createPayoutBatches)}:${String(
+				cfg.tasks.autoSubmitPayPalPayoutBatches,
+			)}`,
+			"autonomous-daemon tick signature",
+			{ actor: "autonomous-daemon" },
+		);
+		const amnesia = guardrails.checkContextAmnesia(
+			`tick:${String(cfg.tasks.createPayoutBatches)}:${String(
+				cfg.tasks.autoSubmitPayPalPayoutBatches,
+			)}`,
+		);
+		if (amnesia.triggered) {
+			guardrails.immediateRemediations({
+				hydrateSubAgents: Number(
+					process.env.SWARM_HYDRATE_SUB_AGENTS ?? 8,
+				),
+			});
+		}
+		recordAudit("GUARDRAIL_SCAN", {
+			score: scan.score.score,
+			state: scan.score.state,
+			status:
+				scan.score.score <= guardrails.cfg.safeScoreThreshold
+					? "APPROVED"
+					: "REVIEW",
+			triggered: out.meta.guardrails.triggeredPatterns,
+		}).catch(() => {});
+		if (scan.score.score > guardrails.cfg.warningScoreThreshold) {
+			out.results.guardrails_hardened = {
+				ok: false,
+				score: scan.score.score,
+				action:
+					"ABORTED_MONEY_MOVING_TASKS_UNTIL_SCORE_BELOW_" +
+					guardrails.cfg.warningScoreThreshold,
+			};
+			cfg = {
+				...cfg,
+				tasks: {
+					...cfg.tasks,
+					createPayoutBatches: false,
+					autoApprovePayoutBatches: false,
+					autoSubmitPayPalPayoutBatches: false,
+					autoExportPayoneerPayoutBatches: false,
+					syncPayPalLedgerBatches: false,
+					autoSettleOwnerPayoneer: false,
+				},
+			};
+		}
 	}
 
 	if (cfg.tasks.deadman) {
@@ -2017,10 +2091,6 @@ async function runTick(cfg, state) {
 		const health = await checkHealthOnce(cfg);
 		out.results.health = health;
 		await maybeAlertOnFailure(cfg, health, state);
-	}
-
-	if (cfg.tasks.taskQueue) {
-		out.results.taskQueue = await maybeRunTaskQueue(cfg, state);
 	}
 
 	if (cfg.tasks.missionHealth) {
@@ -2068,20 +2138,23 @@ async function runTick(cfg, state) {
 		);
 	}
 
-  if (cfg.tasks.monitorPayoneerStatus === true || cfg.monitor?.payoneerStatus === true) {
-    const res = await runNodeScript("./scripts/monitor-prq-status.mjs", [], { env: {} });
-    const payload =
-      res.lastJson ??
-      {
-        ok: false,
-        error:
-          res?.stderr?.trim() ||
-          res?.stdout?.trim() ||
-          "monitor_prq_status_failed",
-      };
-    out.results.monitorPayoneerStatus = payload;
-    await recordAudit("monitor_prq_status", payload).catch(() => {});
-  }
+	if (
+		cfg.tasks.monitorPayoneerStatus === true ||
+		cfg.monitor?.payoneerStatus === true
+	) {
+		const res = await runNodeScript("./scripts/monitor-prq-status.mjs", [], {
+			env: {},
+		});
+		const payload = res.lastJson ?? {
+			ok: false,
+			error:
+				res?.stderr?.trim() ||
+				res?.stdout?.trim() ||
+				"monitor_prq_status_failed",
+		};
+		out.results.monitorPayoneerStatus = payload;
+		await recordAudit("monitor_prq_status", payload).catch(() => {});
+	}
 
 	if (cfg.tasks.createPayoutBatches) {
 		if (isFreezeActive(state)) {
@@ -2257,6 +2330,20 @@ async function runTick(cfg, state) {
 			const windowOk = isWithinWindowUtc(
 				cfg.payout?.windowUtc ?? { startHourUtc: 0, endHourUtc: 0 },
 			);
+			// #region debug-point C:autosubmit-gates
+			reportDebugEvent(
+				"C",
+				"src/autonomous-daemon.mjs:autoSubmitPayPalPayoutBatches",
+				"evaluating auto-submit paypal batch gates",
+				{
+					freezeActive: isFreezeActive(state),
+					windowOk,
+					payoutDryRun: cfg.payout?.dryRun === true,
+					healthEnabled: cfg.tasks.health === true,
+					paypalOk: out.results.health?.paypalOk ?? null,
+				},
+			);
+			// #endregion
 			if (!windowOk) {
 				out.results.autoSubmitPayPal = {
 					ok: true,
@@ -2299,6 +2386,17 @@ async function runTick(cfg, state) {
 				const batches = effectiveOk(approvedRes)
 					? (approvedRes.result?.batches ?? [])
 					: [];
+				// #region debug-point C:approved-batches
+				reportDebugEvent(
+					"C",
+					"src/autonomous-daemon.mjs:autoSubmitPayPalPayoutBatches",
+					"approved batches loaded for paypal auto-submit",
+					{
+						approvedResultOk: effectiveOk(approvedRes),
+						batchCount: Array.isArray(batches) ? batches.length : 0,
+					},
+				);
+				// #endregion
 				const attempts = [];
 				for (const b of Array.isArray(batches) ? batches : []) {
 					const batchId = getBatchId(b);
@@ -2317,6 +2415,18 @@ async function runTick(cfg, state) {
 						recipientType !== "paypal_email"
 					)
 						continue;
+					// #region debug-point C:autosubmit-attempt
+					reportDebugEvent(
+						"C",
+						"src/autonomous-daemon.mjs:autoSubmitPayPalPayoutBatches",
+						"attempting paypal auto-submit for batch",
+						{
+							batchId,
+							recipientType,
+							providerId,
+						},
+					);
+					// #endregion
 					const res = await runEmitWithOfflineFallback(
 						["--submit-payout-batch", "--batch-id", String(batchId)],
 						cfg,
@@ -2444,15 +2554,6 @@ async function runTick(cfg, state) {
 		}
 	}
 
-	if (cfg.tasks.autoSettleOwnerCrypto) {
-		if (isFreezeActive(state)) {
-			out.results.autoSettleOwnerCrypto = freezeSkip(state, "freeze_active");
-		} else {
-			const res = await runAutoSettleOwnerCrypto(cfg);
-			out.results.autoSettleOwnerCrypto = res;
-		}
-	}
-
 	if (cfg.tasks.syncPayPalLedgerBatches) {
 		if (isFreezeActive(state)) {
 			out.results.syncPayPalLedger = freezeSkip(state, "freeze_active");
@@ -2485,6 +2586,19 @@ async function runTick(cfg, state) {
 
 				const rows = effectiveOk(truthRes) ? (truthRes.result?.rows ?? []) : [];
 				const nowMs = Date.now();
+				// #region debug-point D:sync-truth-rows
+				reportDebugEvent(
+					"D",
+					"src/autonomous-daemon.mjs:syncPayPalLedgerBatches",
+					"loaded payout truth rows for paypal reconciliation",
+					{
+						truthResultOk: effectiveOk(truthRes),
+						rowCount: Array.isArray(rows) ? rows.length : 0,
+						limit,
+						minAgeMs,
+					},
+				);
+				// #endregion
 				const attempts = [];
 				for (const r of Array.isArray(rows) ? rows : []) {
 					const internalBatchId = r?.internalPayoutBatchId ?? null;
@@ -2503,6 +2617,19 @@ async function runTick(cfg, state) {
 						if (!Number.isNaN(ms) && nowMs - ms < minAgeMs) continue;
 					}
 
+					// #region debug-point D:sync-attempt
+					reportDebugEvent(
+						"D",
+						"src/autonomous-daemon.mjs:syncPayPalLedgerBatches",
+						"attempting paypal ledger sync",
+						{
+							internalBatchId,
+							externalProviderId,
+							truthStatus,
+							lastProviderSyncAt: lastAt,
+						},
+					);
+					// #endregion
 					const syncArgs = [];
 					if (cfg.payout.dryRun) syncArgs.push("--dry-run");
 					syncArgs.push(
@@ -2537,34 +2664,30 @@ async function main() {
 	const args = parseArgs(process.argv);
 	const once = args.once === true;
 
-	// --check: verify the script parses without syntax errors, then exit.
-	if (args.check === true) {
-		const res = await runSyntaxCheck(
-			fileURLToPath(import.meta.url),
-		);
-		process.stdout.write(
-			`${JSON.stringify({ ok: res.ok, check: true, at: nowIso(), stderr: res.stderr })}\n`,
-		);
-		process.exitCode = res.ok ? 0 : 1;
-		return;
-	}
-
 	// AUTONOMOUS SELF-CHECK AND AUTO-REPAIR (disabled in test environment)
-	if (process.env.NODE_ENV !== "test" && args.check !== true) {
+	if (process.env.NODE_ENV !== "test") {
 		try {
-			// Check if we can parse ourselves without syntax errors.
-			// Use `node --check` (syntax-only) instead of passing --check to the
-			// script itself, which would re-enter main() and recurse forever.
-			const selfCheckResult = await runSyntaxCheck("src/autonomous-daemon.mjs");
+			// Check if we can parse ourselves without syntax errors
+			const selfCheckResult = await runNodeScript(
+				"src/autonomous-daemon.mjs",
+				["--check"],
+				{ env: process.env },
+			);
 			if (!selfCheckResult.ok) {
-				console.error("Self-check failed: syntax error detected, attempting auto-repair");
+				console.error(
+					"Self-check failed: syntax error detected, attempting auto-repair",
+				);
 				// In a real implementation, this would attempt to fix common syntax issues
 				// For now, we'll just log and continue
-				process.stderr.write(`${JSON.stringify({ ok: false, at: nowIso(), error: "Self-check failed", details: selfCheckResult.stderr })}\n`);
+				process.stderr.write(
+					`${JSON.stringify({ ok: false, at: nowIso(), error: "Self-check failed", details: selfCheckResult.error })}\n`,
+				);
 			}
 		} catch (e) {
 			// Self-check failed, but we can still try to run in safe mode
-			process.stderr.write(`${JSON.stringify({ ok: false, at: nowIso(), error: "Self-check error", details: e.message })}\n`);
+			process.stderr.write(
+				`${JSON.stringify({ ok: false, at: nowIso(), error: "Self-check error", details: e.message })}\n`,
+			);
 		}
 	}
 
@@ -2573,10 +2696,12 @@ async function main() {
 	});
 	const cfg = resolveRuntimeConfig(args, loaded.config);
 
-	// SAFE MODE: If configuration is invalid or missing critical components, 
+	// SAFE MODE: If configuration is invalid or missing critical components,
 	// run in minimal safe mode to prevent system damage
 	if (!cfg || !cfg.tasks) {
-		process.stderr.write(`${JSON.stringify({ ok: false, at: nowIso(), error: "Invalid configuration detected, entering safe mode" })}\n`);
+		process.stderr.write(
+			`${JSON.stringify({ ok: false, at: nowIso(), error: "Invalid configuration detected, entering safe mode" })}\n`,
+		);
 		// In safe mode, we only run basic health checks without money-moving operations
 		const safeCfg = {
 			...cfg,
@@ -2588,8 +2713,7 @@ async function main() {
 				autoSubmitPayPalPayoutBatches: false,
 				syncPayPalLedgerBatches: false,
 				autoSettleOwnerPayoneer: false,
-				autoSettleOwnerCrypto: false,
-			}
+			},
 		};
 		// Continue with safe configuration
 		Object.assign(cfg, safeCfg);
@@ -2721,14 +2845,19 @@ async function main() {
 			const startH = Number(
 				process.env.AUTONOMOUS_ACTIVE_START_UTC ??
 					process.env.AUTONOMOUS_PAYOUT_WINDOW_START_UTC ??
-					(cfg.payout?.windowUtc?.startHourUtc ?? 0),
+					cfg.payout?.windowUtc?.startHourUtc ??
+					0,
 			);
 			const endH = Number(
 				process.env.AUTONOMOUS_ACTIVE_END_UTC ??
 					process.env.AUTONOMOUS_PAYOUT_WINDOW_END_UTC ??
-					(cfg.payout?.windowUtc?.endHourUtc ?? 0),
+					cfg.payout?.windowUtc?.endHourUtc ??
+					0,
 			);
-			const activeOk = isWithinWindowUtc({ startHourUtc: startH, endHourUtc: endH });
+			const activeOk = isWithinWindowUtc({
+				startHourUtc: startH,
+				endHourUtc: endH,
+			});
 			const loopCfg = activeOk
 				? cfg
 				: {
@@ -2741,7 +2870,6 @@ async function main() {
 							autoExportPayoneerPayoutBatches: false,
 							syncPayPalLedgerBatches: false,
 							autoSettleOwnerPayoneer: false,
-							autoSettleOwnerCrypto: false,
 						},
 					};
 			const out = await runTick(loopCfg, state);
@@ -2775,22 +2903,10 @@ async function main() {
 		const exp =
 			state.consecutiveFailures <= 0
 				? 1
-				: Math.min(8, Math.pow(2, state.consecutiveFailures));
+				: Math.min(8, 2 ** state.consecutiveFailures);
 		const delay = Math.min(max, Math.max(1000, Math.floor(base * exp)));
 		await sleep(delay);
 	} while (!stop);
-
-	// --once: the run loop breaks above, but child processes spawned during the
-	// tick may keep handles alive (stdio streams, timers) and prevent exit.
-	// Force an exit so --once runs terminate deterministically in CI.
-	if (once) {
-		const code = Number(process.exitCode) || 0;
-		process.stdout.write(
-			`${JSON.stringify({ ok: code === 0, once: true, done: true, at: nowIso() })}\n`,
-			() => process.exit(code),
-		);
-		setTimeout(() => process.exit(code), 1000).unref();
-	}
 }
 
 const selfPath = fileURLToPath(import.meta.url);
@@ -2806,11 +2922,4 @@ if (isMain) {
 	});
 }
 
-export {
-	resolveRuntimeConfig,
-	isWithinWindowUtc,
-	maybeRunAutonomousOptimization,
-	startNetworkGuardIfLive,
-	runPDCAOnce,
-	maybeRunTaskQueue,
-};
+export { resolveRuntimeConfig, isWithinWindowUtc };

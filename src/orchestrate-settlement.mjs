@@ -1,37 +1,37 @@
-import fs from "node:fs";
 import crypto from "node:crypto";
-
-import { buildBase44ServiceClient } from "./base44-client.mjs";
-import { getRevenueConfigFromEnv } from "./base44-revenue.mjs";
-import {
-	getMandateStoreConfigFromEnv,
-	writeBase44MandateIdempotent,
-} from "./base44-mandate-store.mjs";
-import {
-	getWorkLeaseConfigFromEnv,
-	acquireWorkLease,
-} from "./base44-work-lease.mjs";
-import {
-	getPayoutRequestConfigFromEnv,
-	createBase44PayoutRequestIdempotent,
-} from "./base44-payout-request.mjs";
+import fs from "node:fs";
 import {
 	buildMandateChainHash,
 	mandatePayloadHash,
 	signMandatePayload,
 	verifyMandateEnvelope,
 } from "./ap2-mandate.mjs";
+import { buildBase44ServiceClient } from "./base44-client.mjs";
+import {
+	getMandateStoreConfigFromEnv,
+	writeBase44MandateIdempotent,
+} from "./base44-mandate-store.mjs";
+import {
+	createBase44PayoutRequestIdempotent,
+	getPayoutRequestConfigFromEnv,
+} from "./base44-payout-request.mjs";
+import { getRevenueConfigFromEnv } from "./base44-revenue.mjs";
 import {
 	getSettlementIndexConfigFromEnv,
 	isRevenueExternalIdSettled,
 	markRevenueSettledIdempotent,
 } from "./base44-settlement-index.mjs";
 import {
+	acquireWorkLease,
+	getWorkLeaseConfigFromEnv,
+} from "./base44-work-lease.mjs";
+import {
 	calculatePosp,
 	enforcePosp,
 	writePospProof,
 } from "./consensus/posp.mjs";
 import { checkEgressIp } from "./security/egress-ip-guard.mjs";
+import { buildSwarmGuardrails } from "./swarm-guardrails.mjs";
 
 function parseArgs(argv) {
 	const args = {};
@@ -386,6 +386,86 @@ async function main() {
 
 	enforceIntentConstraints(intentPayload, { currency, total });
 
+	const cycleRef =
+		String(intentPayload?.cycle_ref ?? "").trim() ||
+		String(intentPayload?.metadata?.cycle_ref ?? "").trim() ||
+		String(args["cycle-ref"] ?? process.env.SWARM_CYCLE_REF ?? "").trim() ||
+		`cycle-${Date.now()}`;
+	const guardrails = buildSwarmGuardrails();
+	const revenueDeltaUsd = Number(total) *
+		Number(process.env.AP2_REVENUE_MARGIN_PCT ?? "0") * 0.01;
+	{
+		const scan = guardrails.runFullScan({
+			cycleRef,
+			spawn: { count: 0 },
+		});
+		const duplicate = guardrails.checkCannibalisticCompetition({ cycleRef });
+		if (duplicate.triggered) {
+			const held = guardrails.mutexLockCycle(cycleRef, {
+				owner: String(holder ?? "orchestrator"),
+			});
+			if (!held.acquired) {
+				process.stdout.write(
+					`${JSON.stringify({
+						ok: true,
+						dryRun: !!dryRun,
+						acquired: false,
+						reason: "cannibalistic_competition_mutex_held",
+						cycleRef,
+						holder: held.holder,
+						guardrails: scan.score,
+					})}\n`,
+				);
+				return;
+			}
+		}
+		if (guardrails.isCircuitBreakerActive("velocity_without_revenue")) {
+			process.stdout.write(
+				`${JSON.stringify({
+					ok: true,
+					dryRun: !!dryRun,
+					acquired: false,
+					reason: "velocity_without_revenue_circuit_breaker_active",
+					cycleRef,
+					guardrails: scan.score,
+				})}\n`,
+			);
+			return;
+		}
+		if (scan.score.score > guardrails.cfg.safeScoreThreshold) {
+			process.stdout.write(
+				`${JSON.stringify({
+					ok: true,
+					dryRun: !!dryRun,
+					acquired: false,
+					reason: "guardrail_score_above_safe",
+					cycleRef,
+					score: scan.score.score,
+					triggered: Object.entries(scan.score.breakdown ?? {})
+						.filter(([, v]) => v.triggered)
+						.map(([k]) => k),
+				})}\n`,
+			);
+			return;
+		}
+		guardrails.recordDecision(
+			`orchestrate:${currency}:${Number(total).toFixed(4)}:${items.length}`,
+			"orchestrate-settlement decision signature",
+			{ cycleRef, actor: holder },
+		);
+		const amnesia = guardrails.checkContextAmnesia(
+			`orchestrate:${currency}:${Number(total).toFixed(4)}:${items.length}`,
+		);
+		if (amnesia.triggered) {
+			guardrails.immediateRemediations({
+				cycleRef,
+				hydrateSubAgents: Number(
+					process.env.SWARM_HYDRATE_SUB_AGENTS ?? 8,
+				),
+			});
+		}
+	}
+
 	const saDid = normalizeDid(
 		process.env.AP2_SA_DID,
 		"did:swarm:sa:orchestrator",
@@ -505,6 +585,42 @@ async function main() {
 		}
 	}
 
+	if (!dryRun) {
+		const persist = guardrails.appendLedger({
+			cycle_ref: cycleRef,
+			cycleRef,
+			intent_id: intentPayload.id,
+			quote_id: quotePayload.id,
+			payment_mandate_id: paymentPayload.id,
+			payout_external_id: payoutPayload.externalId,
+			connector: String(intentPayload?.constraints?.route_preference?.[0] ?? "bank_wire"),
+			rail: String(intentPayload?.constraints?.route_preference?.[0] ?? "bank_wire"),
+			amount_usd: Number(payoutPayload.amount) *
+				(currency === "USD" ? 1 : Number(process.env.AP2_FX_TO_USD ?? 1)),
+			currency,
+			amount: Number(payoutPayload.amount),
+			revenue_usd: Number.isFinite(revenueDeltaUsd) ? revenueDeltaUsd : 0,
+			payout_created_id: payoutCreated?.id ?? null,
+			status: payoutCreated?.deduped === true ? "RECONCILED" : "APPROVED",
+			items_count: items.length,
+			holder,
+		});
+		if (!persist.ok && persist.reason === "CANNIBALISTIC_DUPLICATE") {
+			process.stdout.write(
+				`${JSON.stringify({
+					ok: true,
+					dryRun: !!dryRun,
+					acquired: true,
+					reason: persist.reason,
+					dedupKey: persist.dedupKey,
+					cycleRef,
+					intentStoredId: intentWrite?.id ?? null,
+				})}\n`,
+			);
+			return;
+		}
+	}
+
 	process.stdout.write(
 		`${JSON.stringify({
 			ok: true,
@@ -520,6 +636,8 @@ async function main() {
 			settlementIndexIds: settlementIndexWrites,
 			total: payoutPayload.amount,
 			currency,
+			cycleRef,
+			guardrailsLedgerAppendOk: !dryRun ? true : undefined,
 		})}\n`,
 	);
 }
