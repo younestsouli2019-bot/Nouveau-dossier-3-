@@ -1,0 +1,145 @@
+{
+  "report_type": "Security Validation Report",
+  "generated_at": "2026-08-18T12:00:00Z",
+  "project": "Payout Recovery Dashboard (Agent Swarm)",
+  "repository": "younestsouli2019-bot/Nouveau-dossier-3",
+  "stack": "Next.js 15 + Prisma (SQLite) + Base44",
+  "audit_scope": {
+    "api_routes": 26,
+    "db_models": 12,
+    "react_components": 64,
+    "middleware_files": 1,
+    "lib_files": 18
+  },
+  "dimensions": [
+    {
+      "name": "Route Validation",
+      "status": "PASS",
+      "critical": 0, "high": 0, "medium": 1, "low": 2, "info": 1
+    },
+    {
+      "name": "Database Security",
+      "status": "PASS",
+      "critical": 0, "high": 0, "medium": 0, "low": 1, "info": 2
+    },
+    {
+      "name": "Frontend Security",
+      "status": "PASS",
+      "critical": 0, "high": 0, "medium": 1, "low": 0, "info": 1
+    },
+    {
+      "name": "Error Handling",
+      "status": "WARN",
+      "critical": 0, "high": 1, "medium": 1, "low": 1, "info": 0
+    },
+    {
+      "name": "Digital Rights Compliance",
+      "status": "WARN",
+      "critical": 0, "high": 0, "medium": 2, "low": 1, "info": 1
+    }
+  ],
+  "findings": [
+    {
+      "id": "H-EH-01",
+      "severity": "High",
+      "category": "Error Handling",
+      "title": "Raw error.message leaked in API responses",
+      "description": "submit-real/route.ts and truth-enforcement/route.ts include raw error.message in 500 responses",
+      "status": "FIXED",
+      "fix": "Replaced with sanitizeErrorMessage() from error-sanitizer.ts"
+    },
+    {
+      "id": "M-RT-01",
+      "severity": "Medium",
+      "category": "Route Auth",
+      "title": "/api/download route is Public (unauthenticated)",
+      "description": "The download endpoint allows unauthenticated access with a TODO to gate it",
+      "status": "OPEN",
+      "recommendation": "Reclassify to Read tier and update frontend to send API key"
+    },
+    {
+      "id": "M-FE-01",
+      "severity": "Medium",
+      "category": "CSP",
+      "title": "unsafe-eval and unsafe-inline in production CSP",
+      "description": "CSP script-src includes unsafe-eval and unsafe-inline, weakening XSS protection",
+      "status": "OPEN",
+      "recommendation": "Implement nonce-based CSP for production"
+    },
+    {
+      "id": "M-EH-02",
+      "severity": "Medium",
+      "category": "Logging",
+      "title": "Verbose console.log in production routes",
+      "description": "Auto-pilot and resolve routes use console.log instead of structured logging",
+      "status": "OPEN",
+      "recommendation": "Replace with pino/winston structured logger with log levels"
+    },
+    {
+      "id": "M-DR-01",
+      "severity": "Medium",
+      "category": "GDPR/CCPA",
+      "title": "No data subject rights endpoints",
+      "description": "Missing Right of Access, Erasure, Rectification, Portability endpoints for PII",
+      "status": "OPEN",
+      "recommendation": "Implement /api/privacy/access, /api/privacy/erase, /api/privacy/portability"
+    },
+    {
+      "id": "M-DR-02",
+      "severity": "Medium",
+      "category": "Privacy",
+      "title": "No privacy policy / data processing disclosure endpoint",
+      "description": "GDPR Article 13 requires informing data subjects about processing purposes",
+      "status": "OPEN",
+      "recommendation": "Add /.well-known/privacy endpoint with machine-readable disclosures"
+    },
+    {
+      "id": "L-RT-02",
+      "severity": "Low",
+      "category": "Validation",
+      "title": "Manual input checks instead of Zod schemas",
+      "description": "Some routes use ad-hoc checks instead of Zod validation",
+      "status": "OPEN",
+      "recommendation": "Migrate to Zod schemas for consistency"
+    },
+    {
+      "id": "L-DB-01",
+      "severity": "Low",
+      "category": "Database",
+      "title": "No field-level encryption for PII",
+      "description": "OwnerAccount.accountIdentifier stores PII in plaintext",
+      "status": "OPEN",
+      "recommendation": "Implement application-level encryption for PII columns"
+    },
+    {
+      "id": "L-EH-03",
+      "severity": "Low",
+      "category": "Logging",
+      "title": "Prisma query logging may expose sensitive data",
+      "description": "Development mode logs all queries including data in WHERE clauses",
+      "status": "OPEN",
+      "recommendation": "Ensure dev DB instances contain only test data"
+    },
+    {
+      "id": "L-DR-03",
+      "severity": "Low",
+      "category": "Audit",
+      "title": "Audit logs in same DB as operational data",
+      "description": "Compromised app could tamper with audit records",
+      "status": "OPEN",
+      "recommendation": "Migrate to separate append-only store"
+    }
+  ],
+  "security_layers": [
+    {"layer": "L1: Network", "mechanism": "CSP, X-Frame-Options, HSTS", "status": "PASS"},
+    {"layer": "L2: Transport", "mechanism": "HTTPS, Referrer-Policy", "status": "PASS"},
+    {"layer": "L3: Authentication", "mechanism": "Timing-safe API key (Read + Admin)", "status": "PASS"},
+    {"layer": "L4: Rate Limiting", "mechanism": "Sliding-window per IP (4 tiers)", "status": "PASS"},
+    {"layer": "L5: Input Validation", "mechanism": "Zod schemas + manual checks", "status": "PASS"},
+    {"layer": "L6: Truth Guard", "mechanism": "Proof verification + status transition", "status": "PASS"},
+    {"layer": "L7: ORM", "mechanism": "Prisma parameterized queries", "status": "PASS"},
+    {"layer": "L8: Audit", "mechanism": "PayoutAuditLog + TruthAuditRun", "status": "PASS"},
+    {"layer": "L9: Error Sanitization", "mechanism": "Pattern-based removal", "status": "WARN"}
+  ],
+  "overall_assessment": "Strong security foundation. 1 high finding (now fixed). 0 critical vulnerabilities."
+}
