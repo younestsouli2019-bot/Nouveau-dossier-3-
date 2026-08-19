@@ -116,7 +116,7 @@
     "eslint": "^9.39.2",
     "eslint-formatter-compact": "^9.0.1",
     "globals": "^17.0.0",
-    "oxlint": "^1.43.0"
+    "oxlint": "^1.78.0"
   },
   "trae": {
     "helpers": {
