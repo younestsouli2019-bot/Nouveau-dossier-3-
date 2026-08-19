@@ -100,7 +100,7 @@
     "@binance/connector": "^3.6.1",
     "base64-js": "^1.5.1",
     "body-parser": "^2.2.2",
-    "ccxt": "^4.5.32",
+    "ccxt": "^4.5.73",
     "csv-parse": "^6.1.0",
     "csv-stringify": "^6.6.0",
     "dotenv": "^16.6.1",
