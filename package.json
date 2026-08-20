@@ -20,7 +20,20 @@
     "@base44/sdk": "^0.8.13",
     "dotenv": "^16.6.1",
     "ethers": "^6.0.0",
-    "tweetnacl": "^1.0.3"
+    "tweetnacl": "^1.0.3",
+    "framer-motion": "^11.0.0",
+    "next-themes": "^0.3.0",
+    "sonner": "^1.0.0",
+    "date-fns": "^3.0.0",
+    "@radix-ui/react-dialog": "^1.0.0",
+    "@radix-ui/react-select": "^2.0.0",
+    "@radix-ui/react-tabs": "^1.0.0",
+    "@radix-ui/react-tooltip": "^1.0.0",
+    "@radix-ui/react-scroll-area": "^1.0.0",
+    "@radix-ui/react-separator": "^1.0.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.0.0"
   },
   "devDependencies": {
     "typescript": "^5.5.0",
