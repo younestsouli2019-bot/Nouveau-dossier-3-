@@ -10,7 +10,12 @@
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:reset": "prisma migrate reset"
+    "db:reset": "prisma migrate reset",
+    "preset:list": "node scripts/preset-account-cli.mjs list",
+    "preset:register": "node scripts/preset-account-cli.mjs register",
+    "preset:verify": "node scripts/preset-account-cli.mjs verify",
+    "preset:activate": "node scripts/preset-account-cli.mjs activate",
+    "preset:disburse": "node scripts/preset-account-cli.mjs disburse"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
