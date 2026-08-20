@@ -1,9 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { createHmac } from 'crypto';
 import { prisma } from '@/lib/db';
 import { sha256 } from '@/lib/strict-enforcement/crypto-utils';
 
+import { activateKey } from '@/lib/connector-credentials';
+
 const WEBHOOK_SECRET = process.env.GITHUB_WEBHOOK_SECRET || '';
+
+const KNOWN_SECRET_CONNECTORS: Record<string, string> = {
+  LIVE_BANK_API: 'attijariwafa',
+  OPENROUTER_API_KEY: 'base44',
+  ZAI_API_KEY: 'base44',
+  BASE44_API_KEY: 'base44',
+  PAYPAL_CLIENT_ID: 'paypal',
+  PAYPAL_CLIENT_SECRET: 'paypal',
+};
 
 function verifyHMAC(payload: string, signature: string): boolean {
   if (!WEBHOOK_SECRET) return true;
@@ -28,7 +39,15 @@ export async function POST(req: NextRequest) {
           discrepancyNote: 'HMAC signature mismatch',
         },
       });
-      return NextResponse.json({ error: 'Invalid HMAC signature' }, { status: 401 });
+          // Activate keys for known connectors
+    for (const secretKey of received) {
+      const connectorId = KNOWN_SECRET_CONNECTORS[secretKey];
+      if (connectorId) {
+        activateKey(connectorId, secretKey);
+      }
+    }
+
+    return NextResponse.json({ error: 'Invalid HMAC signature' }, { status: 401 });
     }
 
     const payload = JSON.parse(rawBody);
@@ -59,6 +78,14 @@ export async function POST(req: NextRequest) {
       },
     });
 
+        // Activate keys for known connectors
+    for (const secretKey of received) {
+      const connectorId = KNOWN_SECRET_CONNECTORS[secretKey];
+      if (connectorId) {
+        activateKey(connectorId, secretKey);
+      }
+    }
+
     return NextResponse.json({
       status: 'synced',
       synced: received.length,
@@ -68,10 +95,27 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
+        // Activate keys for known connectors
+    for (const secretKey of received) {
+      const connectorId = KNOWN_SECRET_CONNECTORS[secretKey];
+      if (connectorId) {
+        activateKey(connectorId, secretKey);
+      }
+    }
+
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
 export async function GET() {
-  return NextResponse.json({ status: 'active', endpoint: 'github-secrets' });
+      // Activate keys for known connectors
+    for (const secretKey of received) {
+      const connectorId = KNOWN_SECRET_CONNECTORS[secretKey];
+      if (connectorId) {
+        activateKey(connectorId, secretKey);
+      }
+    }
+
+    return NextResponse.json({ status: 'active', endpoint: 'github-secrets' });
 }
+
