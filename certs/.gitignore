@@ -1,0 +1,6 @@
+*.pem
+*.key
+*.p12
+!qwac.pem
+!qwac-key.pem
+!.gitignore
