@@ -1,10 +1,13 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
-  const escalations = await db.paymentEscalation.findMany({
-    orderBy: { escalatedAt: 'desc' },
-  });
+  try {
+    const escalations = await db.paymentEscalation.findMany({
+      orderBy: { escalatedAt: 'desc' },
+    });
 
   // Summary stats
   const total = escalations.length;
@@ -25,4 +28,14 @@ export async function GET() {
     escalations,
     summary: { total, totalAmount, open, investigating, resolved, byProvider, bySeverity },
   });
+  } catch (error) {
+    console.error('Escalations API error:', error);
+    return NextResponse.json(
+      {
+        escalations: [],
+        summary: { total: 0, totalAmount: 0, open: 0, investigating: 0, resolved: 0, byProvider: {}, bySeverity: {} },
+      },
+      { status: 200 },
+    );
+  }
 }
