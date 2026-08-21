@@ -56,7 +56,14 @@ export async function POST(request: NextRequest) {
 
     // Bulk advance all eligible items
     if (body.bulk || (!body.itemId && body.targetStatus)) {
-      const result = await bulkAdvance(body.targetStatus)
+      const result = await bulkAdvance(body.targetStatus, {
+        carrier: body.carrier,
+        trackingNumber: body.trackingNumber,
+        trackingUrl: body.trackingUrl,
+        proofHash: body.proofHash,
+        confirmedBy: body.confirmedBy,
+        notes: body.notes,
+      })
 
       return NextResponse.json({
         success: true,
