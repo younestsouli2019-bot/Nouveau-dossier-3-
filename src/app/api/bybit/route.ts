@@ -1,16 +1,29 @@
 import { NextResponse } from 'next/server';
-import { getWalletBalance, getTicker, placeOrder, healthCheck } from '@/lib/bybit';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
+  const hasKeys = !!(process.env.BYBIT_API_KEY && process.env.BYBIT_API_SECRET);
+
+  if (!hasKeys) {
+    return NextResponse.json({
+      status: 'not_configured',
+      message: 'BYBIT_API_KEY and BYBIT_API_SECRET env vars not set. Add them to Vercel to activate.',
+      timestamp: new Date().toISOString(),
+    });
+  }
+
   try {
-    const [health, balance] = await Promise.all([healthCheck(), getWalletBalance()]);
+    const { getWalletBalance, healthCheck } = await import('@/lib/bybit');
+    const [health, balance] = await Promise.race([
+      Promise.all([healthCheck(), getWalletBalance()]),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000)),
+    ]);
     return NextResponse.json({
       status: health.ok ? 'connected' : 'degraded',
       serverTime: health.serverTime,
       balance: balance?.result?.list?.[0] || null,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (e: any) {
     return NextResponse.json({ status: 'error', error: e.message }, { status: 503 });
@@ -18,7 +31,17 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const hasKeys = !!(process.env.BYBIT_API_KEY && process.env.BYBIT_API_SECRET);
+
+  if (!hasKeys) {
+    return NextResponse.json({
+      error: 'BYBIT_API_KEY and BYBIT_API_SECRET not configured',
+      hint: 'Add them to Vercel env vars to enable trading',
+    }, { status: 503 });
+  }
+
   try {
+    const { getTicker, placeOrder, getWalletBalance } = await import('@/lib/bybit');
     const body = await request.json();
     const { action, symbol, side, qty, price } = body;
 
@@ -26,15 +49,12 @@ export async function POST(request: Request) {
       case 'ticker':
         const ticker = await getTicker(symbol);
         return NextResponse.json({ ok: true, ticker: ticker?.result?.list?.[0] });
-
       case 'order':
         const order = await placeOrder(symbol, side, qty, price);
         return NextResponse.json({ ok: true, orderId: order?.result?.orderId });
-
       case 'balance':
         const bal = await getWalletBalance();
         return NextResponse.json({ ok: true, balance: bal?.result?.list?.[0] });
-
       default:
         return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
     }
