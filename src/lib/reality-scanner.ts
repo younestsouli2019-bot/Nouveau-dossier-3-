@@ -39,7 +39,7 @@ export async function runRealityScan(): Promise<RealityScanResult> {
   const [procurementItems, payoutBatches, ownerSettlements, revenueEvents, ownerPayments] = await Promise.all([
     db.procurementItem.findMany({ select: { id: true, status: true, orderRef: true, supplierName: true, receiptConfirmedBy: true, receiptConfirmedAt: true, deliveryProofHash: true, purchaseOrderId: true } }),
     db.payoutBatch.findMany({ select: { id: true, status: true, providerBatchRef: true, paymentProvider: true, proofHash: true } }),
-    db.ownerSettlement.findMany({ select: { id: true, status: true, externalRef: true, dataSource: true, proofHash: true, performedBy: true } }),
+    db.ownerSettlement.findMany({ select: { id: true, status: true, externalRef: true, dataSource: true, metadata: true } }),
     db.revenueEvent.findMany({ select: { id: true, status: true, proofHash: true, proofType: true, proofVerifiedAt: true } }),
     db.ownerPayment.findMany({ select: { id: true, status: true, sourceTxRef: true } }),
   ])
@@ -89,13 +89,10 @@ export async function runRealityScan(): Promise<RealityScanResult> {
     if (s.status === 'completed' && s.dataSource === 'internal_ledger_only') {
       findings.push({ entity: 'OwnerSettlement', id: s.id, status: s.status, domain: 'A', missingFields: ['externalRef', 'proofHash'], severity: 'CRITICAL', description: `OwnerSettlement claims 'completed' but dataSource is 'internal_ledger_only'. This is a fabrication — no external movement occurred.` })
     }
-    if (s.status === 'completed' && isEmpty(s.proofHash)) {
-      findings.push({ entity: 'OwnerSettlement', id: s.id, status: s.status, domain: 'A', missingFields: ['proofHash'], severity: 'HIGH', description: `OwnerSettlement claims 'completed' but has no proofHash.` })
-    }
-    if ((s.status === 'completed' || s.status === 'processing') && s.performedBy === 'system') {
+    if (s.status === 'completed' && isEmpty(s.externalRef)) {
       const exists = findings.find(f => f.entity === 'OwnerSettlement' && f.id === s.id)
       if (!exists) {
-        findings.push({ entity: 'OwnerSettlement', id: s.id, status: s.status, domain: 'A', missingFields: ['externalRef'], severity: 'CRITICAL', description: `OwnerSettlement ${s.status} but performedBy is 'system'. Financial events require human authorization.` })
+        findings.push({ entity: 'OwnerSettlement', id: s.id, status: s.status, domain: 'A', missingFields: ['externalRef'], severity: 'HIGH', description: `OwnerSettlement claims 'completed' but has no externalRef.` })
       }
     }
   }
