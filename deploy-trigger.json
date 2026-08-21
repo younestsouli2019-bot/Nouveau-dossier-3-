@@ -1,1 +1,1 @@
-{"trigger":"rebuild","timestamp":"2026-08-21T08:40:00.4549944+01:00","reason":"webhook-fix-deploy"}
+{"trigger":"rebuild","timestamp":"2026-08-21T09:42:30.5724299+01:00","reason":"build-verified-fix","buildStatus":"success","buildTime":"331s","fixedFiles":["strict-settlement","audit-reconciliation","strict-procurement","fabrication-killswitch"]}
