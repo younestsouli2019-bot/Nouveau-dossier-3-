@@ -573,3 +573,28 @@ model WireExecutionLog {
   confirmedAt     DateTime?
   createdAt       DateTime @default(now())
 }
+
+// ─── EXTERNAL PERSISTENCE & FAILOVER MODELS ──────────────────────────
+
+model StateCheckpoint {
+  id            String   @id @default(cuid())
+  workflowId    String   @unique
+  state         String
+  version       Int      @default(1)
+  status        String   @default("running")
+  lastHeartbeat DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([workflowId])
+  @@index([status])
+  @@index([lastHeartbeat])
+}
+
+model DbEpoch {
+  id        String   @id @default("primary")
+  epoch     Int      @default(1)
+  leaderId  String?
+  lockUntil DateTime?
+  updatedAt DateTime @updatedAt
+}
