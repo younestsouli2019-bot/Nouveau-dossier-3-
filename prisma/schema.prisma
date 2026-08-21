@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -480,7 +480,7 @@ model SettlementExecution {
   settlementId      String?  // links to OwnerSettlement.id
   executionMode     String   @default("simulation") // simulation, wetRun, live
   dataSource        String   @default("mock_provider") // mock_provider, live_bank_api
-  ownerConfirmedBy  String?  // required for wetRun/live â€” principal controller
+  ownerConfirmedBy  String?  // required for wetRun/live Ã¢â‚¬â€ principal controller
   status            String   @default("PENDING") // PENDING, WET_RUN_PROCESSED, LIVE_SETTLED, FAILED, RAIL_VERIFIED
   amount            Float
   currency          String   @default("USD")
@@ -497,7 +497,7 @@ model SettlementExecution {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
-// ─── SWARM MODELS ─────────────────────────────────────────────────────
+// â”€â”€â”€ SWARM MODELS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 model BankAccount {
   id              String   @id @default(cuid())
@@ -524,8 +524,8 @@ model PaymentIntent {
   currency        String   @default("USD")
   direction       String   // inbound, outbound
   status          String   @default("PENDING_REASONING")
-  // PENDING_REASONING → AUTHORIZED → EXECUTING → SETTLED → RECONCILED
-  // or: PENDING_REASONING → DENIED
+  // PENDING_REASONING â†’ AUTHORIZED â†’ EXECUTING â†’ SETTLED â†’ RECONCILED
+  // or: PENDING_REASONING â†’ DENIED
   destination     String?  // target account or wallet
   source          String?  // source of funds
   description     String?
@@ -574,7 +574,7 @@ model WireExecutionLog {
   createdAt       DateTime @default(now())
 }
 
-// ─── EXTERNAL PERSISTENCE & FAILOVER MODELS ──────────────────────────
+// â”€â”€â”€ EXTERNAL PERSISTENCE & FAILOVER MODELS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 model StateCheckpoint {
   id            String   @id @default(cuid())
