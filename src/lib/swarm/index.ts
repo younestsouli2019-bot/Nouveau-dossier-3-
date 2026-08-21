@@ -12,3 +12,4 @@ export * from './oversight-committee';
 export * from './model-refresh';
 export * from './memory-isolation';
 export * from './self-correction-mesh';
+export * from './state-checkpoint';
