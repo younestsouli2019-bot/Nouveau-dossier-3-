@@ -73,6 +73,7 @@ model PayoutBatch {
   items            PayoutItem[]
   auditLog         PayoutAuditLog[]
   transactionLogs  TransactionLog[]
+  escalations      PaymentEscalation[]
 }
 
 model PayoutItem {
@@ -535,6 +536,24 @@ model PaymentIntent {
   settledAt       DateTime?
   reconciledAt    DateTime?
   wireExecutions  WireExecutionLog[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model PaymentEscalation {
+  id              String   @id @default(cuid())
+  payoutBatchId   String
+  batch           PayoutBatch @relation(fields: [payoutBatchId], references: [id])
+  batchNumber     String
+  provider        String   // banking_circle, payoneer, stripe, wise, unknown
+  amount          Float
+  currency        String   @default("USD")
+  itemCount       Int      @default(0)
+  severity        String   // L1, L2, L3, CRITICAL
+  status          String   @default("open") // open, investigating, resolved
+  submittedAt     DateTime
+  escalatedAt     DateTime @default(now())
+  actionTaken     String?  // JSON array of { date, action, by, detail }
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
