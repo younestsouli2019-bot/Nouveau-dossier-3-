@@ -22,7 +22,7 @@ export interface StrictIngestResult {
   eventsCreated: number
   eventsRejected: number
   rejectedReasons: string[]
- batchIntegrityHash?: string
+  batchIntegrityHash?: string
   error?: string
   errorCode?: string
   violatedRule?: string
@@ -53,7 +53,7 @@ export async function strictIngestRevenue(params: {
 
   const batchId = batchReference || `REV-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`
   const created: string[] = []
-  const rejectedReasons: string[]
+  const rejectedReasons: string[] = []
   let eventsRejected = 0
 
   for (const evt of events) {
