@@ -1,0 +1,114 @@
+version: '3.8'
+
+networks:
+  secure_network:
+    driver: bridge
+
+services:
+  app-server:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: production-app-unified
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - GLM_INFERENCE_URL=http://glm-inference-engine:8000
+      - DATABASE_URL=file:./prisma/prod.db
+      - NO_PLATFORM_WALLET=true
+      - OWNER_KYC_STATUS=PASSED
+      - OWNER_PAYOUT_RAIL=bank_transfer
+      - OWNER_PAYOUT_CURRENCY=MAD
+      - OWNER_PAYOUT_IDENTIFIER=LU774080000041265646
+      - OWNER_PAYOUT_COUNTRY=LU
+      - OWNER_PAYOUT_HOLDER_NAME=Younes Tsouli
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - ZAI_API_KEY=${ZAI_API_KEY}
+      - BASE44_API_KEY=${BASE44_API_KEY}
+      - LIVE_BANK_API=${LIVE_BANK_API}
+    networks:
+      - secure_network
+    restart: always
+    depends_on:
+      glm-inference:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  glm-inference:
+    image: vllm/vllm-openai:latest
+    container_name: glm-inference-engine
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HF_TOKEN}
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    ports:
+      - "8000:8000"
+    ipc: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command: >
+      --model THUDM/glm-4-9b-chat
+      --trust-remote-code
+      --port 8000
+      --max-model-len 4096
+      --dtype auto
+      --api-key ${INFERENCE_API_KEY:-no-key-needed}
+    networks:
+      - secure_network
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  auto-updater:
+    image: alpine:latest
+    container_name: autonomous-git-poller
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ..:/workspace
+    working_dir: /workspace
+    environment:
+      - GIT_REPO_URL=${GIT_REPO_URL:-https://github.com/younestsouli2019-bot/Nouveau-dossier-3-.git}
+      - CRON_INTERVAL=300
+      - GIT_BRANCH=main
+    networks:
+      - secure_network
+    restart: always
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        apk add --no-cache git docker docker-cli-compose curl
+        echo "Starting autonomous self-update daemon..."
+        cd /workspace
+        git config --global user.name "auto-updater"
+        git config --global user.email "bot@auto-update.local"
+        while true; do
+          echo "[08/21/2026 10:55:15] Checking for new commits..."
+          git fetch origin $ 2>/dev/null
+          LOCAL=$(git rev-parse HEAD)
+          REMOTE=$(git rev-parse origin/$)
+          if [ "" != "" ]; then
+            echo "[08/21/2026 10:55:15] New commit detected! $LOCAL -> $REMOTE"
+            echo "[08/21/2026 10:55:15] Pulling latest code..."
+            git pull origin $
+            echo "[08/21/2026 10:55:15] Rebuilding containers with zero-downtime..."
+            cd infra && docker compose up -d --build --remove-orphans
+            echo "[08/21/2026 10:55:15] Deploy complete."
+          else
+            echo "[08/21/2026 10:55:15] Up to date."
+          fi
+          sleep $
+        done
