@@ -2,7 +2,7 @@
 // Continuously analyzes demand, margins, inventory to find winning product opportunities
 // Connects to supplier APIs, scrapes price data, computes arbitrage + risk scores
 
-import { sha256 } from './strict-enforcement/crypto-utils';
+import { sha256 } from '../strict-enforcement/crypto-utils';
 
 export interface ProductOpportunity {
   id: string;
