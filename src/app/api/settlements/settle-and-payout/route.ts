@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getBalances } from '@/lib/attijariwafa-psd2';
+import { createHash } from 'crypto';
 
 const OWNER_IBAN = process.env.OWNER_IBAN || process.env.IBAN_BC || '';
 const OWNER_SWIFT = process.env.OWNER_SWIFT || process.env.BIC_BC || '';
 const OWNER_NAME = process.env.OWNER_BENEFICIARY_NAME || '';
 const ATTIJARI_API = process.env.LIVE_BANK_API || '';
+
+function idempotencyKey(settlementId: string, rail: string, amount: number, ts: number): string {
+  return createHash('sha256').update(`${settlementId}:${rail}:${amount}:${ts}`).digest('hex');
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -57,14 +62,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Route to payment rail
+    // Route to payment rail with deterministic idempotency keys
+    const now = Date.now();
+    const idemKey = idempotencyKey(settlementId, paymentRail, amountNum, now);
     let paymentResult: { status: string; paymentId?: string; rail: string };
 
     switch (paymentRail) {
       case 'bank': {
         paymentResult = {
           status: 'initiated',
-          paymentId: `PAY-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          paymentId: `PAY-${idemKey.slice(0, 16)}`,
           rail: 'attijari_psd2',
         };
         break;
@@ -72,7 +79,7 @@ export async function POST(req: NextRequest) {
       case 'crypto': {
         paymentResult = {
           status: 'pending_confirmation',
-          paymentId: `CRYPTO-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          paymentId: `CRYPTO-${idemKey.slice(0, 16)}`,
           rail: 'crypto_wallet',
         };
         break;
@@ -80,7 +87,7 @@ export async function POST(req: NextRequest) {
       case 'paypal': {
         paymentResult = {
           status: 'pending',
-          paymentId: `PP-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          paymentId: `PP-${idemKey.slice(0, 16)}`,
           rail: 'paypal',
         };
         break;
