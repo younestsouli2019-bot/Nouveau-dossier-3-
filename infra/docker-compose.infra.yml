@@ -1,0 +1,39 @@
+version: '3.8'
+
+networks:
+  secure_backend:
+    driver: bridge
+
+services:
+  glm-inference:
+    image: vllm/vllm-openai:latest
+    container_name: glm-inference-engine
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HF_TOKEN}
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    ports:
+      - "8000:8000"
+    ipc: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command: >
+      --model THUDM/glm-4-9b-chat
+      --trust-remote-code
+      --port 8000
+      --max-model-len 4096
+      --dtype auto
+      --api-key ${INFERENCE_API_KEY:-no-key-needed}
+    networks:
+      - secure_backend
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
