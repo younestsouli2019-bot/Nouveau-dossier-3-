@@ -1,0 +1,21 @@
+# Ignore EVERYTHING by default, then whitelist what we need
+*
+
+# Whitelist Next.js app files
+!src/
+!prisma/
+!public/
+!package.json
+!package-lock.json
+!tsconfig.json
+!next.config.mjs
+!vercel.json
+!postcss.config.mjs
+!.eslintrc.json
+!next-env.d.ts
+!Dockerfile
+!space-z.toml
+
+# Whitelist GitHub workflows
+!.github/
+!.github/**/*
