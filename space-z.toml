@@ -1,0 +1,9 @@
+[build]
+command = "npm install && npx prisma generate && npx next build"
+
+[start]
+command = "npx next start"
+port = 3000
+
+[env]
+NODE_ENV = "production"
