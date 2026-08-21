@@ -14,19 +14,19 @@ export async function GET() {
   }
 
   try {
-    const { getWalletBalance, healthCheck } = await import('@/lib/bybit');
-    const [health, balance] = await Promise.race([
-      Promise.all([healthCheck(), getWalletBalance()]),
-      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000)),
+    const { healthCheck } = await import('@/lib/bybit');
+    const health = await Promise.race([
+      healthCheck(),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000)),
     ]);
     return NextResponse.json({
       status: health.ok ? 'connected' : 'degraded',
       serverTime: health.serverTime,
-      balance: balance?.result?.list?.[0] || null,
+      reason: health.ok ? undefined : health.reason,
       timestamp: new Date().toISOString(),
     });
   } catch (e: any) {
-    return NextResponse.json({ status: 'error', error: e.message }, { status: 503 });
+    return NextResponse.json({ status: 'unreachable', error: e.message, hint: 'Bybit testnet may be blocked from Vercel. Add BYBIT_API_KEY/SECRET to Vercel env vars.' }, { status: 200 });
   }
 }
 
