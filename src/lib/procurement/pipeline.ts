@@ -192,6 +192,14 @@ export async function advanceItem(
  */
 export async function bulkAdvance(
   targetStatus?: PipelineStatus,
+  metadata?: {
+    carrier?: string
+    trackingNumber?: string
+    trackingUrl?: string
+    proofHash?: string
+    confirmedBy?: string
+    notes?: string
+  },
 ): Promise<BulkAdvanceReport> {
   const report: BulkAdvanceReport = {
     timestamp: new Date().toISOString(),
@@ -225,7 +233,7 @@ export async function bulkAdvance(
     }
 
     try {
-      const result = await advanceItem(item.id, goal)
+      const result = await advanceItem(item.id, goal, metadata)
       report.advanced.push(result)
       report.totalAdvanced++
     } catch (err) {
