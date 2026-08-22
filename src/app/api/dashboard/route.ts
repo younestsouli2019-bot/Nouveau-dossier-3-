@@ -25,12 +25,12 @@ export async function GET() {
       awaitingConfirmation,
     ] = await Promise.all([
       db.revenueEvent.aggregate({ _sum: { amount: true } }),
-      db.revenueEvent.aggregate({ where: { status: 'confirmed' }, _sum: { amount: true }, _count: true }),
+      db.revenueEvent.aggregate({ where: { status: { in: ['confirmed', 'completed'] } }, _sum: { amount: true }, _count: true }),
       db.revenueEvent.aggregate({ where: { status: 'reconciled' }, _sum: { amount: true }, _count: true }),
       db.revenueEvent.aggregate({ where: { status: 'pending' }, _sum: { amount: true }, _count: true }),
       db.revenueEvent.groupBy({ by: ['source'], _sum: { amount: true }, _count: true }),
       db.payoutBatch.count(),
-      db.payoutBatch.count({ where: { status: 'pending_approval' } }),
+      db.payoutBatch.count({ where: { status: { in: ['pending_approval', 'pending'] } } }),
       db.payoutItem.count(),
       db.payoutItem.aggregate({ where: { status: 'pending' }, _sum: { amount: true }, _count: true }),
       db.payoutItem.aggregate({ where: { status: 'processing' }, _sum: { amount: true }, _count: true }),
@@ -39,9 +39,8 @@ export async function GET() {
       db.payoutItem.aggregate({ where: { status: 'unclaimed' }, _sum: { amount: true }, _count: true }),
       db.revenueEvent.findMany({ orderBy: { createdAt: 'desc' }, take: 8 }),
       db.payoutBatch.findMany({ orderBy: { createdAt: 'desc' }, take: 6 }),
-      db.payoutBatch.aggregate({ where: { status: 'submitted_to_paypal' }, _sum: { totalAmount: true }, _count: true }),
-      db.revenueEvent.aggregate({ where: { status: 'confirmed', payoutBatchId: null }, _sum: { amount: true }, _count: true }),
-      // KEY: Confirmed RECEIVED vs Awaiting Confirmation
+      db.payoutBatch.aggregate({ where: { status: { in: ['submitted_to_paypal', 'completed', 'submitted'] } }, _sum: { totalAmount: true }, _count: true }),
+      db.revenueEvent.aggregate({ where: { status: { in: ['confirmed', 'completed'] }, payoutBatchId: null }, _sum: { amount: true }, _count: true }),
       db.payoutItem.aggregate({ where: { status: 'completed', deliveryConfirmed: true }, _sum: { amount: true }, _count: true }),
       db.payoutItem.aggregate({ where: { status: 'completed', deliveryConfirmed: { not: true } }, _sum: { amount: true }, _count: true }),
     ]);

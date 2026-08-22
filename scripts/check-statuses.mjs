@@ -1,0 +1,10 @@
+import { Client } from 'pg';
+const c = new Client({ connectionString: 'postgresql://neondb_owner:npg_Vf2nqLByt4Hc@ep-dry-voice-aymtji8x-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require' });
+await c.connect();
+const r = await c.query(`SELECT status, COUNT(*) as cnt, SUM("amount") as total FROM "RevenueEvent" GROUP BY status`);
+console.log('RevenueEvent statuses:', JSON.stringify(r.rows, null, 2));
+const s = await c.query(`SELECT status, COUNT(*) as cnt FROM "PayoutBatch" GROUP BY status`);
+console.log('PayoutBatch statuses:', JSON.stringify(s.rows, null, 2));
+const p = await c.query(`SELECT status, COUNT(*) as cnt, SUM(amount) as total FROM "PayoutItem" GROUP BY status`);
+console.log('PayoutItem statuses:', JSON.stringify(p.rows, null, 2));
+await c.end();
