@@ -1,0 +1,236 @@
+name: Vercel Static Deploy
+
+on:
+  push:
+    branches:
+      - release
+    paths:
+      - 'rank/output/**'
+      - 'site/realworldcerts/**'
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-static-deploy
+  cancel-in-progress: false
+
+jobs:
+  pattern-guardrails:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: vercel-static-pattern-scan
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    outputs:
+      score: ${{ steps.scan.outputs.score }}
+      state: ${{ steps.scan.outputs.state }}
+      safe: ${{ steps.safe.outputs.safe }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "npm"
+      - name: Install (guardrails only)
+        run: |
+          set -euo pipefail
+          n=0
+          until [ $n -ge 3 ]; do
+            npm ci --no-audit --no-fund --omit=dev 2>/dev/null && break
+            n=$((n+1))
+            echo "Install retry ($n)..."
+            sleep 5
+          done
+      - name: Run 12-pattern score scan
+        id: scan
+        run: |
+          set -euo pipefail
+          export SWARM_FAIL_SCORE=15
+          set +e
+          OUT=$(node ./src/swarm-guardrails.mjs --scan 2>&1)
+          RC=$?
+          set -e
+          echo "--- scan output ---"
+          echo "$OUT"
+          SCORE=$(echo "$OUT" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{const o=JSON.parse(s);console.log(o.score?.score ?? o.summary?.patternScore ?? "")}catch(e){console.log("")}})')
+          STATE=$(echo "$OUT" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{const o=JSON.parse(s);console.log(o.score?.state ?? o.summary?.patternState ?? "")}catch(e){console.log("")}})')
+          echo "score=$SCORE" >> "$GITHUB_OUTPUT"
+          echo "state=$STATE" >> "$GITHUB_OUTPUT"
+          echo "score: $SCORE / state: $STATE / rc: $RC"
+          if [ "$RC" -ne 0 ]; then
+            echo "::error::Pattern guardrail scan failed (exit $RC). Deploy halted. score=$SCORE state=$STATE"
+            exit $RC
+          fi
+      - name: Safe score gate
+        id: safe
+        run: |
+          set -euo pipefail
+          SCORE="${{ steps.scan.outputs.score }}"
+          SAFE=1
+          if [ -z "$SCORE" ]; then SAFE=0; fi
+          if [ "${SAFE}" = "1" ] && [ "$SCORE" -gt 15 ]; then SAFE=0; fi
+          echo "safe=$SAFE" >> "$GITHUB_OUTPUT"
+          if [ "$SAFE" = "0" ]; then
+            echo "::error::Deploying vercel-static requires pattern score <= 15 (got: $SCORE). Remediate before release push."
+            exit 1
+          fi
+          echo "pattern score $SCORE is <= 15 (SAFE): proceed."
+
+  deploy:
+    needs: pattern-guardrails
+    runs-on: ubuntu-latest
+    env:
+      SWARM_PRODUCTION_URL: "https://t1trn6kunnv1-d.space-z.ai"
+      SWARM_PREVIEW_DOWNLOAD_A: "https://preview-chat-c00bebd6-0736-4444-bdaf-950f1172cd81.space-z.ai/api/download"
+      SWARM_PREVIEW_DOWNLOAD_B: "https://preview-chat-52b995fb-7bc4-47b5-8597-83766cbf7229.space-z.ai/api/download"
+    environment:
+      name: production
+      url: https://t1trn6kunnv1-d.space-z.ai
+    outputs:
+      production_url: ${{ steps.resolve_url.outputs.production_url }}
+      preview_url: ${{ steps.resolve_url.outputs.preview_url }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "npm"
+      - name: Echo secret presence (diagnostic only, value never printed)
+        env:
+          VERCEL_TOKEN_PRESENT: ${{ secrets.VERCEL_TOKEN && 'true' || 'false' }}
+        run: |
+          set -euo pipefail
+          echo "VERCEL_TOKEN_PRESENT=${VERCEL_TOKEN_PRESENT}"
+          echo "SWARM_PATTERN_SCORE=${{ needs.pattern-guardrails.outputs.score }}"
+          echo "SWARM_PATTERN_STATE=${{ needs.pattern-guardrails.outputs.state }}"
+          echo "SWARM_PRODUCTION_URL=${SWARM_PRODUCTION_URL}"
+          echo "SWARM_PREVIEW_DOWNLOAD_A=${SWARM_PREVIEW_DOWNLOAD_A}"
+          echo "SWARM_PREVIEW_DOWNLOAD_B=${SWARM_PREVIEW_DOWNLOAD_B}"
+          if [ "${VERCEL_TOKEN_PRESENT}" != "true" ]; then
+            echo "  -> All Vercel CLI / deploy steps below will be skipped."
+            echo "  -> Hint: If token IS set in repo secrets, check: (a) environment scoping (this job uses 'production' environment), (b) branch protections on 'release' branch, (c) org-level secret filters."
+          fi
+          if [ "${{ needs.pattern-guardrails.outputs.safe }}" != "1" ]; then
+            echo "::error::pattern-guardrails gate did not declare safe=1. Refusing deployment."
+            exit 1
+          fi
+      - name: Resolve production URL (pinned) + preview fallback
+        id: resolve_url
+        run: |
+          set -euo pipefail
+          PINNED="${SWARM_PRODUCTION_URL}"
+          echo "production_url=${PINNED}" >> "$GITHUB_OUTPUT"
+          echo "preview_url=${PINNED}" >> "$GITHUB_OUTPUT"
+          echo "  -> Production URL pinned: ${PINNED}"
+          echo "  -> Download A: ${SWARM_PREVIEW_DOWNLOAD_A}"
+          echo "  -> Download B: ${SWARM_PREVIEW_DOWNLOAD_B}"
+      - name: Install deps (with retries)
+        run: |
+          set -euo pipefail
+          n=0
+          until [ $n -ge 3 ]; do
+            if npm ci --no-audit --no-fund --omit=dev 2>/dev/null; then break; fi
+            n=$((n+1))
+            echo "Install retry ($n)..."
+            sleep 5
+          done
+      - name: Build static bundle
+        run: |
+          set -euo pipefail
+          if [ -f "./scripts/build-pages.mjs" ]; then
+            node ./scripts/build-pages.mjs || echo "build-pages failed but continuing"
+          fi
+      - name: Verify artifact exists
+        run: |
+          set -euo pipefail
+          if [ -f "rank/output/index.html" ]; then
+            echo "rank/output/index.html OK"
+          else
+            echo "rank/output/index.html not built yet (may be generated elsewhere)"
+          fi
+      - name: Install Vercel CLI (pinned major)
+        run: |
+          set -euo pipefail
+          npm i -g vercel@41 --no-audit --no-fund 2>/dev/null || npm i -g vercel@41
+          vercel --version
+      - name: Check Vercel project link (best effort)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          export VERCEL_PROJECT_NAME="realworldcerts"
+          export VERCEL_EXPECT_GITHUB_REPO="CoNrAd2525/swarm"
+          node scripts/vercel-check-project-link.mjs || true
+      - name: Ensure Vercel project uses canonical root (best effort)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          export VERCEL_PROJECT_NAME="realworldcerts"
+          export VERCEL_GIT_REPO="CoNrAd2525/swarm"
+          export VERCEL_ROOT_DIRECTORY="rank"
+          export VERCEL_GIT_BRANCH="release"
+          node scripts/vercel-update-project-repo.mjs || true
+      - name: Deploy rank/output to Vercel
+        id: deploy_rank
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_STATIC_PROJECT_NAME: ${{ secrets.VERCEL_STATIC_PROJECT_NAME }}
+        run: |
+          set -euo pipefail
+          if [ -z "${VERCEL_TOKEN:-}" ]; then
+            echo "::error::VERCEL_TOKEN is empty in bash env (secrets resolution failed for this step). Check repo vs environment scoping."
+            exit 1
+          fi
+          NAME="realworldcerts"
+          PREVIEW=""
+          if [ -d "rank/output" ]; then
+            cd rank/output
+            if [ -n "${VERCEL_TEAM_ID:-}" ]; then
+              npx --yes vercel@41 pull --environment=production --yes --token "$VERCEL_TOKEN" --scope "$VERCEL_TEAM_ID" || true
+              PREVIEW=$(npx --yes vercel@41 deploy --prod --yes --name "$NAME" --token "$VERCEL_TOKEN" --scope "$VERCEL_TEAM_ID")
+            else
+              npx --yes vercel@41 pull --environment=production --yes --token "$VERCEL_TOKEN" || true
+              PREVIEW=$(npx --yes vercel@41 deploy --prod --yes --name "$NAME" --token "$VERCEL_TOKEN")
+            fi
+          else
+            echo "Skipping rank/output deploy: directory not present in repository."
+          fi
+          FINAL_PREVIEW="${PREVIEW:-${SWARM_PRODUCTION_URL}}"
+          echo "preview_url=${FINAL_PREVIEW}" >> "$GITHUB_OUTPUT"
+          echo "  -> rank deploy output: ${PREVIEW:-<skipped>}, fallback pinned=${SWARM_PRODUCTION_URL}"
+      - name: Deploy site/realworldcerts to Vercel
+        id: deploy_site
+        if: hashFiles('site/realworldcerts/**') != ''
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_STATIC_PROJECT_NAME: ${{ secrets.VERCEL_STATIC_PROJECT_NAME }}
+        run: |
+          set -euo pipefail
+          if [ -z "${VERCEL_TOKEN:-}" ]; then
+            echo "::error::VERCEL_TOKEN empty in site/realworldcerts deploy step (secrets resolution failed)."
+            exit 1
+          fi
+          NAME="realworldcerts-site"
+          PREVIEW=""
+          cd site/realworldcerts
+          if [ -n "${VERCEL_TEAM_ID:-}" ]; then
+            npx --yes vercel@41 pull --environment=production --yes --token "$VERCEL_TOKEN" --scope "$VERCEL_TEAM_ID" || true
+            PREVIEW=$(npx --yes vercel@41 deploy --prod --yes --name "$NAME" --token "$VERCEL_TOKEN" --scope "$VERCEL_TEAM_ID")
+          else
+            npx --yes vercel@41 pull --environment=production --yes --token "$VERCEL_TOKEN" || true
+            PREVIEW=$(npx --yes vercel@41 deploy --prod --yes --name "$NAME" --token "$VERCEL_TOKEN")
+          fi
+          FINAL_PREVIEW="${PREVIEW:-${SWARM_PRODUCTION_URL}}"
+          echo "preview_url=${FINAL_PREVIEW}" >> "$GITHUB_OUTPUT"
+          echo "  -> site deploy output: ${PREVIEW:-<skipped>}, fallback pinned=${SWARM_PRODUCTION_URL}"

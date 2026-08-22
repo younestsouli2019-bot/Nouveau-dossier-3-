@@ -1,0 +1,600 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RevenueEvent {
+  id                   String    @id @default(cuid())
+  source               String
+  amount               Float
+  currency             String    @default("USD")
+  status               String    @default("pending")
+  description          String?
+  referenceId          String?
+  batchedAt            DateTime?
+  payoutBatchId        String?
+  proofHash            String?   // SHA-256 hash of cryptographic proof
+  proofType            String?   // onchain_tx_hash, bank_mt103, paypal_txn_id, api_receipt, manual_attestation
+  proofVerifiedAt      DateTime? // when proof was cryptographically verified
+  proofVerifiedBy      String?   // 'system', 'attijari_api', 'blockchain_rpc'
+  batchIntegrityHash   String?   // hash of all event IDs + amounts in the batch for tamper detection
+  rejectedReason       String?   // why this event was rejected if proof missing
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+}
+
+model PayoutBatch {
+  id               String           @id @default(cuid())
+  batchNumber      String           @unique
+  totalAmount      Float
+  currency         String           @default("USD")
+  status           String           @default("pending_approval")
+  itemCount        Int              @default(0)
+  scheduledDate    DateTime?
+  processedDate    DateTime?
+  submittedAt      DateTime?
+  approvedBy       String?
+  notes            String?
+  resolutionNote   String?
+  resolvedAt       DateTime?
+  autoApproved     Boolean          @default(false)
+  autoApprovedAt   DateTime?
+  autoProcessed    Boolean          @default(false)
+  autoProcessedAt  DateTime?
+  paymentProvider  String?
+  providerBatchRef String?
+  proofHash        String?   // SHA-256 hash of batch integrity
+  proofType        String?   // api_confirmation, iso20022_xml, manual_attestation
+  settlementIntegrityHash String? // hash of all item settlements
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  items            PayoutItem[]
+  auditLog         PayoutAuditLog[]
+  transactionLogs  TransactionLog[]
+  escalations      PaymentEscalation[]
+}
+
+model PayoutItem {
+  id                  String         @id @default(cuid())
+  payoutBatchId       String
+  batchNumber         String
+  recipientName       String
+  recipientEmail      String
+  amount              Float
+  currency            String         @default("USD")
+  status              String         @default("pending")
+  paymentMethod       String         @default("bank_transfer")
+  transactionRef      String?
+  failureReason       String?
+  processedAt         DateTime?
+  deliveryConfirmed   Boolean        @default(false)
+  deliveryConfirmedAt DateTime?
+  recipientNotifiedAt DateTime?
+  lastRetryAt         DateTime?
+  retryCount          Int            @default(0)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  payoutBatch         PayoutBatch    @relation(fields: [payoutBatchId], references: [id])
+  auditLog            PayoutAuditLog[]
+}
+
+model PayoutAuditLog {
+  id             String      @id @default(cuid())
+  entityType     String
+  entityId       String
+  action         String
+  oldValue       String?
+  newValue       String?
+  reason         String?
+  performedBy    String      @default("system")
+  createdAt      DateTime    @default(now())
+  payoutBatch    PayoutBatch? @relation(fields: [payoutBatchId], references: [id])
+  payoutBatchId  String?
+  payoutItem     PayoutItem?  @relation(fields: [payoutItemId], references: [id])
+  payoutItemId   String?
+}
+
+model AutoPilotRun {
+  id            String   @id @default(cuid())
+  trigger       String
+  phase         String
+  status        String
+  itemsAffected Int      @default(0)
+  amountAffected Float    @default(0)
+  details       String?
+  durationMs    Int      @default(0)
+  createdAt     DateTime @default(now())
+}
+
+model TransactionLog {
+  id              String       @id @default(cuid())
+  category        String
+  status          String
+  amount          Float
+  currency        String       @default("USD")
+  transactionDate DateTime
+  referenceId     String?
+  description     String?
+  payoutBatchId   String?
+  payoutItemId    String?
+  provider        String?
+  providerTxId    String?
+  errorCode       String?
+  errorMessage    String?
+  metadata        String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  payoutBatch     PayoutBatch? @relation(fields: [payoutBatchId], references: [id])
+}
+
+model ProcurementItem {
+  id              String   @id @default(cuid())
+  name            String
+  brand           String?
+  reference       String?
+  category        String   @default("electronics")
+  quantity        Int      @default(1)
+  unitPriceEst    Float    @default(0)
+  totalEst        Float    @default(0)
+  currency        String   @default("USD")
+  recipientName   String   @default("Younes Tsouli")
+  recipientAddress String?
+  deliveryAddress  String?
+  prePaidBySwarm  Boolean  @default(true)
+  status          String   @default("pending") // pending, ordered, shipped, delivered, cancelled
+  orderRef        String?
+  supplierName    String?
+  supplierId      String?
+  supplier        Supplier?     @relation(fields: [supplierId], references: [id])
+  notes           String?
+  priority        String   @default("normal")
+  fulfillmentSource String?
+  orderedAt       DateTime?
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+  purchaseOrderId String?
+  poLineItem      Int?
+  receiptConfirmedBy   String?   // who confirmed receipt
+  receiptConfirmedAt   DateTime? // when receipt was confirmed (separate from delivery!)
+  deliveryProofHash    String?   // hash of delivery proof (photo/signature)
+  quantityReceived     Int?      // actual quantity received (may differ from ordered!)
+  quantityDamaged      Int       @default(0) // damaged items
+  receiptCondition     String?   // good, partial, damaged, wrong_item
+  receiptNotes         String?   // notes about receipt
+  receiptDiscrepancy   Boolean   @default(false) // true if qtyReceived != quantity
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+}
+
+model Supplier {
+  id              String   @id @default(cuid())
+  code            String   @unique  // e.g. VEN-TEMU, VEN-AMAZON, VEN-ALIEXPRESS
+  name            String
+  website         String?
+  country         String?
+  contactEmail    String?
+  contactPhone    String?
+  paymentTerms   String   @default("prepaid") // prepaid, net15, net30, cod
+  isActive        Boolean  @default(true)
+  notes           String?
+  totalOrders     Int      @default(0)
+  totalSpend      Float    @default(0)
+  deliveredOnTime Int      @default(0)
+  totalDelivered  Int      @default(0)
+  itemsWithDefect Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  procurementItems ProcurementItem[]
+  purchaseOrders  PurchaseOrder[]
+}
+
+model PurchaseOrder {
+  id              String   @id @default(cuid())
+  poNumber        String   @unique  // e.g. PO-2026-001
+  title           String?
+  supplierId      String?
+  supplierName    String   // denormalized for queries
+  status          String   @default("draft") // draft, submitted, pending_approval, approved, partially_ordered, ordered, completed, rejected, cancelled
+  priority        String   @default("normal")
+  currency        String   @default("USD")
+  lineItemCount   Int      @default(0)
+  totalAmount     Float    @default(0)
+  submittedAt     DateTime?
+  approvedBy      String?
+   approvedAt      DateTime?
+  rejectedBy      String?
+  rejectedAt      DateTime?
+  rejectionReason String?
+  orderedAt       DateTime?
+  completedAt     DateTime?
+  batchRef        String?
+  notes           String?
+
+  // Supplier ACK & SLA tracking
+  ackStatus       String   @default("AWAITING_ACK") // AWAITING_ACK, ACKNOWLEDGED, SLA_BREACHED, ESCALATED, RESOLVED
+  slaHours        Int      @default(48) // hours before ACK is required
+  slaDeadline     DateTime? // created_at + slaHours (computed on dispatch)
+  acknowledgedAt  DateTime?
+  acknowledgedBy  String?  // supplier user ID or contact
+  slaBreached     Boolean  @default(false)
+  escalationCount Int      @default(0)
+  lastEscalatedAt DateTime?
+  dualSourcePool  String?  // JSON array of backup supplier IDs
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  items           ProcurementItem[]
+  approvals       POApproval[]
+  supplier        Supplier?     @relation(fields: [supplierId], references: [id])
+}
+
+model POApproval {
+  id              String   @id @default(cuid())
+  purchaseOrderId String
+  action          String   // submitted, approved, rejected, escalated
+  performedBy      String   @default("system")
+  reason          String?
+  fromStatus      String
+  toStatus        String
+  createdAt       DateTime @default(now())
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+}
+
+model OwnerAccount {
+  id                String   @id @default(cuid())
+  label             String   // e.g. "Salary - Attijariwafa", "USDC on Arbitrum", "PayPal Business"
+  accountType       String   // bank_wire, l2_crypto, paypal, wise, payoneer, internal_pool
+  isActive          Boolean  @default(true)
+  isPrimary         Boolean  @default(false)
+  sortOrder         Int      @default(0)
+
+  // Purpose tags (comma-separated for SQLite): salary, settlements, reconciliation, general, crypto_settlement, vendor_payments
+  purposes          String   @default("general")
+
+  // Bank Wire fields
+  accountHolder     String?  // Full name on the account
+  accountNumber     String?  // RIB/IBAN - full or partial
+  accountNumberLast String?  // Last 4 digits for display
+  bankName          String?  // e.g. "Attijariwafa Bank", "Banque Populaire"
+  bankCode          String?  // Bank code (first 5 digits of RIB)
+  branchCode        String?  // Branch/guichet code
+  swiftCode         String?  // BIC/SWIFT code
+  routingNumber     String?  // ABA routing (US accounts)
+  countryCode       String?  // e.g. "MA", "US", "FR"
+  currency          String   @default("USD")
+
+  // L2 Crypto fields
+  network           String?  // Arbitrum, Optimism, Base, Polygon, Linea, Scroll
+  walletAddress     String?  // 0x... address
+  walletAddressShort String? // 0x1234...5678 for display
+  preferredToken    String?  // USDC, USDT, ETH, WBTC, DAI
+  chainId           Int?     // EVM chain ID
+  explorerUrl       String?  // Block explorer link
+
+  // PayPal / Digital Wallet fields
+  paypalEmail       String?  // PayPal email
+  paypalType        String?  // personal, business, premier
+  paypalCountry     String?  // PayPal account country
+
+  // Wise / Payoneer / other fields
+  wiseEmail         String?  // Wise account email
+  wiseCurrency      String?  // Wise receiving currency
+  payoneerId        String?  // Payoneer account ID
+
+  // Metadata
+  notes             String?
+  verifiedAt        DateTime?
+  lastUsedAt        DateTime?
+  totalReceived     Float    @default(0) // cumulative received amount
+  totalSent         Float    @default(0) // cumulative sent amount
+  txCount           Int      @default(0)
+
+  // Linked payment config (optional)
+  ownerPaymentConfigId String?
+  ownerPaymentConfig OwnerPaymentConfig? @relation(fields: [ownerPaymentConfigId], references: [id])
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Settlements linked to this account
+  settlements       OwnerSettlement[]
+}
+
+model OwnerSettlement {
+  id                String   @id @default(cuid())
+  ownerAccountId    String
+  ownerAccount      OwnerAccount @relation(fields: [ownerAccountId], references: [id])
+  referenceId       String?  // External reference (tx hash, MT103 ref, PayPal txn ID)
+  amount            Float
+  currency          String   @default("USD")
+  status            String   @default("pending") // pending, processing, completed, failed, reversed
+  direction         String   @default("inbound") // inbound, outbound
+  purpose           String   @default("general") // salary, settlement, reconciliation, refund, vendor_payment
+  description       String?
+  sourceLabel       String?  // e.g. "Payout Batch PB-2024-003"
+  destinationLabel  String?  // e.g. "RIB ...372" or "0x1234...5678"
+  fee               Float    @default(0)
+  netAmount         Float?   // amount minus fee
+  exchangeRate      Float?   // if currency conversion happened
+  settledAt         DateTime?
+  metadata          String?  // JSON for extra data
+  dataSource        String   @default("internal_ledger_only") // live_onchain, live_bank_api, live_paypal_api, iso20022_generated, internal_ledger_only
+  externalRef       String?  // REQUIRED for completed status - tx hash, MT103 ref, PayPal txn ID
+  verifiedAt        DateTime? // when externally verified
+  connectorId       String?  // which connector was used
+  connectorStatus   String?  // live, degraded, unreachable, quarantined, not_configured
+  proofHash         String?  // SHA-256 of proof evidence
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model OwnerPaymentConfig {
+  id              String   @id @default(cuid())
+  label           String   @unique // e.g. "Salary", "Debts", "Emergency", "Infrastructure"
+  splitPercentage  Float    // e.g. 10.0 for 10%
+  ribLabel        String?
+  ribNumber       String? // full RIB or last digits
+  swiftCode       String?
+  bankName        String?
+  isActive        Boolean  @default(true)
+  routingFixed    Boolean  @default(false) // whether routing to external account was fixed
+  routingFixedAt  DateTime?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  ownerAccounts   OwnerAccount[]
+}
+
+model OwnerPayment {
+  id              String   @id @default(cuid())
+  configId        String?
+  configLabel     String   // denormalized label for queries
+  amount          Float
+  currency        String   @default("USD")
+  sourceTxRef     String? // reference to source transaction
+  status          String   @default("pending") // pending, routed, processing, completed, failed, stuck_in_transition
+  destinationType  String   @default("external_bank") // external_bank, transition_pool, banking_circle, operational_pool
+  destinationLabel String? // e.g. "RIB ...594182" or "Banking Circle Internal"
+  ribNumber       String?
+  failureReason   String?
+  recovered       Boolean  @default(false)
+  recoveredAt     DateTime?
+  recoveryAmount  Float?
+  recoveryTxRef   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Shipment {
+  id               String   @id @default(cuid())
+  shipmentNumber   String   @unique // e.g. SHP-2026-001
+  procurementItemId String?
+  itemName         String
+  quantity         Int      @default(1)
+  carrier          String?
+  trackingNumber   String?
+  trackingUrl      String?
+  trackingVerified Boolean  @default(false)
+  trackingVerifiedAt DateTime?
+  originCountry    String?
+  originCity       String?
+  destinationName  String
+  destinationAddress String?
+  destinationCountry String  @default("Morocco")
+  destinationCity  String?
+  purpose          String? // e.g. "Personal use", "Shop equipment", "Office setup"
+  status           String   @default("pending") // pending, label_created, picked_up, in_transit, customs, out_for_delivery, delivered, failed, returned
+  estimatedDelivery DateTime?
+  actualDelivery   DateTime?
+  weightKg         Float?
+  dimensions       String? // e.g. "120x60x80cm"
+  shippingCost     Float    @default(0)
+  currency         String   @default("USD")
+  insuranceValue   Float?
+  customsDutyEst   Float?
+  notes            String?
+  events           String?  // JSON array of tracking events
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model CryptoSettlement {
+  id                String   @id @default(cuid())
+  txHash            String   @unique
+  type              String   // transfer, swap, bridge_deposit, bridge_withdraw, contract_call, approve
+  network           String   // Arbitrum, Optimism, Base, Polygon zkEVM, Linea, Scroll
+  token             String   // USDC, ETH, WBTC
+  amount            Float
+  gasUsed           Float    @default(0)
+  status            String   @default("confirmed") // confirmed, pending, failed
+  recipientAddress  String?  // actual address funds were sent to (null = unknown)
+  ownerWallet       String?  // the owner's wallet address for this network (from .env)
+  isOwner           Boolean  @default(false) // whether recipient matches owner wallet
+  misplaced         Boolean  @default(true)  // whether this settlement was NOT sent to owner
+  recovered         Boolean  @default(false) // whether recovery has been initiated
+  recoveredTxHash   String?  // tx hash of the recovery transaction
+  recoveryAmount    Float?   // amount sent in recovery
+  recoveryStatus    String?  // pending, confirmed, failed
+  failureReason     String?
+  txTime            DateTime // time of the transaction (HH:mm format stored as full datetime)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model AuditLedger {
+  id               String    @id @default(cuid())
+  entityType       String    // revenue_event, settlement, payout_batch, procurement_item
+  entityId         String
+  action           String    // created, settled, verified, rejected, reconciled, quarantined
+  previousHash     String?   // previous audit entry hash (blockchain-style chain)
+  entryHash        String?   // SHA-256 hash of this entry (content-addressed)
+  proofHash        String?   // link to proof
+  dataSource       String?   // same enum as settlement
+  discrepancyNote  String?
+  performedBy      String    @default("system")
+  metadata         String?   // JSON for extra data
+  createdAt        DateTime  @default(now())
+}
+
+model LedgerSnapshot {
+  id                 String   @id @default(cuid())
+  snapshotType       String   // daily, weekly, on_demand, pre_deployment, post_reconciliation
+  totalRevenue       Float    @default(0)
+  totalSettled       Float    @default(0)
+  totalPending       Float    @default(0)
+  totalRejected      Float    @default(0)
+  settlementCount    Int      @default(0)
+  revenueCount       Int      @default(0)
+  discrepancyCount   Int      @default(0)
+  integrityHash      String?  // SHA-256 hash of all amounts + counts
+  previousSnapshotId String?
+  metadata           String?  // JSON with full breakdown
+  createdAt          DateTime @default(now())
+}
+
+model SettlementExecution {
+  id                String   @id @default(cuid())
+  settlementId      String?  // links to OwnerSettlement.id
+  executionMode     String   @default("simulation") // simulation, wetRun, live
+  dataSource        String   @default("mock_provider") // mock_provider, live_bank_api
+  ownerConfirmedBy  String?  // required for wetRun/live â€” principal controller
+  status            String   @default("PENDING") // PENDING, WET_RUN_PROCESSED, LIVE_SETTLED, FAILED, RAIL_VERIFIED
+  amount            Float
+  currency          String   @default("USD")
+  destination       String?  // target account endpoint
+  nominalAmount     Float    @default(0.01) // micro-move verification amount
+  microMoveVerified Boolean  @default(false)
+  microMoveTxRef    String?  // reference of $0.01 test transaction
+  routingToken      String?  // bank routing token from preflight
+  railsVerifiedAt   DateTime?
+  processedAt       DateTime?
+  failedAt          DateTime?
+  failureReason     String?
+  metadata          String?  // JSON for extra data
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+// ─── SWARM MODELS ─────────────────────────────────────────────────────
+
+model BankAccount {
+  id              String   @id @default(cuid())
+  label           String
+  accountType     String   // bank_wire, crypto_wallet, vcc_issuer, internal_pool
+  accountNumber   String?  // IBAN, wallet address, or internal ref
+  balance         Float    @default(0)
+  currency        String   @default("USD")
+  isActive        Boolean  @default(true)
+  isPrimary       Boolean  @default(false)
+  provider        String?  // banking_circle, payoneer, stripe, wise
+  metadata        String?  // JSON
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  paymentIntents  PaymentIntent[]
+}
+
+model PaymentIntent {
+  id              String   @id @default(cuid())
+  bankAccountId   String
+  bankAccount     BankAccount @relation(fields: [bankAccountId], references: [id])
+  idempotencyKey  String   @unique
+  amount          Float
+  currency        String   @default("USD")
+  direction       String   // inbound, outbound
+  status          String   @default("PENDING_REASONING")
+  // PENDING_REASONING → AUTHORIZED → EXECUTING → SETTLED → RECONCILED
+  // or: PENDING_REASONING → DENIED
+  destination     String?  // target account or wallet
+  source          String?  // source of funds
+  description     String?
+  failureReason   String?
+  approvedBy      String?  // MFA approver
+  approvedAt      DateTime?
+  executedAt      DateTime?
+  settledAt       DateTime?
+  reconciledAt    DateTime?
+  wireExecutions  WireExecutionLog[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model PaymentEscalation {
+  id              String   @id @default(cuid())
+  payoutBatchId   String
+  batch           PayoutBatch @relation(fields: [payoutBatchId], references: [id])
+  batchNumber     String
+  provider        String   // banking_circle, payoneer, stripe, wise, unknown
+  amount          Float
+  currency        String   @default("USD")
+  itemCount       Int      @default(0)
+  severity        String   // L1, L2, L3, CRITICAL
+  status          String   @default("open") // open, investigating, resolved
+  submittedAt     DateTime
+  escalatedAt     DateTime @default(now())
+  actionTaken     String?  // JSON array of { date, action, by, detail }
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model WireExecutionLog {
+  id              String   @id @default(cuid())
+  paymentIntentId String
+  paymentIntent   PaymentIntent @relation(fields: [paymentIntentId], references: [id])
+  channel         String   // iso20022, swift_mt103, fedwire, crypto_onchain, internal_ledger
+  status          String   // submitted, confirmed, failed, reversed
+  providerRef     String?  // external reference from payment provider
+  proofHash       String?  // SHA-256 of confirmation evidence
+  feeAmount       Float    @default(0)
+  netAmount       Float?
+  metadata        String?  // JSON with raw response
+  submittedAt     DateTime @default(now())
+  confirmedAt     DateTime?
+  createdAt       DateTime @default(now())
+}
+
+// ─── EXTERNAL PERSISTENCE & FAILOVER MODELS ──────────────────────────
+
+model StateCheckpoint {
+  id            String   @id @default(cuid())
+  workflowId    String   @unique
+  state         String
+  version       Int      @default(1)
+  status        String   @default("running")
+  lastHeartbeat DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([workflowId])
+  @@index([status])
+  @@index([lastHeartbeat])
+}
+
+model DbEpoch {
+  id        String   @id @default("primary")
+  epoch     Int      @default(1)
+  leaderId  String?
+  lockUntil DateTime?
+  updatedAt DateTime @updatedAt
+}

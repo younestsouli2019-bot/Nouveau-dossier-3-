@@ -1,0 +1,25 @@
+{
+  "$schema": "https://opencode.ai/schema.json",
+  "provider": {
+    "oh-my-pi": {
+      "description": "oh-my-pi coding agent — fork of Pi with 60+ provider support",
+      "reference": "https://github.com/can1357/oh-my-pi",
+      "package": "@oh-my-pi/pi-coding-agent",
+      "providers": [
+        "openai", "anthropic", "google", "deepseek", "openrouter",
+        "groq", "mistral", "cohere", "fireworks", "together",
+        "xai", "zai", "perplexity"
+      ],
+      "install": "npm i @oh-my-pi/pi-coding-agent"
+    }
+  },
+  "mcp": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PAT}"
+      }
+    }
+  }
+}

@@ -1,0 +1,264 @@
+import { writeFileSync, mkdirSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const ROOT = dirname(fileURLToPath(import.meta.url)) + "/..";
+const OUT = join(ROOT, ".vercel", "output", "static", "checkout");
+
+const STEPS = {
+	paypal: [
+		["Go to PayPal", "Open <a href=\"https://www.paypal.com\" rel=\"noopener\" target=\"_blank\">paypal.com</a> and log in to your account (or <em>Send</em> without an account), or use our payment link <a href=\"https://paypal.me/johnass22\" rel=\"noopener\" target=\"_blank\">paypal.me/johnass22</a>."],
+		["Send the payment", "Choose <strong>Send</strong>, enter the amount shown in your order summary, and send it to <strong>younestsouli2019@gmail.com</strong>."],
+		["Add your order reference", "In the note/memo field, paste the <strong>Order Reference</strong> shown below so we can match your payment to your course."],
+		["Confirm your order", "Email <strong>billing@realworldcerts.com</strong> once sent, or wait — we monitor incoming payments and will email your access link automatically."],
+	],
+	payoneer: [
+		["Open Payoneer", "Log in to your <a href=\"https://www.payoneer.com\" rel=\"noopener\" target=\"_blank\">Payoneer</a> account."],
+		["Start a payment request", "Ask us to send you a payment request by emailing <strong>billing@realworldcerts.com</strong> with your order reference, or use <strong>Request Payment</strong> to <strong>younestsouli2019@gmail.com</strong> for the amount in your order summary."],
+		["Add your order reference", "Include the <strong>Order Reference</strong> below in the payment details."],
+		["We verify &amp; deliver", "Once the transfer arrives, we verify it against your order and email your course access within 24 hours."],
+	],
+	crypto: [
+		["Choose your network", "Send <strong>USDT</strong> on one of the networks below. Use the exact same network you select — sending on a different network can lose funds."],
+		["Copy the wallet address", "Copy the USDT address shown, set the network, and enter the amount from your order summary."],
+		["Add your order reference", "Put the <strong>Order Reference</strong> below in the payment note where your wallet allows, then confirm the transfer."],
+		["We verify &amp; deliver", "Crypto confirmations take a few minutes. We verify the on-chain transaction and email your course access."],
+	],
+	bank: [
+		["Use the bank details below", "Pay to <strong>Banking Circle S.A.</strong> — IBAN <strong>LU774080000041265646</strong>, BIC <strong>BCIRLULL</strong>, beneficiary <strong>Younes Tsouli</strong>. Moroccan customers can transfer locally to RIB <strong>0078 1000 0448 5000 3059 4182</strong>."],
+		["Make the transfer", "Transfer the amount from your order summary, and put your <strong>Order Reference</strong> in the transfer description."],
+		["Send us the receipt", "Email the transfer confirmation or screenshot to <strong>billing@realworldcerts.com</strong> with your order reference."],
+		["We verify &amp; deliver", "International transfers can take 1–5 business days. Once cleared, we email your course access."],
+	],
+};
+
+const DETAILS = {
+	paypal: {
+		label: "Send payment to",
+		value: "younestsouli2019@gmail.com",
+		note: "PayPal account for RealWorldCerts.",
+		icon: "P",
+	},
+	payoneer: {
+		label: "Payoneer receive email",
+		value: "younestsouli2019@gmail.com",
+		note: "Payoneer receive email for RealWorldCerts.",
+		icon: "P",
+	},
+	crypto: {
+		label: "USDT wallet address",
+		value: "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+		note: "USDT address — accepts ERC-20 and BEP-20.",
+		icon: "₮",
+		extra: true,
+	},
+	bank: {
+		label: "Bank account (SWIFT)",
+		value: "LU77 4080 0000 4126 5646",
+		note: "BIC: BCIRLULL · Banking Circle S.A. · Beneficiary: Younes Tsouli.<br>Moroccan customers: local transfer to RIB 0078 1000 0448 5000 3059 4182.",
+		icon: "🏦",
+	},
+};
+
+const FAQ = [
+	["Is it safe to pay this way?", "Yes. All orders are matched by your unique order reference and delivered to the email you provide. We never store your card or bank credentials on this site."],
+	["When will I get access?", "PayPal payments are usually matched within a few hours; Payoneer and bank transfers within 1–5 business days; crypto within minutes to a few hours depending on network confirmations."],
+	["What do I receive?", "You get instant lifetime access to the course, all practice tests, explanations, and a completion certificate (PDF) when you finish."],
+	["Can I use another payment method?", "Yes — every course page offers PayPal, Payoneer, Crypto (USDT) and bank transfer. Pick whichever is easiest for you."],
+	["What if I pay and don't receive access?", "Email billing@realworldcerts.com with your order reference and we'll resolve it within 24 hours."],
+	["Is there a refund policy?", "Yes. If the course doesn't meet your expectations, contact us within 7 days of purchase for a full refund — see our refund policy."],
+];
+
+const METHOD_TITLES = { paypal: "PayPal", payoneer: "Payoneer", crypto: "Crypto (USDT)", bank: "Bank Transfer" };
+
+function page(method) {
+	const steps = STEPS[method]
+		.map(
+			(s, i) => `<li><span class="step-num">${i + 1}</span><div><h4>${s[0]}</h4><p>${s[1]}</p></div></li>`,
+		)
+		.join("");
+	const d = DETAILS[method];
+	const extra = d.extra
+		? `<div class="networks"><div class="network rec"><strong>BEP-20</strong><span>Binance Smart Chain — low fees, recommended</span></div><div class="network"><strong>ERC-20</strong><span>Ethereum — higher fees</span></div><div class="network off"><strong>TRC-20</strong><span>Not supported — do not use</span></div></div><p class="warn"><strong>Warning:</strong> this address accepts <strong>ERC-20</strong> and <strong>BEP-20</strong> USDT only. Never send USDT via TRC-20 (Tron) to this address — the funds cannot be recovered.</p>`
+		: "";
+	const faq = FAQ.map(
+		([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`,
+	).join("");
+
+	return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checkout · ${METHOD_TITLES[method]} · RealWorldCerts</title>
+<meta name="description" content="Complete your RealWorldCerts purchase with ${METHOD_TITLES[method]}. Secure, verified delivery by email.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+:root{--bg:#0b0c10;--panel:#0e1118;--panel2:#111827;--border:#1e2532;--text:#eaeef2;--muted:#9aa4b2;--accent:#3b82f6;--accent2:#22d3ee;--green:#34d399}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Ubuntu,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.55}
+a{color:var(--accent2);text-decoration:none}
+a:hover{text-decoration:underline}
+header{position:sticky;top:0;z-index:10;background:rgba(11,12,16,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+.header-in{max-width:1040px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-weight:700;font-size:18px;color:#fff;letter-spacing:.2px}
+.brand span{color:var(--accent2)}
+.back{color:var(--muted);font-size:14px}
+main{max-width:1040px;margin:0 auto;padding:24px 20px 60px}
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 26px;font-size:13px}
+.step{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid var(--border);border-radius:999px;background:var(--panel);color:var(--muted)}
+.step b{color:var(--text)}
+.step.done{color:var(--green)}
+.step.done b{color:var(--green)}
+.step.cur{border-color:#2a3e58;background:#16263a;color:var(--text)}
+.arrow{color:#374151}
+.grid{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;align-items:start}
+@media(max-width:840px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px}
+.card h2{margin:0 0 16px;font-size:19px}
+.card h2 .badge{float:right;font-size:12px;font-weight:600;color:var(--muted);border:1px solid var(--border);padding:3px 10px;border-radius:999px;background:var(--panel2)}
+.course{display:flex;gap:14px}
+.course img{width:168px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--border)}
+.course .t h3{margin:0 0 4px;font-size:15px;line-height:1.3}
+.course .t p{margin:0;color:var(--muted);font-size:13px}
+ul.what{margin:14px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+ul.what li{display:flex;gap:8px;font-size:14px;color:#cdd6e1}
+ul.what li::before{content:"✓";color:var(--green);font-weight:700}
+.price{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);margin-top:16px;padding-top:14px;font-size:14px;color:var(--muted)}
+.price .amt{font-size:22px;font-weight:700;color:#fff}
+.steps-pay{list-style:none;margin:0;padding:0;display:grid;gap:16px}
+.steps-pay li{display:flex;gap:12px}
+.step-num{flex:0 0 30px;height:30px;border-radius:999px;background:#16263a;border:1px solid #2a3e58;color:var(--accent2);display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.steps-pay h4{margin:0 0 2px;font-size:15px}
+.steps-pay p{margin:0;color:var(--muted);font-size:14px}
+.dest{margin-top:18px;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:14px}
+.dest label{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);display:block;margin-bottom:6px}
+.dest .val{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:15px;color:#fff;word-break:break-all}
+.networks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+.network{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px}
+.network strong{display:block;font-size:13px}
+.network span{font-size:12px;color:var(--muted)}
+.network.rec{border-color:#1e5c43;background:#0d1f17}
+.network.rec strong{color:var(--green)}
+.network.off{border-color:#7a3b3b;background:#1d1212}
+.network.off strong{color:#f3c1c1}
+.warn{border:1px solid #7a3b3b;background:#1d1212;color:#f3c1c1;border-radius:10px;padding:10px 12px;font-size:13px}
+.ref{margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ref .id{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;background:#0a0d13;border:1px dashed #2a3344;padding:8px 12px;border-radius:8px;color:var(--accent2)}
+button{cursor:pointer;font:inherit;border-radius:8px;border:1px solid #2a3e58;background:#16263a;color:#eaf1ff;padding:9px 14px}
+button:hover{background:#1c2f4a}
+.after{background:linear-gradient(180deg,#10202f 0%,var(--panel) 60%);border:1px solid #1e3a52}
+.after ul{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:14px 0 0;padding:0;list-style:none}
+.after ul li{display:flex;gap:8px;font-size:14px;color:#cdd6e1}
+.after ul li::before{content:"✓";color:var(--accent2);font-weight:700}
+.cta{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+.cta a{display:inline-flex;align-items:center;padding:11px 18px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121a;font-weight:700;font-size:14px}
+.cta a.alt{background:transparent;border:1px solid #2a3e58;color:var(--accent2)}
+.cta a:hover{text-decoration:none;filter:brightness(1.08)}
+details{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin:8px 0}
+summary{cursor:pointer;font-weight:600;color:#e2e8f0}
+details p{margin:10px 0 2px;color:var(--muted);font-size:14px}
+.trust{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.trust span{font-size:12px;color:var(--muted);border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:var(--panel2)}
+footer{border-top:1px solid var(--border);padding:26px 20px;color:var(--muted);font-size:13px}
+.foot-in{max-width:1040px;margin:0 auto;display:flex;gap:18px;flex-wrap:wrap}
+.msg{display:none;margin-top:12px;border:1px solid var(--green);color:var(--green);background:#0d1a14;padding:10px 12px;border-radius:8px;font-size:13px}
+</style>
+</head>
+<body>
+<header><div class="header-in"><a class="brand" href="/">RealWorld<span>Certs</span></a><a class="back" href="/catalog/index.html">← Back to catalog</a></div></header>
+<main>
+  <div class="steps">
+    <span class="step done"><b>1</b> Choose course <span class="arrow">→</span></span>
+    <span class="step cur"><b>2</b> Pay with ${METHOD_TITLES[method]} <span class="arrow">→</span></span>
+    <span class="step"><b>3</b> Get access by email</span>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Order summary <span class="badge" id="payBadge">${METHOD_TITLES[method]}</span></h2>
+      <div class="course">
+        <img id="courseImg" src="/assets/courses/oscp-certification-exam.svg" alt="Course image">
+        <div class="t"><h3 id="courseTitle">Your selected course</h3><p id="courseMeta">Practice tests with detailed explanations</p></div>
+      </div>
+      <ul class="what">
+        <li>Full practice-test bank with explanations</li>
+        <li>Lifetime access from any device</li>
+        <li>Completion certificate (PDF)</li>
+        <li>Email support &amp; exam tips</li>
+      </ul>
+      <div class="price"><span>Course price</span><span class="amt" id="amount">Confirmed via email</span></div>
+      <div class="ref"><span style="color:var(--muted);font-size:13px">Order reference:</span><span class="id" id="orderRef">RWC-…………</span><button id="copyRef">Copy</button></div>
+      <p class="msg" id="copiedMsg">Order reference copied.</p>
+    </section>
+
+    <section class="card">
+      <h2>Pay with ${METHOD_TITLES[method]}</h2>
+      <ol class="steps-pay">${steps}</ol>
+      <div class="dest">
+        <label>${d.label}</label>
+        <div class="val" id="destVal">${d.value}</div>
+        ${d.note || ""}
+      </div>
+      ${extra}
+    </section>
+  </div>
+
+  <section class="card after" style="margin-top:24px">
+    <h2>After payment</h2>
+    <ul>
+      <li>Keep your order reference — we use it to match your payment.</li>
+      <li>Send the reference to billing@realworldcerts.com if the payment details don't carry a note field.</li>
+      <li>We email your access link within 24 hours of confirmation.</li>
+      <li>Questions? Email billing@realworldcerts.com anytime.</li>
+    </ul>
+    <div class="cta"><a href="mailto:billing@realworldcerts.com?subject=Order%20inquiry">Email us about this order</a><a class="alt" href="/catalog/index.html">Continue browsing</a></div>
+    <div class="trust"><span>✓ Verified order matching</span><span>✓ 7-day money-back guarantee</span><span>✓ No card stored on this site</span></div>
+  </section>
+
+  <h2 style="font-size:19px;margin:32px 0 6px">Frequently asked questions</h2>
+  ${faq}
+</main>
+<footer><div class="foot-in"><a href="/catalog/index.html">Course Catalog</a><a href="/cybersecurity.html">Cybersecurity</a><a href="/practice.html">Practice Tests</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/refund.html">Refund Policy</a><a href="/terms.html">Terms</a></div></footer>
+<script>
+(function(){
+  const q = new URLSearchParams(location.search);
+  const course = q.get("course");
+  const slug = q.get("slug");
+  const amount = q.get("amount");
+  const img = document.getElementById("courseImg");
+  const titleEl = document.getElementById("courseTitle");
+  const metaEl = document.getElementById("courseMeta");
+  if (slug) img.src = "/assets/courses/" + encodeURIComponent(slug) + ".svg";
+  if (course) {
+    titleEl.textContent = course;
+    try { fetch("/data/catalog.json").then(r=>r.json()).then(d=>{
+      const hit = (Array.isArray(d.items)?d.items:[]).find(i=>i.slug===slug);
+      if (hit) { titleEl.textContent = hit.title; if(hit.practiceTestCount) metaEl.textContent = hit.practiceTestCount + " practice questions with detailed explanations"; }
+    }).catch(()=>{}); } catch(e){}
+  }
+  const amt = document.getElementById("amount");
+  if (amount) amt.textContent = "$" + amount;
+  const d = new Date();
+  const ref = "RWC-" + d.getFullYear().toString().slice(-2) + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0") + "-" + Math.random().toString(36).slice(2,8).toUpperCase();
+  const refEl = document.getElementById("orderRef");
+  refEl.textContent = ref;
+  document.getElementById("copyRef").addEventListener("click", function(){
+    (navigator.clipboard ? navigator.clipboard.writeText(ref) : Promise.reject()).then(function(){
+      document.getElementById("copiedMsg").style.display = "block";
+      setTimeout(function(){ document.getElementById("copiedMsg").style.display = "none"; }, 2200);
+    }).catch(function(){});
+  });
+})();
+</script>
+</body>
+</html>
+`;
+}
+
+mkdirSync(OUT, { recursive: true });
+for (const m of Object.keys(METHOD_TITLES)) {
+	writeFileSync(join(OUT, `${m}.html`), page(m), "utf8");
+	console.log(`checkout: wrote ${m}.html`);
+}

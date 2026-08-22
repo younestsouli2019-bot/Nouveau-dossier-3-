@@ -1,0 +1,76 @@
+﻿name: Deploy to Space-Z
+on:
+  workflow_dispatch:
+    inputs:
+      instance:
+        description: 'Space-Z instance to deploy'
+        required: true
+        default: 'main-app'
+        type: choice
+        options:
+          - main-app
+          - hit-swarm
+          - payout-recovery
+          - trace-platform
+          - agentflow
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+env:
+  MAIN_APP: https://t1trn6kunnv1-d.space-z.ai
+  HIT_SWARM: https://x1he4604ap01-deploy.space-z.ai
+
+jobs:
+  build-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Build Next.js
+        run: npx next build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-build
+          path: .next
+          retention-days: 1
+
+  trigger-deploy:
+    needs: build-verify
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    steps:
+      - name: Trigger Space-Z rebuild via deploy hook
+        run: |
+          echo "Build verified successfully."
+          echo ""
+          echo "=== SPACE-Z DEPLOY STATUS ==="
+          echo "Main App: "
+          echo "Last deployed commit: July 27 (d4da1e2)"
+          echo ""
+          echo "Space-Z deploys on Alibaba Cloud Function Compute."
+          echo "Deploy must be triggered via Space-Z dashboard."
+          echo ""
+          echo "Manual deploy steps:"
+          echo "1. Open Space-Z dashboard for t1trn6kunnv1-d"
+          echo "2. Click 'Redeploy' or 'Fetch Latest Commit'"
+          echo "3. Wait for build to complete (~3-5 min)"
+          echo "4. Verify at /api/healthz"

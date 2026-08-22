@@ -1,0 +1,20 @@
+CREDS.txt
+exports/
+settlements/payoneer/*.csv
+settlements/payoneer/*.xls
+settlements/payoneer/receipts/*.json
+data/swarm/**
+data/notifications/**
+data/base44/**
+reports/historic/**
+rank/swarm
+*.log
+*.tmp
+node_modules/
+ .env
+ .env.*
+ .keys/
+ *.pem
+opencode.json
+.vercel
+.env*

@@ -1,0 +1,64 @@
+{
+  "$schema": "swarm-audit-agent-prompts.v1",
+  "model_family_preference": [
+    "anthropic/claude-sonnet-4-20250514",
+    "openai/gpt-4o-2024-11-20",
+    "openrouter/quasar-alpha",
+    "google/gemini-2.5-pro"
+  ],
+  "generation_params": {
+    "temperature": 0.05,
+    "top_p": 0.4,
+    "max_tokens": 4096,
+    "frequency_penalty": 0.0,
+    "presence_penalty": 0.1,
+    "seed": 1337,
+    "stop_sequences": ["###STOP_AUDIT###", "---END_RUBRIC---", "DUPLICATE_ISOLATED=true", "ABORT_ON_FALSE_POSITIVE"]
+  },
+  "tool_use": {
+    "mode": "parallel_required_for_evidence",
+    "parallel_tool_calls_min": 2,
+    "required_sources_per_finding": [
+      "authoritative_settlement_csv",
+      "base44_export_entity_json",
+      "quarantine_directory_or_replay",
+      "sha256_proof_or_external_ref"
+    ],
+    "never_emit_finding_without": [
+      "entity_id",
+      "severity",
+      "rule_id",
+      "state_hash_for_dedupe",
+      "evidence_links_count>=2"
+    ]
+  },
+  "dedupe": {
+    "state_hash_fields": ["amount", "channel", "destination", "hour_bucket"],
+    "window_seconds": 3600,
+    "hash_algo": "sha256",
+    "canonicalize_numbers": true,
+    "canonicalize_emails": "lowercase_trim",
+    "canonicalize_addresses": "mixedcase_checksum_or_lower"
+  },
+  "rubric_weights": {
+    "cannibal_duplicate_bucket": 1.00,
+    "fabricated_external_ref": 0.95,
+    "misrouted_destination_mismatch": 0.92,
+    "stuck_payout_over_24h": 0.85,
+    "balance_delta_over_100": 0.90,
+    "procurement_state_machine_reversal": 0.88,
+    "false_positive_single_source": 0.0
+  },
+  "system_prompts": {
+    "primary_critical": "system-prompt-audit-critical.md",
+    "duplicate_detector":    "system-prompt-duplicate-isolation.md"
+  },
+  "few_shot_examples": {
+    "cannibal_9payoneer_150":   "1shot-cannibal-cluster-payoneer-9x150.md",
+    "fabricated_proof_sha256":  "1shot-fabricated-proofhash.md"
+  },
+  "tool_prompts": {
+    "load_evidence_csv": "tool-prompt-load-evidence-csv.md",
+    "quarantine_write":  "tool-prompt-quarantine-write.md"
+  }
+}

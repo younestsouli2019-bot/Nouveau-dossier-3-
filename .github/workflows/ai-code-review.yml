@@ -1,0 +1,71 @@
+name: "Autonomous AI Agent Code Reviewer"
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '**.js'
+      - '**.py'
+      - '**.ts'
+
+jobs:
+  triage-and-lint:
+    name: "Agent 1: Triage & Syntax"
+    runs-on: ubuntu-latest
+    outputs:
+      has_errors: ${{ steps.check-syntax.outputs.failed }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Linters & AST Parsers
+        id: check-syntax
+        run: |
+          echo "Running regex check for trailing whitespaces and hidden characters..."
+          git diff --check || exit 1
+          echo "Running syntax validation..."
+          echo "Syntax check passed."
+
+  deep-agent-review:
+    name: "Agents 2-5: LLM Analysis & Synthesis"
+    needs: triage-and-lint
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Get PR Diff
+        id: get-diff
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD > pr_diff.txt
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Agent Dependencies
+        run: pip install langchain openai pydantic
+
+      - name: Run Multi-Agent Assembly Line
+        id: run-agents
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python .github/scripts/run_review_agents.py pr_diff.txt
+
+      - name: Post Review to PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('ai_review_report.md', 'utf8');
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: report
+            });

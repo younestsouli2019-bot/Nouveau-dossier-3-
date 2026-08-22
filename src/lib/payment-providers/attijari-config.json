@@ -1,0 +1,122 @@
+{
+  "bank": {
+    "name": "Attijariwafa Bank",
+    "nameFr": "Attijariwafa bank",
+    "swiftBic": "BCMAMAMC",
+    "countryCode": "MA",
+    "branch": {
+      "name": "RABAT AGDAL FAL OULD OUMEIR",
+      "address": "83, AV. FAL OULD OUMEIR",
+      "city": "Rabat",
+      "codeVille": "810",
+      "codeBanque": "007"
+    }
+  },
+  "accounts": [
+    {
+      "id": "attijari-mad-001",
+      "label": "Attijariwafa MAD — Compte Courant",
+      "accountType": "bank_wire",
+      "currency": "MAD",
+      "rib": {
+        "codeBanque": "007",
+        "codeVille": "810",
+        "numeroSerie": "0004485000305941",
+        "cleRib": "82",
+        "fullRib": "007810000448500030594182"
+      },
+      "iban": "MA820007810000448500030594182",
+      "accountHolder": "M TSOULI YOUNES",
+      "swiftBic": "BCMAMAMC",
+      "primary": true,
+      "routeId": "attijari-rib-1",
+      "isActive": true
+    },
+    {
+      "id": "attijari-mad-002",
+      "label": "Attijariwafa MAD — Compte Réserve",
+      "accountType": "bank_wire",
+      "currency": "MAD",
+      "rib": {
+        "codeBanque": "007",
+        "codeVille": "810",
+        "numeroSerie": "0004482000613213",
+        "cleRib": "72",
+        "fullRib": "007810000448200061321372"
+      },
+      "iban": "MA820007810000448200061321372",
+      "accountHolder": "M TSOULI YOUNES",
+      "swiftBic": "BCMAMAMC",
+      "primary": false,
+      "routeId": "attijari-rib-2",
+      "isActive": true
+    }
+  ],
+  "api": {
+    "baseUrl": "ATTIJARI_API_BASE_URL",
+    "auth": {
+      "clientId": "ATTIJARI_CLIENT_ID",
+      "clientSecret": "ATTIJARI_CLIENT_SECRET",
+      "oauthTokenUrl": "/oauth2/token",
+      "grantType": "client_credentials",
+      "scope": "accounts.read accounts.balance transfers.initiate transfers.status"
+    },
+    "endpoints": {
+      "health": "/api/v1/health",
+      "accountBalance": "/api/v1/accounts/{accountId}/balance",
+      "accountTransactions": "/api/v1/accounts/{accountId}/transactions",
+      "transferInitiate": "/api/v1/transfers",
+      "transferStatus": "/api/v1/transfers/{transferId}/status",
+      "beneficiaries": "/api/v1/beneficiaries",
+      "exchangeRate": "/api/v1/rates/USD/MAD"
+    },
+    "timeouts": {
+      "connectionMs": 10000,
+      "readMs": 30000,
+      "retryDelayMs": 2000,
+      "maxRetries": 3
+    }
+  },
+  "javascriptOrigins": [
+    "https://attijariwafa.bank",
+    "https://api.attijariwafa.bank",
+    "https://ebanking.attijariwafa.bank",
+    "https://banking-services.attijariwafa.bank",
+    "https://openbanking.attijariwafa.bank",
+    "https://developer.attijariwafa.bank",
+    "https://localhost:3000",
+    "https://127.0.0.1:3000"
+  ],
+  "multiRoute": {
+    "enabled": true,
+    "strategy": "weighted_round_robin",
+    "routes": [
+      {
+        "routeId": "attijari-rib-1",
+        "accountId": "attijari-mad-001",
+        "rib": "007810000448500030594182",
+        "weight": 70,
+        "maxAmountPerTransfer": 1000000,
+        "maxDailyAmount": 5000000,
+        "purposes": ["revenue_withdrawal", "supplier_payment", "settlement"],
+        "isActive": true
+      },
+      {
+        "routeId": "attijari-rib-2",
+        "accountId": "attijari-mad-002",
+        "rib": "007810000448200061321372",
+        "weight": 30,
+        "maxAmountPerTransfer": 500000,
+        "maxDailyAmount": 2000000,
+        "purposes": ["reserve_settlement", "overflow_routing", "supplier_payment"],
+        "isActive": true
+      }
+    ],
+    "failover": {
+      "enabled": true,
+      "onRouteFailure": "redirect_to_next",
+      "cooldownMs": 60000,
+      "maxConsecutiveFailures": 3
+    }
+  }
+}
