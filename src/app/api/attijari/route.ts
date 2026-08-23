@@ -12,7 +12,8 @@ export async function GET() {
       timestamp: new Date().toISOString(),
     });
   } catch (e: any) {
-    return NextResponse.json({ status: 'error', error: e.message }, { status: 503 });
+    console.error('[Attijari] Error:', e);
+    return NextResponse.json({ status: 'error', error: 'Internal server error' }, { status: 503 });
   }
 }
 
@@ -47,6 +48,7 @@ export async function POST(request: Request) {
       data,
     });
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    console.error('[Attijari] Error:', e);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -6,6 +6,11 @@ on:
     - cron: "0 */6 * * *"
 permissions:
   contents: write
+
+concurrency:
+  group: autonomous-scheduler
+  cancel-in-progress: false
+
 jobs:
   pattern-score-watcher:
     if: github.event_name == 'schedule' && github.event.schedule == '0 */6 * * *'

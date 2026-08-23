@@ -162,7 +162,7 @@ export async function GET() {
   } catch (error) {
     console.error('[Audit/Endpoints]', error)
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Failed' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     )
   }

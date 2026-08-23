@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[LLM/Invoke]', error);
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'LLM invocation failed' },
+      { success: false, error: 'Internal server error' },
       { status: 500 },
     );
   }

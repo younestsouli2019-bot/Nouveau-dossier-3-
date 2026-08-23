@@ -21,8 +21,14 @@ on:
         type: string
         required: false
         default: Owner payout
+
 permissions:
   contents: write
+
+concurrency:
+  group: owner-payout
+  cancel-in-progress: false
+
 jobs:
   guardrails:
     runs-on: ubuntu-latest

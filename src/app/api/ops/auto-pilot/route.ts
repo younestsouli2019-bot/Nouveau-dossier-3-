@@ -1010,7 +1010,8 @@ export async function POST() {
         const affected = await fn();
         phaseResults.push({ phase: name, status: 'success', itemsAffected: affected, amountAffected: 0, durationMs: 0, details: `${affected} items processed` });
       } catch (err) {
-        phaseResults.push({ phase: name, status: 'error', itemsAffected: 0, amountAffected: 0, durationMs: 0, details: String(err) });
+        console.error('[Ops/AutoPilot] Phase error:', name, err);
+        phaseResults.push({ phase: name, status: 'error', itemsAffected: 0, amountAffected: 0, durationMs: 0, details: 'Internal server error' });
       }
     }
 
@@ -1042,7 +1043,8 @@ export async function POST() {
       },
     });
   } catch (error) {
-    return NextResponse.json({ success: false, error: String(error), phases: phaseResults }, { status: 500 });
+    console.error('[Ops/AutoPilot] Pipeline error:', error);
+    return NextResponse.json({ success: false, error: 'Internal server error', phases: phaseResults }, { status: 500 });
   }
 }
 

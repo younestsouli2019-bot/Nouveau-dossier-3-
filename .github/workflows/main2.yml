@@ -17,6 +17,14 @@ on:
         required: false
         default: 'false'
 
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: main2-vault-sync
+  cancel-in-progress: false
+
 env:
   VAULT_ADDR: ${{ secrets.VAULT_CLUSTER_URL || '' }}
   SWARM_VAULT_API_URL: ${{ secrets.SWARM_VAULT_API_URL || '' }}

@@ -37,6 +37,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result, { status: result.success ? 201 : 422 })
   } catch (error) {
     console.error('[Revenue/Strict]', error)
-    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : 'Failed' }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -3,6 +3,14 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "15 * * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: org-broadcast
+  cancel-in-progress: false
+
 jobs:
   broadcast:
     runs-on: ubuntu-latest

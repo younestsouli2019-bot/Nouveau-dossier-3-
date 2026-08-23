@@ -352,7 +352,7 @@ export async function POST() {
   } catch (error) {
     console.error('[Wet-Run Procurement]', error)
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Wet-run failed' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     )
   }

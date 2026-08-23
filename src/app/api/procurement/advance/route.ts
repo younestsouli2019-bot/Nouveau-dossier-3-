@@ -77,9 +77,9 @@ export async function POST(request: NextRequest) {
       error: 'Provide either itemId + targetStatus for single advance, or bulk: true for all items',
     }, { status: 400 })
   } catch (error) {
-    console.error('[Pipeline Advance]', error)
+    console.error('[Pipeline Advance] Error:', error)
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Advance failed' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     )
   }

@@ -9,8 +9,8 @@ export async function GET() {
     ]);
     return NextResponse.json({ active, scorecards });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error('[SLA/Status] Error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ error: 'action must be "scan" or "auto-escalate"' }, { status: 400 });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error('[SLA/Status] Error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

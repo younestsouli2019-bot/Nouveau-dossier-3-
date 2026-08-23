@@ -6,6 +6,13 @@ on:
   schedule:
     - cron: '0 0 * * 1'
 
+permissions:
+  contents: write
+
+concurrency:
+  group: anti-regression
+  cancel-in-progress: false
+
 jobs:
   matrix-platform-check:
     name: "Matrix Audit: ${{ matrix.platform }} (${{ matrix.environment }})"

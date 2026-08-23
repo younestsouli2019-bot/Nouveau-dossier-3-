@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result, { status: result.success ? 200 : 422 })
   } catch (error) {
-    console.error('[Settle/Strict]', error)
-    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : 'Failed' }, { status: 500 })
+    console.error('[Settle/Strict] Error:', error)
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }

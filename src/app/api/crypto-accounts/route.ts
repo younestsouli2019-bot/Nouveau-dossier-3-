@@ -45,7 +45,7 @@ export async function GET() {
   } catch (error) {
     console.error('Crypto accounts API error:', error);
     return NextResponse.json(
-      { error: 'Failed to load crypto settlements', details: error instanceof Error ? error.message : 'Unknown' },
+      { error: 'Internal server error' },
       { status: 500 },
     );
   }

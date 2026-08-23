@@ -8,6 +8,10 @@ on:
       - '**.py'
       - '**.ts'
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   triage-and-lint:
     name: "Agent 1: Triage & Syntax"

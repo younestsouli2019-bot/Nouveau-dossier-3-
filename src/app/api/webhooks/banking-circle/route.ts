@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[Webhook/BankingCircle]', error);
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Webhook processing failed' },
+      { success: false, error: 'Internal server error' },
       { status: 500 },
     );
   }

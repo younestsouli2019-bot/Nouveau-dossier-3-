@@ -328,7 +328,7 @@ export async function GET() {
   } catch (error) {
     console.error('[Procurement Reconcile]', error)
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Reconciliation failed' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     )
   }

@@ -55,9 +55,9 @@ export async function POST(request: NextRequest) {
       ...report,
     })
   } catch (error) {
-    console.error('[Three-Way Match]', error)
+    console.error('[Three-Way Match] Error:', error)
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Three-way match failed' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     )
   }
@@ -72,9 +72,9 @@ export async function GET() {
       ...report,
     })
   } catch (error) {
-    console.error('[Three-Way Match]', error)
+    console.error('[Three-Way Match] Error:', error)
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Three-way match failed' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     )
   }

@@ -34,6 +34,6 @@ export async function GET() {
     })
   } catch (error) {
     console.error('[Audit/Violations]', error)
-    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : 'Failed' }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }

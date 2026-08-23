@@ -8,7 +8,8 @@ export async function GET() {
     const scan = await runRealityScan()
     return NextResponse.json({ success: true, scan })
   } catch (error) {
-    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : 'Scan failed' }, { status: 500 })
+    console.error('[Ops/RealityCheck] Error:', error)
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -24,6 +25,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, scan, fixed: null, message: 'Send {"autoFix": true} to auto-fix critical fabrications' })
   } catch (error) {
-    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : 'Auto-fix failed' }, { status: 500 })
+    console.error('[Ops/RealityCheck] Error:', error)
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }

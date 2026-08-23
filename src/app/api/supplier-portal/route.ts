@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ active: filtered, scorecards, supplierPOs });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error('[SupplierPortal] Error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

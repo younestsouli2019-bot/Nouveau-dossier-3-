@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
       timestamp,
     });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
+    console.error('[Webhook/GitHubSecrets] Error:', err);
         // Activate keys for known connectors
     for (const secretKey of received) {
       const connectorId = KNOWN_SECRET_CONNECTORS[secretKey];
@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 

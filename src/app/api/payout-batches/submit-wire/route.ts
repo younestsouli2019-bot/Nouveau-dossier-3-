@@ -218,7 +218,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Wire submit API error:', error);
     return NextResponse.json(
-      { error: 'Failed to submit wire transfers', details: String(error) },
+      { error: 'Internal server error' },
       { status: 500 },
     );
   }

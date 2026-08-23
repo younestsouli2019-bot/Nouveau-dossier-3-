@@ -7,8 +7,8 @@ export async function GET() {
     const links = getPayoneerLinks();
     return NextResponse.json({ report, links });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error('[Payoneer/Reconcile] Error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ error: 'action must be "resolve"' }, { status: 400 });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error('[Payoneer/Reconcile] Error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

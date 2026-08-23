@@ -13,11 +13,12 @@ export async function GET() {
       uptime: process.uptime(),
     });
   } catch (e: any) {
+    console.error('[Heartbeat] Error:', e);
     return NextResponse.json({
       ok: false,
       timestamp: Date.now(),
       db: 'disconnected',
-      error: e.message,
+      error: 'Internal server error',
     }, { status: 503 });
   }
 }

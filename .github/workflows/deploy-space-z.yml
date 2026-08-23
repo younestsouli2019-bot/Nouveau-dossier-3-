@@ -17,7 +17,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   MAIN_APP: https://t1trn6kunnv1-d.space-z.ai

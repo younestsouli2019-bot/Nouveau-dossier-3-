@@ -26,7 +26,8 @@ export async function GET() {
       timestamp: new Date().toISOString(),
     });
   } catch (e: any) {
-    return NextResponse.json({ status: 'unreachable', error: e.message, hint: 'Bybit testnet may be blocked from Vercel. Add BYBIT_API_KEY/SECRET to Vercel env vars.' }, { status: 200 });
+    console.error('[Bybit] Error:', e);
+    return NextResponse.json({ status: 'unreachable', error: 'Internal server error', hint: 'Bybit testnet may be blocked from Vercel. Add BYBIT_API_KEY/SECRET to Vercel env vars.' }, { status: 200 });
   }
 }
 
@@ -59,6 +60,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
     }
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    console.error('[Bybit] Error:', e);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

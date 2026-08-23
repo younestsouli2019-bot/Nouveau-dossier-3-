@@ -258,7 +258,7 @@ export async function POST() {
   } catch (error) {
     console.error('Resubmit all API error:', error);
     return NextResponse.json(
-      { error: 'Failed to resubmit batches', details: String(error) },
+      { error: 'Internal server error' },
       { status: 500 },
     );
   }

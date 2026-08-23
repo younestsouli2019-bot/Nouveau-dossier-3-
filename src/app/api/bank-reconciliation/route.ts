@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[BankReconciliation]', error);
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Reconciliation failed' },
+      { success: false, error: 'Internal server error' },
       { status: 500 },
     );
   }

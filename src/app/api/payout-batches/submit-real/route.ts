@@ -330,7 +330,7 @@ export async function POST(request: NextRequest) {
           batchStatus: 'FAILED',
           successfulItems: 0,
           failedItems: batch.items.length,
-          error: errorMessage,
+          error: 'Internal server error',
         });
 
         totalFailed++;
@@ -360,10 +360,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[SubmitReal] API error:', error);
     return NextResponse.json(
-      {
-        error: 'Failed to submit batches to real providers',
-        details: error instanceof Error ? error.message : String(error),
-      },
+      { error: 'Internal server error' },
       { status: 500 },
     );
   }

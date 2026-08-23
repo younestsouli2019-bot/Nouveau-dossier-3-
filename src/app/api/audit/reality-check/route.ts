@@ -22,6 +22,7 @@ function isEmpty(v: unknown): boolean {
 }
 
 export async function GET() {
+  try {
   const violations: Violation[] = []
   let entitiesScanned = 0
 
@@ -99,4 +100,8 @@ export async function GET() {
     },
     timestamp: new Date().toISOString(),
   })
+  } catch (error) {
+    console.error('[/api/audit/reality-check] Error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }

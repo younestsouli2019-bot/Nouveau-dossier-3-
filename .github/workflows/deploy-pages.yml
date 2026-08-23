@@ -9,6 +9,9 @@ on:
       - 'site/realworldcerts/**'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 concurrency:
   group: vercel-static-deploy
   cancel-in-progress: false

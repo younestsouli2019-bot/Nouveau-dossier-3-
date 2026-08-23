@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result, { status: result.success ? 200 : 400 })
   } catch (error) {
     console.error('[Procurement/Receipt]', error)
-    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : 'Failed' }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -53,6 +53,6 @@ export async function GET() {
     return NextResponse.json({ success: true, discrepancies, deliveredWithoutReceipt: noReceipt })
   } catch (error) {
     console.error('[Procurement/Receipt GET]', error)
-    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : 'Failed' }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }

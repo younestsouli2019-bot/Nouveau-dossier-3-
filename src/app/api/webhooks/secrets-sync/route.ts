@@ -105,8 +105,8 @@ export async function POST(req: NextRequest) {
       timestamp,
     });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error('[Webhook/SecretsSync] Error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 

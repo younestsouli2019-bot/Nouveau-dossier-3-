@@ -194,9 +194,9 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('[Pay-Bridge]', error)
+    console.error('[Pay-Bridge] Error:', error)
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Bridge failed' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     )
   }

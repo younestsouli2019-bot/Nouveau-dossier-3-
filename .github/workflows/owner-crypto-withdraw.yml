@@ -21,8 +21,14 @@ on:
         type: boolean
         required: false
         default: false
+
 permissions:
   contents: write
+
+concurrency:
+  group: owner-crypto-withdraw
+  cancel-in-progress: false
+
 jobs:
   withdraw:
     runs-on: ubuntu-latest

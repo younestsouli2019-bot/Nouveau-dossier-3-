@@ -25,9 +25,9 @@ export async function POST() {
       ...report,
     })
   } catch (error) {
-    console.error('[Procurement Optimize]', error)
+    console.error('[Procurement Optimize] Error:', error)
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Optimization failed' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     )
   }
