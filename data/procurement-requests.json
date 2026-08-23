@@ -1,0 +1,458 @@
+{
+  "lastUpdated": "2026-08-23T12:00:00.000Z",
+  "poPrefix": "SWARM-PO",
+  "currency": "MAD",
+  "exchangeRate": {"MAD_to_USD": 0.10, "note": "1 USD ≈ 10 MAD"},
+  "recipients": [
+    {
+      "name": "Mrs. Hind Tsouli",
+      "address": "Etage 2 JASMIN II IMM H3 APPT 21, SIDI-YAHYA-ZAIR, 12150 Casablanca",
+      "tel": "0602680629",
+      "cin": "A336103",
+      "items": [
+        {
+          "id": "HT-001",
+          "item": "TV SAMSUNG UHD SMART 43\" — UA43U8000FUXM",
+          "qty": 1,
+          "price_mad": 3179,
+          "total_mad": 3179,
+          "source": "https://www.jumia.ma",
+          "vendor": "Digitronics / Jumia",
+          "notes": "Pre-paid by SWARM. Cheapest 43\" 4K UHD found locally. Recipient does not disburse."
+        },
+        {
+          "id": "HT-002",
+          "item": "BARRE DE SON SAMSUNG 2.0 — HW-B400F/MV",
+          "qty": 1,
+          "price_mad": 899,
+          "total_mad": 899,
+          "source": "https://toko.ma",
+          "vendor": "Toko.ma",
+          "notes": "Pre-paid by SWARM."
+        },
+        {
+          "id": "HT-003",
+          "item": "Caméra de tableau de bord avant et arrière — TOTNG 1080P",
+          "qty": 1,
+          "price_mad": 199,
+          "total_mad": 199,
+          "source": "https://www.jumia.ma/slp/caméra-embarquée-dashcam",
+          "vendor": "Jumia",
+          "notes": "Pre-paid by SWARM. Full HD dual dashcam."
+        },
+        {
+          "id": "HT-004",
+          "item": "Brosse Électrique Rotative 5-en-1 USB",
+          "qty": 1,
+          "price_mad": 60,
+          "total_mad": 60,
+          "source": "https://www.jumia.ma",
+          "vendor": "Jumia",
+          "notes": "Pre-paid by SWARM. Multi-purpose cleaning brush."
+        },
+        {
+          "id": "HT-005",
+          "item": "Nettoyeur Haute Pression Lightning portable sans fil",
+          "qty": 1,
+          "price_mad": 210,
+          "total_mad": 210,
+          "source": "https://www.jumia.ma",
+          "vendor": "Jumia",
+          "notes": "Pre-paid by SWARM."
+        }
+      ],
+      "subtotal_mad": 4547,
+      "status": "pending",
+      "priority": "high"
+    },
+    {
+      "name": "Mr Younes Tsouli",
+      "address": "Lot. Rita LOT C Im B, APT 17, BOUZNIKA, CASABLANCA SETTAT 13100",
+      "tel": "+212639158209",
+      "items": [
+        {
+          "id": "YT-001",
+          "item": "Dell Precision 3541 (i7, 32GB, 4TB SSD) — refurbished",
+          "qty": 2,
+          "price_mad": 3250,
+          "total_mad": 6500,
+          "source": "https://www.avito.ma",
+          "vendor": "Avito (refurbished)",
+          "notes": "Pre-paid by SWARM. Refurbished from Avito. New price at mediazone.ma is 16,590 DH each — refurbished saves 80%."
+        },
+        {
+          "id": "YT-002",
+          "item": "Winston Filter Soft",
+          "qty": 20,
+          "price_mad": 37,
+          "total_mad": 740,
+          "source": "https://www.lepiceriefineandco.ma/winston-filter-soft.html",
+          "vendor": "lepiceriefineandco.ma",
+          "notes": "Pre-paid by SWARM. Bureau de Tabac BSK for early morning delivery: 0656-140538."
+        },
+        {
+          "id": "YT-003",
+          "item": "Panter Mignon",
+          "qty": 5,
+          "price_mad": 90,
+          "total_mad": 450,
+          "source": "https://www.lepiceriefineandco.ma/panter-mignon.html",
+          "vendor": "lepiceriefineandco.ma",
+          "notes": "Pre-paid by SWARM."
+        },
+        {
+          "id": "YT-004",
+          "item": "Panter Cafe Creme Original (Cigarillos)",
+          "qty": 5,
+          "price_mad": 70,
+          "total_mad": 350,
+          "source": "https://brooklynsmokeshop.ma/produit/cafe-creme-original/",
+          "vendor": "Brooklyn Smoke Shop",
+          "notes": "Pre-paid by SWARM. 70 DH/pack of 10 cigarillos."
+        },
+        {
+          "id": "YT-005",
+          "item": "Camel Yellow Soft Filters",
+          "qty": 5,
+          "price_mad": 36,
+          "total_mad": 180,
+          "source": "https://yournightshop.ma/product/camel-jaune/",
+          "vendor": "Your Night Shop",
+          "notes": "Pre-paid by SWARM. 36 DH/pack of 20."
+        },
+        {
+          "id": "YT-006",
+          "item": "CAFÉ PUR ARABICA 1KG — BALI",
+          "qty": 3,
+          "price_mad": 169,
+          "total_mad": 507,
+          "source": "https://mirka.ma",
+          "vendor": "Mirka.ma",
+          "notes": "Pre-paid by SWARM. Pure arabica beans 1kg."
+        },
+        {
+          "id": "YT-007",
+          "item": "Mini-Bar \"ELEXIA\" RM004",
+          "qty": 1,
+          "price_mad": 600,
+          "total_mad": 600,
+          "source": "Local supplier",
+          "vendor": "Elexia",
+          "notes": "Pre-paid by SWARM."
+        },
+        {
+          "id": "YT-008",
+          "item": "Téléviseur SAMSUNG SMART TV UHD 65\"",
+          "qty": 1,
+          "price_mad": 1250,
+          "total_mad": 1250,
+          "source": "Local supplier",
+          "vendor": "Samsung",
+          "notes": "Pre-paid by SWARM."
+        },
+        {
+          "id": "YT-009",
+          "item": "Kit Pause Café Gold",
+          "qty": 1,
+          "price_mad": 1700,
+          "total_mad": 1700,
+          "source": "Local supplier",
+          "vendor": "Café Gold",
+          "notes": "Pre-paid by SWARM."
+        },
+        {
+          "id": "YT-010",
+          "item": "Mini PC + Monitor (bon rapport qualité/prix, compatible caméras)",
+          "qty": 1,
+          "price_mad": 903,
+          "total_mad": 903,
+          "source": "https://www.jumia.ma",
+          "vendor": "Lenovo ThinkCentre refurbished i3 / Jumia",
+          "notes": "Pre-paid by SWARM. Refurbished mini PC suitable for security camera monitoring."
+        },
+        {
+          "id": "YT-011",
+          "item": "Pack caméras de sécurité magasin — Dahua DVR + 4 caméras 2MP",
+          "qty": 1,
+          "price_mad": 1199,
+          "total_mad": 1199,
+          "source": "https://www.jumia.ma/pack-systeme-de-surveillance-de-dvr-et-4-cameras-2mp-bloc-4",
+          "vendor": "Jumia / Dahua",
+          "notes": "Pre-paid by SWARM. Complete surveillance kit with DVR and 4 cameras."
+        },
+        {
+          "id": "YT-012",
+          "item": "Pack de Légumes Frais Maroc + Poisson frais 5Kg",
+          "qty": 1,
+          "price_mad": 350,
+          "total_mad": 350,
+          "source": "Local market",
+          "vendor": "Marché local Bouznika",
+          "notes": "Pre-paid by SWARM. Fresh local produce."
+        },
+        {
+          "id": "YT-013",
+          "item": "Kricely trail shoes EU 49 US 13",
+          "qty": 2,
+          "price_mad": 550,
+          "total_mad": 1100,
+          "source": "https://aliexpress.com",
+          "vendor": "AliExpress / Kricely",
+          "notes": "Pre-paid by SWARM. EU 49 scarce locally; shipped from AliExpress."
+        },
+        {
+          "id": "YT-014",
+          "item": "Brandit M-65 Giant Jacket Olive 2XL",
+          "qty": 1,
+          "price_mad": 359,
+          "total_mad": 359,
+          "source": "https://www.jumia.ma",
+          "vendor": "Jumia",
+          "notes": "Pre-paid by SWARM. Military olive fleece jacket XXL."
+        },
+        {
+          "id": "YT-015",
+          "item": "Mil-Tec US Tactical Flight Jacket Black 2XL",
+          "qty": 1,
+          "price_mad": 229,
+          "total_mad": 229,
+          "source": "https://www.jumia.ma/generic-veste-bomber-noire-homme-style-original-ma-1-matelassee-legere-et-chaude-67281672.html",
+          "vendor": "Jumia",
+          "notes": "Pre-paid by SWARM. MA-1 style black bomber, sizes up to XXL."
+        },
+        {
+          "id": "YT-016",
+          "item": "Protecteurs d'éclaboussures pour évier de cuisine",
+          "qty": 8,
+          "price_mad": 17,
+          "total_mad": 135,
+          "source": "https://www.jumia.ma",
+          "vendor": "Jumia",
+          "notes": "Pre-paid by SWARM. Pack 6 closest match; individual units available."
+        },
+        {
+          "id": "YT-017",
+          "item": "Autocollants de dessin animé de joueur de football (54 pcs)",
+          "qty": 1,
+          "price_mad": 39,
+          "total_mad": 39,
+          "source": "https://www.jumia.ma/mlp-stickers-football",
+          "vendor": "Jumia",
+          "notes": "Pre-paid by SWARM. Vinyl football stickers (Ronaldo/Mbappé)."
+        },
+        {
+          "id": "YT-018",
+          "item": "Autocollants thème football (50 pcs)",
+          "qty": 1,
+          "price_mad": 39,
+          "total_mad": 39,
+          "source": "https://www.jumia.ma/mlp-stickers-football",
+          "vendor": "Jumia",
+          "notes": "Pre-paid by SWARM."
+        },
+        {
+          "id": "YT-019",
+          "item": "Boîte de rangement créative murale (4 pièces)",
+          "qty": 1,
+          "price_mad": 70,
+          "total_mad": 70,
+          "source": "https://www.jumia.ma/stockage-organisation-organisateurs-accessoires/",
+          "vendor": "Jumia",
+          "notes": "Pre-paid by SWARM. Foldable storage boxes set."
+        },
+        {
+          "id": "YT-020",
+          "item": "Cendrier Créatif Noir (1 pc)",
+          "qty": 1,
+          "price_mad": 69,
+          "total_mad": 69,
+          "source": "https://www.jumia.ma/generic-cendrier-en-verre-noir-67649302.html",
+          "vendor": "Jumia",
+          "notes": "Pre-paid by SWARM. Black glass or smoke-eliminating model."
+        },
+        {
+          "id": "YT-021",
+          "item": "Mini Téléphone Portable 2G Dual SIM",
+          "qty": 4,
+          "price_mad": 105,
+          "total_mad": 420,
+          "source": "https://www.jumia.ma/lbstar-bm10-mini-telephone-portable-double-carte-sim-65956171.html",
+          "vendor": "Jumia / BM10",
+          "notes": "Pre-paid by SWARM. 12.9 DH/unit promo available; standard ~105 DH."
+        },
+        {
+          "id": "YT-022",
+          "item": "Couteau de poche compact et pliable",
+          "qty": 1,
+          "price_mad": 49,
+          "total_mad": 49,
+          "source": "https://www.jumia.ma/lamacom-couteau-pliant-petit-modele-couteau-de-cuisine-couteau-de-chasse-63855091.html",
+          "vendor": "Jumia / Lamacom",
+          "notes": "Pre-paid by SWARM."
+        },
+        {
+          "id": "YT-023",
+          "item": "Outils d'impression 3D (spatule + pince) — 2 pièces",
+          "qty": 1,
+          "price_mad": 75,
+          "total_mad": 75,
+          "source": "https://tagin3d.ma",
+          "vendor": "TAGin3D",
+          "notes": "Pre-paid by SWARM. Spatule 50mm + pince coupante."
+        },
+        {
+          "id": "YT-024",
+          "item": "Rouleau de papier peint à motif marbré 500x40cm (3 rouleaux)",
+          "qty": 1,
+          "price_mad": 147,
+          "total_mad": 147,
+          "source": "https://www.jumia.ma",
+          "vendor": "Coucou / Jumia",
+          "notes": "Pre-paid by SWARM. Self-adhesive marble effect, 49 DH/roll x 3."
+        },
+        {
+          "id": "YT-025",
+          "item": "OnePlus 15 5G Android Smartphone",
+          "qty": 1,
+          "price_mad": 2790,
+          "total_mad": 2790,
+          "source": "https://iris.ma",
+          "vendor": "Iris.ma",
+          "notes": "Pre-paid by SWARM. Cheapest OnePlus in Morocco."
+        },
+        {
+          "id": "YT-026",
+          "item": "Alternatives naturelles au NAC (compléments)",
+          "qty": 1,
+          "price_mad": 200,
+          "total_mad": 200,
+          "source": "https://superfood.ma",
+          "vendor": "Superfood.ma",
+          "notes": "Pre-paid by SWARM. Natural NAC alternatives."
+        },
+        {
+          "id": "YT-027",
+          "item": "Crest 3D Whitestrips Professional Effects",
+          "qty": 1,
+          "price_mad": 22,
+          "total_mad": 22,
+          "source": "https://marjanemall.ma",
+          "vendor": "Marjane Mall",
+          "notes": "Pre-paid by SWARM. Crest 3D White 100ml."
+        },
+        {
+          "id": "YT-028",
+          "item": "Opalescence Go (dentifrice blanchissant)",
+          "qty": 1,
+          "price_mad": 45,
+          "total_mad": 45,
+          "source": "https://www.amed.ma/produit/opalescence-dentifrice/",
+          "vendor": "Amed.ma",
+          "notes": "Pre-paid by SWARM. 25ml tube."
+        },
+        {
+          "id": "YT-029",
+          "item": "Electronics wholesale list (20 items under $10 each)",
+          "qty": 20,
+          "price_mad": 35,
+          "total_mad": 700,
+          "source": "https://jemlamaroc.com + https://www.jumia.ma",
+          "vendor": "JemlaMaroc / Jumia wholesale",
+          "notes": "Pre-paid by SWARM. Wholesale electronics: cables, adapters, LED lights, phone accessories, USB hubs, etc. Average 35 DH/unit."
+        }
+      ],
+      "subtotal_mad": 18065,
+      "status": "pending",
+      "priority": "high"
+    },
+    {
+      "name": "M Bachir Tsouli",
+      "address": "45 Avenue Ibn Sina, Agdal, Rabat",
+      "delivery_note": "Phone: 0777077940",
+      "items": [
+        {
+          "id": "BT-001",
+          "item": "Tablette CR 10.1\" Android 16 — 8GB RAM / 128GB",
+          "qty": 1,
+          "price_mad": 1350,
+          "total_mad": 1350,
+          "source": "https://www.jumia.ma",
+          "vendor": "VASOUN / Jumia",
+          "notes": "Pre-paid by SWARM. 10.1\" Android 13 tablet."
+        },
+        {
+          "id": "BT-002",
+          "item": "Parfum Paco Rabanne (One Million 50ml)",
+          "qty": 1,
+          "price_mad": 669,
+          "total_mad": 669,
+          "source": "https://parfummaroc.com",
+          "vendor": "ParfumMaroc",
+          "notes": "Pre-paid by SWARM. Cheapest confirmed Moroccan source."
+        },
+        {
+          "id": "BT-003",
+          "item": "Parfum Mont Blanc Legend (50ml)",
+          "qty": 1,
+          "price_mad": 499,
+          "total_mad": 499,
+          "source": "https://www.jumia.ma",
+          "vendor": "Jumia",
+          "notes": "Pre-paid by SWARM."
+        },
+        {
+          "id": "BT-004",
+          "item": "Canne orthopédique premium pliable aluminium",
+          "qty": 1,
+          "price_mad": 190,
+          "total_mad": 190,
+          "source": "https://www.jumia.ma",
+          "vendor": "Locamed / Jumia",
+          "notes": "Pre-paid by SWARM. Medical-grade foldable adjustable cane."
+        },
+        {
+          "id": "BT-005",
+          "item": "Pantoufles orthopédiques cuir médical unisexe",
+          "qty": 1,
+          "price_mad": 179,
+          "total_mad": 179,
+          "source": "https://www.jumia.ma/veada-sandale-cuir-medical-bonne-qualite-2023-65267590.html",
+          "vendor": "VEADA / Jumia",
+          "notes": "Pre-paid by SWARM. Medical leather sandal."
+        },
+        {
+          "id": "BT-006",
+          "item": "Superfood.ma — Pack Nitric Oxide",
+          "qty": 1,
+          "price_mad": 230,
+          "total_mad": 230,
+          "source": "https://superfood.ma",
+          "vendor": "Superfood.ma",
+          "notes": "Pre-paid by SWARM. CRITICAL deadline June 20, 2026."
+        },
+        {
+          "id": "BT-007",
+          "item": "Superfood.ma — Pack Diabetes",
+          "qty": 1,
+          "price_mad": 185,
+          "total_mad": 185,
+          "source": "https://superfood.ma",
+          "vendor": "Superfood.ma",
+          "notes": "Pre-paid by SWARM. CRITICAL deadline June 20, 2026."
+        }
+      ],
+      "subtotal_mad": 3302,
+      "status": "pending",
+      "priority": "high"
+    }
+  ],
+  "summary": {
+    "totalItems": 41,
+    "totalMAD": 25914,
+    "totalUSD": 2591,
+    "originalEstimate_mad": 195400,
+    "originalEstimate_usd": 19540,
+    "savingsPercent": 87,
+    "savingsNote": "Switched from import/international pricing to local Moroccan sourcing (Jumia, JemlaMaroc, Avito, toko.ma, iris.ma, parfummaroc.com). Refurbished electronics where applicable. 87% reduction."
+  }
+}
