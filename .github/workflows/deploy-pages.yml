@@ -80,8 +80,30 @@ jobs:
           fi
           echo "pattern score $SCORE is <= 15 (SAFE): proceed."
 
+  media-contract-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      RWC_SITE_URL: "https://www.realworldcerts.com"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - name: Run course media contract audit (live site)
+        run: |
+          set -euo pipefail
+          node scripts/rwc-course-media-audit.mjs --json --out data/out/course-media-audit.json
+          RC=$?
+          echo "audit exit code: $RC"
+          if [ "$RC" -ne 0 ]; then
+            echo "::error::PUBLISH=BLOCKED REASON=MEDIA_CONTRACT_FAILED ($(node -e "const o=require('./data/out/course-media-audit.json');console.log(o.summary.pass+'/'+o.summary.audited+' courses passed')") courses passed)"
+            exit $RC
+          fi
+          echo "PUBLISH=ALLOWED (media contract satisfied)"
+
   deploy:
-    needs: pattern-guardrails
+    needs: [pattern-guardrails, media-contract-gate]
     runs-on: ubuntu-latest
     env:
       SWARM_PRODUCTION_URL: "https://t1trn6kunnv1-d.space-z.ai"

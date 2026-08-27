@@ -1,0 +1,563 @@
+{
+  "summary": {
+    "site": "https://www.realworldcerts.com",
+    "contract_version": "1.0.0",
+    "checked_at": "2026-08-27T20:15:06.938Z",
+    "audited": 3,
+    "pass": 0,
+    "fail": 3,
+    "publish": "BLOCKED",
+    "reason": "MEDIA_CONTRACT_FAILED",
+    "registry_file": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\out\\course-asset-registry.json",
+    "reports": [
+      {
+        "slug": "certified-blockchain-expert-cbe-preptest-2025",
+        "title": "Certified Blockchain Expert (CBE) preptest 2025",
+        "course_id": null,
+        "page_url": "https://www.realworldcerts.com/catalog/certified-blockchain-expert-cbe-preptest-2025.html",
+        "checks": {
+          "hero_image": {
+            "kind": "hero_image",
+            "required": 1,
+            "found": 0,
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "thumbnail": {
+            "kind": "thumbnail",
+            "required": 1,
+            "found": 0,
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "module_images": {
+            "kind": "module_images",
+            "required": 3,
+            "found": 1,
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "diagrams": {
+            "kind": "diagrams",
+            "required": 2,
+            "found": 0,
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "trailer_video": {
+            "kind": "trailer_video",
+            "required": 1,
+            "found": 0,
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "lesson_videos": {
+            "kind": "lesson_videos",
+            "required": 3,
+            "found": 0,
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "video_thumbnails": {
+            "kind": "video_thumbnails",
+            "required": 3,
+            "found": [
+              "/assets/courses/certified-blockchain-expert-cbe-preptest-2025.svg",
+              "/assets/courses/certified-blockchain-expert-cbe-preptest-2025-b.svg",
+              "/assets/courses/certified-blockchain-expert-cbe-preptest-2025-c.svg"
+            ],
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "cheat_sheet": {
+            "kind": "cheat_sheet",
+            "required": 1,
+            "found": 0,
+            "status": "FAIL",
+            "assetIds": []
+          }
+        },
+        "placeholders": [],
+        "recycled": [],
+        "broken": [],
+        "asset_ids": {
+          "hero_image": [],
+          "thumbnail": [],
+          "module_images": [],
+          "diagrams": [],
+          "trailer_video": [],
+          "lesson_videos": [],
+          "video_thumbnails": [],
+          "cheat_sheet": []
+        },
+        "status": "FAIL",
+        "fail_reasons": [
+          "asset_quantity_below_contract"
+        ],
+        "page_status": 200,
+        "image_count": 3,
+        "unique_images": 3,
+        "duplicate_image_uses": 0,
+        "video_element_count": 0,
+        "video_src_count": 0
+      },
+      {
+        "slug": "financial-risk-manager-test-bank",
+        "title": "Financial Risk Manager Test Bank",
+        "course_id": null,
+        "page_url": "https://www.realworldcerts.com/catalog/financial-risk-manager-test-bank.html",
+        "checks": {
+          "hero_image": {
+            "kind": "hero_image",
+            "required": 1,
+            "found": 0,
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "thumbnail": {
+            "kind": "thumbnail",
+            "required": 1,
+            "found": 0,
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "module_images": {
+            "kind": "module_images",
+            "required": 3,
+            "found": 1,
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "diagrams": {
+            "kind": "diagrams",
+            "required": 2,
+            "found": 0,
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "trailer_video": {
+            "kind": "trailer_video",
+            "required": 1,
+            "found": 0,
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "lesson_videos": {
+            "kind": "lesson_videos",
+            "required": 3,
+            "found": 0,
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "video_thumbnails": {
+            "kind": "video_thumbnails",
+            "required": 3,
+            "found": [
+              "/assets/courses/financial-risk-manager-test-bank.svg",
+              "/assets/courses/financial-risk-manager-test-bank-b.svg",
+              "/assets/courses/financial-risk-manager-test-bank-c.svg"
+            ],
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "cheat_sheet": {
+            "kind": "cheat_sheet",
+            "required": 1,
+            "found": 0,
+            "status": "FAIL",
+            "assetIds": []
+          }
+        },
+        "placeholders": [],
+        "recycled": [],
+        "broken": [],
+        "asset_ids": {
+          "hero_image": [],
+          "thumbnail": [],
+          "module_images": [],
+          "diagrams": [],
+          "trailer_video": [],
+          "lesson_videos": [],
+          "video_thumbnails": [],
+          "cheat_sheet": []
+        },
+        "status": "FAIL",
+        "fail_reasons": [
+          "asset_quantity_below_contract"
+        ],
+        "page_status": 200,
+        "image_count": 3,
+        "unique_images": 3,
+        "duplicate_image_uses": 0,
+        "video_element_count": 0,
+        "video_src_count": 0
+      },
+      {
+        "slug": "sap-certified-development-associate-abap-with-sap-exam",
+        "title": "SAP Certified Development Associate - ABAP with SAP Exam",
+        "course_id": null,
+        "page_url": "https://www.realworldcerts.com/catalog/sap-certified-development-associate-abap-with-sap-exam.html",
+        "checks": {
+          "hero_image": {
+            "kind": "hero_image",
+            "required": 1,
+            "found": 0,
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "thumbnail": {
+            "kind": "thumbnail",
+            "required": 1,
+            "found": 0,
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "module_images": {
+            "kind": "module_images",
+            "required": 3,
+            "found": 1,
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "diagrams": {
+            "kind": "diagrams",
+            "required": 2,
+            "found": 0,
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "trailer_video": {
+            "kind": "trailer_video",
+            "required": 1,
+            "found": 0,
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "lesson_videos": {
+            "kind": "lesson_videos",
+            "required": 3,
+            "found": 0,
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "video_thumbnails": {
+            "kind": "video_thumbnails",
+            "required": 3,
+            "found": [
+              "/assets/courses/sap-certified-development-associate-abap-with-sap-exam.svg",
+              "/assets/courses/sap-certified-development-associate-abap-with-sap-exam-b.svg",
+              "/assets/courses/sap-certified-development-associate-abap-with-sap-exam-c.svg"
+            ],
+            "status": "FAIL",
+            "assetIds": []
+          },
+          "cheat_sheet": {
+            "kind": "cheat_sheet",
+            "required": 1,
+            "found": 0,
+            "status": "FAIL",
+            "assetIds": []
+          }
+        },
+        "placeholders": [],
+        "recycled": [],
+        "broken": [],
+        "asset_ids": {
+          "hero_image": [],
+          "thumbnail": [],
+          "module_images": [],
+          "diagrams": [],
+          "trailer_video": [],
+          "lesson_videos": [],
+          "video_thumbnails": [],
+          "cheat_sheet": []
+        },
+        "status": "FAIL",
+        "fail_reasons": [
+          "asset_quantity_below_contract"
+        ],
+        "page_status": 200,
+        "image_count": 3,
+        "unique_images": 3,
+        "duplicate_image_uses": 0,
+        "video_element_count": 0,
+        "video_src_count": 0
+      }
+    ]
+  },
+  "reports": [
+    {
+      "slug": "certified-blockchain-expert-cbe-preptest-2025",
+      "title": "Certified Blockchain Expert (CBE) preptest 2025",
+      "course_id": null,
+      "page_url": "https://www.realworldcerts.com/catalog/certified-blockchain-expert-cbe-preptest-2025.html",
+      "checks": {
+        "hero_image": {
+          "kind": "hero_image",
+          "required": 1,
+          "found": 0,
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "thumbnail": {
+          "kind": "thumbnail",
+          "required": 1,
+          "found": 0,
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "module_images": {
+          "kind": "module_images",
+          "required": 3,
+          "found": 1,
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "diagrams": {
+          "kind": "diagrams",
+          "required": 2,
+          "found": 0,
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "trailer_video": {
+          "kind": "trailer_video",
+          "required": 1,
+          "found": 0,
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "lesson_videos": {
+          "kind": "lesson_videos",
+          "required": 3,
+          "found": 0,
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "video_thumbnails": {
+          "kind": "video_thumbnails",
+          "required": 3,
+          "found": [
+            "/assets/courses/certified-blockchain-expert-cbe-preptest-2025.svg",
+            "/assets/courses/certified-blockchain-expert-cbe-preptest-2025-b.svg",
+            "/assets/courses/certified-blockchain-expert-cbe-preptest-2025-c.svg"
+          ],
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "cheat_sheet": {
+          "kind": "cheat_sheet",
+          "required": 1,
+          "found": 0,
+          "status": "FAIL",
+          "assetIds": []
+        }
+      },
+      "placeholders": [],
+      "recycled": [],
+      "broken": [],
+      "asset_ids": {
+        "hero_image": [],
+        "thumbnail": [],
+        "module_images": [],
+        "diagrams": [],
+        "trailer_video": [],
+        "lesson_videos": [],
+        "video_thumbnails": [],
+        "cheat_sheet": []
+      },
+      "status": "FAIL",
+      "fail_reasons": [
+        "asset_quantity_below_contract"
+      ],
+      "page_status": 200,
+      "image_count": 3,
+      "unique_images": 3,
+      "duplicate_image_uses": 0,
+      "video_element_count": 0,
+      "video_src_count": 0
+    },
+    {
+      "slug": "financial-risk-manager-test-bank",
+      "title": "Financial Risk Manager Test Bank",
+      "course_id": null,
+      "page_url": "https://www.realworldcerts.com/catalog/financial-risk-manager-test-bank.html",
+      "checks": {
+        "hero_image": {
+          "kind": "hero_image",
+          "required": 1,
+          "found": 0,
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "thumbnail": {
+          "kind": "thumbnail",
+          "required": 1,
+          "found": 0,
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "module_images": {
+          "kind": "module_images",
+          "required": 3,
+          "found": 1,
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "diagrams": {
+          "kind": "diagrams",
+          "required": 2,
+          "found": 0,
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "trailer_video": {
+          "kind": "trailer_video",
+          "required": 1,
+          "found": 0,
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "lesson_videos": {
+          "kind": "lesson_videos",
+          "required": 3,
+          "found": 0,
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "video_thumbnails": {
+          "kind": "video_thumbnails",
+          "required": 3,
+          "found": [
+            "/assets/courses/financial-risk-manager-test-bank.svg",
+            "/assets/courses/financial-risk-manager-test-bank-b.svg",
+            "/assets/courses/financial-risk-manager-test-bank-c.svg"
+          ],
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "cheat_sheet": {
+          "kind": "cheat_sheet",
+          "required": 1,
+          "found": 0,
+          "status": "FAIL",
+          "assetIds": []
+        }
+      },
+      "placeholders": [],
+      "recycled": [],
+      "broken": [],
+      "asset_ids": {
+        "hero_image": [],
+        "thumbnail": [],
+        "module_images": [],
+        "diagrams": [],
+        "trailer_video": [],
+        "lesson_videos": [],
+        "video_thumbnails": [],
+        "cheat_sheet": []
+      },
+      "status": "FAIL",
+      "fail_reasons": [
+        "asset_quantity_below_contract"
+      ],
+      "page_status": 200,
+      "image_count": 3,
+      "unique_images": 3,
+      "duplicate_image_uses": 0,
+      "video_element_count": 0,
+      "video_src_count": 0
+    },
+    {
+      "slug": "sap-certified-development-associate-abap-with-sap-exam",
+      "title": "SAP Certified Development Associate - ABAP with SAP Exam",
+      "course_id": null,
+      "page_url": "https://www.realworldcerts.com/catalog/sap-certified-development-associate-abap-with-sap-exam.html",
+      "checks": {
+        "hero_image": {
+          "kind": "hero_image",
+          "required": 1,
+          "found": 0,
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "thumbnail": {
+          "kind": "thumbnail",
+          "required": 1,
+          "found": 0,
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "module_images": {
+          "kind": "module_images",
+          "required": 3,
+          "found": 1,
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "diagrams": {
+          "kind": "diagrams",
+          "required": 2,
+          "found": 0,
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "trailer_video": {
+          "kind": "trailer_video",
+          "required": 1,
+          "found": 0,
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "lesson_videos": {
+          "kind": "lesson_videos",
+          "required": 3,
+          "found": 0,
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "video_thumbnails": {
+          "kind": "video_thumbnails",
+          "required": 3,
+          "found": [
+            "/assets/courses/sap-certified-development-associate-abap-with-sap-exam.svg",
+            "/assets/courses/sap-certified-development-associate-abap-with-sap-exam-b.svg",
+            "/assets/courses/sap-certified-development-associate-abap-with-sap-exam-c.svg"
+          ],
+          "status": "FAIL",
+          "assetIds": []
+        },
+        "cheat_sheet": {
+          "kind": "cheat_sheet",
+          "required": 1,
+          "found": 0,
+          "status": "FAIL",
+          "assetIds": []
+        }
+      },
+      "placeholders": [],
+      "recycled": [],
+      "broken": [],
+      "asset_ids": {
+        "hero_image": [],
+        "thumbnail": [],
+        "module_images": [],
+        "diagrams": [],
+        "trailer_video": [],
+        "lesson_videos": [],
+        "video_thumbnails": [],
+        "cheat_sheet": []
+      },
+      "status": "FAIL",
+      "fail_reasons": [
+        "asset_quantity_below_contract"
+      ],
+      "page_status": 200,
+      "image_count": 3,
+      "unique_images": 3,
+      "duplicate_image_uses": 0,
+      "video_element_count": 0,
+      "video_src_count": 0
+    }
+  ]
+}

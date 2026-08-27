@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-08-27T21:40:33.659Z",
+  "engine": "postgres-integrity-audit",
+  "kv": {
+    "settlementsTotal": 27,
+    "settlementsCompletedNoProof": 27,
+    "batchesTotal": 5,
+    "batchesCompletedNoProof": 5,
+    "itemsTotal": 16,
+    "itemsSyntheticRefs": 16,
+    "revTotal": 8,
+    "revCompletedNoProof": 3
+  },
+  "verdict": "INTEGRITY_GAP",
+  "findings": [
+    {
+      "level": "CRITICAL",
+      "area": "settlement_integrity",
+      "message": "27/27 OwnerSettlement rows marked 'completed' with NO proofHash/externalRef/verifiedAt. Amounts sum to $13744.11 with zero verifiable external receipt."
+    },
+    {
+      "level": "CRITICAL",
+      "area": "payout_integrity",
+      "message": "5/5 PayoutBatch marked 'completed' with NULL providerBatchRef/proofHash/integrity hash and autoApproved=autoProcessed=false. No rail confirmation backs these."
+    },
+    {
+      "level": "WARN",
+      "area": "payout_integrity",
+      "message": "16/16 PayoutItem use sequential synthetic transactionRefs (e.g. BC-LU-2026-001) instead of real rail transaction IDs. deliveryConfirmed=true without external confirmation."
+    },
+    {
+      "level": "CRITICAL",
+      "area": "revenue_integrity",
+      "message": "3/8 RevenueEvent status=completed but proofHash=null (proofType: api_receipt,manual_attestation,api_receipt). One is manual_attestation=$3,500 with no hash."
+    },
+    {
+      "level": "INFO",
+      "area": "reconciliation",
+      "message": "DB-of-record total: OwnerSettlement=$13744.11, PayoutBatch=$6224.55. No PaymentIntent rows exist (payment_intent registry empty)."
+    }
+  ]
+}

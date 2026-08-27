@@ -1,0 +1,19 @@
+[
+  {
+    "slug": "ai-and-automation",
+    "course_id": "RWC-AI-301",
+    "category": "AI & Automation",
+    "ok": false,
+    "deficits": [
+      "trailer_video",
+      "lesson_videos_3of3",
+      "hero_image",
+      "thumbnail",
+      "module_images_3of3"
+    ],
+    "assets_required": 3,
+    "lesson_required": 3,
+    "assets_ok": 0,
+    "assets_total": 12
+  }
+]
