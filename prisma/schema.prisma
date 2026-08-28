@@ -677,3 +677,83 @@ model ClearingBatch {
   @@index([rail])
   @@index([status])
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// PERSISTENT SWARM MEMORY + ANTICIPATION FOUNDATION
+// -------------------------------------------------------------------------
+// Replaces the ephemeral in-memory/flat-file swarm memory (resets on restart)
+// with durable Postgres-backed tables for:
+//   - context retention (per-agent conversation/context history)
+//   - anticipation / proactive suggestions (decision history -> ranked next
+//     actions) and probable-intent interpretation
+//   - error recovery (durable error + graceful-degradation policy state)
+//   - external integration registry (connectors; never stores secrets)
+// ─────────────────────────────────────────────────────────────────────────
+
+model SwarmMemoryKV {
+  namespace String
+  key       String
+  value     Json
+  version   Int      @default(1)
+  expiresAt DateTime?
+  updatedAt DateTime @default(now())
+
+  @@id([namespace, key])
+}
+
+model SwarmAgentContext {
+  id         String   @id @default(cuid())
+  agent      String
+  entryType  String   @default("conversation")
+  payload    Json
+  intentScore Float?
+  createdAt  DateTime @default(now())
+
+  @@index([agent, createdAt])
+}
+
+model SwarmDecision {
+  id        String   @id @default(cuid())
+  agent     String
+  action    String
+  outcome   String
+  weight    Float    @default(1)
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  @@index([agent])
+}
+
+model SwarmSuggestion {
+  id         String   @id @default(cuid())
+  agent      String
+  suggestion String
+  rank       Int      @default(0)
+  score      Float    @default(0)
+  basis      String   @default("anticipation")
+  createdAt  DateTime @default(now())
+
+  @@index([agent, createdAt])
+}
+
+model SwarmErrorLog {
+  id            String   @id @default(cuid())
+  agent         String
+  error         String
+  degradePolicy String   @default("retry")
+  remediation   String?
+  state         String   @default("degraded")
+  metadata      Json     @default("{}")
+  createdAt     DateTime @default(now())
+
+  @@index([agent, createdAt])
+}
+
+model SwarmIntegration {
+  name      String   @id
+  kind      String
+  baseUrl   String
+  status    String   @default("unknown")
+  metadata  Json     @default("{}")
+  updatedAt DateTime @default(now())
+}
