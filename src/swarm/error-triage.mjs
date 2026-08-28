@@ -197,3 +197,105 @@ export async function runCustodianLoop({ agent_id, primaryTask, scanScope = ["sr
     telemetry,
   };
 }
+
+
+// ── TypeScript Bug Scanner Integration ──────────────────────────────────────
+// Scans for TypeScript compilation errors and reports them to the custodianship
+// system for autonomous triage + fixing.
+
+import { execSync } from "node:child_process";
+
+const BUG_SCANNER_ENDPOINT =
+  process.env.SWARM_BUG_SCANNER_URL ||
+  "https://superagent-d5a9f123.base44.app/functions/swarmBugScanner";
+
+/**
+ * Runs tsc --noEmit and parses the output into structured bug entries.
+ * Falls back to reading %TEMP%/tsc-errors.txt if tsc is unavailable.
+ */
+export function scanTypeScriptErrors(projectRoot = ".") {
+  const bugs = [];
+  try {
+    const output = execSync("npx tsc --noEmit 2>&1", {
+      cwd: projectRoot,
+      encoding: "utf8",
+      timeout: 120000,
+    });
+    parseTscOutput(output, bugs);
+  } catch (err) {
+    // tsc exits non-zero on errors — stdout contains the errors
+    const output = String(err.stdout || err.message || "");
+    parseTscOutput(output, bugs);
+  }
+
+  // Fallback: read tsc-errors.txt
+  if (bugs.length === 0) {
+    const tempFile = process.env.TEMP ? "\tsc-errors.txt" : "/tmp/tsc-errors.txt";
+    const errorFile = (process.env.TEMP || "/tmp") + tempFile;
+    try {
+      const fs = require("fs");
+      if (fs.existsSync(errorFile)) {
+        const content = fs.readFileSync(errorFile, "utf8");
+        parseTscOutput(content, bugs);
+      }
+    } catch {}
+  }
+
+  return bugs;
+}
+
+function parseTscOutput(output, bugs) {
+  const lines = output.split("
+");
+  // tsc format: file(line,col): error TSxxxx: message
+  const tscRegex = /^(.+?)\((\d+),(\d+)\):\s*(error|warning)\s+(TS\d+):\s*(.+)$/;
+  for (const line of lines) {
+    const match = line.match(tscRegex);
+    if (match) {
+      bugs.push({
+        file: match[1].trim(),
+        line: parseInt(match[2], 10),
+        column: parseInt(match[3], 10),
+        code: match[5],
+        message: match[6].trim(),
+        severity: match[4] === "error" ? "error" : "warning",
+      });
+    }
+  }
+}
+
+/**
+ * Full TypeScript bug scan + triage pipeline.
+ * Scans for errors, sends to the bug scanner backend for triage, and
+ * broadcasts each finding as a custodianship elevation.
+ */
+export async function runBugSentinel(agentId = "bug-sentinel", projectRoot = ".") {
+  console.log("[BugSentinel][" + agentId + "] Scanning for TypeScript errors...");
+  const bugs = scanTypeScriptErrors(projectRoot);
+
+  if (bugs.length === 0) {
+    console.log("[BugSentinel][" + agentId + "] No errors found. Clean.");
+    return { status: "idle", bugs: 0 };
+  }
+
+  console.log("[BugSentinel][" + agentId + "] Found " + bugs.length + " error(s). Triaging...");
+
+  // Send to bug scanner for triage
+  try {
+    const resp = await fetch(BUG_SCANNER_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        agent_id: agentId,
+        errors: bugs,
+        project: "AgentSwarm",
+      }),
+    });
+    const result = await resp.json();
+    console.log("[BugSentinel][" + agentId + "] Triaged: " + result.total_bugs + " bugs, " + result.fixable_now + " auto-fixable.");
+    return result;
+  } catch (err) {
+    console.error("[BugSentinel] Triage failed: " + err.message);
+    return { status: "error", message: err.message, bugs: bugs.length };
+  }
+}
