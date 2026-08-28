@@ -11,13 +11,16 @@ rank/swarm
 *.log
 *.tmp
 node_modules/
- .env
- .env.*
- .keys/
- *.pem
+.env
+.env.*
+.keys/
+*.pem
 opencode.json
 .vercel
 .env*
 
 # separate nested git repo (own remote, own Vercel app) — managed independently
 swarm-ops-project/
+
+# encrypted doomsday backup vault (contains encrypted archives + passphrase file)
+doomsday-vault/
