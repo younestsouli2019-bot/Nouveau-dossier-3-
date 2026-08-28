@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
         },
       });
           // Activate keys for known connectors
+    const received = Array.isArray(body) ? body : Object.keys(body);
     for (const secretKey of received) {
       const connectorId = KNOWN_SECRET_CONNECTORS[secretKey];
       if (connectorId) {
@@ -95,9 +96,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: unknown) {
     console.error('[Webhook/GitHubSecrets] Error:', err);
-        // Activate keys for known connectors
-    for (const secretKey of received) {
-      const connectorId = KNOWN_SECRET_CONNECTORS[secretKey];
+    return new Response(JSON.stringify({ error: 'webhook processing failed' }), { status: 500 });
       if (connectorId) {
         activateKey(connectorId, secretKey);
       }
@@ -108,7 +107,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-      // Activate keys for known connectors
+    const received = Object.keys(KNOWN_SECRET_CONNECTORS);
     for (const secretKey of received) {
       const connectorId = KNOWN_SECRET_CONNECTORS[secretKey];
       if (connectorId) {
@@ -118,4 +117,3 @@ export async function GET() {
 
     return NextResponse.json({ status: 'active', endpoint: 'github-secrets' });
 }
-
