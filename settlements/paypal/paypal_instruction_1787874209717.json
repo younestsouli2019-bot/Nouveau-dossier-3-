@@ -1,0 +1,9 @@
+{
+  "type": "PAYPAL_PAYOUT",
+  "amount": 150,
+  "currency": "USD",
+  "recipient": "younestsouli2019@gmail.com",
+  "reason": "Owner payout INV-2026-001",
+  "timestamp": "2026-08-27T23:43:29.717Z",
+  "status": "WAITING_MANUAL_EXECUTION"
+}

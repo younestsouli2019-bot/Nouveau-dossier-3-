@@ -1,0 +1,8 @@
+{
+  "at": "2026-08-27T23:40:38.503Z",
+  "amount": 150,
+  "currency": "USD",
+  "recipient": "younestsouli2019@gmail.com",
+  "credsPrefix": "Ab77",
+  "error": "PayPal request failed (403) POST /v1/payments/payouts: {\"name\":\"AUTHORIZATION_ERROR\",\"message\":\"Authorization error occurred.\",\"debug_id\":\"983fddd28f5aa\",\"information_link\":\"https://developer.paypal.com/docs/api/payments.payouts-batch/#errors\",\"links\":[]}"
+}

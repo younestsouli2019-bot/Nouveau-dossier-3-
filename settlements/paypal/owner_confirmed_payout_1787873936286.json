@@ -1,0 +1,8 @@
+{
+  "at": "2026-08-27T23:38:55.845Z",
+  "amount": 150,
+  "currency": "USD",
+  "recipient": "younestsouli2019@gmail.com",
+  "credsPrefix": "AZYO",
+  "error": "PayPal token request failed (401): {\"error\":\"invalid_client\",\"error_description\":\"Client Authentication failed\"}"
+}

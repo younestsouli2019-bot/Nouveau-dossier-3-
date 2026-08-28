@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-27T21:40:33.659Z",
+  "generatedAt": "2026-08-28T00:32:58.264Z",
   "engine": "postgres-integrity-audit",
   "kv": {
     "settlementsTotal": 27,
@@ -9,7 +9,10 @@
     "itemsTotal": 16,
     "itemsSyntheticRefs": 16,
     "revTotal": 8,
-    "revCompletedNoProof": 3
+    "revCompletedNoProof": 3,
+    "piTotal": 16,
+    "piPendingSumUsd": 6224.549999999998,
+    "piSettled": 0
   },
   "verdict": "INTEGRITY_GAP",
   "findings": [
@@ -36,7 +39,12 @@
     {
       "level": "INFO",
       "area": "reconciliation",
-      "message": "DB-of-record total: OwnerSettlement=$13744.11, PayoutBatch=$6224.55. No PaymentIntent rows exist (payment_intent registry empty)."
+      "message": "PaymentIntent registry: 16 intents (6224.55 USD in PENDING_REASONING, 0 SETTLED)."
+    },
+    {
+      "level": "INFO",
+      "area": "reconciliation",
+      "message": "DB-of-record total: OwnerSettlement=$13744.11, PayoutBatch=$6224.55."
     }
   ]
 }

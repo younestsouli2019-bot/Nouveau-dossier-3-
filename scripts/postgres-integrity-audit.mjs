@@ -63,9 +63,27 @@ try {
       `${revNoProof.length}/${revs.length} RevenueEvent status=completed but proofHash=null (proofType: ${revNoProof.map((r) => r.proofType).join(",")}). One is manual_attestation=$3,500 with no hash.`);
   }
 
+  // ---- PaymentIntent registry (canonical, honest ledger) ----
+  let piRows = [];
+  try {
+    piRows = (await c.query('SELECT id, amount, status FROM "PaymentIntent"')).rows;
+  } catch (e) {
+    console.log("[audit] PaymentIntent query error:", (e?.message || String(e)).slice(0, 300));
+    piRows = [];
+  }
+  KV.piTotal = piRows.length;
+  KV.piPendingSumUsd = piRows
+    .filter((r) => r.status === "PENDING_REASONING")
+    .reduce((a, r) => a + Number(r.amount || 0), 0);
+  KV.piSettled = piRows.filter((r) => r.status === "SETTLED").length;
+  if (piRows.length > 0) {
+    add("INFO", "reconciliation",
+      `PaymentIntent registry: ${piRows.length} intents (${KV.piPendingSumUsd.toFixed(2)} USD in PENDING_REASONING, ${KV.piSettled} SETTLED).`);
+  }
+
   // ---- Reconciliation note ----
   add("INFO", "reconciliation",
-    `DB-of-record total: OwnerSettlement=$${settlements.reduce((a, s) => a + s.amount, 0).toFixed(2)}, PayoutBatch=$${batches.reduce((a, b) => a + (b.totalAmount ?? 0), 0).toFixed(2)}. No PaymentIntent rows exist (payment_intent registry empty).`);
+    `DB-of-record total: OwnerSettlement=$${settlements.reduce((a, s) => a + s.amount, 0).toFixed(2)}, PayoutBatch=$${batches.reduce((a, b) => a + (b.totalAmount ?? 0), 0).toFixed(2)}.`);
 
   const report = {
     generatedAt: new Date().toISOString(),

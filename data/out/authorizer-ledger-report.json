@@ -1,0 +1,48 @@
+{
+  "at": "2026-08-28T01:45:37.330Z",
+  "accounts": [
+    {
+      "accountNumber": "1000",
+      "name": "User-A-Wallet",
+      "accountType": "SOURCE",
+      "balance": 0
+    },
+    {
+      "accountNumber": "1001",
+      "name": "User-B-Wallet",
+      "accountType": "DESTINATION",
+      "balance": 0
+    },
+    {
+      "accountNumber": "1050",
+      "name": "Processor-Receivable",
+      "accountType": "ASSET",
+      "balance": 0
+    },
+    {
+      "accountNumber": "2050",
+      "name": "Processor-Auth-Holds",
+      "accountType": "ASSET",
+      "balance": 0
+    },
+    {
+      "accountNumber": "3000",
+      "name": "Operating-Bank",
+      "accountType": "ASSET",
+      "balance": 0
+    },
+    {
+      "accountNumber": "4000",
+      "name": "Owner-Payable",
+      "accountType": "LIABILITY",
+      "balance": 0
+    },
+    {
+      "accountNumber": "5000",
+      "name": "Platform-Revenue",
+      "accountType": "EQUITY",
+      "balance": 0
+    }
+  ],
+  "note": "Balances are double-entry backed. 4000-Owner-Payable is a liability (owed to owner), funded by inbound processor receivable (1050), NOT by pre-funding."
+}

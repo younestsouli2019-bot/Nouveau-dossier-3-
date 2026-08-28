@@ -598,3 +598,82 @@ model DbEpoch {
   lockUntil DateTime?
   updatedAt DateTime @updatedAt
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// REVENUE-SPLIT HANDSHAKE / LIQUIDITY-BUFFERED CLEARING LEDGER
+// -------------------------------------------------------------------------
+// Double-entry accounting that separates INBOUND pass-through (revenue split
+// funded by the incoming processor token, no pre-funding) from OUTBOUND
+// clearing (cash leaving via a real rail). Every leg is persisted so the
+// ledger survives deploys (replaces the in-memory globalThis settlement
+// ledger). Anti-fabrication: NO leg may reach a settled/cleared state unless
+// backed by a real external proof (processor tx id, rail batch id).
+//
+// Account topology (accountNumber):
+//   1000-User-A-Wallet       Source route (zero-balance source)
+//   1001-User-B-Wallet       Destination/target route
+//   1050-Processor-Receivable  Asset - customer funds in transit
+//   2050-Processor-Auth-Holds  Asset - valid unexpired external auth holds
+//   3000-Operating-Bank      Physical operating bank account
+//   4000-Owner-Payable       Liability - owed to owner (starts at $0)
+//   5000-Platform-Revenue    Equity - platform take-rate / fees
+// ─────────────────────────────────────────────────────────────────────────
+
+model LedgerAccount {
+  id            String   @id @default(cuid())
+  accountNumber String   @unique
+  name          String
+  accountType   String // ASSET, LIABILITY, EQUITY, SOURCE, DESTINATION
+  ownerId       String?
+  balance       Float    @default(0)
+  currency      String   @default("USD")
+  externalTag   String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([accountType])
+  @@index([ownerId])
+}
+
+model RevenueLedgerEntry {
+  id             String   @id @default(cuid())
+  accountId      String
+  account        LedgerAccount @relation(fields: [accountId], references: [id])
+  amount         Float
+  entryType      String // DEBIT, CREDIT
+  state          String   @default("UNSETTLED")
+  // UNSETTLED / AUTHORIZED / AVAILABLE / RECOGNIZED / SETTLED / CLEARED / FAILED / ROLLED_BACK
+  idempotencyKey String   @unique
+  processorRef   String?
+  authRef        String?
+  authExpiresAt  DateTime?
+  rail           String?
+  proofHash      String?
+  metadata       Json?
+  batchId        String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([accountId])
+  @@index([idempotencyKey])
+  @@index([state])
+  @@index([batchId])
+}
+
+model ClearingBatch {
+  id            String   @id @default(cuid())
+  rail          String
+  status        String   @default("PENDING") // PENDING / AUTHORIZED / SETTLED / FAILED
+  totalAmount   Float    @default(0)
+  currency      String   @default("USD")
+  providerBatchRef String?
+  proofHash     String?
+  ownerPayableAccountId String
+  createdAt     DateTime @default(now())
+  settledAt     DateTime?
+  updatedAt     DateTime @updatedAt
+
+  @@index([rail])
+  @@index([status])
+}

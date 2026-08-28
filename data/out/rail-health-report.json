@@ -1,0 +1,74 @@
+{
+  "generatedAt": "2026-08-28T00:52:15.150Z",
+  "note": "Config-declared route openness does NOT imply send capability. This report reconciles both. A rail is deliverable only if configOpen AND authOk AND canSend.",
+  "routes": {
+    "payoneer": {
+      "declared": true,
+      "deliverable": false,
+      "configOpen": true,
+      "authOk": false,
+      "canSend": false,
+      "reason": "No PAYONEER_CLIENT_ID/SECRET/TOKEN present.",
+      "measuredAt": "2026-08-28"
+    },
+    "paypal": {
+      "declared": true,
+      "deliverable": false,
+      "configOpen": true,
+      "authOk": true,
+      "canSend": false,
+      "reason": "403 AUTHORIZATION_ERROR on payout POST - awaiting PayPal C.I.P./identity review clearance (dashboard: Payouts permission pending). Retry after clearance.",
+      "measuredAt": "2026-08-28T00:20:00Z"
+    },
+    "bank": {
+      "declared": true,
+      "deliverable": false,
+      "reason": "No authenticated/funded bank-send credential; bank config is receipt-mode (RECEIVE_LIVE).",
+      "measuredAt": "2026-08-28"
+    },
+    "crypto": {
+      "declared": true,
+      "deliverable": false,
+      "exchanges": {
+        "binance": {
+          "configOpen": true,
+          "authOk": false,
+          "canSend": false,
+          "reason": "-2015 Invalid API-key/IP/permissions (both key sets).",
+          "measuredAt": "2026-08-28"
+        },
+        "bitget": {
+          "configOpen": true,
+          "authOk": true,
+          "canSend": false,
+          "reason": "Auth OK now (IP allowlist fixed; previous 40018 resolved on retest). Balance: ~80,203 VND (~$3.20) + 0.128 BGB; USDT=$0.00. No meaningful funds to send.",
+          "measuredAt": "2026-08-28T00:50Z"
+        },
+        "bybit": {
+          "configOpen": true,
+          "authOk": true,
+          "canSend": false,
+          "reason": "Auth OK but $0.00 USDT balance.",
+          "measuredAt": "2026-08-28"
+        }
+      },
+      "reason": "No exchange can withdraw: Binance/Bitget auth-fail, Bybit $0.",
+      "measuredAt": "2026-08-28"
+    },
+    "wiseDeclared": {
+      "declared": false,
+      "deliverable": false,
+      "configOpen": false,
+      "authOk": false,
+      "canSend": false,
+      "reason": "WISE_API_KEY rejected (invalid_token).",
+      "measuredAt": "2026-08-28"
+    }
+  },
+  "summary": {
+    "deliverableOutboundRails": [
+      "NONE pending PayPal C.I.P. clearance (single candidate blocked)"
+    ],
+    "topBlocker": "PayPal payout 403 AUTHORIZATION_ERROR - waiting C.I.P./identity review. Once cleared, re-run scripts/owner-payout-paypal.mjs --amount 150"
+  }
+}

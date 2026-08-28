@@ -1,0 +1,33 @@
+{
+  "at": "2026-08-27T23:43:30.120Z",
+  "finding": "PayPal CLIENT credentials (valid, .env2). Payout POST refused with 403 AUTHORIZATION_ERROR — merchant account is NOT authorized to SEND payouts (PayPal account-level Payouts permission/funding not enabled). No funds moved; no payout batch created. This is a merchant-side enablement blocker, not a credential issue.",
+  "intended": {
+    "amount": 150,
+    "currency": "USD",
+    "recipient": "younestsouli2019@gmail.com",
+    "reference": "Owner payout INV-2026-001"
+  },
+  "livePayout": {
+    "status": "REFUSED_BY_PAYPAL_403_AUTHORIZATION_ERROR",
+    "fundsMoved": false
+  },
+  "fallbackInvoice": {
+    "status": "INVOICES_READY",
+    "results": [
+      {
+        "status": "INVOICE_LINK_GENERATED",
+        "link": "https://www.paypal.com/invoice/create?amount=150&currency=USD&payer=younestsouli2019@gmail.com",
+        "amount": 150,
+        "payer": "younestsouli2019@gmail.com"
+      }
+    ],
+    "mode": "BILLING"
+  },
+  "fallbackInstruction": {
+    "status": "WAITING_MANUAL",
+    "filePath": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\settlements\\paypal\\paypal_instruction_1787874209717.json",
+    "instruction": "Log in to PayPal and send manually"
+  },
+  "tokenHealth": true,
+  "integrity": "Intents remain PENDING_REASONING in PaymentIntent ledger (NOT SETTLED/DELIVERED) - no proof exists. Status kept honest."
+}
