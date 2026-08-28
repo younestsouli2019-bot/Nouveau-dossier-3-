@@ -40,7 +40,7 @@
         "next-themes": "^0.3.0",
         "pg": "^8.23.0",
         "postcss": "^8.5.26",
-        "prisma": "^5.22.0",
+        "prisma": "^7.9.1",
         "react": "^18.3.0",
         "react-dom": "^18.3.0",
         "recharts": "^3.10.1",
