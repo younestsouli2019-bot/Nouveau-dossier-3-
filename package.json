@@ -16,7 +16,7 @@
     },
     "dependencies": {
         "@base44/sdk": "^0.8.13",
-        "@prisma/client": "^5.22.0",
+        "@prisma/client": "^7.10.0",
         "@radix-ui/react-alert-dialog": "^1.1.23",
         "@radix-ui/react-dialog": "^1.0.0",
         "@radix-ui/react-progress": "^1.1.16",
