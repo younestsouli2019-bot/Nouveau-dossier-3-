@@ -24,6 +24,32 @@ env:
   HIT_SWARM: https://x1he4604ap01-deploy.space-z.ai
 
 jobs:
+  verify-secrets:
+    runs-on: ubuntu-latest
+    if: ${{ (vars.ZAI_DEPLOY_VERIFY_SECRETS != 'false') }}
+    steps:
+      - name: Check z.ai runtime secrets present (masked)
+        env:
+          BASE44_API_KEY: ${{ secrets.BASE44_API_KEY }}
+          BASE44_SERVICE_TOKEN: ${{ secrets.BASE44_SERVICE_TOKEN }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          echo "Verifying z.ai runtime secret availability (values never printed; names only)."
+          echo "| secret | present |"
+          echo "|--------|---------|"
+          for k in BASE44_API_KEY BASE44_SERVICE_TOKEN DATABASE_URL; do
+            eval "v=\${${k}:-}"
+            if [ -n "${v}" ]; then
+              echo "| ${k} | yes |"
+            else
+              echo "| ${k} | NO |"
+            fi
+          done
+          echo ""
+          echo "Source of truth = GitHub repo secrets (org-secret-sync.yml keeps them org-wide)."
+          echo "z.ai runtime must be provisioned with the same secret set exported from these repo secrets."
+
   build-verify:
     runs-on: ubuntu-latest
     steps:

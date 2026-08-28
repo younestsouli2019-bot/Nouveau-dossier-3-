@@ -26,15 +26,15 @@ const CURRENCY = String(ARG("currency", "USD")).toUpperCase();
 const EMAIL = ARG("email", "younestsouli2019@gmail.com");
 const NOTE = ARG("note", "Owner payout INV-2026-001");
 
-const PPP2_CLIENT_ID = process.env.PPP2_CLIENT_ID || process.env.PAYPAL_PPP2_CLIENT_ID || "";
-const PPP2_CLIENT_SECRET = process.env.PPP2_CLIENT_SECRET || process.env.PAYPAL_PPP2_CLIENT_SECRET || "";
+const PPP2_CLIENT_ID = process.env.PPP2_CLIENT_ID || process.env.PAYPAL_PPP2_CLIENT_ID || process.env.PAYPAL_CLIENT_ID || "";
+const PPP2_CLIENT_SECRET = process.env.PPP2_CLIENT_SECRET || process.env.PAYPAL_PPP2_CLIENT_SECRET || process.env.PAYPAL_CLIENT_SECRET || "";
 
 if (!(AMOUNT > 0)) {
   console.log(JSON.stringify({ ok: false, error: "amount_required", usage: "node scripts/owner-payout-paypal.mjs --amount 150" }));
   process.exit(1);
 }
 if (!PPP2_CLIENT_ID || !PPP2_CLIENT_SECRET) {
-  console.log(JSON.stringify({ ok: false, error: "ppp2_credentials_missing", hint: "Set PPP2_CLIENT_ID / PPP2_CLIENT_SECRET in .env2 (gitignored); do not hardcode secrets." }));
+  console.log(JSON.stringify({ ok: false, error: "ppp2_credentials_missing", hint: "Set PPP2_CLIENT_ID / PPP2_CLIENT_SECRET (falling back to PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET) in .env2 (gitignored); do not hardcode secrets." }));
   process.exit(2);
 }
 
