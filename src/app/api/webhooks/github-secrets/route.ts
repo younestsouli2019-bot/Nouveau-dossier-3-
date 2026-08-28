@@ -39,15 +39,6 @@ export async function POST(req: NextRequest) {
           discrepancyNote: 'HMAC signature mismatch',
         },
       });
-          // Activate keys for known connectors
-    const received = Array.isArray(body) ? body : Object.keys(body);
-    for (const secretKey of received) {
-      const connectorId = KNOWN_SECRET_CONNECTORS[secretKey];
-      if (connectorId) {
-        activateKey(connectorId, secretKey);
-      }
-    }
-
     return NextResponse.json({ error: 'Invalid HMAC signature' }, { status: 401 });
     }
 
@@ -96,24 +87,10 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: unknown) {
     console.error('[Webhook/GitHubSecrets] Error:', err);
-    return new Response(JSON.stringify({ error: 'webhook processing failed' }), { status: 500 });
-      if (connectorId) {
-        activateKey(connectorId, secretKey);
-      }
-    }
-
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
 export async function GET() {
-    const received = Object.keys(KNOWN_SECRET_CONNECTORS);
-    for (const secretKey of received) {
-      const connectorId = KNOWN_SECRET_CONNECTORS[secretKey];
-      if (connectorId) {
-        activateKey(connectorId, secretKey);
-      }
-    }
-
     return NextResponse.json({ status: 'active', endpoint: 'github-secrets' });
 }

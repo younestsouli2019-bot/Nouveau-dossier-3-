@@ -1,0 +1,43 @@
+{
+  "type": "reconciliation_flag",
+  "generatedAt": "2026-08-28T00:00:00.000Z",
+  "scope": "Honest cross-check of Base44 AgentFlow AI per-app API vs local Postgres ledger, against the anti-fabrication rule (SETTLED/completed requires a real external rail reference).",
+  "method": "read-only live probes only; nothing on any rail was mutated or deleted. Per operator instruction: flag-as-unverified, do not touch the records.",
+  "findings": {
+    "base44_payout_batches": {
+      "total": 5,
+      "executed_real": 0,
+      "all_have_paypal_batch_id_null": true,
+      "unverified_processing_batches": [
+        "BATCH_RECOVERY_BANK_WIRE_1784880181_PAYPAL_BRIDGE_004",
+        "BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_003",
+        "BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_002",
+        "BATCH_RECOVERY_BANK_WIRE_1784880177_PAYPAL_BRIDGE_001"
+      ],
+      "reason": "These 4 'processing' batches (~$37,313.25 each, ~$149k total) all carry the SAME duplicated LIVE_EVIDENCE=BANK_WIRE_ATTIJARI_007810000448500030594182 with 0 PayoutItems and no paypal_batch_id. One reference cannot prove four transfers. Marked UNVERIFIED (not deleted/rewritten).",
+      "payout_items": 0,
+      "revenue_events_cancelled": 85,
+      "transaction_logs_cancelled": 158
+    },
+    "local_db_outbound_settlements": {
+      "total_completed": 17,
+      "sum_usd": 6414.05,
+      "with_externalRef": 0,
+      "without_externalRef": 17,
+      "dataSource": "internal_ledger_only",
+      "reason": "All 17 outbound 'completed' OwnerSettlements have externalRef = null and internal_ledger_only dataSource, with settledAt burst-stamped 2026-08-23T15:29:5x. This violates the schema invariant 'externalRef REQUIRED for completed'. Marked UNVERIFIED."
+    },
+    "conclusion": "No real money moved on any rail (bank wire, PayPal, crypto, payoneer). All purported settlements are internal-only bookkeeping claims without external proof."
+  },
+  "pre_set_owner_accounts_for_future_intent": [
+    { "label": "PayPal Business", "rail": "paypal", "recipient": "younestsouli2019@gmail.com" },
+    { "label": "Moroccan Bank — RIB 372", "rail": "bank_wire" },
+    { "label": "Banking Circle — Primary", "rail": "bank_wire", "isPrimary": true },
+    { "label": "Payoneer — Supplier Payments", "rail": "payoneer", "recipient": "younestsouli2019@gmail.com" },
+    { "label": "USDC on Arbitrum", "rail": "l2_crypto", "wallet": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7" }
+  ],
+  "next_honest_actions": [
+    "Build forward-looking per-owner payout INTENT records (PayoutItem under PayoutBatch at pending_approval, auto-approved only within AUTO_APPROVE_THRESHOLD_USD) and advance to submitted_to_paypal/completed ONLY when a genuine provider transaction id (PayPal batch/txn, MT103, on-chain hash) is supplied by the human operator.",
+    "Zero approvable payouts from the current dataset (no external proof exists to back any amount)."
+  ]
+}

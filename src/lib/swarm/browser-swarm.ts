@@ -89,11 +89,12 @@ const WARMING_SCHEDULE: Record<WarmingPhase, { durationHours: number; maxActions
 const PROFILE_STORE: BrowserProfile[] = [];
 
 function generateFingerprint(seed: string): BrowserFingerprint {
-  const hash = (s: string) => {
+  const hash = (s: string): number => {
     let h = 0;
     for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
-    return Math.abs(h).toString(16).padStart(8, '0');
+    return Math.abs(h);
   };
+  const hashHex = (s: string) => hash(s).toString(16).padStart(8, '0');
 
   const agents = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126.0.0.0 Safari/537.36',
@@ -108,16 +109,16 @@ function generateFingerprint(seed: string): BrowserFingerprint {
   ];
 
   return {
-    canvas: hash(seed + 'canvas'),
-    webgl: hash(seed + 'webgl'),
-    audioContext: hash(seed + 'audio'),
-    userAgent: agents[Math.abs(hash(seed + 'ua')) % agents.length],
-    screen: resolutions[Math.abs(hash(seed + 'res')) % resolutions.length],
-    timezone: ['America/New_York', 'America/Chicago', 'Europe/London', 'Europe/Berlin'][Math.abs(hash(seed + 'tz')) % 4],
+    canvas: hashHex(seed + 'canvas'),
+    webgl: hashHex(seed + 'webgl'),
+    audioContext: hashHex(seed + 'audio'),
+    userAgent: agents[hash(seed + 'ua') % agents.length],
+    screen: resolutions[hash(seed + 'res') % resolutions.length],
+    timezone: ['America/New_York', 'America/Chicago', 'Europe/London', 'Europe/Berlin'][hash(seed + 'tz') % 4],
     language: 'en-US',
     platform: 'Win32',
     webRTC: {
-      ip: `${Math.abs(hash(seed + 'ip')) % 200 + 10}.${Math.abs(hash(seed + 'ip2')) % 256}.${Math.abs(hash(seed + 'ip3')) % 256}.${Math.abs(hash(seed + 'ip4')) % 256}`,
+      ip: `${hash(seed + 'ip') % 200 + 10}.${hash(seed + 'ip2') % 256}.${hash(seed + 'ip3') % 256}.${hash(seed + 'ip4') % 256}`,
       type: 'public',
     },
   };

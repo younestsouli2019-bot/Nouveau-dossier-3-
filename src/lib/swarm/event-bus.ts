@@ -113,26 +113,31 @@ export function getSubscriberCount(): Record<string, number> {
 export function wireSwarmReactions(): void {
   // When an opportunity is validated → provision an account on the supplier platform
   subscribe('opportunity.validated', async (event) => {
-    console.log(`[EventBus] Opportunity validated: ${event.payload.opportunityId} — provisioning account`);
+    const p = event.payload as Extract<SwarmEvent, { type: 'opportunity.validated' }>['payload'];
+    console.log(`[EventBus] Opportunity validated: ${p.opportunityId} — provisioning account`);
   });
 
   // When account is warmed → create VCC for it
   subscribe('account.warmed', async (event) => {
-    console.log(`[EventBus] Account warmed: ${event.payload.accountId} — creating VCC`);
+    const p = event.payload as Extract<SwarmEvent, { type: 'account.warmed' }>['payload'];
+    console.log(`[EventBus] Account warmed: ${p.accountId} — creating VCC`);
   });
 
   // When card is funded → ready to place orders
   subscribe('card.funded', async (event) => {
-    console.log(`[EventBus] Card funded: ${event.payload.cardId} with $${event.payload.amount}`);
+    const p = event.payload as Extract<SwarmEvent, { type: 'card.funded' }>['payload'];
+    console.log(`[EventBus] Card funded: ${p.cardId} with $${p.amount}`);
   });
 
   // When anomaly detected → log and potentially halt
   subscribe('anomaly.detected', async (event) => {
-    console.warn(`[EventBus] ANOMALY: ${event.payload.severity} — ${event.payload.reason} — Action: ${event.payload.action}`);
+    const p = event.payload as Extract<SwarmEvent, { type: 'anomaly.detected' }>['payload'];
+    console.warn(`[EventBus] ANOMALY: ${p.severity} — ${p.reason} — Action: ${p.action}`);
   });
 
   // When circuit breaker tripped → pause all operations
   subscribe('circuit_breaker.tripped', async (event) => {
-    console.error(`[EventBus] CIRCUIT BREAKER: ${event.payload.reason} — paused until ${event.payload.pausedUntil}`);
+    const p = event.payload as Extract<SwarmEvent, { type: 'circuit_breaker.tripped' }>['payload'];
+    console.error(`[EventBus] CIRCUIT BREAKER: ${p.reason} — paused until ${p.pausedUntil}`);
   });
 }

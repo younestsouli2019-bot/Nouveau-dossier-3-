@@ -223,7 +223,10 @@ export async function runOptimization(): Promise<OptimizationReport> {
     await db.procurementItem.update({
       where: { id: item.id },
       data: {
+        supplierName: local.supplierName,
         fulfillmentSource: local.supplierName,
+        unitPriceEst: localPrice,
+        totalEst: Math.round(localPrice * item.quantity * 100) / 100,
         notes: `${item.notes || ''} | [LOCAL-SRC] ${item.supplierName || 'imported'} -> ${local.supplierName} ($${currentPrice} -> $${localPrice})`.trim(),
       },
     })
