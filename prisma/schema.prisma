@@ -620,17 +620,18 @@ model DbEpoch {
 // ─────────────────────────────────────────────────────────────────────────
 
 model LedgerAccount {
-  id            String   @id @default(cuid())
-  accountNumber String   @unique
+  id            String                @id @default(cuid())
+  accountNumber String                @unique
   name          String
   accountType   String // ASSET, LIABILITY, EQUITY, SOURCE, DESTINATION
   ownerId       String?
-  balance       Float    @default(0)
-  currency      String   @default("USD")
+  balance       Float                 @default(0)
+  currency      String                @default("USD")
   externalTag   String?
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  isActive      Boolean               @default(true)
+  entries       RevenueLedgerEntry[]
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
 
   @@index([accountType])
   @@index([ownerId])

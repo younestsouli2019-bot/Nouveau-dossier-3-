@@ -18,6 +18,10 @@ node_modules/
 opencode.json
 .vercel
 .env*
+.next/
+out/
+*.zip
+data/generated/
 
 # separate nested git repo (own remote, own Vercel app) — managed independently
 swarm-ops-project/
