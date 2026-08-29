@@ -1110,6 +1110,7 @@ export async function GET() {
       })),
     });
   } catch (error) {
+    console.error('[GET /api/ops/auto-pilot] Error:', error);
     return NextResponse.json({ error: 'Failed to load auto-pilot status' }, { status: 500 });
   }
 }

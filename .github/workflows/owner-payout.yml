@@ -43,10 +43,10 @@ jobs:
       cycle_dedup_ok: ${{ steps.cycle.outputs.ok }}
       safe: ${{ steps.safe.outputs.safe }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: "22"
       - name: Install
         run: npm ci || npm install --no-audit --no-fund --no-package-lock
       - name: Lock cannibal cycle-1786593501227 and dedup baseline
@@ -132,11 +132,11 @@ jobs:
           echo "::error::guardrails.safe=${{ needs.guardrails.outputs.safe }}. Refusing payout dispatch."
           exit 1
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: "22"
       - name: Install
         run: npm ci || npm install --no-audit --no-fund --no-package-lock
       - name: Guardrails re-check (throttle + dedup)
@@ -151,7 +151,7 @@ jobs:
           node ./scripts/payout-paypal-once.mjs --amount "${{ inputs.amount }}" --currency "${{ inputs.currency }}" --email "${{ inputs.email }}" --note "${{ inputs.note }}" > out.json
           cat out.json
       - name: Persist artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: owner-payout-${{ github.run_id }}
           path: out.json

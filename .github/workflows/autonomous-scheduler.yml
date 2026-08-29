@@ -25,10 +25,10 @@ jobs:
       score: ${{ steps.scan.outputs.score }}
       state: ${{ steps.scan.outputs.state }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "24"
           cache: "npm"
@@ -99,10 +99,10 @@ jobs:
       AUTOCOMMIT_ENABLE: ${{ vars.AUTOCOMMIT_ENABLE }}
       SWARM_CYCLE_REF: "cycle-1786593501227"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "24"
           cache: "npm"
