@@ -98,6 +98,15 @@ function mapBitgetChain(raw) {
 	return raw || "bep20";
 }
 
+function isPlaceholder(v) {
+	if (v == null) return true;
+	const s = String(v).trim();
+	if (!s) return true;
+	if (/^YOUR_[A-Z0-9_]+$/i.test(s)) return true;
+	if (/^(REPLACE_ME|CHANGEME|TODO)$/i.test(s)) return true;
+	return false;
+}
+
 async function bitgetRequest(method, requestPath, bodyObj, creds) {
 	const base = "api.bitget.com";
 	const ts = String(Date.now());
@@ -141,7 +150,59 @@ async function bitgetRequest(method, requestPath, bodyObj, creds) {
 }
 
 export class CryptoGateway {
+	ensureReady({ provider = "binance", requireDestination = null } = {}) {
+		const live = String(process.env.SWARM_LIVE || "false").toLowerCase() === "true";
+		const enabled = String(process.env.CRYPTO_WITHDRAW_ENABLE || "false").toLowerCase() === "true";
+		if (!live && !process.env.SWARM_OFFLINE) {
+			throw Object.assign(new Error("CryptoGateway: SWARM_LIVE=true required for on-chain withdrawals"),
+				{ code: "CRYPTO_NOT_LIVE" });
+		}
+		if (!enabled) {
+			throw Object.assign(new Error("CryptoGateway: CRYPTO_WITHDRAW_ENABLE=true required; fall back to bank/PayPal/Wise rails"),
+				{ code: "CRYPTO_DISABLED" });
+		}
+		const address =
+			requireDestination ||
+			process.env.TRUST_WALLET_ADDRESS ||
+			process.env.TRUST_WALLET_USDT_ERC20 ||
+			process.env.OWNER_CRYPTO_WALLET;
+		if (!address || isPlaceholder(address)) {
+			throw Object.assign(new Error("CryptoGateway: missing destination wallet address (OWNER_CRYPTO_WALLET/TRUST_WALLET_ADDRESS)"),
+				{ code: "CRYPTO_MISSING_ADDRESS" });
+		}
+		const p = String(provider || "").toLowerCase();
+		const credsMissing = (keys) => keys.some((k) => !process.env[k] || isPlaceholder(process.env[k]));
+		if (p === "binance" && credsMissing(["BINANCE_API_KEY", "BINANCE_API_SECRET"])) {
+			throw Object.assign(new Error("CryptoGateway: Binance BINANCE_API_KEY/BINANCE_API_SECRET missing or placeholders"),
+				{ code: "CRYPTO_MISSING_BINANCE_CREDS" });
+		}
+		if (p === "bybit" && credsMissing(["BYBIT_API_KEY", "BYBIT_API_SECRET"])) {
+			throw Object.assign(new Error("CryptoGateway: Bybit BYBIT_API_KEY/BYBIT_API_SECRET missing"),
+				{ code: "CRYPTO_MISSING_BYBIT_CREDS" });
+		}
+		if (p === "bitget" && credsMissing(["BITGET_API_KEY", "BITGET_API_SECRET", "BITGET_API_PASSPHRASE"])) {
+			throw Object.assign(new Error("CryptoGateway: Bitget BITGET_API_KEY/SECRET/PASSPHRASE missing"),
+				{ code: "CRYPTO_MISSING_BITGET_CREDS" });
+		}
+		if (p === "okx" && credsMissing(["OKX_API_KEY", "OKX_API_SECRET", "OKX_API_PASSPHRASE"])) {
+			throw Object.assign(new Error("CryptoGateway: OKX OKX_API_KEY/SECRET/PASSPHRASE missing"),
+				{ code: "CRYPTO_MISSING_OKX_CREDS" });
+		}
+		if (p === "mexc" && credsMissing(["MEXC_API_KEY", "MEXC_API_SECRET"])) {
+			throw Object.assign(new Error("CryptoGateway: MEXC MEXC_API_KEY/SECRET missing"),
+				{ code: "CRYPTO_MISSING_MEXC_CREDS" });
+		}
+		return { live, enabled, provider: p };
+	}
+
 	async executeTransfer(transactions, { provider = "binance" } = {}) {
+		let preflightErr = null;
+		try {
+			const dest0 = transactions[0]?.destination;
+			this.ensureReady({ provider, requireDestination: dest0 });
+		} catch (e) {
+			preflightErr = e;
+		}
 		const enabled =
 			String(process.env.CRYPTO_WITHDRAW_ENABLE || "").toLowerCase() === "true";
 		const network = "BEP20";
@@ -150,6 +211,20 @@ export class CryptoGateway {
 		const amount = transactions[0]?.amount;
 		if (!dest || !amount)
 			return { status: "invalid", reason: "missing_destination_or_amount" };
+		if (preflightErr) {
+			return {
+				status: "RAIL_NOT_CONFIGURED",
+				provider,
+				network,
+				prepared_at,
+				error: preflightErr.message,
+				code: preflightErr.code || "CRYPTO_FALLBACK_REQUIRED",
+				retryable: false,
+				next_rail_hint: ["wise", "bank_transfer", "paypal", "payoneer_standard", "tron"],
+				no_funds_moved: true,
+				transactions,
+			};
+		}
 		const bitgetCreds = {
 			apiKey: process.env.BITGET_API_KEY,
 			secret: process.env.BITGET_API_SECRET,

@@ -614,9 +614,15 @@ export class ExternalGatewayManager {
 					destination:
 						item.recipient_address || item.recipient_email || item.email,
 					reference: item.note || `Batch ${payoutBatchId}`,
+					ownerStripeConnectAccountId: item.ownerStripeConnectAccountId || null,
 				}));
+				const connAccountIds = tx
+					.map((t) => t.ownerStripeConnectAccountId)
+					.filter(Boolean);
 				const result = await withRetry(() =>
-					this.stripeGateway.executeTransfer(tx),
+					this.stripeGateway.executeTransfer(tx, {
+						ownerStripeConnectAccountId: connAccountIds[0] || null,
+					}),
 				);
 				const masked = tx.map((t) => ({
 					amount: t.amount,
@@ -624,7 +630,9 @@ export class ExternalGatewayManager {
 					masked_destination: PrivacyMasker.maskUnknown(t.destination),
 				}));
 				this.audit.log(
-					"STRIPE_TRANSFER_PREPARED",
+					result.status === "RAIL_NOT_CONFIGURED"
+						? "STRIPE_TRANSFER_RAIL_NOT_CONFIGURED_FALLBACK"
+						: "STRIPE_TRANSFER_PREPARED",
 					payoutBatchId,
 					null,
 					result,
@@ -635,11 +643,15 @@ export class ExternalGatewayManager {
 					},
 				);
 				return {
-					status: "processing",
+					status: result.status === "RAIL_NOT_CONFIGURED"
+						? "rail_not_configured_fallback_required"
+						: "processing",
 					gateway_response: result,
 					payout_batch_id: payoutBatchId,
 					processed_at: new Date().toISOString(),
 					route_attempted: "stripe",
+					fallback_rail_order: result.next_rail_hint || null,
+					no_funds_moved: Boolean(result.no_funds_moved),
 				};
 			},
 			context,
@@ -670,18 +682,24 @@ export class ExternalGatewayManager {
 				}));
 				const result = await this.tronGateway.generateInstructions(tx);
 				this.audit.log(
-					"TRON_INSTRUCTIONS_READY",
+					result.status === "RAIL_NOT_CONFIGURED"
+						? "TRON_RAIL_NOT_CONFIGURED_FALLBACK"
+						: "TRON_INSTRUCTIONS_READY",
 					payoutBatchId,
 					null,
 					result,
 					actor,
 				);
 				return {
-					status: "processing",
+					status: result.status === "RAIL_NOT_CONFIGURED"
+						? "rail_not_configured_fallback_required"
+						: "processing",
 					gateway_response: result,
 					payout_batch_id: payoutBatchId,
 					processed_at: new Date().toISOString(),
 					route_attempted: "tron",
+					fallback_rail_order: result.next_rail_hint || null,
+					no_funds_moved: Boolean(result.no_funds_moved),
 				};
 			},
 			context,

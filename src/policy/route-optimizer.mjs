@@ -36,7 +36,9 @@ export function getEffectiveRoutes(amount, currency) {
 			"paypal",
 		];
 		const set = new Set(routes);
-		routes = order.filter((r) => set.has(r));
+		routes = order.filter((r) =>
+			set.has(r) && !OwnerSettlementEnforcer.missingCredentials(r, cfg),
+		);
 	} else if (
 		String(process.env.FORCE_BANK_WIRE || "").toLowerCase() === "true"
 	) {
@@ -51,7 +53,15 @@ export function getEffectiveRoutes(amount, currency) {
 			"paypal",
 		];
 		const set = new Set(routes);
-		routes = order.filter((r) => set.has(r));
+		routes = order.filter((r) =>
+			set.has(r) && !OwnerSettlementEnforcer.missingCredentials(r, cfg),
+		);
+	} else if (Number(amount) > 5000 && routes.length === 0) {
+		const order = ["wise", "stripe", "bank_transfer", "paypal"];
+		const set = new Set([...cfg.settlement_priority, ...order]);
+		routes = order.filter((r) =>
+			set.has(r) && !OwnerSettlementEnforcer.missingCredentials(r, cfg),
+		);
 	}
 	return routes;
 }

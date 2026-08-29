@@ -96,6 +96,27 @@ export class OwnerSettlementEnforcer {
 				address:
 					process.env.TRUST_WALLET_ADDRESS ||
 					process.env.TRUST_WALLET_USDT_ERC20,
+				providerCount: (() => {
+					const count = [
+						[process.env.BINANCE_API_KEY, process.env.BINANCE_API_SECRET],
+						[process.env.BYBIT_API_KEY, process.env.BYBIT_API_SECRET],
+						[process.env.BITGET_API_KEY, process.env.BITGET_API_SECRET, process.env.BITGET_API_PASSPHRASE],
+						[process.env.OKX_API_KEY, process.env.OKX_API_SECRET, process.env.OKX_API_PASSPHRASE],
+					].filter(([k, s, p]) => k && s && !isPlaceholder(k) && !isPlaceholder(s) && (p ? !isPlaceholder(p) : true)).length;
+					return count;
+				})(),
+			},
+			tron: {
+				enabled: String(process.env.TRON_ENABLE || "false").toLowerCase() === "true",
+				privateKey: process.env.TRON_PRIVATE_KEY || process.env.OWNER_TRON_PRIVATE_KEY,
+				address: process.env.OWNER_TRON_USDT_ADDRESS || process.env.TRON_USDT_ADDRESS,
+				node: process.env.TRON_GRID_NODE || "https://api.trongrid.io",
+			},
+			stripe: {
+				enabled: String(process.env.STRIPE_ENABLE || "false").toLowerCase() === "true",
+				secretKey: process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY,
+				publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+				webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
 			},
 			cryptobox: {
 				enabled:
@@ -164,12 +185,60 @@ export class OwnerSettlementEnforcer {
 			const c = cfg?.creds?.wise || {};
 			if (!c.enabled) return true;
 			if (!c.email || !c.email.includes("@")) return true;
+			const token = process.env.OWNER_WISE_API_TOKEN || process.env.WISE_API_TOKEN;
+			if (!token || isPlaceholder(token)) return true;
 			return false;
 		}
 		if (r === "googlepay") {
 			const c = cfg?.creds?.googlepay || {};
 			if (!c.enabled) return true;
 			if (!c.email || !c.email.includes("@")) return true;
+			return false;
+		}
+		if (r === "stripe" || r === "stripe_connect") {
+			const sk = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY;
+			if (!sk || isPlaceholder(sk)) return true;
+			const pub = process.env.STRIPE_PUBLISHABLE_KEY;
+			if (!pub || isPlaceholder(pub)) return true;
+			return false;
+		}
+		if (r === "tron") {
+			const enabled = String(process.env.TRON_ENABLE || "false").toLowerCase() === "true";
+			if (!enabled) return true;
+			const pk = process.env.TRON_PRIVATE_KEY || process.env.OWNER_TRON_PRIVATE_KEY;
+			const node = process.env.TRON_GRID_NODE || "https://api.trongrid.io";
+			const addr = process.env.OWNER_TRON_USDT_ADDRESS || process.env.TRON_USDT_ADDRESS;
+			if (!pk || isPlaceholder(pk)) return true;
+			if (!addr || isPlaceholder(addr)) return true;
+			if (!node || isPlaceholder(node)) return true;
+			return false;
+		}
+		if (r === "crypto") {
+			const c = cfg?.creds?.crypto || {};
+			if (!c.enabled) return true;
+			if (!c.address || isPlaceholder(c.address)) return true;
+			const providers = [
+				["BINANCE_API_KEY", "BINANCE_API_SECRET"],
+				["BYBIT_API_KEY", "BYBIT_API_SECRET"],
+				["BITGET_API_KEY", "BITGET_API_SECRET", "BITGET_API_PASSPHRASE"],
+				["OKX_API_KEY", "OKX_API_SECRET", "OKX_API_PASSPHRASE"],
+			];
+			const hasProvider = providers.some(([k, s, p]) => {
+				const keyOk = process.env[k] && !isPlaceholder(process.env[k]);
+				const secOk = process.env[s] && !isPlaceholder(process.env[s]);
+				const passOk = p ? process.env[p] && !isPlaceholder(process.env[p]) : true;
+				return keyOk && secOk && passOk;
+			});
+			if (!hasProvider) return true;
+			return false;
+		}
+		if (r === "paypal") {
+			const c = cfg?.creds?.paypal || {};
+			if (c.disabled) return true;
+			const client = c.clientId || process.env.PAYPAL_CLIENT_ID;
+			const secret = c.clientSecret || process.env.PAYPAL_CLIENT_SECRET;
+			if (!client || isPlaceholder(client)) return true;
+			if (!secret || isPlaceholder(secret)) return true;
 			return false;
 		}
 		return true;

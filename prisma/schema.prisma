@@ -306,6 +306,13 @@ model OwnerAccount {
   wiseCurrency      String?  // Wise receiving currency
   payoneerId        String?  // Payoneer account ID
 
+  // Stripe Connect fields (for MA future Stripe-market-access enablement; guarded fail-closed today)
+  stripeConnectAccountId String?  // acct_xxx — Custom/Express/Standard connected account ID
+  stripeAccountType       String?  // standard | express | custom
+  stripeCountry           String?  // ISO-2 MA/US/FR/ES
+  stripeChargesEnabled    Boolean? @default(false)
+  stripePayoutsEnabled    Boolean? @default(false)
+
   // Metadata
   notes             String?
   verifiedAt        DateTime?
