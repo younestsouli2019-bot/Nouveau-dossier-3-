@@ -83,8 +83,17 @@ export async function settleAndPayout(req: SettleAndPayoutRequest): Promise<Sett
       };
       const bucketResult = await allocateToBuckets([bucketInput]);
       if (!bucketResult.ok) {
-        console.error('[Payout] Bucket allocation failed:', bucketResult.reason);
-        continue;
+        // FAIL-CLOSED: a failed bucket allocation must not silently swallow
+        // owner value. The whole payout aborts (nothing is marked verified).
+        return {
+          success: false,
+          settlementId: '',
+          platformFee: 0,
+          netAmount: 0,
+          splits: [],
+          receiptHash: '',
+          error: `Treasury bucket allocation failed for ${split.bucketCode}: ${bucketResult.reason}`,
+        };
       }
       splitResults.push({ ownerAccountId: `bucket:${split.bucketCode}`, amount: splitAmount, status: 'pending' });
       continue;

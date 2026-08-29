@@ -20,7 +20,7 @@ import { simulatePipeline } from './atomic-simulation';
 import { allocateToVault, getTotalExposure } from './escrow-vaults';
 import { detectDuplicates } from './audit-agent';
 import { settleAndPayout } from './payout-routing';
-import { computeBucketSplit, allocateToBuckets, type BucketCode, BUCKET_CODES } from './treasury/buckets';
+import { computeBucketSplit, type BucketCode } from './treasury/buckets';
 import {
   getPresetPayoutDestination,
   tryGetPresetPayoutDestination,
@@ -421,27 +421,19 @@ export async function executeWetRun(req: WetRunRequest): Promise<WetRunResult> {
     disbursementAt: pipeResult.disbursementAt,
   };
 
-  // STAGE 3.5 — TREASURY BUCKET ALLOCATION
-  // Split NET value across the four treasury buckets and persist allocation
-  // intent. Calls allocateToVault first so liquidity exposure is still enforced.
-  const bucketAllocations = pipeResult.split.buckets.filter((b) => b.amount > 0).map((b) => ({
+  // STAGE 3.5 — TREASURY BUCKET ALLOCATION (INTENT ONLY)
+  // Compute the four-bucket split on NET value and record it in the execution
+  // metadata as reconciliation intent. STORAGE IS NOT APPLIED HERE: the single
+  // writer that persists actual FundBucket/ledger credits is settleAndPayout()
+  // (called from finalizeSettlement on LIVE_SETTLED). Recording intent here
+  // while ALSO allocating here double-counted buckets on the live path.
+  const bucketIntent = pipeResult.split.buckets.filter((b) => b.amount > 0).map((b) => ({
     code: b.code as BucketCode,
     pct: b.pct,
     amount: b.amount,
-    revenueEventId: undefined,
-    sourceLabel: `settlement:${execution.id}`,
+    status: 'intent',
   }));
-  const bucketResult = await allocateToBuckets(bucketAllocations);
-  if (!bucketResult.ok) {
-    await releaseLock(lock.lockId);
-    return {
-      executionId: execution.id,
-      status: 'FAILED',
-      microMoveVerified: execution.microMoveVerified,
-      failureReason: `Treasury bucket allocation failed: ${bucketResult.reason}`,
-    };
-  }
-  metadataAfterPipe.bucketAllocations = bucketResult.allocations;
+  metadataAfterPipe.bucketAllocations = bucketIntent;
 
   await prisma.settlementExecution.update({
     where: { id: execution.id },

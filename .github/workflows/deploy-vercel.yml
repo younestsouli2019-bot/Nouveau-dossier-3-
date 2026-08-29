@@ -50,11 +50,46 @@ jobs:
       - name: Pull Vercel Environment
         run: vercel pull --yes --environment=${{ github.event.inputs.environment || 'production' }} --token=${{ secrets.VERCEL_TOKEN }}
 
+      # Owner-directed runtime env vars. Values come from GitHub Actions
+      # secrets (masked in logs). If a secret is unset, vercel env add is
+      # skipped for that key so a stale placeholder never ships.
+      # ONLY runs on production deploys; preview inherits prod env.
+      - name: Provision OWNER runtime env vars (production)
+        if: ${{ github.event.inputs.environment != 'preview' && github.event.inputs.environment != '' }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+          _provision() {
+            local key="$1" val="${2:-}"
+            [ -n "$val" ] || { echo "skip $key (secret unset)"; return 0; }
+            # idempotent: if the var already exists, remove then re-add (env add errors on existing)
+            vercel env rm "$key" production --yes --token="${{ secrets.VERCEL_TOKEN }}" 2>/dev/null || true
+            printf '%s' "$val" | vercel env add "$key" production --yes --token="${{ secrets.VERCEL_TOKEN }}" 2>/dev/null \
+              || echo "warn: could not set $key"
+          }
+          _provision OWNER_PAYOUT_RAIL       "${{ secrets.OWNER_PAYOUT_RAIL }}"
+          _provision OWNER_PAYOUT_CURRENCY   "${{ secrets.OWNER_PAYOUT_CURRENCY }}"
+          _provision OWNER_KYC_STATUS        "${{ secrets.OWNER_KYC_STATUS }}"
+          _provision PLAN_TRANSITION_MODE    "${{ secrets.PLAN_TRANSITION_MODE }}"
+          _provision OWNER_EXEC_UNLOCK       "${{ secrets.OWNER_EXEC_UNLOCK }}"
+          _provision OWNER_PAYOUT_IDENTIFIER "${{ secrets.OWNER_PAYOUT_IDENTIFIER }}"
+          _provision OWNER_PAYOUT_COUNTRY    "${{ secrets.OWNER_PAYOUT_COUNTRY }}"
+          _provision OWNER_PAYOUT_HOLDER_NAME "${{ secrets.OWNER_PAYOUT_HOLDER_NAME }}"
+          _provision OWNER_PAYOUT_BANK_BIC   "${{ secrets.OWNER_PAYOUT_BANK_BIC }}"
+
       - name: Install project dependencies
         run: npm ci || npm install
 
       - name: Generate Prisma client
         run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Apply database migrations (Neon)
+        run: npx prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NEXT_TELEMETRY_DISABLED: 1

@@ -304,7 +304,7 @@ Once envs are set, every call to a `glm-5.3` model ID transparently routes to th
 | **No deliverable finance rail** (PayPal CIP pending, Wise rejected) → no real proved RevenueEvent | PayPal Business account CIP not cleared; Wise application declined. Finish banking setup before the swarm can disburse real owner funds. | **Owner → PayPal dashboard:** complete Customer Identification Program (CIP). **Owner → Wise:** re-submit KYC or switch to a different bank-wire PSP (Attijariwafa/CIH direct → use scripts/approve-bankwire.js). **Owner payout rail env:** set `OWNER_PAYOUT_RAIL=iban` + `OWNER_PAYOUT_CURRENCY=USD` (or MAD) + the corresponding IBAN/RIB env vars in Vercel. |
 | **RWC 302/302 course media** (buildVideos() throwing stub, image 402) | `OPENROUTER_API_KEY` unfunded (402 Payment Required); missing `IMAGE_GEN_API_KEY`, `REPLICATE_API_TOKEN`, `ASSET_BASE_URL`. | Fund OpenRouter balance OR provision a separate `IMAGE_GEN_API_KEY` (Together, FLUX.1-schnell) + `REPLICATE_API_TOKEN` (video) + `ASSET_BASE_URL` (R2/S3/Supabase CDN public). Then run: `node scripts/course-video-producer.mjs --all --images --videos && node scripts/rwc-course-media-audit.mjs`. |
 | **Procurement Bachir first (June-20 deadline, overdue)** — real vendor payment | Real Moroccan vendor checkout needs owner MMB (Attijari Mobile Money) or CMI card; swarm has no card writer. | **Owner → load MMB/CMI card:** fund MMB wallet (Attijari) or use a CMI debit/credit card under the owner's name, then run the 4-step procurement pipeline (seed-pos → /procurement/seed-workflow → fix-recipients → optimize). Pay Bachir first: SuperFood nitric/diabetes packs (SuperFood.ma, 88%) + Paco Rabanne/Montblanc perfumes (Parfumerie Agdal, 85%) + Tablet CR10.1 + ortho slippers (Medical Supply Rabat, 82%) — all billed to card, all marked PRE-PAID BY SWARM in UI banner so Bachir pays $0. Then Hind, then Younes. |
-| **Neon DB schema sync** for new buckets/routing tables | `DATABASE_URL` placeholder in Vercel / `.env` — no real Neon connection to run `prisma migrate deploy`. | Set real `DATABASE_URL` (Neon Postgres connection pool URL) in GitHub repo secrets and Vercel env → `deploy-vercel.yml` will run `prisma generate`; follow up with one `npx prisma migrate deploy` against Neon to commit the migration row. |
+| **Neon DB schema sync** for new buckets/routing tables | Earlier deploys ran only `prisma generate` (never `migrate deploy`), so `FundBucket`/`PayoutRoutingRule` never landed → `payoutRoutingRule.findMany`/`fundBucket.upsert` would throw at runtime → settlements aborted → "OWNER accounts received nothing". **FIXED in deploy-vercel.yml**: added `npx prisma migrate deploy` step after generate. | Next successful `main` push (or `workflow_dispatch` deploy) applies the migration + seeds the 4 buckets + default 30/10/20/40 routing rule against Neon automatically. Verify: `SELECT * FROM "FundBucket"` returns 4 rows; `/api/healthz` 200. |
 
 ---
 
@@ -318,12 +318,15 @@ The following items cannot be performed from the repository sandbox (they requir
 - `VERCEL_PROJECT_ID` (vercel.com → `supply-chain-swarm` project → Settings → General → ID)
 - `DATABASE_URL` (Neon Postgres pooled connection string — starts `postgresql://`)
 
-**2. Vercel project env vars (set in vercel.com dashboard for the project):**
+> **Provisioning is now automation-driven.** `deploy-vercel.yml` (step "Provision OWNER runtime env vars (production)") mirrors the vars below from GitHub Actions secrets into the Vercel production project on every deploy. Set the VALUES as Actions secrets and they become Vercel env vars automatically (masked, idempotent, preview unaffected).
+
+**2. Vercel project env vars → set as GitHub Actions secrets (workflow mirrors them to Vercel on deploy):**
 - `OWNER_EXEC_UNLOCK=` — ≥ 16 random chars; enables daemon deploy/delivery writes (else read-only per guardrail §2).
 - `OWNER_PAYOUT_RAIL=iban` (or `usdc_arbitrum` / `attijari_mad` / `paypal` / `wise` / `payoneer`)
 - `OWNER_PAYOUT_CURRENCY=USD` (or `MAD` for Attijari)
 - `OWNER_KYC_STATUS=PASSED` (enables settlement-engine `VERIFY_COMPLIANCE` gate)
 - `PLAN_TRANSITION_MODE=0` (unless the workspace is mid-migration; 0 = writes allowed after OWNER_EXEC_UNLOCK set)
+- `OWNER_PAYOUT_IDENTIFIER` / `OWNER_PAYOUT_COUNTRY` / `OWNER_PAYOUT_HOLDER_NAME` / `OWNER_PAYOUT_BANK_BIC` (the preset payout destination fields — the rail values below)
 - Real payout rail env values for your selected rail (IBAN, RIB 372, PayPal email, Wise profile ID, USDC Arbitrum `0xA462…`, etc.)
 
 **3. Space-Z dashboard (for HIT Swarm revenue engine):**
