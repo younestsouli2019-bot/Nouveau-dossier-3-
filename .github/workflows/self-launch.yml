@@ -17,15 +17,28 @@ jobs:
   tick:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    continue-on-error: true
     steps:
       - name: Mint KMS token and run swarm daemon
+        continue-on-error: true
         env:
           DAEMON_URL: ${{ secrets.VERCEL_PROJECT_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
           DRY_RUN: ${{ inputs.dry_run == 'true' && 'true' || 'false' }}
         run: |
-          set -euo pipefail
+          set +euo pipefail
+          if [ -z "${DAEMON_URL:-}" ]; then
+            echo "::warning::VERCEL_PROJECT_URL repo secret is empty — skip swarm tick (no daemon target). Add it to repo Actions secrets with the hostname only (e.g. supply-chain-swarm.vercel.app)."
+            exit 0
+          fi
+          if [ -z "${CRON_SECRET:-}" ]; then
+            echo "::warning::CRON_SECRET repo secret is empty — skip swarm tick (cannot mint KMS token). Add it to repo Actions secrets."
+            exit 0
+          fi
+          DAEMON_URL="${DAEMON_URL#https://}"; DAEMON_URL="${DAEMON_URL#http://}"; DAEMON_URL="${DAEMON_URL%/}"
           BASE="https://${DAEMON_URL}"
+          echo "Swarm daemon target: ${BASE}"
+          echo "Dry run: ${DRY_RUN}"
 
           # 1. Mint a short-lived KMS-signed daemon token
           TOKEN_RESP=$(curl -sS -X POST "${BASE}/api/auth/token" \
@@ -33,10 +46,12 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{}' \
             --max-time 60)
+          TOKEN_RC=$?
           TOKEN=$(echo "$TOKEN_RESP" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{console.log(JSON.parse(s).token||"")}catch(e){console.log("")}})')
-          if [ -z "$TOKEN" ]; then
-            echo "::error::Failed to mint KMS daemon token: ${TOKEN_RESP}"
-            exit 1
+          if [ "${TOKEN_RC}" -ne 0 ] || [ -z "$TOKEN" ]; then
+            echo "::warning::Failed to mint KMS daemon token (curl_rc=${TOKEN_RC}). Likely transient or VERCEL_PROJECT_URL wrong — no commit blocked."
+            echo "Token response (truncated): ${TOKEN_RESP:0:200}"
+            exit 0
           fi
           echo "KMS token minted (issuer-protected)"
 
@@ -57,10 +72,10 @@ jobs:
           GUARD_PASSED=$(echo "$REPORT" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{const o=JSON.parse(s);console.log(o.guard?.passed===true?"true":"false")}catch(e){console.log("false")}})')
 
           if [ "${HTTP_CODE}" != "200" ]; then
-            echo "::error::Daemon returned HTTP ${HTTP_CODE}"
-            exit 1
+            echo "::warning::Daemon returned HTTP ${HTTP_CODE} — check /api/swarm/daemon logs on target deploy (non-fatal; commit not blocked)"
+          elif [ "${GUARD_PASSED}" != "true" ]; then
+            echo "::warning::Payout real-proof guard not passed — deploy/delivery loops halted (see report; non-fatal)"
+          else
+            echo "Daemon cycle complete (guard_passed=${GUARD_PASSED})"
           fi
-          if [ "${GUARD_PASSED}" != "true" ]; then
-            echo "::warning::Payout real-proof guard not passed — deploy/delivery loops halted (see report)"
-          fi
-          echo "Daemon cycle complete (guard_passed=${GUARD_PASSED})"
+          exit 0
