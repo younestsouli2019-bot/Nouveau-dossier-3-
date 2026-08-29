@@ -3,72 +3,96 @@
   "assets": {
     "certified-blockchain-expert-cbe-preptest-2025": {
       "title": "Certified Blockchain Expert (CBE) preptest 2025",
-      "status": "FAIL",
-      "page_url": "https://www.realworldcerts.com/catalog/certified-blockchain-expert-cbe-preptest-2025.html",
-      "checked_at": "2026-08-27T20:15:06.932Z",
-      "checks": {
-        "hero_image": {
-          "kind": "hero_image",
-          "required": 1,
-          "found": 0,
-          "status": "FAIL",
-          "assetIds": []
+      "category": "Blockchain",
+      "status": "PARTIAL",
+      "checked_at": "2026-08-29T12:17:39.753Z",
+      "assets": [
+        {
+          "id": "RWC-CER-068-HERO",
+          "kind": "HERO",
+          "url": null,
+          "local": null,
+          "broken": "Image API 404: {\"error\":{\"message\":\"No model found for \\\"openrouter/flux-schnell\\\"\",\"code\":404}}"
         },
-        "thumbnail": {
-          "kind": "thumbnail",
-          "required": 1,
-          "found": 0,
-          "status": "FAIL",
-          "assetIds": []
+        {
+          "id": "RWC-CER-068-THUMB",
+          "kind": "THUMB",
+          "url": null,
+          "local": null,
+          "broken": "Image API 404: {\"error\":{\"message\":\"No model found for \\\"openrouter/flux-schnell\\\"\",\"code\":404}}"
         },
-        "module_images": {
-          "kind": "module_images",
-          "required": 3,
-          "found": 1,
-          "status": "FAIL",
-          "assetIds": []
+        {
+          "id": "RWC-CER-068-MOD-01",
+          "kind": "MOD",
+          "url": null,
+          "local": null,
+          "broken": "Image API 404: {\"error\":{\"message\":\"No model found for \\\"openrouter/flux-schnell\\\"\",\"code\":404}}"
         },
-        "diagrams": {
-          "kind": "diagrams",
-          "required": 2,
-          "found": 0,
-          "status": "FAIL",
-          "assetIds": []
+        {
+          "id": "RWC-CER-068-MOD-02",
+          "kind": "MOD",
+          "url": null,
+          "local": null,
+          "broken": "Image API 404: {\"error\":{\"message\":\"No model found for \\\"openrouter/flux-schnell\\\"\",\"code\":404}}"
         },
-        "trailer_video": {
-          "kind": "trailer_video",
-          "required": 1,
-          "found": 0,
-          "status": "FAIL",
-          "assetIds": []
+        {
+          "id": "RWC-CER-068-MOD-03",
+          "kind": "MOD",
+          "url": null,
+          "local": null,
+          "broken": "Image API 404: {\"error\":{\"message\":\"No model found for \\\"openrouter/flux-schnell\\\"\",\"code\":404}}"
         },
-        "lesson_videos": {
-          "kind": "lesson_videos",
-          "required": 3,
-          "found": 0,
-          "status": "FAIL",
-          "assetIds": []
+        {
+          "id": "RWC-CER-068-DIAGRAM-01",
+          "kind": "DIAGRAM",
+          "url": null,
+          "local": null,
+          "broken": "Image API 404: {\"error\":{\"message\":\"No model found for \\\"openrouter/flux-schnell\\\"\",\"code\":404}}"
         },
-        "video_thumbnails": {
-          "kind": "video_thumbnails",
-          "required": 3,
-          "found": [
-            "/assets/courses/certified-blockchain-expert-cbe-preptest-2025.svg",
-            "/assets/courses/certified-blockchain-expert-cbe-preptest-2025-b.svg",
-            "/assets/courses/certified-blockchain-expert-cbe-preptest-2025-c.svg"
-          ],
-          "status": "FAIL",
-          "assetIds": []
+        {
+          "id": "RWC-CER-068-DIAGRAM-02",
+          "kind": "DIAGRAM",
+          "url": null,
+          "local": null,
+          "broken": "Image API 404: {\"error\":{\"message\":\"No model found for \\\"openrouter/flux-schnell\\\"\",\"code\":404}}"
         },
-        "cheat_sheet": {
-          "kind": "cheat_sheet",
-          "required": 1,
-          "found": 0,
-          "status": "FAIL",
-          "assetIds": []
+        {
+          "id": "RWC-CER-068-CHEAT",
+          "kind": "CHEAT",
+          "url": null,
+          "local": null,
+          "broken": "Image API 404: {\"error\":{\"message\":\"No model found for \\\"openrouter/flux-schnell\\\"\",\"code\":404}}"
+        },
+        {
+          "id": "RWC-CER-068-TRAILER",
+          "kind": "TRAILER",
+          "url": null,
+          "local": null,
+          "broken": "video_not_configured"
+        },
+        {
+          "id": "RWC-CER-068-LESSON-01",
+          "kind": "LESSON",
+          "url": null,
+          "local": null,
+          "broken": "video_not_configured"
+        },
+        {
+          "id": "RWC-CER-068-LESSON-02",
+          "kind": "LESSON",
+          "url": null,
+          "local": null,
+          "broken": "video_not_configured"
+        },
+        {
+          "id": "RWC-CER-068-LESSON-03",
+          "kind": "LESSON",
+          "url": null,
+          "local": null,
+          "broken": "video_not_configured"
         }
-      },
-      "asset_urls": {}
+      ],
+      "deficits": []
     },
     "financial-risk-manager-test-bank": {
       "title": "Financial Risk Manager Test Bank",

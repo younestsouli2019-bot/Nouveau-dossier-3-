@@ -9,8 +9,10 @@ plus the Vercel supply-chain front-end.
 | Component | Status | Notes |
 |-----------|--------|-------|
 | Next.js build (`npm run build`) | ✅ PASS | 3 static pages + 50+ API routes, exit 0 |
-| Prisma schema | ✅ PASS | RevenueLedgerEntry ↔ LedgerAccount relation fixed |
+| Prisma schema | ✅ PASS | RevenueLedgerEntry ↔ LedgerAccount relation fixed. New `FundBucket` + `PayoutRoutingRule` models added; SQL migration in `prisma/migrations/20260829000000_add_treasury_buckets_routing/` (see § Treasury Buckets Migration below). |
 | Truth Guards (TRUTH-001…006) | ✅ INSTALLED | Prisma middleware; 6 rules flag any completed-status record without external proof |
+| Z.ai/Base44 Guardrails | ✅ CODE DONE | 2-tier fail-closed READ-ONLY execution gate + append-only fsync'd hash-chain journal + daemon journal seal. See § Z.ai / Base44 Guardrails below. |
+| GLM-5.3 params (deployed apps call sites) | ✅ CODE DONE | `{ model: "glm-5.3", thinking: "enabled", reasoning_effort: "low" }` injected automatically in: `src/lib/dynamic-router.ts:callOpenRouter` + `swarm-ops-project/src/lib/free-models.ts:buildChatCompletionBody`. Phase-4 local option (vLLM/SGLang/OpenClaw) documented. |
 | Vercel domain (`supply-chain-swarm.vercel.app`) | ✅ LIVE | Older 7-tab deployment (Accounts/Dashboard/Payments/Orders/Shipments/Procurement) — needs redeploy from latest code |
 | Vercel project (`supply-chain-swarm-d6o8rq2qt-jonas-projects-ca14fe2e.vercel.app`) | 🔐 SSO-GATED | Redirects to Vercel login; must be redeployed via `deploy-vercel.yml` workflow with VERCEL_TOKEN |
 | HIT Swarm (`x1he4604ap01-deploy.space-z.ai`) | ⚠️ DOWN / RECYCLED | ERR_INVALID_RESPONSE / 502 — consistent with Z.ai project expiry-recycle. Not a code fault. See **Z.ai Recycle Remediation** below. Redeploy via Space-Z dashboard (no SPACEZ_TOKEN in-repo). |
@@ -202,3 +204,138 @@ Applies to any `*.space-z.ai` / `*.base44.app` workspace that gets recycled mid-
 8. Onboard the 9 Morocco local supplier entries into `Supplier` table with their payment terms so the optimization-engine re-routes are backed by real POs, not just price annotation.
 9. Add www.realworldcerts.com to Vercel project domains (vercel.json → `domains` array) after course media passes audit.
 10. Mirror the Vercel deploy to the other 2 Space-Z endpoints so all 3 public UIs (b1fx661 · t1trn6kun · supply-chain-swarm.vercel.app) are in sync.
+
+---
+
+## Z.ai / Base44 Guardrails (implemented 2026-08-29)
+
+Two hardened guardrails now ship in `swarm-ops-project/src/app/api/swarm/daemon/route.ts` + `swarm-ops-project/src/lib/journal/append-only.ts`. They are code-enforced (fail-closed) — no owner-side config required to benefit.
+
+### 1. Append-Only Daemon Journal (write-once + SHA-256 hash chain)
+- Every daemon tick (start / completed / failed) is written as JSONL to `data/swarm/journal/journal.jsonl`.
+- Each line: `{ seq, ts, prev, entryHash, payload }` with `entryHash = SHA256(prev + seq + payload)`.
+- Integrity semantics mirror `AuditLedger` (see `prisma/schema.prisma:447` hash-chain model).
+- **Write-once enforcement:** after each `fsync()` the journal file is flipped to OS read-only (Windows `attrib +R`, POSIX `chmod 444`). The daemon briefly clears the attribute *only* to append the next line, then re-flips. No truncate or mid-file rewrite is possible without leaving a chain break.
+- **Double-writer lock:** a `.journal.jsonl.lock` atomic lock serialises parallel cron ticks.
+- **Seal:** at tick end, `journalSeal()` appends a terminal `{ tick:"seal", sealed:true, chainTail }` entry with the current tail hash, so future processes can never append without leaving a visible chain gap.
+- **`openJournal()` always validates the chain** on first call: if any `rec.prev ≠ expectedPrev` or the recomputed `entryHash` mismatches, the daemon logs `CHAIN BROKEN` and stays in read-only mode (deploy/delivery never run).
+- API reference:
+  - `swarm-ops-project/src/lib/journal/append-only.ts:openJournal()`
+  - `swarm-ops-project/src/lib/journal/append-only.ts:journalAppend()`
+  - `swarm-ops-project/src/lib/journal/append-only.ts:journalSeal()`
+
+### 2. Read-Only Execution Gate (2-tier fail-closed)
+Deploy/delivery writes NEVER run unless ALL three are true:
+- `PLAN_TRANSITION_MODE` ≠ `"1"` (tier-1: Z.ai plan-transition isolation)
+- `OWNER_EXEC_UNLOCK` env var **set and ≥ 16 chars** (tier-2: owner-granted write permission)
+- `verifyPayoutGuard().passed === true` (tier-0: existing real-proof payout guard)
+
+If any one fails the daemon still runs `reconcile → guard → fusion` (assessment-only) and surfaces `execGate.reasons` in the response and journal. The gate is fail-closed: **unreadable env → treated as unset → read-only**.
+
+API reference:
+- `swarm-ops-project/src/app/api/swarm/daemon/route.ts:resolveExecGate()`
+- `swarm-ops-project/src/app/api/swarm/daemon/route.ts:isAuthorized()` — KMS JWT is preferred; CRON_SECRET fallback available but logs `not KMS-signed` into the exec gate reasons.
+
+---
+
+## GLM-5.3 / ZCode Integration (deployed apps call sites)
+
+### Request params applied everywhere
+For **any** model ID matching `glm-5.3` (case-insensitive, including `zhipuai/glm-5.3`, `zai-glm-5.3`, `glm-5.3-flash`, `glm5.3`, `glm_5_3`) or exactly `zcode`, the request body is transparently rewritten to add:
+```json
+{ "model": "glm-5.3", "thinking": "enabled", "reasoning_effort": "low" }
+```
+
+**Call sites covered:**
+1. **Main project router (production):** `src/lib/dynamic-router.ts:callOpenRouter()` → OpenRouter / local engine routing.
+2. **Swarm-ops helper:** `swarm-ops-project/src/lib/free-models.ts:buildChatCompletionBody()` → any Z.ai/OpenRouter/ZCode consumer in the swarm project.
+
+**Model catalogue entries added:**
+| id | name | provider | endpoint |
+|----|------|----------|----------|
+| `zhipuai/glm-5.3` | GLM-5.3 (OpenRouter · reasoning) | openrouter | https://openrouter.ai/api/v1/chat/completions |
+| `zhipuai/zcode` | ZCode (code-native GLM) | openrouter | (same) |
+| `zai-glm-5.3` | GLM-5.3 (Z.ai · reasoning) | zai | https://api.z.ai/api/paas/v4/chat/completions |
+| `zai-zcode` | ZCode (Z.ai) | zai | (same) |
+| `local-glm-5.3-flash` | GLM-5.3-Flash (Phase-4 self-hosted) | glm_local | http://localhost:8000/v1/chat/completions |
+
+### Phase-4 local option (zero-cost, private)
+When the swarm moves off third-party LLM APIs:
+```
+ENGINE:   vLLM ≥ 0.6.0  OR  SGLang ≥ 0.4.0  OR  OpenClaw
+MODEL:    THUDM/glm-5.3-flash (GGUF / AWQ / FP8, 70B or 128B)
+ENVS:     GLM_LOCAL_BASE_URL=http://localhost:8000/v1
+          GLM_LOCAL_API_KEY=<any-shared-secret≥16chars>
+```
+Once envs are set, every call to a `glm-5.3` model ID transparently routes to the local engine via `callOpenRouter` — no caller code changes required.
+
+---
+
+## Treasury Buckets Migration (PayoutRoutingRule · FundBucket)
+
+### New Prisma models (lines 765–798 in `prisma/schema.prisma`)
+- **`FundBucket`** (code PK): `sovereign_reserves (30%)` · `procurement_buffer (10%)` · `runtime_operations (20%)` · `salary_bucket (40%)`. Monotonic counters `allocated - released = balance`.
+- **`PayoutRoutingRule`**: matches `sourceType` + `sourceFilter` JSONB and distributes NET via `destinationSplits` JSONB. The default rule routes the split above into the 4 buckets.
+
+### Migration file (ready to apply)
+- **Path:** `prisma/migrations/20260829000000_add_treasury_buckets_routing/migration.sql`
+- **Idempotent:** `CREATE TABLE IF NOT EXISTS` + `INSERT … ON CONFLICT DO NOTHING` seeds the 4 buckets + the default routing rule.
+- **Apply after Neon DATABASE_URL is correctly set:**
+  ```
+  npx prisma migrate deploy         # applies via _prisma_migrations table (preferred for Neon)
+  npx prisma db push                # or, if you want to skip the migrations table for this schema-only deploy
+  ```
+
+### Runtime wiring
+- Bucket split engine: `src/lib/treasury/buckets.ts:computeBucketSplit()` + `allocateToBuckets()`
+- Seeded by `scripts/seed-pos.mjs` lines 147–179 (raw SQL inserts, idempotent)
+- Wired into settlement flow at `src/lib/settlement-engine.ts:SplitBreakdown.buckets` Stage 3.5 and `src/lib/payout-routing.ts:treasury fallback splits`.
+
+---
+
+## Blocked Items (Owner Dashboard Actions Required)
+
+| Blocked Item | Root Cause | Unblock Action |
+|--------------|------------|----------------|
+| **Vercel redeploy** of `supply-chain-swarm.vercel.app` from latest commit | Secrets in Vercel dashboard contain `[SENSITIVE]` placeholder; `VERCEL_TOKEN`/`VERCEL_ORG_ID`/`VERCEL_PROJECT_ID` not set in GitHub repo secrets. | Set 4 GitHub repo secrets (deploy-vercel.yml) OR push Redeploy button on Vercel dashboard with real env values. |
+| **HIT Swarm `x1he4604ap01`** redeploy + first revenue tick | No `SPACEZ_TOKEN` in repo; no direct redeploy API call possible. Dashboard action only. | Space-Z dashboard → x1he4604ap01-d → Redeploy / Fetch Latest Commit → Autopilot ON → Run Tick → capture first externally-proven RevenueEvent > $0.01. |
+| **No deliverable finance rail** (PayPal CIP pending, Wise rejected) → no real proved RevenueEvent | PayPal Business account CIP not cleared; Wise application declined. Finish banking setup before the swarm can disburse real owner funds. | **Owner → PayPal dashboard:** complete Customer Identification Program (CIP). **Owner → Wise:** re-submit KYC or switch to a different bank-wire PSP (Attijariwafa/CIH direct → use scripts/approve-bankwire.js). **Owner payout rail env:** set `OWNER_PAYOUT_RAIL=iban` + `OWNER_PAYOUT_CURRENCY=USD` (or MAD) + the corresponding IBAN/RIB env vars in Vercel. |
+| **RWC 302/302 course media** (buildVideos() throwing stub, image 402) | `OPENROUTER_API_KEY` unfunded (402 Payment Required); missing `IMAGE_GEN_API_KEY`, `REPLICATE_API_TOKEN`, `ASSET_BASE_URL`. | Fund OpenRouter balance OR provision a separate `IMAGE_GEN_API_KEY` (Together, FLUX.1-schnell) + `REPLICATE_API_TOKEN` (video) + `ASSET_BASE_URL` (R2/S3/Supabase CDN public). Then run: `node scripts/course-video-producer.mjs --all --images --videos && node scripts/rwc-course-media-audit.mjs`. |
+| **Procurement Bachir first (June-20 deadline, overdue)** — real vendor payment | Real Moroccan vendor checkout needs owner MMB (Attijari Mobile Money) or CMI card; swarm has no card writer. | **Owner → load MMB/CMI card:** fund MMB wallet (Attijari) or use a CMI debit/credit card under the owner's name, then run the 4-step procurement pipeline (seed-pos → /procurement/seed-workflow → fix-recipients → optimize). Pay Bachir first: SuperFood nitric/diabetes packs (SuperFood.ma, 88%) + Paco Rabanne/Montblanc perfumes (Parfumerie Agdal, 85%) + Tablet CR10.1 + ortho slippers (Medical Supply Rabat, 82%) — all billed to card, all marked PRE-PAID BY SWARM in UI banner so Bachir pays $0. Then Hind, then Younes. |
+| **Neon DB schema sync** for new buckets/routing tables | `DATABASE_URL` placeholder in Vercel / `.env` — no real Neon connection to run `prisma migrate deploy`. | Set real `DATABASE_URL` (Neon Postgres connection pool URL) in GitHub repo secrets and Vercel env → `deploy-vercel.yml` will run `prisma generate`; follow up with one `npx prisma migrate deploy` against Neon to commit the migration row. |
+
+---
+
+## Owner Request: Secrets & Dashboard Actions to Unblock the Runbook
+
+The following items cannot be performed from the repository sandbox (they require owner credentials, bank access, funding, or dashboard sessions). Please set or perform them when you return:
+
+**1. Vercel / Deploy secrets (set in GitHub repo → Settings → Secrets and variables → Actions):**
+- `VERCEL_TOKEN` (Project-scoped, created at vercel.com → Tokens)
+- `VERCEL_ORG_ID` (vercel.com → Team → Settings → General → ID field)
+- `VERCEL_PROJECT_ID` (vercel.com → `supply-chain-swarm` project → Settings → General → ID)
+- `DATABASE_URL` (Neon Postgres pooled connection string — starts `postgresql://`)
+
+**2. Vercel project env vars (set in vercel.com dashboard for the project):**
+- `OWNER_EXEC_UNLOCK=` — ≥ 16 random chars; enables daemon deploy/delivery writes (else read-only per guardrail §2).
+- `OWNER_PAYOUT_RAIL=iban` (or `usdc_arbitrum` / `attijari_mad` / `paypal` / `wise` / `payoneer`)
+- `OWNER_PAYOUT_CURRENCY=USD` (or `MAD` for Attijari)
+- `OWNER_KYC_STATUS=PASSED` (enables settlement-engine `VERIFY_COMPLIANCE` gate)
+- `PLAN_TRANSITION_MODE=0` (unless the workspace is mid-migration; 0 = writes allowed after OWNER_EXEC_UNLOCK set)
+- Real payout rail env values for your selected rail (IBAN, RIB 372, PayPal email, Wise profile ID, USDC Arbitrum `0xA462…`, etc.)
+
+**3. Space-Z dashboard (for HIT Swarm revenue engine):**
+- Instance `x1he4604ap01-d` → **Redeploy** / Fetch Latest Commit.
+- After deploy: dashboard → Autopilot **ON** → **Run Tick**. Confirm first RevenueEvent lands with `proofType ≠ manual_attestation` and `amount > 0.01 USD`.
+
+**4. RWC media (3 env vars, provision and set in Vercel + runner env):**
+- `IMAGE_GEN_API_KEY=` (together.xyz flux-schnell key)
+- `REPLICATE_API_TOKEN=` (or `VIDEO_GEN_API_KEY` / `GOOGLE_AI_STUDIO_KEY`)
+- `ASSET_BASE_URL=` (R2/S3/Supabase public bucket URL, no trailing slash)
+
+**5. Finance / procurement (owner actions, no code):**
+- **PayPal Business dashboard:** finish CIP (Customer Identification Program) so payouts can settle.
+- **Wise:** re-apply or use Attijariwafa direct bank-wire rail for Attijari RIB 372.
+- **MMB / CMI card:** fund an Attijari Mobile Money wallet or use a CMI debit card in the owner's name; we will then route Bachir POs through it first (June-20 deadline orders).
+
+Once items 1 + 2 + 5 (at least one rail) are set, please notify me and I'll: trigger the deploy workflow, run the 4-step procurement pipeline (Bachir first), then push to settle-and-payout the first externally-proved HIT Swarm revenue to the 5 preset owner accounts.

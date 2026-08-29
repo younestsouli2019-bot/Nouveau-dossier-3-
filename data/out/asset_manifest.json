@@ -15,5 +15,22 @@
     "lesson_required": 3,
     "assets_ok": 0,
     "assets_total": 12
+  },
+  {
+    "slug": "certified-blockchain-expert-cbe-preptest-2025",
+    "course_id": "RWC-CER-068",
+    "category": "Blockchain",
+    "ok": false,
+    "deficits": [
+      "trailer_video",
+      "lesson_videos_3of3",
+      "hero_image",
+      "thumbnail",
+      "module_images_3of3"
+    ],
+    "assets_required": 3,
+    "lesson_required": 3,
+    "assets_ok": 0,
+    "assets_total": 12
   }
 ]

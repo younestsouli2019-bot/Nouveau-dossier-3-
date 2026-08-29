@@ -43,11 +43,26 @@ export type RouterResponse = {
   fallbacksUsed: string[];
 };
 
+// ─── GLM-5.3 PHASE-4 LOCAL DEPLOY OPTION ─────────────────────────────────
+// When the swarm graduates to self-hosted (Phase-4):
+//   ENGINE:   vLLM >=0.6.0 / SGLang >=0.4.0 / OpenClaw (OpenAI-compat /v1)
+//   MODEL:    THUDM/glm-5.3-flash (GGUF / AWQ / FP8, 70B / 128B variants)
+//   BASE URL: http://localhost:8000/v1      API_KEY: any (env GLM_LOCAL_API_KEY)
+//   Advantages: zero per-token cost, no rate limits, private data never leaves
+//   the swarm's runtime.  The local engine is auto-selected when
+//   process.env.GLM_LOCAL_BASE_URL is set (see callOpenRouter below).
+// ──────────────────────────────────────────────────────────────────────────
+
 const MODEL_CATALOG: ModelConfig[] = [
   { id: 'meta-llama/llama-3.1-8b-instruct', name: 'Llama 3.1 8B', tier: 'free', contextWindow: 131072, maxOutput: 4096, inputCostPer1M: 0.05, outputCostPer1M: 0.10, supportsTools: false, supportsStreaming: true, latencyMs: 800, reliability: 0.85 },
   { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', tier: 'budget', contextWindow: 128000, maxOutput: 16384, inputCostPer1M: 0.15, outputCostPer1M: 0.60, supportsTools: true, supportsStreaming: true, latencyMs: 600, reliability: 0.97 },
   { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash', tier: 'budget', contextWindow: 1048576, maxOutput: 8192, inputCostPer1M: 0.10, outputCostPer1M: 0.40, supportsTools: true, supportsStreaming: true, latencyMs: 500, reliability: 0.95 },
   { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3', tier: 'standard', contextWindow: 65536, maxOutput: 8192, inputCostPer1M: 0.14, outputCostPer1M: 0.28, supportsTools: true, supportsStreaming: true, latencyMs: 700, reliability: 0.93 },
+  // ─── GLM-5.3 / ZCode (deployed apps default to these when available) ───
+  //     reasoning: { thinking: "enabled", reasoning_effort: "low" } injected
+  //     automatically inside callOpenRouter.
+  { id: 'zhipuai/glm-5.3', name: 'GLM-5.3 (OpenRouter · reasoning)', tier: 'premium', contextWindow: 262144, maxOutput: 16384, inputCostPer1M: 2.00, outputCostPer1M: 8.00, supportsTools: true, supportsStreaming: true, latencyMs: 1000, reliability: 0.96 },
+  { id: 'zhipuai/zcode', name: 'ZCode (code-native GLM)', tier: 'premium', contextWindow: 262144, maxOutput: 16384, inputCostPer1M: 1.80, outputCostPer1M: 7.20, supportsTools: true, supportsStreaming: true, latencyMs: 900, reliability: 0.96 },
   { id: 'openai/gpt-4o', name: 'GPT-4o', tier: 'premium', contextWindow: 128000, maxOutput: 16384, inputCostPer1M: 2.50, outputCostPer1M: 10.00, supportsTools: true, supportsStreaming: true, latencyMs: 900, reliability: 0.99 },
   { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', tier: 'premium', contextWindow: 200000, maxOutput: 8192, inputCostPer1M: 3.00, outputCostPer1M: 15.00, supportsTools: true, supportsStreaming: true, latencyMs: 1100, reliability: 0.98 },
 ];
@@ -127,35 +142,73 @@ async function callOpenRouter(
   maxTokens: number,
   temperature: number = 0.7,
 ): Promise<{ content: string; inputTokens: number; outputTokens: number }> {
-  if (!OPENROUTER_API_KEY) {
-    throw new Error('OPENROUTER_API_KEY not configured');
+  const m = (model || "").toLowerCase();
+  const isGlm5 =
+    m.includes("glm-5.3") ||
+    m.includes("glm5.3") ||
+    m.includes("glm_5.3") ||
+    m.includes("glm-5-3") ||
+    m.includes("zcode");
+
+  // Phase-4 local GLM-5.3-Flash (vLLM / SGLang / OpenClaw) auto-route.
+  // If the env var is set AND the requested model is a GLM-5.3 variant,
+  // call the local engine instead of OpenRouter (zero-cost, private).
+  const localBase = process.env.GLM_LOCAL_BASE_URL;
+  let apiKey = OPENROUTER_API_KEY;
+  let baseUrl = OPENROUTER_BASE;
+  let extraHeaders: Record<string, string> = {
+    Authorization: `Bearer ${apiKey}`,
+    "Content-Type": "application/json",
+    "HTTP-Referer": "https://khwarizmian-swarm.com",
+    "X-Title": "Khwarizmian Swarm",
+  };
+  if (localBase && isGlm5) {
+    baseUrl = localBase.replace(/\/$/, "");
+    apiKey = process.env.GLM_LOCAL_API_KEY ?? "local";
+    extraHeaders = {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    };
   }
 
-  const response = await fetch(`${OPENROUTER_BASE}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://khwarizmian-swarm.com',
-      'X-Title': 'Khwarizmian Swarm',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      max_tokens: maxTokens,
-      temperature,
-    }),
+  if (!apiKey) {
+    throw new Error(
+      localBase && isGlm5
+        ? "GLM_LOCAL_API_KEY not configured for Phase-4 local GLM engine"
+        : "OPENROUTER_API_KEY not configured",
+    );
+  }
+
+  const body: Record<string, unknown> = {
+    model,
+    messages,
+    max_tokens: maxTokens,
+    temperature,
+  };
+  if (isGlm5) {
+    body.thinking = "enabled";
+    body.reasoning_effort = "low";
+  }
+
+  const response = await fetch(`${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: extraHeaders,
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`OpenRouter ${model} failed (${response.status}): ${body.slice(0, 200)}`);
+    const respText = await response.text();
+    throw new Error(
+      `${localBase && isGlm5 ? "GLM_LOCAL" : "OpenRouter"} ${model} failed (${response.status}): ${respText.slice(0, 200)}`,
+    );
   }
 
   const data = await response.json();
   const choice = data.choices?.[0];
   if (!choice?.message?.content) {
-    throw new Error(`OpenRouter ${model} returned empty response`);
+    throw new Error(
+      `${localBase && isGlm5 ? "GLM_LOCAL" : "OpenRouter"} ${model} returned empty response`,
+    );
   }
 
   return {
