@@ -13,9 +13,9 @@ on:
   workflow_dispatch:
     inputs:
       audit_only:
-      description: 'Run audit checks without syncing'
-      required: false
-      default: 'false'
+        description: 'Run audit checks without syncing'
+        required: false
+        default: 'false'
 
 permissions:
   contents: write
@@ -289,27 +289,9 @@ jobs:
             "${BASE_URL}/api/swarm-ledger/vault" || echo "000")
 
           echo "Response HTTP: $HTTP_CODE"
-          if [ -f /tmp/sv_resp.txt ]; then
-            python3 - <<'PY' 2>/dev/null || true
-            import json
-            try:
-                with open('/tmp/sv_resp.txt','r',encoding='utf-8') as f:
-                    data = json.load(f)
-                if isinstance(data, dict):
-                    def _safe(v):
-                        if isinstance(v, (dict, list)):
-                            return type(v).__name__
-                        s = str(v)
-                        if len(s) > 200:
-                            return s[:180] + '…'
-                        return s
-                    safe = {k: _safe(v) for k, v in data.items()}
-                    print(json.dumps(safe, indent=2))
-                else:
-                    print("<non-object response>")
-            except Exception as e:
-                print(f"<parse-failed: {e}>")
-PY
+          if [ -f /tmp/sv_resp.txt ] && command -v jq >/dev/null 2>&1; then
+            echo "Response body (redacted, keys only):"
+            jq -rc 'with_entries(.value = (if (.value|type=="object" or .value|type=="array") then (.value|type) else (.value|tostring|.[0:180] + (if (.value|tostring|length)>180 then "…" else "" end) end))' /tmp/sv_resp.txt 2>/dev/null || echo "<non-JSON response, $(wc -c < /tmp/sv_resp.txt) bytes>"
             rm -f /tmp/sv_resp.txt
           fi
 
