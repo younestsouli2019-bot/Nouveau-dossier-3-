@@ -1,7 +1,7 @@
 ---
 description: DevOps and infrastructure agent. Monitors CI/CD pipelines, manages deployments, and handles workflow failures.
 mode: subagent
-model: opencode/mimo-v2-5-free
+model: opencode/mimo-v2.5-free
 permission:
   edit: allow
   bash:

@@ -758,3 +758,41 @@ model SwarmIntegration {
   metadata  Json     @default("{}")
   updatedAt DateTime @default(now())
 }
+
+// Routing rules consumed by settleAndPayout() (src/lib/payout-routing.ts).
+// These were referenced in code but never defined — the missing model caused
+// every payout to resolve 0 routing rules and 0 splits.
+model PayoutRoutingRule {
+  id                String   @id @default(cuid())
+  name              String
+  sourceType        String   @default("any") // any | bank_wire | l2_crypto | paypal | wise | payoneer
+  sourceFilter      Json?    // { minAmount?: number; currency?: string }
+  destinationSplits Json     // [{ ownerAccountId?: string; bucketCode?: string; pct: number }] — must total 100
+  platformFeePct    Float    @default(0)
+  totalPct          Float    @default(100)
+  priority          Int      @default(0)
+  cooldownMs        BigInt   @default(0)
+  isActive          Boolean  @default(true)
+  triggerCount      Int      @default(0)
+  lastTriggeredAt   DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([sourceType, isActive, priority])
+}
+
+// Four treasury buckets: Sovereign Reserves / Owner Procurement Buffer /
+// Runtime Operations / Owner Salary Bucket. Balances are cumulative and
+// monotonic (allocatedOnly when released=false records intent; released=true
+// marks funds actually moved out of the bucket).
+model FundBucket {
+  code          String   @id // sovereign_reserves | procurement_buffer | runtime_operations | salary_bucket
+  label         String
+  percentagePct Float    @default(0) // share of NET settlement
+  balance       Float    @default(0)
+  allocated     Float    @default(0)
+  released      Float    @default(0)
+  note          String?
+  configHash    String?
+  updatedAt     DateTime @updatedAt
+}

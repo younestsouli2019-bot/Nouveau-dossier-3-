@@ -13,7 +13,7 @@ plus the Vercel supply-chain front-end.
 | Truth Guards (TRUTH-001…006) | ✅ INSTALLED | Prisma middleware; 6 rules flag any completed-status record without external proof |
 | Vercel domain (`supply-chain-swarm.vercel.app`) | ✅ LIVE | Older 7-tab deployment (Accounts/Dashboard/Payments/Orders/Shipments/Procurement) — needs redeploy from latest code |
 | Vercel project (`supply-chain-swarm-d6o8rq2qt-jonas-projects-ca14fe2e.vercel.app`) | 🔐 SSO-GATED | Redirects to Vercel login; must be redeployed via `deploy-vercel.yml` workflow with VERCEL_TOKEN |
-| HIT Swarm (`x1he4604ap01-deploy.space-z.ai`) | ❌ DOWN | ERR_INVALID_RESPONSE — CRITICAL: this is the autonomous revenue engine. Must be redeployed via Space-Z dashboard. |
+| HIT Swarm (`x1he4604ap01-deploy.space-z.ai`) | ⚠️ DOWN / RECYCLED | ERR_INVALID_RESPONSE / 502 — consistent with Z.ai project expiry-recycle. Not a code fault. See **Z.ai Recycle Remediation** below. Redeploy via Space-Z dashboard (no SPACEZ_TOKEN in-repo). |
 | AgentFlow AICC (`b1fx661hzse0-d.space-z.ai`) | ✅ LIVE | SWARM_LIVE=true · NO_PLATFORM_WALLET=true · Owner payouts direct |
 | Supply Chain Main (`t1trn6kunnv1-d.space-z.ai`) | ✅ LIVE | Full 21-tab feature set (Swarm Ledger · Audit · Learning · Crypto · Execution · Payouts · Swarm Sync · Vault · Deploy · Resilience · Architecture · Base44 · Pipeline · Custodian) |
 | Procurement optimization engine | ✅ CODE READY | 5-phase dedup + local Morocco sourcing (70–88% price factors) + bulk discounts (5–15%) |
@@ -160,9 +160,28 @@ Still active on 48 critical files (vault scripts, CI workflows, daemons, settlem
 ## What to do RIGHT NOW (P0 → P1 priority)
 
 ### P0: Unblock revenue and Vercel domain update
-1. **Redeploy HIT Swarm (`x1he4604ap01`)**. Space-Z dashboard → instance x1he4604ap01-d → Redeploy / Fetch Latest Commit. Once back online: open dashboard → flip **Autopilot ON** OR click **Run tick**. Tick result must produce a RevenueEvent with external proof (not manual_attestation).
+1. **Redeploy HIT Swarm (`x1he4604ap01`)** — see **Z.ai Recycle Remediation** below. Space-Z dashboard → instance x1he4604ap01-d → Redeploy / Fetch Latest Commit. Once back online: open dashboard → flip **Autopilot ON** OR click **Run tick**. Tick result must produce a RevenueEvent with external proof (not manual_attestation).
 2. **Redeploy Vercel `supply-chain-swarm.vercel.app` from latest code.** Either (a) push main with VERCEL secrets set → `deploy-vercel.yml` runs, or (b) Vercel dashboard → Project → Deployments → "Redeploy" on latest. Post-deploy: verify 7 tabs render, hit `/api/healthz` → 200, click Dashboard → **Fix All Routing** (resolves the banner: "$0.00 trapped in Banking Circle / Operational Pool. Salary routing was never configured to reach owner RIB.").
 3. In GitHub repo secrets, set: `VERCEL_TOKEN` · `VERCEL_ORG_ID` · `VERCEL_PROJECT_ID` so the new `deploy-vercel.yml` can deploy on every main push.
+
+### Z.ai / Base44 project expiry & recycle remediation (template)
+
+Applies to any `*.space-z.ai` / `*.base44.app` workspace that gets recycled mid-task (HIT Swarm `x1he4604ap01` is the current example).
+
+1. **Architectural guardrails (implemented in code, `swarm-ops-project`):**
+   - **Append-only event logging** — `src/lib/journal/append-only.ts`: every daemon tick writes a write-once, hash-chained (`prev → entryHash`) JSONL line to `data/swarm/journal/journal.jsonl` (gitignored, durable, survives mid-task disconnect). Wired into `src/app/api/swarm/daemon/route.ts` (journal entries for start / completed / failed). No update/delete API exists — the file is only ever opened with append flag.
+   - **Execution isolation** — daemon refuses deploy/delivery writes when `PLAN_TRANSITION_MODE=1` (assessment-only run: reconcile + guard + fusion). This prevents a recycled workspace from writing into the base environment during an active plan-transition phase. Nothing must run against base env in write mode during transition.
+2. **GLM-5.3 configuration (for Z.ai-hosted runtimes, set at redeploy):** GLM-5.3 must be initialized with `thinking: "enabled"` and `reasoning_effort: "low"` — starting it with thinking disabled causes an immediate API handshake failure:
+   ```json
+   { "model": "glm-5.3", "thinking": "enabled", "reasoning_effort": "low" }
+   ```
+   The local `src/lib/dynamic-router.ts` catalog routes via OpenRouter and does NOT host a GLM-5.3 entry; upgrade your recycled Z.ai projects to the GLM-5.3 runtime using the params above.
+3. **Recycle the recovered workspace safely** — preflight: journal enabled; set `PLAN_TRANSITION_MODE=1`; run a tick; verify `reconcile` + guard + fusion produce output; THEN set `PLAN_TRANSITION_MODE=0` and let deploy/delivery resume.
+4. **Fallback: local inference redundancy (Phase 4).** If a Z.ai/Base44 project cannot be recovered (expired credits / no dashboard access), the workspace can be reconstructed locally with open-weight models so revenue machinery never depends on a single vendor:
+   - Pull `GLM-5.3-Flash` weights from HuggingFace;
+   - Run offline via vLLM / SGLang (or OpenClaw for agent tooling);
+   - Point the swarm's LLM router at the local endpoint (`OPENROUTER_BASE` override or a `local://` model entry);
+   - Data governance shifts back to private bare-metal, eliminating project-expiry risk.
 
 ### P1: Procurement + Payouts + Course Media
 4. **Seed 3 recipients into the DB if not present.** Run `npm run db:seed-pos` → seeds 8 POs, 5 suppliers, 5 owner accounts, 4 split configs, 5 revenue events. Then `POST /api/procurement/seed-workflow` → recipients from `procurement.txt` are loaded. Then `POST /api/procurement/fix-recipients` → dedup + cross-link POs to each of the 3 recipients. Then `POST /api/procurement/optimize` → local Morocco suppliers kick in (70–88% price cuts + qty-tier bulk discounts). Footer banner confirms pre-paid status for all 3 recipients.

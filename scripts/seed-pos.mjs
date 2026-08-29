@@ -144,6 +144,40 @@ async function seed() {
     }
     console.log(`Seeded ${revenues.length} revenue events`)
 
+    // 6. Create the 4 Treasury FundBuckets (idempotent upsert)
+    const buckets = [
+      { code: 'sovereign_reserves', label: 'Sovereign Reserves', pct: 30, note: 'Long-term capital reserves / contingency fund' },
+      { code: 'procurement_buffer', label: 'Owner Procurement Buffer', pct: 10, note: 'Funds reserved to pay owner-directed purchase orders' },
+      { code: 'runtime_operations', label: 'Runtime Operations', pct: 20, note: 'Swarm infrastructure allocation' },
+      { code: 'salary_bucket', label: 'Owner Salary Bucket', pct: 40, note: 'Monthly owner salary allocation' },
+    ]
+    for (const b of buckets) {
+      await client.query(
+        `INSERT INTO "FundBucket" (code, label, "percentagePct", balance, allocated, released, note, "updatedAt")
+         VALUES ($1, $2, $3, 0, 0, 0, $4, NOW())
+         ON CONFLICT (code) DO UPDATE SET label = EXCLUDED.label, "percentagePct" = EXCLUDED."percentagePct", note = EXCLUDED.note`,
+        [b.code, b.label, b.pct, b.note]
+      )
+    }
+    console.log(`Created ${buckets.length} treasury buckets`)
+
+    // 7. Create default PayoutRoutingRule → splits NET into treasury buckets.
+    //    This is the rule settleAndPayout() resolves; without it the engine
+    //    previously produced 0 splits.
+    const defaultSplits = JSON.stringify([
+      { bucketCode: 'sovereign_reserves', pct: 30 },
+      { bucketCode: 'procurement_buffer', pct: 10 },
+      { bucketCode: 'runtime_operations', pct: 20 },
+      { bucketCode: 'salary_bucket', pct: 40 },
+    ])
+    await client.query(
+      `INSERT INTO "PayoutRoutingRule" (id, name, "sourceType", "sourceFilter", "destinationSplits", "platformFeePct", "totalPct", priority, "cooldownMs", "isActive", "triggerCount", "lastTriggeredAt", "createdAt", "updatedAt")
+       VALUES ($1, $2, 'any', NULL, $3::jsonb, 0, 100, 100, 0, true, 0, NULL, NOW(), NOW())
+       ON CONFLICT (id) DO NOTHING`,
+      [crypto.randomUUID(), 'Default Treasury Bucket Split (40/30/20/10)', defaultSplits]
+    )
+    console.log('Created default payout routing rule (treasury bucket split)')
+
     await client.query('COMMIT')
     console.log('✅ Seed complete!')
   } catch (err) {

@@ -1,7 +1,7 @@
 ---
 description: Procurement operations agent. Manages order fulfillment, vendor coordination, and delivery tracking for multi-recipient procurement missions.
 mode: subagent
-model: opencode/mimo-v2-5-free
+model: opencode/mimo-v2.5-free
 permission:
   edit: allow
   bash:

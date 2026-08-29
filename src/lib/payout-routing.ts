@@ -1,12 +1,15 @@
 // Platform-Intermediated Settlement + Auto-Payout Engine
-// Flow: Revenue → Platform Settlement Account → [verify + split + fee deduct] → Auto-payout to Pre-Set Owner Accounts
+// Flow: Revenue → Platform Settlement Account → [verify + split + fee deduct] → Auto-payout to Pre-Set Owner Accounts + Treasury Buckets
 // Pattern: Stripe Connect / Adyen MarketPay / Wise Platform
 
 import { prisma } from './db';
 import { sha256 } from './strict-enforcement/crypto-utils';
+import { getDisbursementPolicy } from './owner-config';
+import { computeBucketSplit, allocateToBuckets, type BucketCode, BUCKET_CODES } from './treasury/buckets';
 
 export interface SplitDestination {
-  ownerAccountId: string;
+  ownerAccountId?: string;
+  bucketCode?: BucketCode;
   pct: number;
 }
 
@@ -45,16 +48,49 @@ export async function settleAndPayout(req: SettleAndPayoutRequest): Promise<Sett
 
   const routingRule = await findRoutingRule(req.sourceType, req.amount, req.currency);
   const platformFeePct = req.platformFeePct ?? routingRule?.platformFeePct ?? 0;
-  const splits = req.overrideSplit ?? (routingRule ? JSON.parse(routingRule.destinationSplits) : []);
+  let splits: SplitDestination[] = req.overrideSplit ?? (routingRule ? (routingRule.destinationSplits as unknown as SplitDestination[]) : []);
 
   const platformFee = Math.round(req.amount * platformFeePct / 100 * 100) / 100;
   const netAmount = Math.round((req.amount - platformFee) * 100) / 100;
 
+  // DEFAULT TREASURY FALLBACK: when no routing rule / no override exists,
+  // split NET across the four treasury buckets using the disbursement policy.
+  // Previously this returned 0 splits and silently swallowed owner value.
+  if (splits.length === 0) {
+    const policy = getDisbursementPolicy();
+    const pct: Record<BucketCode, number> = {
+      sovereign_reserves: policy.bucketPct.sovereignReserves,
+      procurement_buffer: policy.bucketPct.procurementBuffer,
+      runtime_operations: policy.bucketPct.runtimeOperations,
+      salary_bucket: policy.bucketPct.salary,
+    };
+    splits = computeBucketSplit(netAmount, pct).map((b) => ({ bucketCode: b.code, pct: b.pct }));
+  }
+
   const splitResults: SettleAndPayoutResult['splits'] = [];
   for (const split of splits) {
-    const splitAmount = Math.round(netAmount * split.pct / 100 * 100) / 100;
+    const splitAmount = Math.round(netAmount * (split.pct ?? 0) / 100 * 100) / 100;
     if (splitAmount <= 0) continue;
 
+    // Treasury-bucket split → accumulate into FundBucket, no external rail.
+    if (split.bucketCode) {
+      const bucketInput = {
+        code: split.bucketCode,
+        pct: split.pct,
+        amount: splitAmount,
+        revenueEventId: req.revenueEventId,
+        sourceLabel: `Revenue: ${revenue.source} (${revenue.id})`,
+      };
+      const bucketResult = await allocateToBuckets([bucketInput]);
+      if (!bucketResult.ok) {
+        console.error('[Payout] Bucket allocation failed:', bucketResult.reason);
+        continue;
+      }
+      splitResults.push({ ownerAccountId: `bucket:${split.bucketCode}`, amount: splitAmount, status: 'pending' });
+      continue;
+    }
+
+    if (!split.ownerAccountId) continue;
     const settlement = await prisma.ownerSettlement.create({
       data: {
         ownerAccountId: split.ownerAccountId,
@@ -150,8 +186,8 @@ async function findRoutingRule(sourceType: string, amount: number, currency: str
       if (elapsed < rule.cooldownMs) continue;
     }
     if (rule.sourceFilter) {
-      const filter = JSON.parse(rule.sourceFilter);
-      if (filter.minAmount && amount < filter.minAmount) continue;
+      const filter = rule.sourceFilter as { minAmount?: number; currency?: string };
+      if (typeof filter.minAmount === 'number' && amount < filter.minAmount) continue;
       if (filter.currency && filter.currency !== currency) continue;
     }
     return rule;
@@ -164,5 +200,8 @@ export async function getRoutingRules() {
 }
 
 export async function getPlatformAccounts() {
-  return prisma.platformSettlementAccount.findMany({ where: { isActive: true } });
+  // NOTE: platformSettlementAccount was a phantom model (never in schema.prisma).
+  // The nearest real concept is OwnerAccount (isActive, accountType). Callers
+  // should treat this as the active settlement-capable accounts list.
+  return prisma.ownerAccount.findMany({ where: { isActive: true }, orderBy: { sortOrder: 'asc' } });
 }

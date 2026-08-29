@@ -15,9 +15,6 @@ const REGISTRY_FILE = path.join(OUT_DIR, "course-asset-registry.json");
 const ASSETS_LOCAL = path.join(ROOT, "data", "generated");
 const MANIFEST = path.join(OUT_DIR, "asset_manifest.json");
 
-const IMAGE_API_URL = process.env.IMAGE_GEN_API_URL || "https://api.together.xyz/v1/images/generations";
-const IMAGE_MODEL = process.env.IMAGE_GEN_MODEL || "black-forest-labs/FLUX.1-schnell";
-
 export const ASSET_KINDS = ["HERO", "THUMB", "MOD", "DIAGRAM", "TRAILER", "LESSON", "CHEAT"];
 
 function parseArgs(argv) {
@@ -72,31 +69,68 @@ const NO_KEY_REASONS = {
 };
 
 function requireImageKey() {
-	const k = process.env.IMAGE_GEN_API_KEY;
+	const k = process.env.IMAGE_GEN_API_KEY || process.env.OPENROUTER_API_KEY;
 	if (!k) throw new Error(NO_KEY_REASONS.image);
 	return k;
 }
 
+/**
+ * Resolve the image provider from whichever real key is present.
+ * Together (IMAGE_GEN_API_KEY) is preferred; OpenRouter is a free-tier
+ * fallback (openrouter/flux-schnell) when only OPENROUTER_API_KEY exists.
+ * Still fail-closed: no key → no images.
+ */
+function resolveImageProvider() {
+	const togetherKey = process.env.IMAGE_GEN_API_KEY;
+	if (togetherKey) {
+		return {
+			apiKey: togetherKey,
+			apiUrl: process.env.IMAGE_GEN_API_URL || "https://api.together.xyz/v1/images/generations",
+			model: process.env.IMAGE_GEN_MODEL || "black-forest-labs/FLUX.1-schnell",
+		};
+	}
+	const openRouterKey = process.env.OPENROUTER_API_KEY;
+	if (openRouterKey) {
+		return {
+			apiKey: openRouterKey,
+			apiUrl: "https://openrouter.ai/api/v1/images/generations",
+			model: process.env.IMAGE_GEN_MODEL || "openrouter/flux-schnell",
+		};
+	}
+	throw new Error(NO_KEY_REASONS.image);
+}
+
 async function generateImage({ prompt, outPath, width = 1024, height = 768 }) {
-	const apiKey = requireImageKey();
-	const headers = { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" };
+	const provider = resolveImageProvider();
+	const headers = {
+		Authorization: `Bearer ${provider.apiKey}`,
+		"Content-Type": "application/json",
+		...(provider.apiUrl.includes("openrouter.ai") ? { "HTTP-Referer": process.env.RWC_SITE_URL || "https://realworldcerts.com", "X-Title": "realworldcerts course assets" } : {}),
+	};
 	const payload = {
 		prompt,
-		model: IMAGE_MODEL,
+		model: provider.model,
 		width,
 		height,
 		response_format: "b64_json",
-		steps: IMAGE_MODEL.includes("schnell") ? 4 : undefined,
+		steps: provider.model.includes("schnell") ? 4 : undefined,
 	};
-	const res = await fetch(IMAGE_API_URL, {
-		method: "POST", headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(60000),
+	const res = await fetch(provider.apiUrl, {
+		method: "POST", headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(120000),
 	});
 	if (!res.ok) throw new Error(`Image API ${res.status}: ${await res.text()}`);
 	const data = await res.json();
-	const b64 = data?.data?.[0]?.b64_json || data?.images?.[0]?.b64_json;
+	const b64 = data?.data?.[0]?.b64_json || data?.images?.[0]?.b64_json || data?.data?.[0]?.url;
 	if (!b64) throw new Error("Image API returned no b64_json");
 	fs.mkdirSync(path.dirname(outPath), { recursive: true });
-	fs.writeFileSync(outPath, Buffer.from(b64, "base64"));
+	// url-form responses must be downloaded; b64 written directly
+	if (typeof b64 === "string" && b64.startsWith("http")) {
+		const imgRes = await fetch(b64, { signal: AbortSignal.timeout(60000) });
+		if (!imgRes.ok) throw new Error(`Image download ${imgRes.status}`);
+		fs.writeFileSync(outPath, Buffer.from(await imgRes.arrayBuffer()));
+	} else {
+		fs.writeFileSync(outPath, Buffer.from(b64, "base64"));
+	}
 	return outPath;
 }
 

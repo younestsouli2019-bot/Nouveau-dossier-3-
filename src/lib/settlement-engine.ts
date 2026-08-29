@@ -20,6 +20,7 @@ import { simulatePipeline } from './atomic-simulation';
 import { allocateToVault, getTotalExposure } from './escrow-vaults';
 import { detectDuplicates } from './audit-agent';
 import { settleAndPayout } from './payout-routing';
+import { computeBucketSplit, allocateToBuckets, type BucketCode, BUCKET_CODES } from './treasury/buckets';
 import {
   getPresetPayoutDestination,
   tryGetPresetPayoutDestination,
@@ -50,6 +51,8 @@ export interface SplitBreakdown {
   fraudWindowHoldHours: number;
   fraudHoldAmount: number;
   netToOwner: number;
+  // Four treasury buckets on NET value
+  buckets: Array<{ code: BucketCode; label: string; pct: number; amount: number }>;
 }
 
 export interface RegulatoryPipelineResult {
@@ -99,6 +102,15 @@ export function computeSplitBreakdown(grossAmount: number, policy: DisbursementP
   const fraudRatio = Math.max(0, Math.min(1, policy.fraudWindowHoldHours / 720));
   const fraudHoldAmount = round2(gross * fraudRatio);
   const netToOwner = round2(Math.max(0, gross - platformFee - chargebackReserve));
+
+  const bucketPct: Record<BucketCode, number> = {
+    sovereign_reserves: policy.bucketPct.sovereignReserves,
+    procurement_buffer: policy.bucketPct.procurementBuffer,
+    runtime_operations: policy.bucketPct.runtimeOperations,
+    salary_bucket: policy.bucketPct.salary,
+  };
+  const buckets = computeBucketSplit(netToOwner, bucketPct);
+
   return {
     gross,
     platformFeeBps: policy.platformFeeBps,
@@ -108,6 +120,7 @@ export function computeSplitBreakdown(grossAmount: number, policy: DisbursementP
     fraudWindowHoldHours: policy.fraudWindowHoldHours,
     fraudHoldAmount,
     netToOwner,
+    buckets,
   };
 }
 
@@ -407,13 +420,36 @@ export async function executeWetRun(req: WetRunRequest): Promise<WetRunResult> {
     split: pipeResult.split,
     disbursementAt: pipeResult.disbursementAt,
   };
+
+  // STAGE 3.5 — TREASURY BUCKET ALLOCATION
+  // Split NET value across the four treasury buckets and persist allocation
+  // intent. Calls allocateToVault first so liquidity exposure is still enforced.
+  const bucketAllocations = pipeResult.split.buckets.filter((b) => b.amount > 0).map((b) => ({
+    code: b.code as BucketCode,
+    pct: b.pct,
+    amount: b.amount,
+    revenueEventId: undefined,
+    sourceLabel: `settlement:${execution.id}`,
+  }));
+  const bucketResult = await allocateToBuckets(bucketAllocations);
+  if (!bucketResult.ok) {
+    await releaseLock(lock.lockId);
+    return {
+      executionId: execution.id,
+      status: 'FAILED',
+      microMoveVerified: execution.microMoveVerified,
+      failureReason: `Treasury bucket allocation failed: ${bucketResult.reason}`,
+    };
+  }
+  metadataAfterPipe.bucketAllocations = bucketResult.allocations;
+
   await prisma.settlementExecution.update({
     where: { id: execution.id },
     data: {
       destination:
         req.destination || (pipeResult.presetDestinationMasked ? 'PRESET:' + pipeResult.presetDestinationMasked : execution.destination),
-      netAmount: pipeResult.split.netToOwner,
-      disbursementAt: new Date(pipeResult.disbursementAt),
+      // NOTE: SettlementExecution has no netAmount/disbursementAt columns;
+      // both live in metadata.regulatoryPipeline / metadata.bucketAllocations.
       metadata: JSON.stringify(metadataAfterPipe),
     },
   });

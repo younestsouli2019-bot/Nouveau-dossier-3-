@@ -191,6 +191,15 @@ export interface DisbursementPolicy {
   readonly platformFeeBps: number
   readonly fraudWindowHoldHours: number
   readonly chargebackReservePct: number
+  // Treasury bucket percentages applied to NET settlement value.
+  // MUST sum to 100. Env: OWNER_BUCKET_SOVEREIGN_PCT / OWNER_BUCKET_PROCUREMENT_PCT
+  //       / OWNER_BUCKET_RUNTIME_PCT / OWNER_BUCKET_SALARY_PCT
+  readonly bucketPct: {
+    sovereignReserves: number
+    procurementBuffer: number
+    runtimeOperations: number
+    salary: number
+  }
 }
 
 function mustEnv(name: string): string {
@@ -250,7 +259,29 @@ export function getDisbursementPolicy(): DisbursementPolicy {
   const platformFeeBps = Math.max(0, Math.min(10000, parseInt(tryEnv('OWNER_PAYOUT_FEE_BPS') || '0', 10) || 0))
   const fraudWindowHoldHours = Math.max(0, parseInt(tryEnv('OWNER_FRAUD_WINDOW_HOLD_HOURS') || '72', 10) || 0)
   const chargebackReservePct = Math.max(0, Math.min(100, parseInt(tryEnv('OWNER_CHARGEBACK_RESERVE_PCT') || '5', 10) || 0))
-  return Object.freeze({ schedule, platformFeeBps, fraudWindowHoldHours, chargebackReservePct })
+  const buck = (name: string, def: number) =>
+    Math.max(0, Math.min(100, parseInt(tryEnv(name) || String(def), 10) || def))
+  const bucketPct = {
+    sovereignReserves: buck('OWNER_BUCKET_SOVEREIGN_PCT', 30),
+    procurementBuffer: buck('OWNER_BUCKET_PROCUREMENT_PCT', 10),
+    runtimeOperations: buck('OWNER_BUCKET_RUNTIME_PCT', 20),
+    salary: buck('OWNER_BUCKET_SALARY_PCT', 40),
+  }
+  // Never deploy a policy that routes more than 100% of value: fail-closed.
+  const bucketTotal = Object.values(bucketPct).reduce((a, b) => a + b, 0)
+  if (bucketTotal !== 100) {
+    throw new Error(
+      `OWNER_BUCKET_* percentages must sum to 100 (got ${bucketTotal}). ` +
+        'Refusing to start disbursements with an unbounded treasury split.',
+    )
+  }
+  return Object.freeze({
+    schedule,
+    platformFeeBps,
+    fraudWindowHoldHours,
+    chargebackReservePct,
+    bucketPct: Object.freeze(bucketPct),
+  })
 }
 
 export function maskPayoutIdentifier(d: PresetPayoutDestination): string {

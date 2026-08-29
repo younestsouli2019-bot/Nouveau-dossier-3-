@@ -1,7 +1,7 @@
 ---
 description: Autonomous financial operations agent for the Khwarizmian Swarm. Handles procurement, settlement, bank reconciliation, and payment routing.
 mode: subagent
-model: opencode/mimo-v2-5-free
+model: opencode/mimo-v2.5-free
 permission:
   edit: allow
   bash:
