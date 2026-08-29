@@ -6,6 +6,9 @@ plus the Vercel supply-chain front-end.
 
 ## Status Snapshot (2026-08-29)
 
+### 🔐 OWNER RULING — "All roads lead to Mecca" (IMMUTABLE unless changed by OWNER)
+Payout routing must resolve to **ANY available pre-set owner account** — the route with the **least fees**, the **easiest currency conversion** (or none), and the most **velocity headroom** under its per-rail limit. A missing or mismatched `OWNER_PAYOUT_RAIL` env var / currency MUST **NOT** abort disbursement; the resolver picks the best reachable pre-set account instead. Fail-closed **only** when zero usable routes exist. Implemented: `src/lib/payout-resolver.ts` (`resolveBestPayoutRoute`), wired into `AUTO_DISBURSE_PRESET_OWNER` (settlement-engine.ts), 2026-08-29. Changelog entry dated 2026-08-29.
+
 | Component | Status | Notes |
 |-----------|--------|-------|
 | Next.js build (`npm run build`) | ✅ PASS | 3 static pages + 50+ API routes, exit 0 |
@@ -91,7 +94,7 @@ Defined in `scripts/seed-pos.mjs` · all 5 routes are pre-seeded. Live destinati
 | Infrastructure | **20%** | Internal pool (server / APIs / hosting) |
 | Emergency reserve | **10%** | Internal pool |
 
-Note: The regulatory pipeline in `settlement-engine.ts` first deducts platform fee (OWNER_PAYOUT_FEE_BPS basis points) + chargeback reserve % + fraud-window hold hours, then routes the NET amount to the splits above. `autodisbursetopresetowner` is **true by default** per Owner Directive 2026-08-20.
+Note: The regulatory pipeline in `settlement-engine.ts` first deducts platform fee (OWNER_PAYOUT_FEE_BPS basis points) + chargeback reserve % + fraud-window hold hours, then routes the NET amount to the splits above. `autodisbursetopresetowner` is **true by default** per Owner Directive 2026-08-20. Per the **"All roads lead to Mecca"** ruling (2026-08-29), the exact rail is picked automatically by `src/lib/payout-resolver.ts`: least fee → easiest FX → most velocity headroom, DB-first (the table above) with `OWNER_PAYOUT_*` env preset fallback. Per-rail economics overridable via `OWNER_RAIL_<RAIL>_FEE_BPS|FX_BPS|CAP`.
 
 ### Wise rail readiness (from `reconciliation-flag-2026-08-28.json`)
 - **`OWNER_WISE_API_TOKEN`**: verified valid (HTTP 200)
@@ -322,12 +325,14 @@ The following items cannot be performed from the repository sandbox (they requir
 
 **2. Vercel project env vars → set as GitHub Actions secrets (workflow mirrors them to Vercel on deploy):**
 - `OWNER_EXEC_UNLOCK=` — ≥ 16 random chars; enables daemon deploy/delivery writes (else read-only per guardrail §2).
-- `OWNER_PAYOUT_RAIL=iban` (or `usdc_arbitrum` / `attijari_mad` / `paypal` / `wise` / `payoneer`)
-- `OWNER_PAYOUT_CURRENCY=USD` (or `MAD` for Attijari)
+- `OWNER_PAYOUT_RAIL` (OPTIONAL preference — per "All roads lead to Mecca", omit or set any of `iban`/`sepa`/`ach`/`crypto`/`card_token`; the resolver auto-picks the best available account, e.g. `crypto` undervalued → falls through to bank/paypal/etc.)
+- `OWNER_PAYOUT_CURRENCY=USD` (or `MAD` for Attijari) — the resolver treats same-currency routes as cheapest (no FX), so set this to the dominant revenue currency.
 - `OWNER_KYC_STATUS=PASSED` (enables settlement-engine `VERIFY_COMPLIANCE` gate)
 - `PLAN_TRANSITION_MODE=0` (unless the workspace is mid-migration; 0 = writes allowed after OWNER_EXEC_UNLOCK set)
-- `OWNER_PAYOUT_IDENTIFIER` / `OWNER_PAYOUT_COUNTRY` / `OWNER_PAYOUT_HOLDER_NAME` / `OWNER_PAYOUT_BANK_BIC` (the preset payout destination fields — the rail values below)
+- `OWNER_PAYOUT_IDENTIFIER` / `OWNER_PAYOUT_COUNTRY` / `OWNER_PAYOUT_HOLDER_NAME` / `OWNER_PAYOUT_BANK_BIC` (env-preset fallback destination; the DB pre-set account table § "Owner Pre-Set Payout Accounts" is the primary source)
 - Real payout rail env values for your selected rail (IBAN, RIB 372, PayPal email, Wise profile ID, USDC Arbitrum `0xA462…`, etc.)
+
+> **Routing no longer requires the single preset to be "complete".** `resolveBestPayoutRoute()` reads the DB OwnerAccounts first (Banking Circle, PayPal, USDC Arbitrum, Payoneer, Attijari RIB — all already seeded), so disbursement proceeds even before an env preset is added.
 
 **3. Space-Z dashboard (for HIT Swarm revenue engine):**
 - Instance `x1he4604ap01-d` → **Redeploy** / Fetch Latest Commit.

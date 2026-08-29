@@ -48,6 +48,30 @@ const SEED_INTEGRATIONS = [
   { name: "binance", kind: "exchange", baseUrl: "https://api.binance.com", status: "locked-2015" },
 ];
 
+// IMMUTABLE OWNER RULING — recorded into collective memory (SwarmMemoryKV) on
+// every `setup`. Only the OWNER may change or remove it.
+const SEED_SOVEREIGN_RULINGS = [
+  {
+    namespace: "sovereign",
+    key: "ruling.2026-08-29.all-roads-lead-to-mecca",
+    value: JSON.stringify({
+      immutable: "OWNER-ruled",
+      date: "2026-08-29",
+      title: "All roads lead to Mecca",
+      doctrine:
+        "Payout routing must resolve to ANY available pre-set owner account — the route with the " +
+        "least fees, the easiest currency conversion (or none), and the most velocity headroom under " +
+        "its per-rail limit. A missing or mismatched OWNER_PAYOUT_RAIL env var / currency MUST NOT " +
+        "abort disbursement; the resolver picks the best reachable pre-set account instead. " +
+        "Fail-closed ONLY when zero usable routes exist.",
+      implementation:
+        "src/lib/payout-resolver.ts resolveBestPayoutRoute() wired into AUTO_DISBURSE_PRESET_OWNER " +
+        "in src/lib/settlement-engine.ts. Per-rail economics env-overridable: " +
+        "OWNER_RAIL_<RAIL>_FEE_BPS | _FX_BPS | _CAP.",
+    }),
+  },
+];
+
 async function connect() {
   const c = new Client({ connectionString: process.env.DATABASE_URL });
   await c.connect();
@@ -134,7 +158,16 @@ async function setup() {
         [it.name, it.kind, it.baseUrl, it.status],
       );
     }
-    return { ok: true, integrations: SEED_INTEGRATIONS.length };
+    // Immutable OWNER rulings → collective memory. Written once; version pinned.
+    for (const r of SEED_SOVEREIGN_RULINGS) {
+      await c.query(
+        `INSERT INTO "SwarmMemoryKV" ("namespace","key","value","version")
+         VALUES ($1,$2,$3,1)
+         ON CONFLICT ("namespace","key") DO NOTHING`,
+        [r.namespace, r.key, r.value],
+      );
+    }
+    return { ok: true, integrations: SEED_INTEGRATIONS.length, rulings: SEED_SOVEREIGN_RULINGS.length };
   } finally {
     await c.end();
   }

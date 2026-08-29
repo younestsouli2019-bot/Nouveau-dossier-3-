@@ -142,8 +142,16 @@ export type SupportedNetwork = (typeof SUPPORTED_NETWORKS)[number]
 // The "direct to owner" experience is because the disbursement leg is
 // automated — not because the platform is skipped.
 //
-// Required secrets for preset payout destination:
+// OWNER RULING 2026-08-29 — "All roads lead to Mecca": this env preset is the
+// LEGACY SINGLE-RAIL path. Production routing uses the DB OwnerAccount table
+// first (see src/lib/payout-resolver.ts): any available pre-set account with
+// least fees / easiest FX / most velocity headroom is auto-selected, and a
+// missing rail never aborts disbursement. The env preset below is the fallback
+// candidate (and the target for the deploy-vercel.yml provisioning step).
+//
+// Optional secrets for preset payout destination (fallback tier):
 //   OWNER_PAYOUT_RAIL         — one of: ach | iban | sepa | card_token | crypto
+//                                 (preference hint; resolver can route elsewhere)
 //   OWNER_PAYOUT_CURRENCY     — ISO 4217 (EUR, USD, GBP, etc.)
 //   OWNER_PAYOUT_IDENTIFIER   — masked last-4 shown on receipts; full value
 //                                 stored only here (secrets), never in DB.

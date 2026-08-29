@@ -21,15 +21,12 @@ import { allocateToVault, getTotalExposure } from './escrow-vaults';
 import { detectDuplicates } from './audit-agent';
 import { settleAndPayout } from './payout-routing';
 import { computeBucketSplit, type BucketCode } from './treasury/buckets';
+import { resolveBestPayoutRoute, routeToPayoutRail } from './payout-resolver';
 import {
-  getPresetPayoutDestination,
-  tryGetPresetPayoutDestination,
   isOwnerKycPassed,
   getOwnerComplianceStatus,
   getDisbursementPolicy,
-  maskPayoutIdentifier,
   isPayoutConfigComplete,
-  type PresetPayoutDestination,
   type DisbursementPolicy,
 } from './owner-config';
 
@@ -61,6 +58,17 @@ export interface RegulatoryPipelineResult {
   kycPassed: boolean;
   split: SplitBreakdown;
   disbursementAt: string;
+  resolvedRoute?: {
+    label: string;
+    rail: string;
+    currency: string;
+    identifier: string;
+    feeBps: number;
+    fxSpreadBps: number;
+    requiresFxConversion: boolean;
+    limitPressurePct: number;
+    source: 'db' | 'env' | 'none';
+  };
 }
 
 export interface WetRunRequest {
@@ -176,28 +184,33 @@ export async function runRegulatorySettlementPipeline(req: {
   // ─── STAGE 3 / AUTO-DISBURSE to Pre-Set Owner Payout Destination ──────
   // The "direct to owner" UX = automated disbursement here. The platform
   // held the funds at stage 0. Stages 1+2 ran. Stage 3 is last.
+  // OWNER DIRECTIVE: "all roads lead to Mecca" — route to ANY available
+  // pre-set owner account with the least fees / easiest FX / most limit
+  // headroom. A single OWNER_PAYOUT_RAIL must never hard-block disbursement.
   let presetMasked: string | undefined;
   let disbursementAt: string;
+  let resolved: Awaited<ReturnType<typeof resolveBestPayoutRoute>> | null = null;
   if (autoDisburse) {
-    if (!isPayoutConfigComplete()) {
+    resolved = await resolveBestPayoutRoute(req.currency);
+    if (resolved.best === null) {
+      const envConfigured = isPayoutConfigComplete();
       return {
         failureReason:
-          'AUTO_DISBURSE_PRESET_OWNER: OWNER_PAYOUT_* secrets not configured. ' +
-          'Set OWNER_PAYOUT_RAIL / OWNER_PAYOUT_CURRENCY / OWNER_PAYOUT_IDENTIFIER / ' +
-          'OWNER_PAYOUT_COUNTRY / OWNER_PAYOUT_HOLDER_NAME in GitHub Secrets.',
+          'AUTO_DISBURSE_PRESET_OWNER: NO usable owner route available. ' +
+          (envConfigured
+            ? 'Configured only the single OWNER_PAYOUT_RAIL preset but none is usable; set more pre-set ' +
+              'accounts (OWNER_PAYOUT_RAIL=crypto|iban|paypal|... or seed OwnerAccount rows).'
+            : 'No OWNER_PAYOUT_RAIL / OWNER_PAYOUT_CURRENCY / OWNER_PAYOUT_IDENTIFIER / ' +
+              'OWNER_PAYOUT_COUNTRY / OWNER_PAYOUT_HOLDER_NAME in GitHub Secrets AND no active OwnerAccount rows.'),
       };
     }
-    const pd = getPresetPayoutDestination();
-    if (pd.currency.toUpperCase() !== req.currency.toUpperCase()) {
-      return {
-        failureReason:
-          `AUTO_DISBURSE_PRESET_OWNER currency mismatch: preset=${pd.currency} ` +
-          `request=${req.currency}. FX conversion step required before disbursement.`,
-      };
-    }
-    presetMasked = `${pd.rail}:${maskPayoutIdentifier(pd)}`;
-    // When policy.schedule === instant: disburse immediately (after fraud-window).
-    // Otherwise: compute the scheduled timestamp (returned for the cron worker).
+    const best = resolved.best;
+    // OWNER DIRECTIVE: inherent FX differences are resolved by route selection
+    // (easiest-conversion rail picked), not by aborting disbursement. When the
+    // best route still needs FX we disburse (a conversion instruction is
+    // emitted in the metadata) — routing to a *near* rail is better than routing
+    // to nothing. Singapore/Stripe-style: any reachable pre-set account wins.
+    presetMasked = `${routeToPayoutRail(best.rail)}:${best.identifier}(${best.currency})`;
     const now = new Date();
     switch (policy.schedule) {
       case 'instant': {
@@ -237,6 +250,19 @@ export async function runRegulatorySettlementPipeline(req: {
     kycPassed,
     split,
     disbursementAt,
+    resolvedRoute: resolved?.best
+      ? {
+          label: resolved.best.label,
+          rail: resolved.best.rail,
+          currency: resolved.best.currency,
+          identifier: resolved.best.identifier,
+          feeBps: resolved.best.feeBps,
+          fxSpreadBps: resolved.best.fxSpreadBps,
+          requiresFxConversion: resolved.best.requiresFxConversion,
+          limitPressurePct: resolved.best.limitPressurePct,
+          source: resolved.source,
+        }
+      : undefined,
   };
 }
 
@@ -419,6 +445,7 @@ export async function executeWetRun(req: WetRunRequest): Promise<WetRunResult> {
     kycPassed: pipeResult.kycPassed,
     split: pipeResult.split,
     disbursementAt: pipeResult.disbursementAt,
+    resolvedRoute: pipeResult.resolvedRoute ?? null,
   };
 
   // STAGE 3.5 — TREASURY BUCKET ALLOCATION (INTENT ONLY)
