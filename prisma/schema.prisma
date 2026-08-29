@@ -163,6 +163,7 @@ model ProcurementItem {
   recipientAddress String?
   deliveryAddress  String?
   prePaidBySwarm  Boolean  @default(true)
+  ownerInitiated  Boolean  @default(true)
   status          String   @default("pending") // pending, ordered, shipped, delivered, cancelled
   orderRef        String?
   supplierName    String?
@@ -217,6 +218,7 @@ model PurchaseOrder {
   title           String?
   supplierId      String?
   supplierName    String   // denormalized for queries
+  ownerInitiated  Boolean  @default(true)
   status          String   @default("draft") // draft, submitted, pending_approval, approved, partially_ordered, ordered, completed, rejected, cancelled
   priority        String   @default("normal")
   currency        String   @default("USD")

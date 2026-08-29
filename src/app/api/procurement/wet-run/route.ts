@@ -11,7 +11,9 @@
 //   7. Create procurement PayoutBatches for pre-payment
 //   8. Write AuditLedger entry with chained hash
 //
-// All recipients are pre-paid by Swarm. No recipient disburses anything.
+// Pre-paid rule applies ONLY to owner-initiated POs (ownerInitiated=true).
+// For owner-initiated POs: ALL recipients are pre-paid by Swarm. No recipient disburses anything.
+// For third-party POs (ownerInitiated=false): normal commercial terms (COD/NET) apply between non-owner parties.
 // ——————————————————————————————————————————————————————
 
 import { NextResponse } from 'next/server'
@@ -236,6 +238,15 @@ export async function POST() {
       })
 
       const supplierWebsite = po.supplier?.website || null
+      const poAny = po as Record<string, unknown>
+      const ownerInitiated = poAny.ownerInitiated !== false
+      const allItemsPrePaid = ownerInitiated
+      const paymentMethod = allItemsPrePaid
+        ? (po.supplier?.paymentTerms === 'cod' ? 'cod' : 'prepaid_pool')
+        : (po.supplier?.paymentTerms === 'cod' ? 'cod' : 'standard_terms')
+      const deliveryNote = allItemsPrePaid
+        ? `ALL items are pre-paid by Swarm. Recipient ${po.items[0]?.recipientName || 'N/A'} does NOT disburse anything. Ship directly to delivery address.`
+        : `Third-party PO: standard supplier terms apply. ${po.supplier?.paymentTerms === 'cod' ? 'Collect on delivery.' : 'Payment per PO agreement.'}`
 
       report.purchaseInstructions.push({
         supplier: po.supplierName,
@@ -249,8 +260,8 @@ export async function POST() {
           deliveryAddress: i.deliveryAddress || i.recipientAddress || RECIPIENT_ADDRESSES[i.recipientName] || 'Unknown',
         })),
         totalAmount: Math.round(poTotal * 100) / 100,
-        paymentMethod: 'prepaid_swarm',
-        deliveryNote: `ALL items are pre-paid by Swarm. Recipient ${po.items[0]?.recipientName || 'N/A'} does NOT disburse anything. Ship directly to delivery address.`,
+        paymentMethod,
+        deliveryNote,
       })
     }
 
@@ -265,6 +276,8 @@ export async function POST() {
     for (const po of refreshedPOs) {
       const poTotal = po.items.reduce((s, i) => s + (i.totalEst || i.quantity * i.unitPriceEst), 0)
       if (poTotal <= 0) continue
+      const poAny = po as Record<string, unknown>
+      const ownerInitiated = poAny.ownerInitiated !== false
 
       const batchNumber = `PROC-${po.poNumber}-${now.toISOString().slice(0, 10)}`
       batchNumbers.push(batchNumber)
@@ -276,6 +289,13 @@ export async function POST() {
         continue
       }
 
+      // Only OWNER-initiated POs create a PayoutBatch out of Swarm treasury.
+      // Third-party POs route through standard supplier / buyer terms (COD or NET);
+      // Swarm does NOT disburse on third-party POs (not our treasury risk).
+      if (!ownerInitiated) {
+        continue
+      }
+
       const batch = await db.payoutBatch.create({
         data: {
           batchNumber,
@@ -284,7 +304,7 @@ export async function POST() {
           status: 'pending_approval',
           itemCount: po.items.length,
           paymentProvider: po.supplier?.paymentTerms === 'cod' ? 'cod' : 'prepaid_pool',
-          notes: `Procurement pre-payment for ${po.poNumber} (${po.supplierName}). ALL items pre-paid by Swarm.`,
+          notes: `Procurement pre-payment for ${po.poNumber} (${po.supplierName}). OWNER-initiated — all items pre-paid by Swarm treasury.`,
         },
       })
 

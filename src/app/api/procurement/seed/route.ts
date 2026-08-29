@@ -581,6 +581,7 @@ export async function POST() {
           recipientAddress: item.recipientAddress,
           deliveryAddress: item.recipientAddress,
           prePaidBySwarm: true,
+          ownerInitiated: true,
           status: 'pending',
           priority: item.priority,
           supplierName: item.supplier || null,

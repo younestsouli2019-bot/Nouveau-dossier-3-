@@ -35,12 +35,13 @@ plus the Vercel supply-chain front-end.
 
 | URL | App | Scope | Status 2026-08-29 | Priority |
 |-----|-----|-------|-------------------|----------|
-| https://supply-chain-swarm.vercel.app/ | **Supply Chain · Public domain** | 7 base tabs: Accounts / Dashboard / Payments / Orders / Shipments / Procurement. Footer: "Supply Chain Management — Younes Tsouli CIN:A337773 · All items pre-paid by Swarm · Recipients do not disburse". | ✅ LIVE, OUTDATED. Missing 14 tabs vs t1trn6kunnv1. Trigger `deploy-vercel.yml` now. | **P0 — UPDATE DEPLOYMENT.** |
+| https://supply-chain-swarm.vercel.app/ | **Supply Chain · Public domain** | 7 base tabs: Accounts / Dashboard / Payments / Orders / Shipments / Procurement. Footer: "Supply Chain Management — Younes Tsouli CIN:A337773 · OWNER-initiated POs: pre-paid by Swarm · Recipients $0 out-of-pocket · Third-party POs: standard terms apply". | ✅ LIVE, OUTDATED. Missing 14 tabs vs t1trn6kunnv1. Trigger `deploy-vercel.yml` now. | **P0 — UPDATE DEPLOYMENT.** |
 | https://supply-chain-swarm-d6o8rq2qt-jonas-projects-ca14fe2e.vercel.app/ | Vercel internal project URL (team: jonas-projects-ca14fe2e) | Same app as `supply-chain-swarm.vercel.app` (project alias). | 🔐 SSO — redirects to Vercel login. Redeploy via CI with VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID secrets. | P1 |
 
-## 3 Procurement Recipients (PO addresses — ALL ITEMS PRE-PAID BY SWARM)
+## 3 Procurement Recipients (PO addresses — OWNER-initiated POs ONLY: ALL ITEMS PRE-PAID BY SWARM)
 
-Sourced from `procurement.txt` in repo root. Every item ships pre-paid; recipients disburse $0.
+Sourced from `procurement.txt` in repo root. For OWNER-initiated POs every item ships pre-paid; recipients disburse $0.
+For third-party / non-owner POs (`ownerInitiated=false`): standard commercial terms apply between the non-owner parties. Swarm does not disburse and no pre-paid guarantee is in effect.
 Optimization engine (5-phase pipeline in `src/lib/procurement/optimization.ts`) re-routes import items to cheaper **Moroccan local suppliers** (70–88% factors) automatically on each run. Trigger via `POST /api/procurement/optimize`.
 
 | # | Recipient Name | Delivery Address | Tel | Procurement categories (key items) | Local sourcing discount appied |
@@ -50,7 +51,8 @@ Optimization engine (5-phase pipeline in `src/lib/procurement/optimization.ts`) 
 | 3 | **M Bachir Tsouli** | 45 Avenue Ibn Sina, Appartement 4, Agdal, Rabat, Morocco | — | Tablet CR 10.1" Android 16 2-in-1 GMS Tab · Paco Rabanne + Montblanc Legend perfumes · Premium stylish orthopaedic cane · Premium orthopaedic slippers · SuperFood.ma nitric-oxide production natural pack + diabetes pack | Medical Supply Rabat 82% · Parfumerie Agdal 85% · SuperFood Local 88% |
 
 ### Pre-paid guarantee
-Footer on every deployed page reads: **"Supply Chain Management — Younes Tsouli CIN:A337773 · All items pre-paid by Swarm · Recipients do not disburse"**. This is enforced by `page.tsx` layout and cannot be overridden per-PO in the UI.
+Footer on every deployed page reads: **"Supply Chain Management — Younes Tsouli CIN:A337773 · OWNER-initiated POs: pre-paid by Swarm · Recipients $0 out-of-pocket · Third-party POs: standard terms apply"**. This is enforced by `page.tsx` layout and cannot be overridden per-PO in the UI for OWNER-initiated rows.
+Scope: The pre-paid guarantee applies **only** when `PurchaseOrder.ownerInitiated=true` (i.e. PO is created by the OWNER identity and destined to a recipient on the OWNER's list of designees — Hind, Younes, Bachir Tsouli). For third-party POs (`ownerInitiated=false`) standard commercial terms (COD / NET30 / NET60 / escrow) are allowed between the non-owner buyer and non-owner seller; Swarm does not disburse treasury funds and bears no payment risk for those POs. Rows are tagged at write-time via `enforcePrepaidPolicy()` in `src/lib/strict-enforcement/strict-procurement.ts`, and wet-run payout batches are skipped when `ownerInitiated=false`.
 
 ### Local supplier roster (Morocco)
 Defined in `src/lib/procurement/optimization.ts` → `LOCAL_SUPPLIERS`. Price factor = final price as % of import baseline.

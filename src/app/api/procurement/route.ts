@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { enforcePrepaidPolicy } from '@/lib/strict-enforcement/strict-procurement'
 
 // GET /api/procurement - List all procurement items with optional filters and summary stats
 export async function GET(request: NextRequest) {
@@ -113,6 +114,16 @@ export async function POST(request: NextRequest) {
       const quantity = Number(item.quantity) || 1
       const unitPriceEst = Number(item.unitPriceEst) || 0
 
+      const prepaidRes = enforcePrepaidPolicy({
+        prePaidBySwarm: item.prePaidBySwarm,
+        ownerInitiated: item.ownerInitiated,
+      })
+      if (!prepaidRes.valid) itemErrors.push(...prepaidRes.violations)
+      if (itemErrors.length > 0) {
+        errors.push({ index: i, name: item.name || `Item ${i}`, errors: itemErrors })
+        continue
+      }
+
       const createdItem = await db.procurementItem.create({
         data: {
           name: item.name.trim(),
@@ -126,7 +137,8 @@ export async function POST(request: NextRequest) {
           recipientName: item.recipientName || 'Younes Tsouli',
           recipientAddress: item.recipientAddress || null,
           deliveryAddress: item.deliveryAddress || null,
-          prePaidBySwarm: item.prePaidBySwarm !== undefined ? Boolean(item.prePaidBySwarm) : true,
+          prePaidBySwarm: prepaidRes.prePaidBySwarm,
+          ownerInitiated: prepaidRes.ownerInitiated,
           status: item.status || 'pending',
           orderRef: item.orderRef || null,
           supplier: item.supplier || null,

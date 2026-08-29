@@ -42,7 +42,7 @@ interface ProcurementItem {
   id: string; name: string; brand: string | null; reference: string | null; category: string
   quantity: number; unitPriceEst: number; totalEst: number; currency: string
   recipientName: string; recipientAddress: string | null; deliveryAddress: string | null
-  prePaidBySwarm: boolean; status: string; orderRef: string | null; supplier: string | null
+  prePaidBySwarm: boolean; ownerInitiated: boolean; status: string; orderRef: string | null; supplier: string | null
   notes: string | null; priority: string; fulfillmentSource: string | null
   orderedAt: string | null; shippedAt: string | null; deliveredAt: string | null; createdAt: string
 }
@@ -593,6 +593,13 @@ export default function SupplyChainDashboard() {
                   const [recipient, addr] = key.split('|||')
                   const groupTotal = items.reduce((s, i) => s + i.totalEst, 0)
                   const matchShip = shipments.find(s => s.destinationName === recipient)
+                  const allOwnerInitiated = items.every(i => i.ownerInitiated !== false)
+                  const anyThirdParty = items.some(i => i.ownerInitiated === false)
+                  const groupBadge = allOwnerInitiated
+                    ? <Badge variant="outline" className="text-emerald-600">Pre-paid by Swarm</Badge>
+                    : anyThirdParty
+                      ? <Badge variant="secondary" className="text-amber-700 dark:text-amber-300">Mixed terms</Badge>
+                      : <Badge variant="outline" className="text-slate-600">Standard terms</Badge>
                   return (
                     <div key={key} className="mb-6">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 pb-2 border-b">
@@ -607,7 +614,7 @@ export default function SupplyChainDashboard() {
                           <Separator orientation="vertical" className="h-3.5" />
                           <span className="font-medium text-foreground">{fmt(groupTotal)}</span>
                           <Separator orientation="vertical" className="h-3.5" />
-                          <Badge variant="outline" className="text-emerald-600">Pre-paid by Swarm</Badge>
+                          {groupBadge}
                         </div>
                       </div>
                       <Table><TableHeader><TableRow><TableHead className="w-8">#</TableHead><TableHead>Item</TableHead><TableHead>Brand / Ref</TableHead><TableHead className="text-center">Qty</TableHead><TableHead>Unit Est.</TableHead><TableHead>Total</TableHead><TableHead>Purpose</TableHead><TableHead>Carrier</TableHead><TableHead>Status</TableHead></TableRow></TableHeader><TableBody>
@@ -1065,7 +1072,7 @@ export default function SupplyChainDashboard() {
       <footer className="border-t bg-card/50 py-3 mt-auto">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-1 text-xs text-muted-foreground">
           <span>Supply Chain Management — Younes Tsouli CIN:A337773</span>
-          <span>All items pre-paid by Swarm · Recipients do not disburse</span>
+          <span>OWNER-initiated POs: pre-paid by Swarm · Recipients $0 out-of-pocket · Third-party POs: standard terms apply</span>
         </div>
       </footer>
     </div>

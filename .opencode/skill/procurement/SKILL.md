@@ -63,11 +63,13 @@ Manage the end-to-end procurement workflow for the Khwarizmian Swarm, from reque
 - Never exceed $500/item unless absolutely necessary (e.g., Dell Precision laptop)
 - Target total PO under $3,000 per request cycle
 
-### 2. Pre-Paid by SWARM — ALWAYS
-All items are pre-paid by the Swarm. Recipients never pay anything.
+### 2. Pre-Paid by SWARM — OWNER-initiated POs ONLY
+For OWNER-initiated POs (`ownerInitiated=true`, i.e. PO is created by Younes Tsouli / OWNER identity and ships to Hind / Younes / Bachir Tsouli): ALL items are pre-paid by the Swarm. Recipients never pay anything.
+For third-party / non-owner POs (`ownerInitiated=false`): normal commercial terms (COD, NET30, NET60, escrow) apply between the non-owner buyer and non-owner seller. The Swarm does NOT disburse and does NOT guarantee pre-payment.
 
-### 3. Recipients Do Not Disburse — ALWAYS
-Recipients receive items free of charge. No COD, no reimbursements, no "repay later."
+### 3. Recipients Do Not Disburse — OWNER-initiated POs ONLY
+For OWNER-initiated POs (`ownerInitiated=true`): Recipients receive items free of charge. No COD, no reimbursements, no "repay later."
+For third-party / non-owner POs (`ownerInitiated=false`): this rule does NOT apply — the non-owner recipient handles payment per their own commercial agreement.
 
 ### 4. Item ID Format
 Use format: `{RECIPIENT_INITIALS}-{SEQ}` (e.g., YT-001, HT-005, BT-003)
@@ -106,9 +108,10 @@ Use format: `{RECIPIENT_INITIALS}-{SEQ}` (e.g., YT-001, HT-005, BT-003)
 - PayPal for small orders (<$100)
 
 ## Safety Rules
-- **ALL items pre-paid by SWARM** — no exceptions
-- **Recipients do not disburse anything** — no COD, no reimbursements
-- **Source locally in Morocco** — never international/import pricing
+- **OWNER-initiated POs: ALL items pre-paid by SWARM** — no exceptions for OWNER transactions
+- **OWNER-initiated POs: Recipients do not disburse anything** — no COD, no reimbursements
+- **Third-party POs (ownerInitiated=false):** normal commercial terms allowed; Swarm does not disburse treasury funds
+- **Source locally in Morocco** — never international/import pricing for OWNER POs
 - **Use refurbished electronics** when available — saves 60-80%
 - **Wholesale for bulk items** — JemlaMaroc for cables, accessories, small electronics
 - Verify recipient details before ordering

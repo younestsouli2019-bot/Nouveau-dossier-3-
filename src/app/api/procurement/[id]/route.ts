@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { enforcePrepaidPolicy } from '@/lib/strict-enforcement/strict-procurement'
 
 // PATCH /api/procurement/[id] - Update a procurement item
 export async function PATCH(
@@ -28,7 +29,7 @@ export async function PATCH(
     const allowedFields = [
       'name', 'brand', 'reference', 'category', 'quantity', 'unitPriceEst',
       'currency', 'recipientName', 'recipientAddress', 'deliveryAddress',
-      'prePaidBySwarm', 'orderRef', 'supplier', 'notes', 'priority',
+      'prePaidBySwarm', 'ownerInitiated', 'orderRef', 'supplier', 'notes', 'priority',
       'fulfillmentSource', 'status',
     ]
 
@@ -50,6 +51,23 @@ export async function PATCH(
         }
         updateData[field] = body[field]
       }
+    }
+
+    // Enforce pre-paid policy (non-destructive: coerce + flag violation)
+    const ownerInitiated = body.ownerInitiated === false ? false : (existing as Record<string, unknown>).ownerInitiated !== false
+    const prepaidRes = enforcePrepaidPolicy({
+      prePaidBySwarm: body.prePaidBySwarm !== undefined ? !!body.prePaidBySwarm : (existing as Record<string, unknown>).prePaidBySwarm as boolean,
+      ownerInitiated,
+    })
+    if (!prepaidRes.valid) {
+      updateData.prePaidBySwarm = true
+      if (!updateData.ownerInitiated) updateData.ownerInitiated = true
+    } else {
+      updateData.prePaidBySwarm = prepaidRes.prePaidBySwarm
+      updateData.ownerInitiated = prepaidRes.ownerInitiated
+    }
+    if (prepaidRes.violations.length) {
+      console.warn('[TRUTH-PROC-002] Pre-paid policy coercion applied:', prepaidRes.violations)
     }
 
     // Auto-set timestamps based on status changes

@@ -142,6 +142,44 @@ export async function confirmReceipt(params: ConfirmReceiptParams): Promise<Rece
 }
 
 /**
+ * Validate that a procurement item / PO write honors the pre-paid rules.
+ *
+ * OWNER DIRECTIVE (2026-08-20):
+ *  - When ownerInitiated = true: recipient NEVER disburses. prePaidBySwarm MUST equal true.
+ *    Vendor invoices are paid out of OWNER CMI/MMB/Wise/BankingCircle treasury rails ONLY.
+ *  - When ownerInitiated = false (third-party PO): normal commercial terms apply.
+ *    prePaidBySwarm can be false; COD / NET terms are allowed between the non-owner parties.
+ */
+export interface ProcurementPaymentWrite {
+  prePaidBySwarm?: boolean
+  ownerInitiated?: boolean
+}
+
+export function enforcePrepaidPolicy(write: ProcurementPaymentWrite): {
+  valid: boolean
+  prePaidBySwarm: boolean
+  ownerInitiated: boolean
+  violations: string[]
+} {
+  const violations: string[] = []
+  const ownerInitiated = write.ownerInitiated !== false
+  let prePaidBySwarm = write.prePaidBySwarm
+
+  if (ownerInitiated) {
+    if (prePaidBySwarm === false) {
+      violations.push('TRUTH-PROC-002: owner-initiated procurement prePaidBySwarm locked to true (recipients do not disburse)')
+    }
+    prePaidBySwarm = true
+  }
+  return {
+    valid: violations.length === 0,
+    prePaidBySwarm,
+    ownerInitiated,
+    violations,
+  }
+}
+
+/**
  * Find all procurement items with delivery/receipt discrepancies.
  */
 export async function findProcurementDiscrepancies() {
