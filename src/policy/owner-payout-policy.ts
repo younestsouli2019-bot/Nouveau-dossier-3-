@@ -64,7 +64,48 @@ export const OWNER_PAYOUT_POLICY: PreSetAccountPolicy[] = [
     cooldownMinutes: 5,
     jurisdiction: "GLOBAL",
   },
+  {
+    accountId: "preset_stripe_001",
+    rail: "stripe",
+    destination: process.env.OWNER_STRIPE_CONNECT_ACCOUNT_ID || "",
+    requiresKYC: true,
+    requiresSCA: true,
+    maxSinglePayoutUsd: 100000,
+    dailyLimitUsd: 500000,
+    cooldownMinutes: 10,
+    jurisdiction: "US",
+  },
+  {
+    accountId: "preset_bank_wire_001",
+    rail: "bank_wire",
+    destination: process.env.OWNER_IBAN || process.env.MOROCCAN_BANK_RIB || "",
+    requiresKYC: true,
+    requiresSCA: true,
+    maxSinglePayoutUsd: 250000,
+    dailyLimitUsd: 1000000,
+    cooldownMinutes: 120,
+    jurisdiction: "GLOBAL",
+  },
 ];
+
+/**
+ * Jurisdiction-aware preference order.
+ * Stripe Connect outbound-to-bank transfers are NOT available for MA
+ * (Morocco) owners on Stripe 2025/2026 rails — always demote Stripe to the
+ * end for MA, prefer Wise (EU) → PayPal → Payoneer → bank wire for MA.
+ */
+function preferenceForJurisdiction(jurisdiction: string): string[] {
+  const j = String(jurisdiction || "").toUpperCase();
+  if (j === "MA" || j === "DZ" || j === "TN" || j === "EG") {
+    // MENA: Stripe has no outbound Connect bank-transfers for many of these
+    return ["wise", "paypal", "payoneer", "crypto", "bank_wire", "stripe"];
+  }
+  if (j === "US" || j === "CA") {
+    return ["stripe", "wise", "paypal", "payoneer", "crypto", "bank_wire"];
+  }
+  // EU/UK/GLOBAL default — Wise best FX, then Stripe if US/EU connect, else PayPal
+  return ["wise", "stripe", "paypal", "payoneer", "crypto", "bank_wire"];
+}
 
 /**
  * Get the recommended rail for a given amount and jurisdiction.
@@ -78,7 +119,7 @@ export function recommendRail(amountUsd: number, jurisdiction = "MA"): string {
   );
 
   if (eligible.length === 0) {
-    // Fall back to global rails (crypto)
+    // Fall back to global rails (crypto, bank_wire)
     const global = OWNER_PAYOUT_POLICY.filter(
       (p) => p.jurisdiction === "GLOBAL" && p.maxSinglePayoutUsd >= amountUsd
     );
@@ -86,8 +127,7 @@ export function recommendRail(amountUsd: number, jurisdiction = "MA"): string {
     throw new Error(`No eligible rail for $${amountUsd} in jurisdiction ${jurisdiction}`);
   }
 
-  // Prefer Wise (best FX), then Stripe, then PayPal
-  const preference = ["wise", "stripe", "paypal", "payoneer", "crypto", "bank_wire"];
+  const preference = preferenceForJurisdiction(jurisdiction);
   for (const rail of preference) {
     const match = eligible.find((p) => p.rail === rail);
     if (match) return rail;

@@ -2,6 +2,15 @@ import { paypalRequest, getPayPalAccessToken } from "../../paypal-api.mjs";
 import fs from "fs";
 import path from "path";
 
+function isPlaceholder(v) {
+	if (v == null) return true;
+	const s = String(v).trim();
+	if (!s) return true;
+	if (/^YOUR_[A-Z0-9_]+$/i.test(s)) return true;
+	if (/^(REPLACE_ME|CHANGEME|TODO)$/i.test(s)) return true;
+	return false;
+}
+
 export class PayPalGateway {
 	constructor() {
 		this.outputDir = path.join(process.cwd(), "settlements", "paypal");
@@ -10,7 +19,53 @@ export class PayPalGateway {
 		}
 	}
 
+	ensureReady({ requireDestination = null } = {}) {
+		const live = String(process.env.SWARM_LIVE || "false").toLowerCase() === "true";
+		const clientId = process.env.PAYPAL_CLIENT_ID;
+		const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+		const approved =
+			String(
+				process.env.PAYPAL_PPP2_APPROVED ||
+					process.env.PPP2_APPROVED ||
+					"false",
+			).toLowerCase() === "true";
+		const enableSend =
+			String(
+				process.env.PAYPAL_PPP2_ENABLE_SEND ||
+					process.env.PPP2_ENABLE_SEND ||
+					"false",
+			).toLowerCase() === "true";
+		const disabledRaw =
+			String(process.env.PAYPAL_DISABLED || "false").toLowerCase() === "true";
+		const disabled = disabledRaw || !(approved && enableSend);
+		if (!live && !process.env.SWARM_OFFLINE) {
+			throw Object.assign(new Error("PayPalGateway: SWARM_LIVE=true required for real payouts"),
+				{ code: "PAYPAL_NOT_LIVE" });
+		}
+		if (disabled) {
+			throw Object.assign(new Error("PayPalGateway: PayPal Payouts API not approved+enabled (PAYPAL_PPP2_APPROVED=true + PAYPAL_PPP2_ENABLE_SEND=true + PAYPAL_DISABLED≠true). Fallback to bank wire or Wise."),
+				{ code: "PAYPAL_PPP2_DISABLED" });
+		}
+		if (!clientId || isPlaceholder(clientId)) {
+			throw Object.assign(new Error("PayPalGateway: PAYPAL_CLIENT_ID missing/placeholder"),
+				{ code: "PAYPAL_MISSING_CLIENT_ID" });
+		}
+		if (!clientSecret || isPlaceholder(clientSecret)) {
+			throw Object.assign(new Error("PayPalGateway: PAYPAL_CLIENT_SECRET missing/placeholder"),
+				{ code: "PAYPAL_MISSING_CLIENT_SECRET" });
+		}
+		if (requireDestination) {
+			const email = String(requireDestination || "").trim().toLowerCase();
+			if (!email || !email.includes("@")) {
+				throw Object.assign(new Error("PayPalGateway: missing recipient email for PayPal payout"),
+					{ code: "PAYPAL_MISSING_RECIPIENT_EMAIL" });
+			}
+		}
+		return { live, approved, enableSend };
+	}
+
 	async createPayout(amount, currency, destination, reason) {
+		this.ensureReady({ requireDestination: destination });
 		const token = await getPayPalAccessToken();
 		const body = {
 			sender_batch_header: {
@@ -40,6 +95,25 @@ export class PayPalGateway {
 	}
 
 	async executePayout(transactions) {
+		let preflightErr = null;
+		try {
+			const dest0 = transactions[0]?.destination || transactions[0]?.email;
+			this.ensureReady({ requireDestination: dest0 });
+		} catch (e) {
+			preflightErr = e;
+		}
+		if (preflightErr) {
+			return {
+				status: "RAIL_NOT_CONFIGURED",
+				provider: "paypal",
+				error: preflightErr.message,
+				code: preflightErr.code || "PAYPAL_FALLBACK_REQUIRED",
+				retryable: false,
+				next_rail_hint: ["wise", "bank_transfer", "payoneer_standard", "crypto"],
+				no_funds_moved: true,
+				transactions,
+			};
+		}
 		const token = await getPayPalAccessToken();
 		const items = transactions.map((tx, i) => ({
 			recipient_type: "EMAIL",
