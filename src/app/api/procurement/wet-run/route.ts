@@ -56,7 +56,7 @@ interface PurchaseInstruction {
     deliveryAddress: string
   }>
   totalAmount: number
-  paymentMethod: 'prepaid_swarm'
+  paymentMethod: string
   deliveryNote: string
 }
 

@@ -188,9 +188,11 @@ export class TaskQueue {
 		const ids = this.list({ status }).map((t) => t.id);
 		for (const id of ids) {
 			for (const f of [taskPath(this.dir, id), donePath(this.dir, id)]) {
-				try {
-					fs.unlinkSync(f);
-				} catch {}
+try {
+				fs.unlinkSync(f);
+			} catch {
+				/* file may not exist */
+			}
 			}
 			this._releaseClaim(id);
 		}
@@ -200,7 +202,9 @@ export class TaskQueue {
 	_releaseClaim(id) {
 		try {
 			fs.rmSync(claimDirPath(this.dir, id), { recursive: true, force: true });
-		} catch {}
+		} catch {
+			/* claim dir may not exist */
+		}
 	}
 }
 

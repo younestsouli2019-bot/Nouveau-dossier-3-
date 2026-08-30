@@ -152,7 +152,7 @@ export async function runFullReconciliation(): Promise<ReconciliationReport> {
     balanceDelta,
     transactionsBlocked,
     summary: {
-      totalRevenue, totalSettled, totalPending, totalRejected,
+      totalRevenue, totalSettled, totalPending, totalRejected, totalFailedReversed,
       revenueEvents: allRevenue.length,
       settlements: allSettlements.length,
       payoutBatches: allBatches.length,
@@ -180,7 +180,7 @@ export async function runFullReconciliation(): Promise<ReconciliationReport> {
     const snapshot = await db.ledgerSnapshot.create({
       data: {
         snapshotType: 'post_reconciliation',
-      totalRevenue, totalSettled, totalPending, totalRejected, totalFailedReversed,
+      totalRevenue, totalSettled, totalPending, totalRejected,
         settlementCount: allSettlements.length,
         revenueCount: allRevenue.length,
         discrepancyCount: violations.length,

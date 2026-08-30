@@ -266,7 +266,6 @@ export async function POST() {
       settlementsCreated,
       totalSettlementAmount: Math.round(totalSettlementAmount * 100) / 100,
       auditEntryId: auditEntry.id,
-      reportId,
     })
   } catch (error) {
     console.error('[Full Reconciliation]', error)

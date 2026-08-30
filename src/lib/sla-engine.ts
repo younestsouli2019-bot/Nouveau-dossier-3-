@@ -85,8 +85,7 @@ export async function scanSLABreaches(): Promise<SLAStatus[]> {
   const breachedPOs = await prisma.purchaseOrder.findMany({
     where: {
       ackStatus: { in: ['AWAITING_ACK', 'ESCALATED'] },
-      slaDeadline: { not: null },
-      slaDeadline: { lte: now },
+      slaDeadline: { not: null, lte: now },
       slaBreached: false,
     },
   });
@@ -130,8 +129,7 @@ export async function scanSLABreaches(): Promise<SLAStatus[]> {
   const nearBreachPOs = await prisma.purchaseOrder.findMany({
     where: {
       ackStatus: 'AWAITING_ACK',
-      slaDeadline: { not: null },
-      slaDeadline: { gt: now, lte: nearBreachThreshold },
+      slaDeadline: { not: null, gt: now, lte: nearBreachThreshold },
       slaBreached: false,
     },
   });

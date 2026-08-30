@@ -123,7 +123,6 @@ export async function submitPayoneerPayout(
         failedItems: recipients.length,
         providerResponse: responseBody,
         error: errorMsg,
-        errorCode,
         timestamp,
       };
     }

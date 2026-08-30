@@ -124,22 +124,43 @@ function parseCamt053Xml(xml: string): BankStatementEntry[] {
   return entries;
 }
 
+interface BankStmt {
+  BkToCstmrStmt?: {
+    Stmt?: {
+      Ntry?: Array<{
+        Amt?: { $?: { Ccy?: string }; _?: string };
+        AcctSvcrRef?: string;
+        BookgDt?: { Dt?: string };
+        CdtDbtInd?: string;
+        NtryDtls?: {
+          TxDtls?: Array<{
+            Rmted?: { Cdtr?: { Nm?: string } };
+            Ref?: string;
+            EndToEndId?: string;
+          }>;
+        };
+      }>;
+    };
+  };
+}
+
 function parseCamt053Json(json: Record<string, unknown>): BankStatementEntry[] {
-  const stmt = json as { BkToCstmrStmt?: { Stmt?: { Ntry?: Array<Record<string, unknown>> } } };
+  const stmt = json as BankStmt;
   const entries = stmt?.BkToCstmrStmt?.Stmt?.Ntry ?? [];
   return entries.map((ntry, i) => {
-    const amtObj = ntry.Amt as { $?: { Ccy?: string }; _: string } | undefined;
+    const tx = ntry?.NtryDtls?.TxDtls?.[0];
+    const amtObj = ntry.Amt;
     const amount = parseFloat(amtObj?._ ?? '0');
     const currency = amtObj?.$?.Ccy ?? 'USD';
     return {
-      transactionId: (ntry.AcctSvcrRef as string) ?? `TXN-${i}`,
-      date: (ntry.BookgDt as { Dt?: string })?.Dt ?? new Date().toISOString().slice(0, 10),
+      transactionId: ntry.AcctSvcrRef ?? `TXN-${i}`,
+      date: ntry.BookgDt?.Dt ?? new Date().toISOString().slice(0, 10),
       amount,
       currency,
-      counterpartyName: (ntry.NtryDtls?.TxDtls as Record<string, unknown>)?.Rmted?.Cdtr?.Nm as string | undefined,
-      reference: (ntry.NtryDtls?.TxDtls as Record<string, unknown>)?.Ref as string | undefined,
-      endToEndId: (ntry.NtryDtls?.TxDtls as Record<string, unknown>)?.EndToEndId as string | undefined,
-      bookingStatus: (ntry.CdtDbtInd as string) ?? 'CRDT',
+      counterpartyName: tx?.Rmted?.Cdtr?.Nm,
+      reference: tx?.Ref,
+      endToEndId: tx?.EndToEndId,
+      bookingStatus: ntry.CdtDbtInd ?? 'CRDT',
     };
   });
 }

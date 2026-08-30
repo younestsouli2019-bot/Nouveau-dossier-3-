@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
-import { getOwnerEmail, getOwnerDisplayName, tryGetOwnerEmail, tryGetOwnerNameUpper } from '@/lib/owner-config';
+import { getOwnerEmail, getOwnerDisplayName, getOwnerNameUpper, tryGetOwnerEmail, tryGetOwnerNameUpper } from '@/lib/owner-config';
 import { requireOpsAuth } from '@/lib/api-auth';
 import { isSyntheticOracleHash } from '@/lib/procurement/payment-gateway-router';
 
@@ -57,48 +57,51 @@ async function logRun(phase: Phase, status: string, itemsAffected: number, amoun
   });
 }
 
-// ── ANTI-FABRICATION GATE (2026-08-30 sovereign defang) ─────────────────────
-// Auto-Pilot must NEVER mint synthetic transactionRefs, mark PayoutItems
-// completed, or confirm revenue/deliveries WITHOUT real external proof
-// recorded on the row. Real proof = proofHash set AND (externalRef OR proofType).
-// Rows without proof are moved to `needs_manual_proof` / held — the audit queue
-// decides (reject or attach a REAL receipt: POD scan, MT103 UETR, onchain hash).
-type Proofable = {
-  proofHash?: string | null;
-  proofType?: string | null;
-  externalRef?: string | null;
-};
-function hasRealProof(p: Proofable): boolean {
-  if (!p.proofHash) return false;
-  return Boolean(p.externalRef) || Boolean(p.proofType);
-}
-// MINTED-BY-AUTO-PILOT markers that must never be treated as real proofs.
-const SYNTHETIC_REF = /-AP-|-APR-|-APBR-|-PP-|-UC-|-TXRECON-|-RECONCILE-|-RECOVERED-|-CRYPTO-RECOVERY-|-REV-|^PB-|^RECOVERY-/i;
-function externalRefIsReal(ref: string | null | undefined): boolean {
-  if (!ref) return false;
-  const r = String(ref).trim();
-  if (!r || r.length < 8) return false;
-  if (SYNTHETIC_REF.test(r)) return false;
-  return true;
-}
-// Holds a PayoutItem in a non-fabricated state awaiting real proof.
-async function holdForManualProof(item: { id: string; payoutBatchId: string | null }, reason: string) {
-  await db.payoutItem.update({
-    where: { id: item.id },
-    data: {
-      status: 'needs_manual_proof',
-      failureReason: `AUTO-PILOT HELD: ${reason} — no real proofHash+externalRef/proofType. Attach a REAL receipt (POD scan, MT103 UETR, onchain txHash) via the review queue or reject.`,
-      deliveryConfirmed: false,
-      deliveryConfirmedAt: null,
-    },
-  });
-  await audit('PayoutItem', item.id, 'hold_manual_proof', 'status=*', 'status=needs_manual_proof', `Auto-Pilot defang: ${reason}`, item.payoutBatchId ?? undefined, item.id);
-}
-
 /** A provider reference is REAL only if it exists and is not locally-minted. */
 function isRealProviderRef(ref: string | null | undefined): boolean {
   if (!ref || !ref.trim()) return false;
   return !isSyntheticOracleHash(ref) && !/^(PB-|UC-|PP-\d+|TXRECON-|RECOVER(Y|ED)?-|REV-|CRYPTO-RECOVERY-)/i.test(ref.trim());
+}
+
+/**
+ * Anti-fabrication completion (2026-08-30 defang). An item is marked
+ * completed ONLY when a REAL provider reference is already on the row
+ * (gateway webhook / MT103 / onchain hash — never locally-minted). Otherwise
+ * it is parked in `needs_manual_proof` so the review queue can attach real
+ * proof or reject it. deliveryConfirmed is never invented here.
+ */
+async function completeWithRealProof(item: {
+  id: string; status: string; externalRef: string | null; transactionRef: string | null; proofHash: string | null;
+  amount: number; payoutBatchId: string | null; recipientName: string; batchNumber: string; failureReason: string | null; retryCount: number;
+}, reason: string, auditAction: string): Promise<boolean> {
+  const realRef = isRealProviderRef(item.externalRef) || isRealProviderRef(item.transactionRef);
+  if (!realRef) {
+    await db.payoutItem.update({
+      where: { id: item.id },
+      data: {
+        status: 'needs_manual_proof',
+        failureReason: `AUTO-PILOT DEFANG: ${reason} — no REAL provider externalRef/transactionRef on row. Attach a real provider receipt (MT103 UETR, PayPal txn, onchain hash) or reject.`,
+        deliveryConfirmed: false,
+        deliveryConfirmedAt: null,
+      },
+    });
+    await audit('PayoutItem', item.id, auditAction + '_HELD', `status=${item.status}`, 'status=needs_manual_proof',
+      `Auto-Pilot defang: ${reason} — held for real proof (${item.recipientName}, ${item.amount.toFixed(2)})`, item.payoutBatchId ?? undefined, item.id);
+    return false;
+  }
+  await db.payoutItem.update({
+    where: { id: item.id },
+    data: {
+      status: 'completed',
+      processedAt: new Date(),
+      proofHash: item.proofHash || null,
+      failureReason: null,
+      ...(item.retryCount > 0 ? { lastRetryAt: new Date(), retryCount: item.retryCount + 1 } : {}),
+    },
+  });
+  await audit('PayoutItem', item.id, auditAction, `status=${item.status}`, 'status=completed',
+    `Auto-Pilot: ${reason} — item completed with real provider ref. deliveryConfirmed left for operator/evidence`, item.payoutBatchId ?? undefined, item.id);
+  return true;
 }
 
 // ── Phase 1: Confirm pending revenue — REPORT-ONLY ──────────────────────
@@ -157,6 +160,8 @@ async function autoApproveBatches() {
 }
 
 // ── Phase 3: Advance approved batches → processing → completed ───────────
+// DEFANGED (2026-08-30): no synthetic AP- refs, no fabricated completed +
+// deliveryConfirmed. Items advance only on REAL provider proof; otherwise held.
 async function advanceApprovedBatches() {
   const start = Date.now();
   const batches = await db.payoutBatch.findMany({
@@ -166,61 +171,45 @@ async function advanceApprovedBatches() {
 
   let itemsFixed = 0;
   let amountFixed = 0;
+  let held = 0;
 
   for (const batch of batches) {
     const prevStatus = batch.status;
+    let batchAdvanced = true;
     for (const item of batch.items) {
-      if (item.status === 'failed') {
-        // Retry failed items
-        const txRef = `${batch.batchNumber}-AP-${Date.now().toString(36).toUpperCase()}`;
-        await db.payoutItem.update({
-          where: { id: item.id },
-          data: {
-            status: 'completed', transactionRef: txRef, processedAt: new Date(),
-            deliveryConfirmed: true, deliveryConfirmedAt: new Date(),
-            recipientNotifiedAt: new Date(), failureReason: null,
-            lastRetryAt: new Date(), retryCount: item.retryCount + 1,
-          },
-        });
-        await audit('PayoutItem', item.id, 'auto_retry', `status=failed`, 'status=completed',
-          `Auto-Pilot: Retried in approved batch ${batch.batchNumber}`, batch.id, item.id);
-        itemsFixed++; amountFixed += item.amount;
-      } else {
-        // Process pending items
-        const txRef = `${batch.batchNumber}-AP-${Date.now().toString(36).toUpperCase()}-${item.recipientName[0]}`;
-        await db.payoutItem.update({
-          where: { id: item.id },
-          data: {
-            status: 'completed', transactionRef: txRef, processedAt: new Date(),
-            deliveryConfirmed: true, deliveryConfirmedAt: new Date(),
-            recipientNotifiedAt: new Date(),
-          },
-        });
-        await audit('PayoutItem', item.id, 'auto_process', `status=${item.status}`, 'status=completed',
-          `Auto-Pilot: Processed in approved batch ${batch.batchNumber}`, batch.id, item.id);
-        itemsFixed++; amountFixed += item.amount;
+      if (item.status === 'failed' || item.status === 'pending') {
+        const ok = await completeWithRealProof(item, `retry/process in approved batch ${batch.batchNumber}`, 'auto_retry');
+        if (ok) { itemsFixed++; amountFixed += item.amount; }
+        else { held++; batchAdvanced = false; }
       }
     }
 
-    await db.payoutBatch.update({
-      where: { id: batch.id },
-      data: {
-        status: 'completed', processedDate: new Date(), autoProcessed: true,
-        autoProcessedAt: new Date(),
-        resolutionNote: `Auto-Pilot: Approved → Completed. ${itemsFixed} items processed.`,
-        resolvedAt: new Date(),
-      },
-    });
-    await audit('PayoutBatch', batch.id, 'auto_advance', `status=${prevStatus}`, 'status=completed',
-      `Auto-Pilot: Batch advanced from approved to completed`, batch.id);
+    // Mark the batch completed ONLY if every actionable item was honestly completed.
+    if (batchAdvanced || batch.items.length === 0) {
+      await db.payoutBatch.update({
+        where: { id: batch.id },
+        data: {
+          status: 'completed', processedDate: new Date(), autoProcessed: true,
+          autoProcessedAt: new Date(),
+          resolutionNote: `Auto-Pilot: Approved → Completed. ${itemsFixed} items completed with real provider proof.${held ? ` ${held} held for real proof.` : ''}`,
+          resolvedAt: new Date(),
+        },
+      });
+      await audit('PayoutBatch', batch.id, 'auto_advance', `status=${prevStatus}`, 'status=completed',
+        `Auto-Pilot: Batch advanced from approved to completed (${itemsFixed} items with real proof${held ? `, ${held} held` : ''})`, batch.id);
+    } else {
+      await audit('PayoutBatch', batch.id, 'auto_advance_HELD', `status=${prevStatus}`, 'status=approved',
+        `Auto-Pilot defang: batch ${batch.batchNumber} NOT auto-completed — items lack real provider proof; left approved for human review.`, batch.id);
+    }
   }
 
   await logRun('advance_approved_batches', 'success', itemsFixed, amountFixed,
-    `Advanced ${batches.length} approved batches, ${itemsFixed} items`, Date.now() - start);
+    `Advanced approved batches: ${itemsFixed} items completed w/ real proof, ${held} held (no synthetic AP- refs minted)`, Date.now() - start);
   return itemsFixed;
 }
 
 // ── Phase 4: Advance processing batches (stale items) ────────────────────
+// DEFANGED: no synthetic AP- refs; complete only on real provider proof.
 async function advanceProcessingBatches() {
   const start = Date.now();
   const batches = await db.payoutBatch.findMany({
@@ -230,29 +219,21 @@ async function advanceProcessingBatches() {
 
   let itemsFixed = 0;
   let amountFixed = 0;
+  let held = 0;
 
   for (const batch of batches) {
     const prevStatus = batch.status;
     for (const item of batch.items) {
       if (item.status === 'processing' || item.status === 'pending') {
-        const txRef = item.transactionRef || `${batch.batchNumber}-AP-${Date.now().toString(36).toUpperCase()}`;
-        await db.payoutItem.update({
-          where: { id: item.id },
-          data: {
-            status: 'completed', transactionRef: txRef, processedAt: new Date(),
-            deliveryConfirmed: true, deliveryConfirmedAt: new Date(),
-            recipientNotifiedAt: new Date(), failureReason: null,
-          },
-        });
-        await audit('PayoutItem', item.id, 'auto_complete_stale', `status=${item.status}`, 'status=completed',
-          `Auto-Pilot: Completed stale item in ${batch.batchNumber}`, batch.id, item.id);
-        itemsFixed++; amountFixed += item.amount;
+        const ok = await completeWithRealProof(item, `stale item in ${batch.batchNumber}`, 'auto_complete_stale');
+        if (ok) { itemsFixed++; amountFixed += item.amount; }
+        else { held++; }
       }
     }
 
     // Recalculate batch status
     const remaining = await db.payoutItem.findMany({ where: { payoutBatchId: batch.id } });
-    const allDone = remaining.every((i) => i.status === 'completed');
+    const allDone = held === 0 && remaining.every((i) => i.status === 'completed');
     const hasFailed = remaining.some((i) => i.status === 'failed');
 
     const newBatchStatus = hasFailed ? 'failed' : allDone ? 'completed' : 'processing';
@@ -261,15 +242,15 @@ async function advanceProcessingBatches() {
       data: {
         status: newBatchStatus,
         ...(allDone ? { processedDate: new Date(), autoProcessed: true, autoProcessedAt: new Date(), resolvedAt: new Date() } : {}),
-        resolutionNote: `Auto-Pilot: ${itemsFixed} stale items completed. Final batch status: ${newBatchStatus}`,
+        resolutionNote: `Auto-Pilot: ${itemsFixed} stale items completed w/ real proof; ${held} held. Final batch status: ${newBatchStatus}`,
       },
     });
     await audit('PayoutBatch', batch.id, 'auto_recalculate', `status=${prevStatus}`, `status=${newBatchStatus}`,
-      `Auto-Pilot: Batch recalc after processing items`, batch.id);
+      `Auto-Pilot: Batch recalc after processing items (${itemsFixed} completed, ${held} held)`, batch.id);
   }
 
   await logRun('advance_processing_batches', 'success', itemsFixed, amountFixed,
-    `Advanced ${batches.length} processing batches`, Date.now() - start);
+    `Advanced ${batches.length} processing batches: ${itemsFixed} completed w/ real proof, ${held} held`, Date.now() - start);
   return itemsFixed;
 }
 
@@ -283,33 +264,26 @@ async function retryFailedItems() {
 
   let total = 0;
   let amount = 0;
+  let held = 0;
 
   for (const item of items) {
-    const txRef = `${item.batchNumber}-APR-${Date.now().toString(36).toUpperCase()}`;
-    await db.payoutItem.update({
-      where: { id: item.id },
-      data: {
-        status: 'completed', transactionRef: txRef, processedAt: new Date(),
-        deliveryConfirmed: true, deliveryConfirmedAt: new Date(),
-        recipientNotifiedAt: new Date(), failureReason: null,
-        lastRetryAt: new Date(), retryCount: item.retryCount + 1,
-      },
-    });
-    await audit('PayoutItem', item.id, 'auto_retry_failed', `status=failed,reason=${item.failureReason}`,
-      'status=completed', `Auto-Pilot: Retried failed item (${item.failureReason})`, item.payoutBatchId, item.id);
-    total++; amount += item.amount;
+    const ok = await completeWithRealProof(item, `retry failed item (${item.failureReason})`, 'auto_retry_failed');
+    if (ok) { total++; amount += item.amount; }
+    else { held++; }
   }
 
   await logRun('retry_failed_items', 'success', total, amount,
-    `Retried ${total} failed items`, Date.now() - start);
+    `Retried ${total} failed items w/ real proof; ${held} held for real provider proof`, Date.now() - start);
   return total;
 }
 
 // ── Phase 6: Retry failed batches ────────────────────────────────────────
+// DEFANGED: no synthetic APBR- refs; only items with REAL provider proof complete.
 async function retryFailedBatches() {
   const start = Date.now();
   const batches = await db.payoutBatch.findMany({ where: { status: 'failed' } });
   let total = 0;
+  let held = 0;
 
   for (const batch of batches) {
     // Process ALL non-completed items in the failed batch (failed + pending)
@@ -318,96 +292,94 @@ async function retryFailedBatches() {
     });
     let amount = 0;
     for (const item of items) {
-      const txRef = `${batch.batchNumber}-APBR-${Date.now().toString(36).toUpperCase()}`;
-      await db.payoutItem.update({
-        where: { id: item.id },
+      const ok = await completeWithRealProof(item, `retry failed batch ${batch.batchNumber}`, 'auto_retry_batch');
+      if (ok) { amount += item.amount; total++; }
+      else { held++; }
+    }
+    // Batch completes ONLY if all actionable items completed with real proof.
+    const remaining = await db.payoutItem.findMany({ where: { payoutBatchId: batch.id } });
+    const allDone = held === 0 && remaining.every((i) => i.status === 'completed');
+    if (allDone) {
+      await db.payoutBatch.update({
+        where: { id: batch.id },
         data: {
-          status: 'completed', transactionRef: txRef, processedAt: new Date(),
-          deliveryConfirmed: true, deliveryConfirmedAt: new Date(),
-          recipientNotifiedAt: new Date(), failureReason: null,
-          lastRetryAt: new Date(), retryCount: item.retryCount + 1,
+          status: 'completed', processedDate: new Date(), autoProcessed: true,
+          autoProcessedAt: new Date(),
+          resolutionNote: `Auto-Pilot: Failed batch recovered w/ real proof. ${items.length} items processed.`,
+          resolvedAt: new Date(),
         },
       });
-      amount += item.amount;
-      total++;
+      await audit('PayoutBatch', batch.id, 'auto_retry_batch', 'status=failed', 'status=completed',
+        `Auto-Pilot: Failed batch recovered — ${items.length} items processed w/ real proof`, batch.id);
+    } else {
+      await audit('PayoutBatch', batch.id, 'auto_retry_batch_HELD', 'status=failed', 'status=failed',
+        `Auto-Pilot defang: batch ${batch.batchNumber} NOT auto-recovered — ${held} item(s) lack real provider proof; left for human review.`, batch.id);
     }
-    await db.payoutBatch.update({
-      where: { id: batch.id },
-      data: {
-        status: 'completed', processedDate: new Date(), autoProcessed: true,
-        autoProcessedAt: new Date(),
-        resolutionNote: `Auto-Pilot: Failed batch fully recovered. ${items.length} items processed.`,
-        resolvedAt: new Date(),
-      },
-    });
-    await audit('PayoutBatch', batch.id, 'auto_retry_batch', 'status=failed', 'status=completed',
-      `Auto-Pilot: Failed batch recovered — ${items.length} items processed`, batch.id);
   }
 
   await logRun('retry_failed_batches', 'success', total,
     batches.reduce((s, b) => s + b.totalAmount, 0),
-    `Retried ${batches.length} failed batches, ${total} items processed`, Date.now() - start);
+    `Retried ${batches.length} failed batches: ${total} items completed w/ real proof; ${held} held`, Date.now() - start);
   return total;
 }
 
 // ── Phase 7: Confirm deliveries ──────────────────────────────────────────
+// DEFANGED: delivery confirmation requires REAL evidence (actualDelivery /
+// POD / signature). Auto-toggling deliveryConfirmed=true on completed items
+// that never had a physical delivery is a fabrication vector — removed.
 async function confirmDeliveries() {
   const start = Date.now();
-  const items = await db.payoutItem.findMany({ where: { status: 'completed', deliveryConfirmed: { not: true } } });
+  const items = await db.payoutItem.findMany({
+    where: { status: 'completed', deliveryConfirmed: { not: true } },
+    select: { id: true, amount: true, payoutBatchId: true, transactionRef: true, externalRef: true },
+  });
   let total = 0;
 
   for (const item of items) {
-    await db.payoutItem.update({
-      where: { id: item.id },
-      data: { deliveryConfirmed: true, deliveryConfirmedAt: new Date() },
-    });
-    await audit('PayoutItem', item.id, 'auto_confirm_delivery', `deliveryConfirmed=${item.deliveryConfirmed}`,
-      'deliveryConfirmed=true', 'Auto-Pilot: Delivery confirmed', item.payoutBatchId, item.id);
+    await audit('PayoutItem', item.id, 'confirm_delivery_HELD', 'deliveryConfirmed=false', 'deliveryConfirmed=false',
+      'Auto-Pilot defang: delivery auto-confirm removed. deliveryConfirmed=true requires REAL POD/signature/actualDelivery evidence attached by operator.', item.payoutBatchId ?? undefined, item.id);
     total++;
   }
 
-  await logRun('confirm_deliveries', 'success', total,
+  await logRun('confirm_deliveries', 'success', 0,
     items.reduce((s, i) => s + i.amount, 0),
-    `Confirmed ${total} deliveries`, Date.now() - start);
-  return total;
+    `DEFANGED: ${total} deliveries NOT auto-confirmed (require REAL evidence)`, Date.now() - start);
+  return 0;
 }
 
-// ── Phase 8: Fix timestamps ──────────────────────────────────────────────
+// ── Phase 8: Fix timestamps — REPORT-ONLY ────────────────────────────────
+// DEFANGED: processedAt cannot be backfilled from updatedAt — that fabricates
+// a processing timestamp. processedAt must come from real provider evidence.
 async function fixTimestamps() {
   const start = Date.now();
   const items = await db.payoutItem.findMany({ where: { status: 'completed', processedAt: null } });
-  let total = 0;
 
   for (const item of items) {
-    const fallbackTs = item.updatedAt || new Date();
-    await db.payoutItem.update({ where: { id: item.id }, data: { processedAt: fallbackTs } });
-    await audit('PayoutItem', item.id, 'auto_fix_timestamp', 'processedAt=null',
-      `processedAt=${fallbackTs.toISOString()}`, 'Auto-Pilot: Backfilled timestamp', item.payoutBatchId, item.id);
-    total++;
+    await audit('PayoutItem', item.id, 'fix_timestamp_HELD', 'processedAt=null', 'processedAt=null',
+      `Defang: processedAt must come from REAL provider evidence/ref, not a backfill guess — held for real proof (${item.recipientName}, ${item.amount.toFixed(2)})`, item.payoutBatchId ?? undefined, item.id);
   }
 
-  await logRun('fix_timestamps', 'success', total, 0, `Fixed ${total} timestamps`, Date.now() - start);
-  return total;
+  await logRun('fix_timestamps', 'success', 0, 0,
+    `DEFANGED: ${items.length} completed items with null processedAt are NOT backfilled — real processedAt required`, Date.now() - start);
+  return 0;
 }
 
-// ── Phase 9: Notify recipients ───────────────────────────────────────────
+// ── Phase 9: Notify recipients — REPORT-ONLY ─────────────────────────────
+// DEFANGED: this phase cannot email/WhatsApp; stamping recipientNotifiedAt
+// claimed a notification was SENT without sending anything. Wire a real
+// messaging provider or mark manually.
 async function notifyRecipients() {
   const start = Date.now();
   const items = await db.payoutItem.findMany({ where: { status: 'completed', recipientNotifiedAt: null } });
-  let total = 0;
 
   for (const item of items) {
-    await db.payoutItem.update({ where: { id: item.id }, data: { recipientNotifiedAt: new Date() } });
-    await audit('PayoutItem', item.id, 'auto_notify', 'notifiedAt=null',
-      `notifiedAt=${new Date().toISOString()}`,
-      `Auto-Pilot: Notification sent to ${item.recipientEmail}`, item.payoutBatchId, item.id);
-    total++;
+    await audit('PayoutItem', item.id, 'notify_HELD', 'recipientNotifiedAt=null', 'recipientNotifiedAt=null',
+      `Defang: notification NOT sent — this phase cannot email; wire a real email/WhatsApp provider or mark manually (${item.recipientName}, ${item.amount.toFixed(2)})`, item.payoutBatchId ?? undefined, item.id);
   }
 
-  await logRun('notify_recipients', 'success', total,
-    items.reduce((s, i) => s + i.amount, 0),
-    `Sent ${total} notifications`, Date.now() - start);
-  return total;
+  await logRun('notify_recipients', 'success', 0, 0,
+    `DEFANGED: ${items.length} recipient notifications NOT sent — this phase cannot email; wire a real email/WhatsApp provider or mark manually`, Date.now() - start);
+  return 0;
 }
 
 // ── Phase 10: Batch unassigned revenue ───────────────────────────────────
@@ -428,10 +400,10 @@ async function batchUnassignedRevenue() {
   const OWNER_EMAIL = getOwnerEmail();
 
   // Try to find an existing pending_approval batch to add to
-  let targetBatch = await db.payoutBatch.findFirst({
-    where: { status: 'pending_approval' },
-    include: { items: true },
-  });
+  let targetBatch: { id: string; batchNumber: string; itemCount: number; totalAmount: number } | null =
+    await db.payoutBatch.findFirst({
+      where: { status: 'pending_approval' },
+    });
 
   const totalAmount = unbatchedEvents.reduce((s, e) => s + e.amount, 0);
 
@@ -515,8 +487,10 @@ async function batchUnassignedRevenue() {
   return unbatchedEvents.length;
 }
 
-// ── Phase 11: Advance PayPal batches ─────────────────────────────────────
-// PayPal Bottleneck: Complete batches stuck in submitted_to_paypal for > 2 hours
+// ── Phase 11: Advance PayPal batches — REAL-PROOF ONLY ───────────────────
+// PayPal Bottleneck: stale submitted_to_paypal batches. DEFANGED: no synthetic
+// PP- refs. Items complete ONLY via completeWithRealProof (real PayPal provider
+// ref already on the row); batch completes only when every actionable item did.
 async function advancePaypalBatches() {
   const start = Date.now();
   const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
@@ -531,55 +505,50 @@ async function advancePaypalBatches() {
 
   let itemsCompleted = 0;
   let amountCompleted = 0;
+  let held = 0;
 
   for (const batch of batches) {
     const prevStatus = batch.status;
+    let batchAdvanced = true;
 
     for (const item of batch.items) {
       if (item.status === 'processing' || item.status === 'pending') {
-        const txRef = item.transactionRef || `PP-${batch.batchNumber}-${Date.now().toString(36).toUpperCase()}`;
-        await db.payoutItem.update({
-          where: { id: item.id },
-          data: {
-            status: 'completed',
-            transactionRef: txRef,
-            processedAt: new Date(),
-            deliveryConfirmed: true,
-            deliveryConfirmedAt: new Date(),
-            recipientNotifiedAt: new Date(),
-            failureReason: null,
-          },
-        });
-        await audit('PayoutItem', item.id, 'auto_paypal_complete', `status=${item.status}`,
-          'status=completed', `Auto-Pilot: Completed PayPal-stuck item in ${batch.batchNumber}`, batch.id, item.id);
-        itemsCompleted++;
-        amountCompleted += item.amount;
+        const ok = await completeWithRealProof(item, `stale PayPal submission in ${batch.batchNumber}`, 'auto_paypal_complete');
+        if (ok) { itemsCompleted++; amountCompleted += item.amount; }
+        else { held++; batchAdvanced = false; }
       }
     }
 
-    // Mark batch as completed
-    await db.payoutBatch.update({
-      where: { id: batch.id },
-      data: {
-        status: 'completed',
-        processedDate: new Date(),
-        autoProcessed: true,
-        autoProcessedAt: new Date(),
-        resolvedAt: new Date(),
-        resolutionNote: `Auto-Pilot: PayPal batch advanced after 2h+ stale submission. ${itemsCompleted} items completed.`,
-      },
-    });
-    await audit('PayoutBatch', batch.id, 'auto_paypal_advance', `status=${prevStatus}`,
-      'status=completed', `Auto-Pilot: PayPal batch completed after >2h stale`, batch.id);
+    // Mark the batch completed ONLY if every actionable item completed with real proof.
+    if (batchAdvanced || batch.items.length === 0) {
+      await db.payoutBatch.update({
+        where: { id: batch.id },
+        data: {
+          status: 'completed',
+          processedDate: new Date(),
+          autoProcessed: true,
+          autoProcessedAt: new Date(),
+          resolvedAt: new Date(),
+          resolutionNote: `Auto-Pilot: PayPal batch advanced after 2h+ stale submission. ${itemsCompleted} items completed with real provider proof.${held ? ` ${held} held.` : ''}`,
+        },
+      });
+      await audit('PayoutBatch', batch.id, 'auto_paypal_advance', `status=${prevStatus}`,
+        'status=completed', `Auto-Pilot: PayPal batch completed after >2h stale (${itemsCompleted} items with real provider proof${held ? `, ${held} held` : ''})`, batch.id);
+    } else {
+      await audit('PayoutBatch', batch.id, 'auto_paypal_advance_HELD', `status=${prevStatus}`, 'status=submitted_to_paypal',
+        `Auto-Pilot defang: batch ${batch.batchNumber} NOT auto-completed — items lack REAL PayPal provider refs; no synthetic PP- refs minted; left for human review.`, batch.id);
+    }
   }
 
   await logRun('advance_paypal_batches', 'success', itemsCompleted, amountCompleted,
-    `Advanced ${batches.length} stale PayPal batches (${itemsCompleted} items)`, Date.now() - start);
+    `${batches.length} stale PayPal batches: ${itemsCompleted} items completed w/ real proof; ${held} held (no synthetic PP- refs minted)`, Date.now() - start);
   return itemsCompleted;
 }
 
-// ── Phase 12: Retry unclaimed items ──────────────────────────────────────
-// Unclaimed Payout: Complete items stuck in unclaimed status
+// ── Phase 12: Retry unclaimed items — REAL-PROOF ONLY ────────────────────
+// Unclaimed Payout. DEFANGED: no synthetic UC- refs, no force-complete, no
+// invented delivery/notification timestamps. Items complete ONLY via
+// completeWithRealProof; a parent batch is completed only when NO item was held.
 async function retryUnclaimedItems() {
   const start = Date.now();
   const items = await db.payoutItem.findMany({
@@ -589,32 +558,28 @@ async function retryUnclaimedItems() {
 
   let total = 0;
   let amount = 0;
+  let held = 0;
+  const heldByBatch: Record<string, number> = {};
 
   for (const item of items) {
-    const txRef = `UC-${item.batchNumber}-${Date.now().toString(36).toUpperCase()}`;
-    await db.payoutItem.update({
-      where: { id: item.id },
-      data: {
-        status: 'completed',
-        transactionRef: txRef,
-        processedAt: new Date(),
-        deliveryConfirmed: true,
-        deliveryConfirmedAt: new Date(),
-        recipientNotifiedAt: new Date(),
-        failureReason: null,
-        lastRetryAt: new Date(),
-        retryCount: item.retryCount + 1,
-      },
-    });
-    await audit('PayoutItem', item.id, 'auto_retry_unclaimed', 'status=unclaimed',
-      'status=completed', `Auto-Pilot: Unclaimed item force-completed`, item.payoutBatchId, item.id);
-    total++;
-    amount += item.amount;
+    const ok = await completeWithRealProof(item, 'unclaimed item retry', 'auto_retry_unclaimed');
+    if (ok) { total++; amount += item.amount; }
+    else {
+      held++;
+      if (item.payoutBatchId) heldByBatch[item.payoutBatchId] = (heldByBatch[item.payoutBatchId] || 0) + 1;
+    }
   }
 
-  // Recalculate parent batch statuses
+  // Recalculate parent batch statuses — complete a batch ONLY when no item in it was held.
   const affectedBatchIds = [...new Set(items.map(i => i.payoutBatchId))];
   for (const batchId of affectedBatchIds) {
+    if (!batchId) continue;
+    const batchHeld = heldByBatch[batchId] || 0;
+    if (batchHeld > 0) {
+      await audit('PayoutBatch', batchId, 'auto_retry_unclaimed_HELD', 'status=pending', 'status=pending',
+        `Auto-Pilot defang: batch NOT auto-completed — ${batchHeld} unclaimed item(s) lack real provider proof; left for human review.`, batchId);
+      continue;
+    }
     const remaining = await db.payoutItem.findMany({ where: { payoutBatchId: batchId } });
     const allDone = remaining.every(i => i.status === 'completed');
     if (allDone) {
@@ -626,23 +591,32 @@ async function retryUnclaimedItems() {
           autoProcessed: true,
           autoProcessedAt: new Date(),
           resolvedAt: new Date(),
-          resolutionNote: 'Auto-Pilot: Batch completed after unclaimed items resolved.',
+          resolutionNote: 'Auto-Pilot: Batch completed after unclaimed items resolved with real provider proof.',
         },
       });
+      await audit('PayoutBatch', batchId, 'auto_retry_unclaimed', 'status=pending', 'status=completed',
+        'Auto-Pilot: Batch completed — unclaimed item(s) resolved with real provider proof.', batchId);
     }
   }
 
   await logRun('retry_unclaimed_items', 'success', total, amount,
-    `Force-completed ${total} unclaimed items`, Date.now() - start);
+    `Retried ${total} unclaimed items w/ real proof; ${held} held for real provider proof (no synthetic UC- refs minted)`, Date.now() - start);
   return total;
 }
 
-// ── Phase 13: Reconcile transactions ─────────────────────────────────────
-// Transaction Mismatch: Cross-reference TransactionLog with PayoutItems
+// ── Phase 13: Reconcile transactions — REAL-PROOF ONLY / REPORT-ONLY ─────
+// Transaction Mismatch: cross-reference TransactionLog with PayoutItems.
+// Part 1 DEFANGED: an item completes ONLY via completeWithRealProof — a
+// TransactionLog alone is no proof; the PayoutItem must carry its own real
+// provider ref (no synthetic TXRECON- refs).
+// Part 2 DEFANGED: a TransactionLog synthesized from a completed PayoutItem
+// fabricates wallet/ledger history — the log must come from a real provider
+// webhook/integration. Report-only.
 async function reconcileTransactions() {
   const start = Date.now();
   let itemsFixed = 0;
   let amountFixed = 0;
+  let held = 0;
 
   // 1. Find completed TransactionLog withdrawals with no matching completed PayoutItem
   const completedTxLogs = await db.transactionLog.findMany({
@@ -667,34 +641,20 @@ async function reconcileTransactions() {
     }
 
     if (!matchFound && txLog.payoutItemId) {
-      // TransactionLog says completed but PayoutItem is not completed — fix it
+      // TransactionLog says completed but PayoutItem is not completed — the item
+      // completes ONLY if it already carries its own REAL provider ref.
       const item = await db.payoutItem.findUnique({ where: { id: txLog.payoutItemId } });
       // Never undo a misplaced recovery — these items must stay failed
       if (item && (item.failureReason || '').startsWith('MISPLACED:')) continue;
       if (item && item.status !== 'completed') {
-        const txRef = item.transactionRef || txLog.providerTxId || `TXRECON-${Date.now().toString(36).toUpperCase()}`;
-        await db.payoutItem.update({
-          where: { id: item.id },
-          data: {
-            status: 'completed',
-            transactionRef: txRef,
-            processedAt: txLog.transactionDate,
-            deliveryConfirmed: true,
-            deliveryConfirmedAt: txLog.transactionDate,
-            recipientNotifiedAt: new Date(),
-            failureReason: null,
-          },
-        });
-        await audit('PayoutItem', item.id, 'auto_reconcile_tx_to_item',
-          `status=${item.status}`, 'status=completed',
-          `Auto-Pilot: Matched completed TransactionLog to incomplete PayoutItem`, item.payoutBatchId, item.id);
-        itemsFixed++;
-        amountFixed += item.amount;
+        const ok = await completeWithRealProof(item, `reconcile with TransactionLog ${txLog.id}`, 'auto_reconcile_tx_to_item');
+        if (ok) { itemsFixed++; amountFixed += item.amount; }
+        else { held++; }
       }
     }
   }
 
-  // 2. Find completed PayoutItems with no matching completed TransactionLog
+  // 2. Completed PayoutItems with no matching completed TransactionLog — REPORT-ONLY
   const completedItems = await db.payoutItem.findMany({
     where: { status: 'completed' },
     include: { payoutBatch: true },
@@ -710,37 +670,24 @@ async function reconcileTransactions() {
     });
 
     if (!existingLog) {
-      // Create missing TransactionLog entry
-      await db.transactionLog.create({
-        data: {
-          category: 'withdrawal',
-          status: 'completed',
-          amount: item.amount,
-          transactionDate: item.processedAt || item.updatedAt,
-          referenceId: item.transactionRef,
-          description: `Auto-Pilot reconciliation: payout to ${item.recipientName}`,
-          payoutBatchId: item.payoutBatchId,
-          payoutItemId: item.id,
-          provider: item.payoutBatch?.paymentProvider || 'reconciled',
-          providerTxId: item.transactionRef,
-        },
-      });
-      await audit('PayoutItem', item.id, 'auto_reconcile_item_to_tx',
-        'TransactionLog=missing', 'TransactionLog=created',
-        `Auto-Pilot: Created missing TransactionLog for completed PayoutItem`, item.payoutBatchId, item.id);
-      itemsFixed++;
-      amountFixed += item.amount;
+      await audit('PayoutItem', item.id, 'auto_reconcile_item_to_tx_HELD',
+        'TransactionLog=missing', 'TransactionLog=not_created',
+        `Defang: TransactionLog for completed PayoutItem must come from a real provider webhook/integration, never synthesized from a completed item (${item.recipientName}, ${item.amount.toFixed(2)})`, item.payoutBatchId ?? undefined, item.id);
+      held++;
     }
   }
 
   await logRun('reconcile_transactions', 'success', itemsFixed, amountFixed,
-    `Reconciled ${itemsFixed} transaction mismatches`, Date.now() - start);
+    `Reconciled ${itemsFixed} tx mismatches; ${held} held (no synthetic TXRECON- refs, no fabricated TransactionLogs)`, Date.now() - start);
   return itemsFixed;
 }
 
-// ── Phase 14: Resolve orphan transactions ────────────────────────────────
+// ── Phase 14: Resolve orphan transactions — ATTACH-ONLY, NEVER COMPLETED ──
 // Orphan Transaction: TransactionLog withdrawals with no matching PayoutItem.
-// Creates a synthetic PayoutItem to close the loop.
+// DEFANGED: no synthetic PB-RECONCILE- batches, no RECONCILE- refs, no
+// completed + deliveryConfirmed items. The missing PayoutItem is created as
+// PENDING inside an EXISTING pending_approval batch only; transactionRef is set
+// only when the txLog carries a REAL provider ref, otherwise null + failureReason.
 async function resolveOrphanTransactions() {
   const start = Date.now();
   let itemsFixed = 0;
@@ -759,84 +706,53 @@ async function resolveOrphanTransactions() {
     const isOrphan = !txLog.payoutItemId || !allItemIds.has(txLog.payoutItemId);
     if (!isOrphan) continue;
 
-    // Find or create a target batch
-    let targetBatchId = txLog.payoutBatchId;
-    let batchNumber: string;
-
-    if (targetBatchId) {
-      const batch = await db.payoutBatch.findUnique({ where: { id: targetBatchId } });
-      if (!batch) targetBatchId = null;
-      else batchNumber = batch.batchNumber;
+    // NEVER create a synthetic batch — only attach to an EXISTING pending_approval batch.
+    const targetBatch = await db.payoutBatch.findFirst({ where: { status: 'pending_approval' } });
+    if (!targetBatch) {
+      await audit('TransactionLog', txLog.id, 'resolve_orphan_HELD', 'payoutItemId=null',
+        'payoutItemId=not_created',
+        `Defang: no existing pending_approval batch to attach orphan TransactionLog ${txLog.referenceId || txLog.id} — NO synthetic reconciliation batch created; real provider proof + manual approval required.`);
+      continue;
     }
 
-    if (!targetBatchId) {
-      // Create a reconciliation batch for this orphan
-      const now = new Date();
-      const batchNum = `PB-RECONCILE-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-      const batchCount = await db.payoutBatch.count({ where: { batchNumber: { startsWith: 'PB-RECONCILE' } } });
-      batchNumber = `${batchNum}-${String(batchCount + 1).padStart(4, '0')}`;
+    const candidateRef = txLog.providerTxId || txLog.referenceId;
+    const transactionRef = isRealProviderRef(candidateRef) ? candidateRef : null;
 
-      const newBatch = await db.payoutBatch.create({
-        data: {
-          batchNumber,
-          totalAmount: txLog.amount,
-          status: 'completed',
-          itemCount: 1,
-          scheduledDate: txLog.transactionDate,
-          processedDate: txLog.transactionDate,
-          notes: `Auto-Pilot: Reconciliation batch for orphan transaction ${txLog.referenceId || txLog.id}`,
-          paymentProvider: txLog.provider || 'reconciled',
-          providerBatchRef: txLog.providerTxId,
-          autoApproved: true,
-          autoApprovedAt: now,
-          autoProcessed: true,
-          autoProcessedAt: now,
-          resolvedAt: now,
-          resolutionNote: `Auto-Pilot: Created to resolve orphan TransactionLog ${txLog.referenceId || txLog.id}`,
-        },
-      });
-      targetBatchId = newBatch.id;
-    } else {
-      const batch = await db.payoutBatch.findUnique({ where: { id: targetBatchId } });
-      batchNumber = batch!.batchNumber;
-    }
-
-    // Create the missing PayoutItem
+    // Create the missing PayoutItem as PENDING (never completed, never deliveryConfirmed)
     const newItem = await db.payoutItem.create({
       data: {
-        payoutBatchId: targetBatchId!,
-        batchNumber: batchNumber!,
+        payoutBatchId: targetBatch.id,
+        batchNumber: targetBatch.batchNumber,
         recipientName: getOwnerDisplayName(),
         recipientEmail: getOwnerEmail(),
         amount: txLog.amount,
         currency: txLog.currency,
-        status: 'completed',
+        status: 'pending',
         paymentMethod: txLog.provider === 'paypal' ? 'paypal' : txLog.provider === 'payoneer' ? 'payoneer' : 'bank_transfer',
-        transactionRef: txLog.providerTxId || txLog.referenceId || `RECONCILE-${txLog.id.slice(0, 8)}`,
-        processedAt: txLog.transactionDate,
-        deliveryConfirmed: true,
-        deliveryConfirmedAt: txLog.transactionDate,
-        recipientNotifiedAt: new Date(),
+        transactionRef,
+        ...(transactionRef ? {} : { failureReason: 'AUTO-PILOT DEFANG: resolve_orphan requires a REAL provider ref (txLog.providerTxId/reference was missing or locally-minted). Attach real provider proof before payout.' }),
       },
     });
 
     // Link the TransactionLog to the new PayoutItem
     await db.transactionLog.update({
       where: { id: txLog.id },
-      data: { payoutItemId: newItem.id, payoutBatchId: targetBatchId },
+      data: { payoutItemId: newItem.id, payoutBatchId: targetBatch.id },
     });
 
-    await audit('TransactionLog', txLog.id, 'resolve_orphan', 'payoutItemId=null',
+    await audit('TransactionLog', txLog.id, transactionRef ? 'resolve_orphan' : 'resolve_orphan_HELD', 'payoutItemId=null',
       `payoutItemId=${newItem.id}`,
-      `Auto-Pilot: Created PayoutItem ${newItem.id} and linked orphan TransactionLog ${txLog.referenceId || txLog.id}`,
-      targetBatchId!, newItem.id);
+      transactionRef
+        ? `Auto-Pilot: Created PENDING PayoutItem ${newItem.id} (real provider ref) and linked orphan TransactionLog ${txLog.referenceId || txLog.id}`
+        : `Defang: created PENDING PayoutItem ${newItem.id} WITHOUT transactionRef (missing/locally-minted provider ref) — real provider proof required before payout`,
+      targetBatch.id, newItem.id);
 
     // Recalculate batch item count
-    const batchItemCount = await db.payoutItem.count({ where: { payoutBatchId: targetBatchId! } });
-    const batchTotal = (await db.payoutItem.findMany({ where: { payoutBatchId: targetBatchId! } }))
+    const batchItemCount = await db.payoutItem.count({ where: { payoutBatchId: targetBatch.id } });
+    const batchTotal = (await db.payoutItem.findMany({ where: { payoutBatchId: targetBatch.id } }))
       .reduce((s, i) => s + i.amount, 0);
     await db.payoutBatch.update({
-      where: { id: targetBatchId! },
+      where: { id: targetBatch.id },
       data: { itemCount: batchItemCount, totalAmount: batchTotal },
     });
 
@@ -845,17 +761,20 @@ async function resolveOrphanTransactions() {
   }
 
   await logRun('resolve_orphan_transactions', 'success', itemsFixed, amountFixed,
-    `Resolved ${itemsFixed} orphan transactions by creating linked PayoutItems`, Date.now() - start);
+    `Resolved ${itemsFixed} orphan transactions by creating PENDING PayoutItems in existing pending_approval batches (never completed, no synthetic batches)`, Date.now() - start);
   return itemsFixed;
 }
 
-// ── Phase 15: Recover Misplaced Settlements ─────────────────────────────
-// Detects payouts sent to anyone other than the owner (from .env)
-// and recovers them: marks original as failed, creates recovery for owner.
+// ── Phase 15: Recover Misplaced Settlements — REPORT-ONLY (ESCALATE) ────
+// Detects payouts sent to anyone other than the owner (from .env).
+// DEFANGED: money/proof must NEVER be auto-fixed — must ESCALATE. No items are
+// marked failed, no reversal TransactionLogs, no recovery batches/items, and no
+// RECOVERED-/REV- refs. Each misplaced settlement is audited for MANUAL recovery
+// backed by real reversal evidence.
 async function recoverMisplacedSettlements() {
   const start = Date.now();
-  let itemsFixed = 0;
   let amountFixed = 0;
+  let flagged = 0;
 
   const OWNER_EMAIL = getOwnerEmail();
   const OWNER_NAME = getOwnerNameUpper();
@@ -878,175 +797,43 @@ async function recoverMisplacedSettlements() {
 
     if (isOwner) continue;
 
-    // Found a misplaced settlement — recover it
-    const now = new Date();
-    const prevName = item.recipientName;
-    const prevEmail = item.recipientEmail;
-
-    // 1. Mark original as failed
-    await db.payoutItem.update({
-      where: { id: item.id },
-      data: {
-        status: 'failed',
-        failureReason: `MISPLACED: Sent to ${prevName} (${prevEmail}) instead of owner. Auto-recovered.`,
-        deliveryConfirmed: false,
-        deliveryConfirmedAt: null,
-        lastRetryAt: now,
-        retryCount: item.retryCount + 1,
-      },
-    });
-
-    // 2. Create reversal transaction log
-    await db.transactionLog.create({
-      data: {
-        category: 'withdrawal', status: 'failed', amount: item.amount, currency: item.currency,
-        transactionDate: now, referenceId: `REVERSAL-${item.transactionRef || item.id.slice(0, 8)}`,
-        description: `REVERSAL: Misplaced settlement from ${prevName} → owner`,
-        payoutBatchId: item.payoutBatchId, payoutItemId: item.id,
-        provider: item.payoutBatch?.paymentProvider || 'recovery',
-        providerTxId: `REV-${Date.now().toString(36).toUpperCase()}`,
-        errorCode: 'MISPLACED_SETTLEMENT',
-        errorMessage: `Wrong recipient: ${prevName} (${prevEmail})`,
-      },
-    });
-
-    // 3. Create recovery batch + owner item
-    const ownerName = getOwnerDisplayName();
-    const ownerEmail = getOwnerEmail();
-    const batchCount = await db.payoutBatch.count({ where: { batchNumber: { startsWith: 'PB-RECOVERY' } } });
-    const recoveryBatch = await db.payoutBatch.create({
-      data: {
-        batchNumber: `PB-RECOVERY-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(batchCount + 1).padStart(4, '0')}`,
-        totalAmount: item.amount, currency: item.currency, status: 'completed', itemCount: 1,
-        scheduledDate: now, processedDate: now, submittedAt: now,
-        approvedBy: 'auto-pilot',
-        notes: `Recovery: $${item.amount.toFixed(2)} from ${prevName} → ${ownerName}`,
-        paymentProvider: process.env.OWNER_PAYMENT_METHOD || 'paypal',
-        autoApproved: true, autoApprovedAt: now, autoProcessed: true, autoProcessedAt: now,
-        resolvedAt: now,
-        resolutionNote: `Recovered misplaced settlement. Was: ${prevName} (${prevEmail})`,
-      },
-    });
-
-    const ownerItem = await db.payoutItem.create({
-      data: {
-        payoutBatchId: recoveryBatch.id, batchNumber: recoveryBatch.batchNumber,
-        recipientName: ownerName, recipientEmail: ownerEmail,
-        amount: item.amount, currency: item.currency, status: 'completed',
-        paymentMethod: process.env.OWNER_PAYMENT_METHOD || 'paypal',
-        transactionRef: `RECOVERED-${item.transactionRef || Date.now().toString(36).toUpperCase()}`,
-        processedAt: now, deliveryConfirmed: true, deliveryConfirmedAt: now, recipientNotifiedAt: now,
-      },
-    });
-
-    await db.transactionLog.create({
-      data: {
-        category: 'withdrawal', status: 'completed', amount: item.amount, currency: item.currency,
-        transactionDate: now, referenceId: ownerItem.transactionRef,
-        description: `RECOVERED: $${item.amount.toFixed(2)} → ${ownerName}`,
-        payoutBatchId: recoveryBatch.id, payoutItemId: ownerItem.id,
-        provider: process.env.OWNER_PAYMENT_METHOD || 'paypal', providerTxId: ownerItem.transactionRef,
-      },
-    });
-
-    await audit('PayoutItem', item.id, 'auto_recover_misplaced',
-      `recipient=${prevName}/${prevEmail}`, `recipient=${ownerName}/${ownerEmail},status=recovered`,
-      `Auto-Pilot: Recovered misplaced $${item.amount.toFixed(2)} from ${prevName} → ${ownerName}`,
-      item.payoutBatchId, item.id);
-
-    itemsFixed++;
+    // Found a misplaced settlement — ESCALATE for MANUAL recovery (report-only).
+    await audit('PayoutItem', item.id, 'auto_recover_HELD', 'status=completed', 'status=completed',
+      `Defang: misplaced settlement $${item.amount.toFixed(2)} from ${item.recipientName} requires MANUAL recovery with real reversal evidence — auto-recovery removed (no failed-marking, no reversal logs, no recovery batches).`, item.payoutBatchId ?? undefined, item.id);
     amountFixed += item.amount;
+    flagged++;
   }
 
-  await logRun('recover_misplaced_settlements', 'success', itemsFixed, amountFixed,
-    `Recovered ${itemsFixed} misplaced settlements ($${amountFixed.toFixed(2)})`, Date.now() - start);
-  return itemsFixed;
+  await logRun('recover_misplaced_settlements', 'success', 0, amountFixed,
+    `DEFANGED: ${flagged} misplaced settlements ($${amountFixed.toFixed(2)}) require MANUAL recovery with real reversal evidence — auto-recovery removed`, Date.now() - start);
+  return 0;
 }
 
-// ── Phase: Recover crypto misplaced settlements ────────────────────
+// ── Phase: Recover crypto misplaced settlements — REPORT-ONLY ────────────
+// DEFANGED: no DB writes, no price valuation. A price oracle is not implemented
+// (hard-coded TOKEN_PRICES were FABRICATED prices); inventing USD values is
+// fabrication. Crypto recovery requires REAL on-chain evidence + a real price
+// oracle — auto-recovery removed.
 async function recoverCryptoMisplaced() {
   const start = Date.now();
-  const TOKEN_PRICES: Record<string, number> = { ETH: 3500, WBTC: 65000, USDC: 1 };
 
   // Recover ALL misplaced+unrecovered settlements (confirmed, pending, failed)
   const misplacedCrypto = await db.cryptoSettlement.findMany({
     where: { misplaced: true, recovered: false },
   });
 
-  const ownerName = getOwnerName();
-  const ownerEmail = getOwnerEmail();
-
-  let itemsFixed = 0;
-  let amountFixed = 0;
+  let flagged = 0;
 
   for (const settlement of misplacedCrypto) {
-    const price = TOKEN_PRICES[settlement.token] || 1;
-    const usdValue = Number(settlement.amount) * price;
-
-    // 1. Auto-confirm pending/failed, then mark as recovered
-    const updateData: Record<string, unknown> = {
-      recovered: true,
-      recoveryStatus: 'initiated',
-      recoveryAmount: settlement.amount,
-    };
-    if (settlement.status !== 'confirmed') {
-      updateData.status = 'confirmed';
-    }
-    await db.cryptoSettlement.update({
-      where: { id: settlement.id },
-      data: updateData,
-    });
-
-    // 2. Create or find a recovery batch, then a PayoutItem for the owner
-    const txRef = `CRYPTO-RECOVERY-${settlement.network.toUpperCase()}-${settlement.txHash.slice(0, 10)}`;
-    const recoveryBatchNum = 'PB-CRYPTO-RECOVERY';
-    let recoveryBatch = await db.payoutBatch.findUnique({ where: { batchNumber: recoveryBatchNum } });
-    if (!recoveryBatch) {
-      recoveryBatch = await db.payoutBatch.create({
-        data: {
-          batchNumber: recoveryBatchNum,
-          totalAmount: 0,
-          currency: 'USD',
-          status: 'pending_approval',
-          itemCount: 0,
-          notes: 'Auto-generated batch for crypto misplaced settlement recoveries',
-          paymentProvider: 'crypto_recovery',
-        },
-      });
-    }
-    await db.payoutItem.create({
-      data: {
-        payoutBatchId: recoveryBatch.id,
-        batchNumber: recoveryBatchNum,
-        recipientName: ownerName,
-        recipientEmail: ownerEmail,
-        amount: usdValue,
-        currency: 'USD',
-        status: 'pending',
-        paymentMethod: `crypto_recovery_${settlement.network}`,
-        transactionRef: txRef,
-      },
-    });
-    // Update batch totals
-    const batchItems = await db.payoutItem.findMany({ where: { batchNumber: recoveryBatchNum } });
-    const batchTotal = batchItems.reduce((s, i) => s + i.amount, 0);
-    await db.payoutBatch.update({
-      where: { id: recoveryBatch.id },
-      data: { totalAmount: batchTotal, itemCount: batchItems.length },
-    });
-
-    // 3. Audit log
-    await audit('CryptoSettlement', settlement.id, 'recover_crypto_misplaced',
-      `recovered=false,status=${settlement.status}`, `recovered=true,recoveryStatus=initiated,txRef=${txRef}`,
-      `Auto-Pilot: Recovered misplaced crypto ${settlement.amount} ${settlement.token} on ${settlement.network} ($${usdValue.toFixed(2)})`);
-
-    itemsFixed++;
-    amountFixed += usdValue;
+    await audit('CryptoSettlement', settlement.id, 'recover_crypto_HELD',
+      `recovered=false,status=${settlement.status}`, 'recovered=false,status=unchanged',
+      `Defang: crypto recovery for ${settlement.amount} ${settlement.token} on ${settlement.network} requires REAL on-chain evidence + a real price oracle; auto-recovery removed (no fabricated prices, no CRYPTO-RECOVERY- refs).`);
+    flagged++;
   }
 
-  await logRun('recover_crypto_misplaced', 'success', itemsFixed, amountFixed,
-    `Recovered ${itemsFixed} misplaced crypto settlements ($${amountFixed.toFixed(2)})`, Date.now() - start);
-  return itemsFixed;
+  await logRun('recover_crypto_misplaced', 'success', 0, 0,
+    `DEFANGED: ${flagged} misplaced crypto settlements require REAL on-chain evidence + a real price oracle; auto-recovery removed`, Date.now() - start);
+  return 0;
 }
 
 // ── Phase: Carrier resolve (autonomous acquisition) ───────────────────────

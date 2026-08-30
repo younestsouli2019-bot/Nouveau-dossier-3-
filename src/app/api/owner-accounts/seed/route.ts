@@ -456,7 +456,7 @@ export async function POST() {
     // Create all accounts
     const accounts = []
     for (const acc of SEED_ACCOUNTS) {
-      const created = await db.ownerAccount.create({ data: acc as Record<string, unknown> })
+      const created = await db.ownerAccount.create({ data: acc })
       accounts.push(created)
     }
 

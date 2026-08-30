@@ -163,7 +163,6 @@ export async function submitPayPalPayout(
         failedItems: recipients.length,
         providerResponse: responseBody,
         error: errorMsg,
-        errorCode,
         timestamp,
       };
     }
