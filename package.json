@@ -14,6 +14,7 @@
         "db:seed-pos": "node scripts/seed-pos.mjs",
         "carrier:health": "node -e \"import('./src/lib/carrier-tracking.ts').then(m => m.healthCheck().then(console.log))\"",
         "carrier:acquire": "tsx scripts/carrier-acquire-sweep.ts",
+        "prod:migrate": "tsx scripts/apply-crbt-migration.ts",
         "proc:reconcile": "tsx scripts/proc-reconcile.ts",
         "proc:status": "tsx scripts/proc-status-check.ts"
     },
