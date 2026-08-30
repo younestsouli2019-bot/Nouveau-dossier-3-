@@ -13,6 +13,24 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'PayoutItem' AND column_name = 'proofHash') THEN
     ALTER TABLE "PayoutItem" ADD COLUMN "proofHash" TEXT;
   END IF;
+  -- Additional required columns referenced by the trigger UPDATE OF clauses, which may
+  -- not exist on older schemas (schema.prisma adds them conditionally / later). Fail
+  -- safe: add them IF NOT EXISTS as NULLABLE so trigger DDL never fails 42703.
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'PayoutBatch' AND column_name = 'paypalBatchId') THEN
+    ALTER TABLE "PayoutBatch" ADD COLUMN "paypalBatchId" TEXT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'OwnerSettlement' AND column_name = 'externalRef') THEN
+    ALTER TABLE "OwnerSettlement" ADD COLUMN "externalRef" TEXT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'OwnerSettlement' AND column_name = 'proofHash') THEN
+    ALTER TABLE "OwnerSettlement" ADD COLUMN "proofHash" TEXT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'OwnerSettlement' AND column_name = 'connectorStatus') THEN
+    ALTER TABLE "OwnerSettlement" ADD COLUMN "connectorStatus" TEXT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'OwnerSettlement' AND column_name = 'dataSource') THEN
+    ALTER TABLE "OwnerSettlement" ADD COLUMN "dataSource" TEXT;
+  END IF;
 END $$;
 
 -- HOLE #5: Neon-safe row-level trigger — REJECTS status=completed on ANY of 4 ledger tables unless proof fields are REAL (non-empty, non-synthetic)
