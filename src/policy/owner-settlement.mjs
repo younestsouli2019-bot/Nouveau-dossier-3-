@@ -28,6 +28,8 @@ export class OwnerSettlementEnforcer {
 			googlepay: {
 				enabled: String(process.env.GOOGLEPAY_ENABLE || "false").toLowerCase() === "true",
 				email: process.env.OWNER_GOOGLEPAY_EMAIL,
+				clientId: process.env.GOOGLEPAY_CLIENT_ID,
+				merchantId: process.env.GOOGLEPAY_MERCHANT_ID,
 			},
 			paypal: {
 				clientId: process.env.PAYPAL_CLIENT_ID,
@@ -192,7 +194,11 @@ export class OwnerSettlementEnforcer {
 		if (r === "googlepay") {
 			const c = cfg?.creds?.googlepay || {};
 			if (!c.enabled) return true;
-			if (!c.email || !c.email.includes("@")) return true;
+			if (!c.email || !String(c.email).includes("@")) return true;
+			const clientId = c.clientId || process.env.GOOGLEPAY_CLIENT_ID;
+			const merchantId = c.merchantId || process.env.GOOGLEPAY_MERCHANT_ID;
+			if (!clientId || isPlaceholder(clientId)) return true;
+			if (!merchantId || isPlaceholder(merchantId)) return true;
 			return false;
 		}
 		if (r === "stripe" || r === "stripe_connect") {

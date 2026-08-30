@@ -40,6 +40,7 @@ import { startSupervisor as startSwarmSupervisor } from "./swarm/supervisor.mjs"
 import { TaskManager as _TaskManager } from "./swarm/task-manager.mjs";
 import { runSystemIntegritySync as _runSystemIntegritySync } from "./system-integrity.mjs";
 import { buildSwarmGuardrails } from "./swarm-guardrails.mjs";
+import { runPhantomCompletedQuarantineSweep } from "./lib/strict-enforcement/phantom-quarantine.mjs";
 
 const healer = new SelfHealer();
 const enforcer = new ExternalPayerEnforcer();
@@ -1965,6 +1966,27 @@ async function runAllGoodOnce(cfg, state) {
 		deadmanOk &&
 		missionFreezeOk;
 
+	// ── 3-layer anti-lost-revenue final sweep ──────────────────────────────
+	// Google Pay app refund trauma pattern: ensure NO row has status=completed
+	// /verified/confirmed/delivered/LIVE_SETTLED without a verifiable, non-
+	// synthetic provider receipt. ORM (TRUTH-001..008) throws and SQL BEFORE
+	// triggers RAISE EXCEPTION at write-time; this sweep post-catches any rows
+	// that slipped (e.g. legacy data, direct SQL admin writes, migrations).
+	// ─────────────────────────────────────────────────────────────────────
+	let phantomQuarantine = { ok: true, total: 0, perTable: {}, elapsedMs: 0 };
+	try {
+		const sweepEnabled =
+			String(process.env.ANTI_PHANTOM_SWEEP_DISABLE || "false").toLowerCase() !== "true";
+		if (sweepEnabled) {
+			phantomQuarantine = await runPhantomCompletedQuarantineSweep({});
+		} else {
+			phantomQuarantine = { ok: true, skipped: true, total: 0, perTable: {}, elapsedMs: 0, reason: "ANTI_PHANTOM_SWEEP_DISABLE=true in env" };
+		}
+	} catch (e) {
+		console.error("[autonomous-daemon] runAllGoodOnce: phantom quarantine sweep failed (non-fatal — ORM/SQL still enforce):", e?.message || e);
+		phantomQuarantine = { ok: false, total: 0, perTable: {}, elapsedMs: 0, error: e?.message || String(e) };
+	}
+
 	return {
 		ok,
 		at,
@@ -1980,6 +2002,8 @@ async function runAllGoodOnce(cfg, state) {
 			freezeActive,
 			deadmanOk,
 			missionFreezeOk,
+			phantomQuarantineTotal: phantomQuarantine.total,
+			phantomQuarantineOk: phantomQuarantine.ok,
 		},
 		readiness,
 		missionHealth,
@@ -1988,6 +2012,7 @@ async function runAllGoodOnce(cfg, state) {
 		payoutTruth,
 		deadman,
 		freeze: state.freeze ?? { active: false },
+		phantomQuarantine,
 	};
 }
 
