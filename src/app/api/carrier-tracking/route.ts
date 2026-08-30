@@ -6,6 +6,7 @@ import {
   healthCheck as carrierHealthCheck,
   normalizeStatus,
 } from '@/lib/carrier-tracking'
+import { carrierProbe } from '@/lib/procurement/carrier-router'
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,12 +18,47 @@ export async function GET(request: NextRequest) {
 
     if (action === 'health') {
       const health = await carrierHealthCheck()
-      return NextResponse.json({ success: true, health })
+      // Keyless Moroccan-carrier route is always available — report it so the
+      // operator knows paid keys only unlock premium providers, not local traceability.
+      return NextResponse.json({
+        success: true,
+        health: {
+          ...health,
+          keylessCarrierRouter: true,
+          note: health.ship24 || health.nineTracking
+            ? 'Premium active'
+            : 'No paid keys — local Morocco carriers resolve via keyless track-by-reference',
+        },
+      })
     }
 
     if (action === 'track' && trackingNumber) {
-      const result = await trackShipment(trackingNumber, carrier || undefined)
+      const probe = carrierProbe(trackingNumber)
+      const result = await trackShipment(trackingNumber, carrier || probe?.carrier || undefined)
       if (!result) {
+        // Keyless fallback: attach a real public track URL but NEVER invent events.
+        if (probe && probe.known) {
+          const shipment = await db.shipment.findFirst({ where: { trackingNumber } })
+          if (shipment) {
+            await db.shipment.update({
+              where: { id: shipment.id },
+              data: {
+                carrier: probe.carrier,
+                trackingUrl: probe.publicUrl,
+                trackingVerified: false, // no real event — leave unverified
+              },
+            })
+          }
+          return NextResponse.json({
+            success: true,
+            keyless: true,
+            carrier: probe.carrier,
+            trackingNumber,
+            trackingUrl: probe.publicUrl,
+            status: 'pending', // honest: nothing confirmed yet
+            note: 'Carrier identified (keyless track-by-reference). Premium event data requires SHIP24_API_KEY / NINE_TRACKING_KEY.',
+          })
+        }
         return NextResponse.json({
           success: false,
           error: 'No tracking data found or API keys not configured',
@@ -64,9 +100,25 @@ export async function GET(request: NextRequest) {
 
       let updated = 0
       for (const [tn, result] of results) {
-        if (!result) continue
         const shipment = shipments.find((s) => s.trackingNumber === tn)
         if (!shipment) continue
+
+        if (!result) {
+          // Keyless fallback: identify the carrier + attach public track URL, keep unverified.
+          const probe = carrierProbe(tn)
+          if (probe && probe.known) {
+            await db.shipment.update({
+              where: { id: shipment.id },
+              data: {
+                carrier: probe.carrier,
+                trackingUrl: probe.publicUrl,
+                trackingVerified: false,
+              },
+            })
+            updated++
+          }
+          continue
+        }
 
         await db.shipment.update({
           where: { id: shipment.id },
@@ -121,6 +173,27 @@ export async function POST(request: NextRequest) {
     const result = await trackShipment(trackingNumber, carrierCode)
 
     if (!result) {
+      const probe = carrierProbe(trackingNumber)
+      if (probe && probe.known && shipmentId) {
+        await db.shipment.update({
+          where: { id: shipmentId },
+          data: {
+            carrier: probe.carrier,
+            trackingNumber,
+            trackingUrl: probe.publicUrl,
+            trackingVerified: false,
+          },
+        })
+        return NextResponse.json({
+          success: true,
+          keyless: true,
+          carrier: probe.carrier,
+          trackingNumber,
+          trackingUrl: probe.publicUrl,
+          status: 'pending',
+          note: 'Carrier identified via keyless track-by-reference. Premium event data requires SHIP24_API_KEY / NINE_TRACKING_KEY.',
+        })
+      }
       return NextResponse.json({
         success: false,
         error: 'Tracking unavailable — check API keys (SHIP24_API_KEY, NINE_TRACKING_KEY)',

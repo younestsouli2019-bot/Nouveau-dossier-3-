@@ -24,6 +24,7 @@ const PHASES = [
   'recover_crypto_misplaced',
   'reconcile_transactions',
   'resolve_orphan_transactions',
+  'carrier_resolve',
 ] as const;
 
 type Phase = (typeof PHASES)[number];
@@ -978,6 +979,39 @@ async function recoverCryptoMisplaced() {
   return itemsFixed;
 }
 
+// ── Phase: Carrier resolve (autonomous acquisition) ───────────────────────
+async function carrierResolve() {
+  const start = Date.now();
+  const { autodetectCarrier } = await import('@/lib/procurement/carrier-router');
+  const fabricated = /international shipping|multi-carrier/i;
+  let total = 0;
+
+  const shipments = await db.shipment.findMany({ take: 500, select: { id: true, carrier: true, trackingNumber: true } });
+
+  for (const s of shipments) {
+    if (s.trackingNumber) {
+      const probe = autodetectCarrier(s.trackingNumber);
+      if (probe && probe.known) {
+        await db.shipment.update({
+          where: { id: s.id },
+          data: { carrier: probe.carrier, trackingUrl: probe.publicUrl, trackingVerified: false },
+        });
+        total++;
+      }
+    } else if (s.carrier && fabricated.test(s.carrier)) {
+      await db.shipment.update({
+        where: { id: s.id },
+        data: { carrier: null, trackingUrl: null, trackingVerified: false },
+      });
+      total++;
+    }
+  }
+
+  await logRun('carrier_resolve', 'success', total, 0,
+    `Carrier sweep: ${total} shipments resolved (keyless autodetect / fabricated-label neutralization)`, Date.now() - start);
+  return total;
+}
+
 // ─── MAIN HANDLER ────────────────────────────────────────────────────────────
 
 export async function POST() {
@@ -1003,6 +1037,7 @@ export async function POST() {
       { name: 'recover_crypto_misplaced', fn: recoverCryptoMisplaced },
       { name: 'reconcile_transactions', fn: reconcileTransactions },
       { name: 'resolve_orphan_transactions', fn: resolveOrphanTransactions },
+      { name: 'carrier_resolve', fn: carrierResolve },
     ];
 
     for (const { name, fn } of phaseFns) {
