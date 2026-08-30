@@ -30,8 +30,8 @@ export type FraudVerdict = 'VERIFIED_OK' | 'FLAG_FRAUD' | 'TRIGGER_MANUAL_REVIEW
 
 export type FraudCheckResult =
   | { verdict: 'VERIFIED_OK'; advisory?: string[] }
-  | { verdict: 'FLAG_FRAUD'; reason: 'Destination Mismatch' | 'Weight Anomaly' | 'Recycled Tracking Number'; details: string }
-  | { verdict: 'TRIGGER_MANUAL_REVIEW_HOLD'; reason: string; details: string }
+  | { verdict: 'FLAG_FRAUD'; reason: 'Destination Mismatch' | 'Weight Anomaly' | 'Recycled Tracking Number'; details: string; advisory?: string[] }
+  | { verdict: 'TRIGGER_MANUAL_REVIEW_HOLD'; reason: string; details: string; advisory?: string[] }
 
 /** Scraped carrier payload (camelCase canonical). Postcode strengthens the destination check. */
 export interface ScrapedTrackingPayload {

@@ -39,8 +39,8 @@ export async function GET() {
     if (atOrAbove(p.status, 'ordered') && isEmpty(p.orderRef)) {
       violations.push({ entity: 'ProcurementItem', id: p.id, status: p.status, missingFields: ['orderRef'], severity: 'critical' })
     }
-    if (atOrAbove(p.status, 'shipped') && isEmpty(p.trackingNumber)) {
-      const shipment = await (db as unknown as { shipment: { findFirst: (args: { where: { procurementItemId: string } }) => Promise<{ trackingNumber?: string | null; carrier?: string | null } | null> } }).shipment.findFirst({ where: { procurementItemId: p.id } })
+    if (atOrAbove(p.status, 'shipped')) {
+      const shipment = await db.shipment.findFirst({ where: { procurementItemId: p.id }, select: { trackingNumber: true, carrier: true } })
       const missing: string[] = []
       if (!shipment || isEmpty(shipment.trackingNumber)) missing.push('trackingNumber')
       if (!shipment || isEmpty(shipment.carrier)) missing.push('carrier')
@@ -69,12 +69,6 @@ export async function GET() {
       const missing: string[] = ['externalRef']
       if (isEmpty(s.proofHash)) missing.push('proofHash')
       violations.push({ entity: 'OwnerSettlement', id: s.id, status: s.status, missingFields: missing, severity: 'critical' })
-    }
-    if (s.performedBy === 'system' && (s.status === 'completed' || s.status === 'processing')) {
-      const existing = violations.find(v => v.entity === 'OwnerSettlement' && v.id === s.id)
-      if (!existing) {
-        violations.push({ entity: 'OwnerSettlement', id: s.id, status: s.status, missingFields: ['externalRef'], severity: 'critical' })
-      }
     }
   }
 

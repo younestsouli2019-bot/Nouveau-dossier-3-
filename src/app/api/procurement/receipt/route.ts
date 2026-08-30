@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json() as ConfirmReceiptParams
 
     // TRUTH-KILL: Block fabrication attempts
-    const fabricationCheck = killFabrication(body as Record<string, unknown>)
+    const fabricationCheck = killFabrication(body as unknown as Record<string, unknown>)
     if (fabricationCheck) return fabricationCheck
 
     if (!body.procurementItemId || body.quantityReceived === undefined) {

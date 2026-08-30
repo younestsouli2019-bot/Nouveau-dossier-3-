@@ -108,6 +108,7 @@ function initializeVaults(totalRevenue: number): VaultConfig[] {
       maxAllocation: totalRevenue * (config.emergency.maxPctOfParent / 100),
       currentBalance: 0,
       status: 'locked',
+      quorumRequired: config.emergency.quorum,
       lockUntil: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000), // 30-day lock
       allowedOutflows: config.emergency.allowedOutflows,
     },
@@ -119,6 +120,7 @@ function initializeVaults(totalRevenue: number): VaultConfig[] {
       maxAllocation: totalRevenue * (config.recovery.maxPctOfParent / 100),
       currentBalance: 0,
       status: 'locked',
+      quorumRequired: config.recovery.quorum,
       lockUntil: new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000), // 90-day lock
       allowedOutflows: config.recovery.allowedOutflows,
     },

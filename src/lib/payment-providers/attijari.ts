@@ -15,7 +15,7 @@ export interface AttijariAccount {
 }
 
 export interface AttijariRoute {
-  routeId: string; accountId: string; rib: string; weight: number
+  routeId: string; accountId: string; rib: string; weight: number; primary?: boolean
   maxAmountPerTransfer: number; maxDailyAmount: number; purposes: string[]; isActive: boolean
   _consecutiveFailures?: number; _cooldownUntil?: number; _dailyTotal?: number
 }
@@ -197,7 +197,7 @@ export async function submitAttijariPayout(config: AttijariApiConfig, recipients
   const items: ProviderPayoutResult[] = []
   for (const r of recipients) {
     const result = await initiateTransfer(config, { name: r.name, rib: r.accountId ?? '', amount: r.amount, currency: r.currency, reference: r.referenceId, purpose: 'revenue_withdrawal' })
-    items.push({ success: result.success, providerBatchId: batchReference, providerItemId: result.transferId, status: result.status, providerResponse: { routeId: result.routeId, rib: result.rib }, error: result.error, errorCode: result.errorCode, timestamp: ts })
+    items.push({ success: result.success, providerBatchId: batchReference, providerItemId: result.transferId, status: result.status === 'SUBMITTED' ? 'PROCESSING' : result.status, providerResponse: { routeId: result.routeId, rib: result.rib }, error: result.error, errorCode: result.errorCode, timestamp: ts })
     if (result.success) ok++; else fail++
   }
   let batchStatus: ProviderBatchResult['batchStatus'] = 'PROCESSING'

@@ -862,7 +862,7 @@ async function recoverMisplaced(itemId: string) {
   } as Parameters<typeof buildPayoutItemWrite>[0];
 
   const write = buildPayoutItemWrite(stubItemForBuild, {
-    preferredTransactionRef: stubItemForBuild.externalRef as string | undefined,
+    preferredTransactionRef: item.externalRef as string | undefined,
     syntheticFallback: ownerItemTxRefBase,
     connectorId: 'ops-recover-misplaced',
   });
@@ -973,9 +973,7 @@ async function recoverCryptoMisplaced(cryptoSettlementId: string) {
       recoveryStatus: hasRealRecoveryProof ? 'confirmed_onchain' : 'initiated_pending_proof',
       recoveryAmount: settlement.amount,
       recoveredTxHash: syntheticRecoveryHash,
-      connectorStatus: hasRealRecoveryProof ? 'live_onchain' : 'not_configured',
-      proofHash: null,
-      notes: (settlement.notes ? settlement.notes + ' | ' : '') +
+      failureReason:
         `CRYPTO RECOVERY: ${origTxHashNote} ` +
         `Recovery on-chain txn HASH REQUIRED before marking recovery complete. ` +
         `Current recoveredTxHash="${syntheticRecoveryHash}" is PLACEHOLDER — replace with REAL on-chain reversal/return tx hash, then set connectorStatus=live_onchain. ` +

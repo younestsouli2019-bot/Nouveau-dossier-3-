@@ -67,7 +67,7 @@ export class RouteManager {
 			byRoute: {},
 		};
 	}
-}
+
 	async load() {
 		try {
 			const txt = await fs.readFile(this.persistencePath, "utf8");
@@ -177,7 +177,9 @@ export class RouteManager {
 			if (typeof onAttempt === "function") {
 				try {
 					await onAttempt({ route, attempt: i + 1, remaining: limit - i - 1 });
-				} catch {}
+				} catch {
+					/* attempt hook failure is non-fatal */
+				}
 			}
 			try {
 				const res = await executor({ route });
@@ -196,7 +198,7 @@ export class RouteManager {
 			tried: Array.from(tried),
 		};
 	}
- 
+}
 
 // Builder Notes:
 // - RouteManager is generic. Integrate at orchestration layer to wrap settlement or dispatch calls.

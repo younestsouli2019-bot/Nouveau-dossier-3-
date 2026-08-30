@@ -109,8 +109,6 @@ const STATUS_COLORS: Record<string, string> = {
   pending_approval: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300',
   approved: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300',
   partially_ordered: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300',
-  ordered: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
-  completed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300',
   rejected: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
 }
 
@@ -201,7 +199,7 @@ export default function SupplyChainDashboard() {
   const [fixAllLoading, setFixAllLoading] = useState(false)
   const [verifyAllLoading, setVerifyAllLoading] = useState(false)
   const [advanceLoading, setAdvanceLoading] = useState(false)
-  const [progressLog, setProgressLog] = useState<{ msg: string; time: string; type: 'verify' | 'advance' | 'success' | 'info' }[]>([])
+  const [progressLog, setProgressLog] = useState<{ msg: string; time: string; type: 'verify' | 'advance' | 'success' | 'info' | 'warning' | 'error' }[]>([])
   const [expandedShipment, setExpandedShipment] = useState<string | null>(null)
   const [procFilter, setProcFilter] = useState<string>('all')
   const [procCatFilter, setProcCatFilter] = useState<string>('all')
@@ -317,7 +315,7 @@ export default function SupplyChainDashboard() {
     try {
       const d = await fetch('/api/shipments/verify-all', { method: 'POST' }).then(r => r.json())
       toast.success(d.message)
-      setProgressLog(prev => [{ msg: d.message, time: new Date().toLocaleTimeString(), type: d.verified > 0 ? 'verify' : 'info' }, ...prev].slice(0, 30))
+      setProgressLog(prev => [{ msg: d.message, time: new Date().toLocaleTimeString(), type: (d.verified > 0 ? 'verify' : 'info') as 'verify' | 'info' }, ...prev].slice(0, 30))
       fetchData()
     } catch { toast.error('Auto-verify failed') }
     setVerifyAllLoading(false)
@@ -327,10 +325,10 @@ export default function SupplyChainDashboard() {
     try {
       const d = await fetch('/api/shipments/advance-progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ steps }) }).then(r => r.json())
       toast.success(d.message)
-      setProgressLog(prev => [{ msg: d.message, time: new Date().toLocaleTimeString(), type: d.delivered > 0 ? 'success' : 'advance' }, ...prev].slice(0, 30))
+      setProgressLog(prev => [{ msg: d.message, time: new Date().toLocaleTimeString(), type: (d.delivered > 0 ? 'success' : 'advance') as 'success' | 'advance' }, ...prev].slice(0, 30))
       if (d.details) {
         for (const det of d.details) {
-          setProgressLog(prev => [{ msg: `${det.shipmentNumber}: ${det.item} → ${det.to}`, time: new Date().toLocaleTimeString(), type: 'advance' }, ...prev].slice(0, 30))
+          setProgressLog(prev => [{ msg: `${det.shipmentNumber}: ${det.item} → ${det.to}`, time: new Date().toLocaleTimeString(), type: 'advance' as const }, ...prev].slice(0, 30))
         }
       }
       fetchData()
@@ -367,7 +365,7 @@ export default function SupplyChainDashboard() {
     let items = procItems
     if (orderSearch) {
       const q = orderSearch.toLowerCase()
-      items = items.filter(i => i.name.toLowerCase().includes(q) || i.recipientName.toLowerCase().includes(q) || (i.purpose || '').toLowerCase().includes(q) || (i.recipientAddress || '').toLowerCase().includes(q))
+      items = items.filter(i => i.name.toLowerCase().includes(q) || i.recipientName.toLowerCase().includes(q) || (i.recipientAddress || '').toLowerCase().includes(q))
     }
     return items
   }, [procItems, orderSearch])

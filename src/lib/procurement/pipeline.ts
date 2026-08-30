@@ -343,12 +343,10 @@ export async function advanceItem(
       let scraped: ScrapedTrackingPayload | null = null
       let poRef: PurchaseOrderReference | null = null
       try {
-        const shp = item.purchaseOrderId
-          ? await db.shipment.findFirst({
-              where: { OR: [{ procurementItemId: item.id }, { purchaseOrderId: item.purchaseOrderId }] },
-              orderBy: { createdAt: 'desc' },
-            })
-          : await db.shipment.findFirst({ where: { procurementItemId: item.id }, orderBy: { createdAt: 'desc' } })
+        const shp = await db.shipment.findFirst({
+          where: { procurementItemId: item.id },
+          orderBy: { createdAt: 'desc' },
+        })
         if (shp) {
           shipmentEvidence = {
             trackingVerified: !!shp.trackingVerified,
@@ -436,7 +434,7 @@ export async function advanceItem(
   }
 
   // Store oracle proof in the item notes
-  updateData.notes = appendNote(updateData.notes ?? item.notes, `[ORACLE:${item.status}->${targetStatus}] proof:${oracleProof.slice(0, 16)}...`)
+  updateData.notes = appendNote(updateData.notes as string | undefined ?? item.notes, `[ORACLE:${item.status}->${targetStatus}] proof:${oracleProof.slice(0, 16)}...`)
 
   const updated = await db.procurementItem.update({ where: { id: itemId }, data: updateData })
 

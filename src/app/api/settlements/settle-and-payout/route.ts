@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
     // Single-writer lock: verify no duplicate settlement
     const existingSettlement = await prisma.wireExecutionLog.findFirst({
-      where: { wireId: settlementId },
+      where: { providerRef: settlementId },
     });
     if (existingSettlement) {
       return NextResponse.json(
@@ -124,12 +124,37 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Record wire execution log
+    // Record wire execution log (WireExecutionLog has no settlement-id column, so
+    // the settlement reference lives on providerRef and the log belongs to a real
+    // PaymentIntent).
+    const sinkAccount = await prisma.bankAccount.upsert({
+      where: { id: 'settle-and-payout-sink' },
+      update: {},
+      create: {
+        id: 'settle-and-payout-sink',
+        label: 'Settle-and-Payout Sink',
+        accountType: 'internal_pool',
+      },
+    });
+    const paymentIntent = await prisma.paymentIntent.create({
+      data: {
+        bankAccountId: sinkAccount.id,
+        idempotencyKey: idemKey,
+        amount: amountNum,
+        currency: currency || 'MAD',
+        direction: 'outbound',
+        status: paymentResult.status,
+      },
+    });
+
     await prisma.wireExecutionLog.create({
       data: {
-        wireId: settlementId,
-        executionMethod: paymentRail,
+        paymentIntentId: paymentIntent.id,
+        channel: paymentRail,
         status: paymentResult.status,
+        providerRef: settlementId,
+        netAmount,
+        submittedAt: new Date(now),
         metadata: JSON.stringify({
           amount: amountNum,
           currency,

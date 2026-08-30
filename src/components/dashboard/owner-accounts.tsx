@@ -147,7 +147,7 @@ export function OwnerAccountsTab({ initialAccounts, initialSummary }: OwnerAccou
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1.5">
-                        <Badge variant={account.isActive ? 'success' : 'warning'}>
+                        <Badge variant={account.isActive ? 'default' : 'destructive'}>
                           {account.isActive ? 'Active' : 'Inactive'}
                         </Badge>
                         {account.isPrimary ? <Badge variant="outline">Primary</Badge> : null}

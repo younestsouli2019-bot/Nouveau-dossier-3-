@@ -151,7 +151,6 @@ async function submitViaApi(
         failedItems: recipients.length,
         providerResponse: responseBody,
         error: errorMsg,
-        errorCode,
         timestamp,
       };
     }

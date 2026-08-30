@@ -8,6 +8,9 @@
         "build": "prisma generate && next build",
         "start": "next start",
         "lint": "next lint",
+        "typecheck": "tsc --noEmit -p tsconfig.json",
+        "test": "vitest run",
+        "test:watch": "vitest",
         "postinstall": "prisma generate",
         "db:push": "prisma db push",
         "db:generate": "prisma generate",
@@ -58,7 +61,10 @@
         "@types/node": "^20.14.0",
         "@types/react": "^18.3.0",
         "@types/react-dom": "^18.3.0",
-        "typescript": "^5.5.0"
+        "eslint": "^8.57.0",
+        "tsx": "^4.19.0",
+        "typescript": "^5.5.0",
+        "vitest": "^2.1.0"
     },
     "engines": {
         "node": ">=18.0.0"
