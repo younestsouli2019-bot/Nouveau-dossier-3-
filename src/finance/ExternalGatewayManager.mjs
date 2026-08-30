@@ -4,6 +4,7 @@ import { CryptoGateway } from "../financial/gateways/CryptoGateway.mjs";
 import { BankWireGateway } from "../financial/gateways/BankWireGateway.mjs";
 import { PayoneerGateway } from "../financial/gateways/PayoneerGateway.mjs";
 import { StripeGateway } from "../financial/gateways/StripeGateway.mjs";
+import { GooglePayGateway } from "../financial/gateways/GooglePayGateway.mjs";
 import { TronGateway } from "../financial/gateways/TronGateway.mjs";
 import { InstructionGateway } from "../financial/gateways/InstructionGateway.mjs";
 import { shouldAvoidPayPal } from "../policy/geopolicy.mjs";
@@ -76,6 +77,7 @@ export class ExternalGatewayManager {
 		this.bankGateway = new BankWireGateway();
 		this.payoneerGateway = new PayoneerGateway();
 		this.stripeGateway = new StripeGateway();
+		this.googlePayGateway = new GooglePayGateway();
 		this.tronGateway = new TronGateway();
 		this.platformGateway = new InstructionGateway();
 		// Route failover manager is loaded lazily to avoid import cycles
@@ -698,6 +700,80 @@ export class ExternalGatewayManager {
 					payout_batch_id: payoutBatchId,
 					processed_at: new Date().toISOString(),
 					route_attempted: "tron",
+					fallback_rail_order: result.next_rail_hint || null,
+					no_funds_moved: Boolean(result.no_funds_moved),
+				};
+			},
+			context,
+		);
+	}
+
+	/**
+	 * Initiate GooglePay Transfer (Explicit Rail)
+	 * Fail-closed: Google Pay is NOT configured as a disbursement/payout rail in this stack.
+	 * This method ALWAYS returns RAIL_NOT_CONFIGURED if ensureReady fails, and propagates
+	 * {no_funds_moved:true, fallback_rail_order: [...]} so the orchestrator routes to a
+	 * deterministic real rail (Wise/PayPal/Payoneer/Bank Wire/Crypto) rather than silently
+	 * writing a phantom completed — Google Pay app refund trauma class of bug prevented.
+	 */
+	async initiateGooglePayTransfer(
+		payoutBatchId,
+		recipientItems,
+		idempotencyKey,
+		actor = "System",
+	) {
+		const context = {
+			action: "INITIATE_GOOGLEPAY_TRANSFER",
+			actor,
+			payoutBatchId,
+		};
+		return this.executor.execute(
+			idempotencyKey,
+			async () => {
+				if (!recipientItems || recipientItems.length === 0) {
+					throw new Error("No recipient items provided");
+				}
+				const tx = recipientItems.map((item) => ({
+					amount: Number(item.amount),
+					currency: item.currency || "USD",
+					destination:
+						item.recipient_address || item.recipient_email || item.email,
+					reference: item.note || `Batch ${payoutBatchId}`,
+					ownerGooglePayMerchantId: process.env.GOOGLEPAY_MERCHANT_ID || null,
+				}));
+				const result = await withRetry(() =>
+					this.googlePayGateway.executeTransfer(tx, {
+						ownerMerchantId: process.env.GOOGLEPAY_MERCHANT_ID || null,
+					}),
+				);
+				const masked = tx.map((t) => ({
+					amount: t.amount,
+					currency: t.currency,
+					masked_destination: PrivacyMasker.maskUnknown(t.destination),
+				}));
+				this.audit.log(
+					result.status === "RAIL_NOT_CONFIGURED"
+						? "GOOGLEPAY_RAIL_NOT_CONFIGURED_FALLBACK"
+						: "GOOGLEPAY_INSTRUCTIONS_READY",
+					payoutBatchId,
+					null,
+					result,
+					actor,
+					{
+						masked_recipients: masked,
+						reassurance: PrivacyMasker.reassurance("googlepay"),
+						note:
+							"Google Pay is a CONSUMER payment ingress rail only, never a disbursement rail in this stack. When status=RAIL_NOT_CONFIGURED, NO Google Pay Wallet transfer was attempted. Route deterministically through fallback_rail_order instead.",
+					},
+				);
+				return {
+					status: result.status === "RAIL_NOT_CONFIGURED"
+						? "rail_not_configured_fallback_required"
+						: "processing",
+					gateway_response: result,
+					payout_batch_id: payoutBatchId,
+					processed_at: new Date().toISOString(),
+					route_attempted: "googlepay",
 					fallback_rail_order: result.next_rail_hint || null,
 					no_funds_moved: Boolean(result.no_funds_moved),
 				};
