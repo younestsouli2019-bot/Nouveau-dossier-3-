@@ -12,7 +12,10 @@
         "db:push": "prisma db push",
         "db:generate": "prisma generate",
         "db:seed-pos": "node scripts/seed-pos.mjs",
-        "carrier:health": "node -e \"import('./src/lib/carrier-tracking.ts').then(m => m.healthCheck().then(console.log))\""
+        "carrier:health": "node -e \"import('./src/lib/carrier-tracking.ts').then(m => m.healthCheck().then(console.log))\"",
+        "carrier:acquire": "tsx scripts/carrier-acquire-sweep.ts",
+        "proc:reconcile": "tsx scripts/proc-reconcile.ts",
+        "proc:status": "tsx scripts/proc-status-check.ts"
     },
     "dependencies": {
         "@base44/sdk": "^0.8.13",

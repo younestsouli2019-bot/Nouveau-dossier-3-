@@ -53,6 +53,26 @@ const SEED_INTEGRATIONS = [
 const SEED_SOVEREIGN_RULINGS = [
   {
     namespace: "sovereign",
+    key: "fact.2026-08-29.procurement-truth-reconciled",
+    value: JSON.stringify({
+      immutable: "OWNER-ruled",
+      date: "2026-08-29",
+      title: "Procurement ledger truth reconciliation",
+      doctrine:
+        "Anti-fabrication: no ProcurementItem may be 'settled' without delivery proof " +
+        "(delivered -> receipt_confirmed -> settled). On 2026-08-29 all 175 items sitting " +
+        "'settled' with 0/175 deliveryProofHash were demoted to 'ordered'. 48 shipments stay " +
+        "'pending' with 0 tracking numbers; placeholder carrier labels ('International " +
+        "Shipping'/'Multi-carrier') were nulled. Carrier capability: keyless Morocco router " +
+        "(src/lib/procurement/carrier-router.ts) resolves local carriers + public track URLs " +
+        "with NO API key; tracking stays unverified (trackingVerified=false) until a real " +
+        "event exists. Never invent a tracking event, delivery receipt, or settlement proof.",
+      implementation:
+        "scripts/proc-reconcile.ts (carrier:acquire / proc:reconcile) + AutoPilot carrier_resolve phase.",
+    }),
+  },
+  {
+    namespace: "sovereign",
     key: "ruling.2026-08-29.all-roads-lead-to-mecca",
     value: JSON.stringify({
       immutable: "OWNER-ruled",
