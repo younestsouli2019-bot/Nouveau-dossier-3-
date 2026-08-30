@@ -11,7 +11,7 @@
 // —————————————————————————————————————————————————————————————————————
 
 import type { PrismaClient } from '@prisma/client'
-import { sha256, isCryptographicallyVerifiable } from './crypto-utils'
+import { isCryptographicallyVerifiable } from './crypto-utils'
 
 type TruthViolation = {
   rule: string
@@ -42,11 +42,17 @@ function isSyntheticRef(v: unknown): boolean {
   if (v == null) return true
   const s = String(v).trim().toUpperCase()
   if (!s) return true
-  if (/^(PB-|RECOVER(Y|ED)-|REV-|PP-\d+|ALT-|REC-|PROC-)/.test(s)) return true
-  if (/R\d+-.{6,}/.test(s)) return true // `${batchNumber}-R${retry}-${ts36}`
-  if (s.endsWith(`-${new Date().toISOString().slice(0,10)}`.toUpperCase())) return true // PROC-xxx-YYYY-MM-DD
+  if (/^(PB-|RECOVER(Y|ED)?-|REV-|PP-\d+|ALT-|REC-|PROC-|SHP-|RECONCILE-|MISPLACED-|TXRECON-|NOTXHASH)/.test(s)) return true
+  if (/R\d+-.{6,}/.test(s)) return true
+  if (s.endsWith(`-${new Date().toISOString().slice(0,10)}`.toUpperCase())) return true
   if (/^(REVIEWED|MISPLACED|INSTRUCTIONS_READY|WAITING_MANUAL)/.test(s)) return true
   return false
+}
+
+function isSyntheticOracleHash(v: unknown): boolean {
+  if (v == null) return true
+  const s = String(v).trim()
+  return /^[a-f0-9]{64}$/i.test(s)
 }
 
 /**
@@ -232,16 +238,187 @@ function auditMutation(params: {
       }
       case 'ProcurementItem': {
         const status = (data as Record<string, unknown>).status as string | undefined
+        const statusLow = (status || '').toLowerCase()
         const deliveryProofHash = (data as Record<string, unknown>).deliveryProofHash
+        const shippedAt = (data as Record<string, unknown>).shippedAt
         const deliveredAt = (data as Record<string, unknown>).deliveredAt
-        if ((status === 'delivered' || status === 'received') && !isEmpty(deliveredAt)) {
-          if (isEmpty(deliveryProofHash)) {
+        const receiptConfirmedAt = (data as Record<string, unknown>).receiptConfirmedAt
+        const receiptConfirmedBy = (data as Record<string, unknown>).receiptConfirmedBy
+        const quantityReceived = (data as Record<string, unknown>).quantityReceived
+        const supplierName = (data as Record<string, unknown>).supplierName
+        const orderRef = (data as Record<string, unknown>).orderRef
+        // Any movement toward shipped-or-beyond: at minimum requires supplier / order ref.
+        // NOTE (payload scoping): this middleware sees only the mutation payload, not the
+        // cumulative row — an UPDATE to settled legitimately omits supplierName (set at
+        // shipped). The absolute check is therefore enforceable at CREATE time (payload
+        // === row); for updates, the shippedAt-scoped check below catches writers that
+        // assert shipment motion without a carrier. Row-level parity is held by the L2
+        // SQL triggers (migration 20260830000400), which DO see the full NEW row.
+        const shippingMotion = ['shipped', 'in_transit', 'delivered', 'receipt_confirmed', 'settled', 'completed', 'confirmed'].includes(statusLow)
+        if (shippingMotion && isEmpty(supplierName) && isEmpty(orderRef) && action.startsWith('create')) {
+          violations.push({
+            rule: 'TRUTH-009', model, field: 'supplierName/orderRef',
+            message: `ProcurementItem status=${status} requires supplierName OR orderRef (real PO/invoice reference) — cannot create shipping motion without a supplier.`,
+            fatal: true,
+          })
+        }
+        // shipped: shippedAt populated → need supplier or carrier at minimum
+        if ((statusLow === 'shipped' || statusLow === 'in_transit') && !isEmpty(shippedAt)) {
+          if (isEmpty(supplierName)) {
             violations.push({
-              rule: 'TRUTH-005', model, field: 'deliveryProofHash',
-              message: 'ProcurementItem delivered/received requires deliveryProofHash (POD photo hash, carrier scan hash, etc.).',
+              rule: 'TRUTH-009-SHIPPED', model, field: 'supplierName/carrier',
+              message: `ProcurementItem status=${status} with shippedAt set requires a real carrier/supplier (jumia.ma / avito.ma / poste.ma / amana / aramex / dhl etc.), not empty.`,
               fatal: true,
             })
           }
+        }
+        // delivered/received/completed/confirmed — proof required
+        if (['delivered', 'received', 'completed', 'confirmed'].includes(statusLow) && !isEmpty(deliveredAt)) {
+          if (isEmpty(deliveryProofHash)) {
+            violations.push({
+              rule: 'TRUTH-005', model, field: 'deliveryProofHash',
+              message: `ProcurementItem ${status} requires deliveryProofHash (POD photo hash, carrier scan hash, hand-signed receipt SHA; NOT locally-computed oracle proof).`,
+              fatal: true,
+            })
+          } else if (isSyntheticOracleHash(deliveryProofHash)) {
+            violations.push({
+              rule: 'TRUTH-005-SYNTHETIC-ORACLE', model, field: 'deliveryProofHash',
+              message: `ProcurementItem ${status} deliveryProofHash looks like a locally-fabricated oracle SHA-256 (bare 64 hex chars, no provider prefix like pod:/scan:/AMANA-/POSTE-/0x). Paste a real external-world hash or leave status=delivered pending manual sign-off.`,
+              fatal: true,
+            })
+          }
+        }
+        // receipt_confirmed: BOTH proofHash (real external) + confirmedBy human + confirmedAt
+        if (statusLow === 'receipt_confirmed') {
+          const proofMissing = isEmpty(deliveryProofHash) || isSyntheticOracleHash(deliveryProofHash)
+          const byMissing = isEmpty(receiptConfirmedBy) || String(receiptConfirmedBy).toLowerCase() === 'system-auto'
+          const atMissing = isEmpty(receiptConfirmedAt)
+          if (proofMissing) {
+            violations.push({
+              rule: 'TRUTH-010', model, field: 'deliveryProofHash',
+              message: `ProcurementItem receipt_confirmed requires REAL external deliveryProofHash (POD/carrier scan SHA with provider prefix). Bare 64-hex oracle proofs are rejected.`,
+              fatal: true,
+            })
+          }
+          if (byMissing) {
+            violations.push({
+              rule: 'TRUTH-010-CONFIRMER', model, field: 'receiptConfirmedBy',
+              message: `ProcurementItem receipt_confirmed requires receiptConfirmedBy = real human recipient (not null, not 'system-auto').`,
+              fatal: true,
+            })
+          }
+          if (atMissing) {
+            violations.push({
+              rule: 'TRUTH-010-TS', model, field: 'receiptConfirmedAt',
+              message: `ProcurementItem receipt_confirmed requires receiptConfirmedAt timestamp.`,
+              fatal: true,
+            })
+          }
+          if (!isEmpty(quantityReceived) && typeof quantityReceived === 'number' && quantityReceived <= 0) {
+            violations.push({
+              rule: 'TRUTH-010-QTY', model, field: 'quantityReceived',
+              message: `ProcurementItem receipt_confirmed quantityReceived must be a positive integer (items actually received).`,
+              fatal: true,
+            })
+          }
+        }
+        // settled = ALL three receipt fields must be valid (proof + human + ts + qty received)
+        if (statusLow === 'settled') {
+          if (isEmpty(deliveryProofHash) || isSyntheticOracleHash(deliveryProofHash)) {
+            violations.push({
+              rule: 'TRUTH-011', model, field: 'deliveryProofHash',
+              message: `ProcurementItem settled requires real deliveryProofHash populated at receipt_confirmed step.`,
+              fatal: true,
+            })
+          }
+          if (isEmpty(receiptConfirmedAt)) {
+            violations.push({
+              rule: 'TRUTH-011-TS', model, field: 'receiptConfirmedAt',
+              message: `ProcurementItem settled requires receiptConfirmedAt (go through receipt_confirmed first).`,
+              fatal: true,
+            })
+          }
+          if (isEmpty(receiptConfirmedBy) || String(receiptConfirmedBy).toLowerCase() === 'system-auto') {
+            violations.push({
+              rule: 'TRUTH-011-BY', model, field: 'receiptConfirmedBy',
+              message: `ProcurementItem settled requires receiptConfirmedBy = real human (no system-auto).`,
+              fatal: true,
+            })
+          }
+          if (isEmpty(quantityReceived) || (typeof quantityReceived === 'number' && quantityReceived <= 0)) {
+            violations.push({
+              rule: 'TRUTH-011-QTY', model, field: 'quantityReceived',
+              message: `ProcurementItem settled requires positive quantityReceived.`,
+              fatal: true,
+            })
+          }
+        }
+        break
+      }
+      case 'Shipment': {
+        const status = (data as Record<string, unknown>).status as string | undefined
+        const statusLow = (status || '').toLowerCase()
+        const trackingNumber = (data as Record<string, unknown>).trackingNumber
+        const trackingVerified = (data as Record<string, unknown>).trackingVerified
+        const events = (data as Record<string, unknown>).events as string | undefined | null
+        const actualDelivery = (data as Record<string, unknown>).actualDelivery
+        const carrier = (data as Record<string, unknown>).carrier
+        const trackingUrl = (data as Record<string, unknown>).trackingUrl
+        const advancedMotion = ['label_created', 'picked_up', 'in_transit', 'customs', 'out_for_delivery', 'delivered', 'returned', 'failed'].includes(statusLow)
+        // Any advanced motion requires at LEAST a carrier or tracking number string
+        if (advancedMotion) {
+          if (isEmpty(trackingNumber) && isEmpty(carrier)) {
+            violations.push({
+              rule: 'TRUTH-012', model, field: 'trackingNumber/carrier',
+              message: `Shipment status=${status} requires at LEAST a carrier name (Poste Maroc/Amana/Aramex/DHL/FedEx/UPS/Chronopost) OR trackingNumber string. No phantom shipments with 0 info.`,
+              fatal: true,
+            })
+          }
+        }
+        // in_transit, out_for_delivery — real tracking required (not empty)
+        if (['in_transit', 'customs', 'out_for_delivery'].includes(statusLow)) {
+          if (isEmpty(trackingNumber) || String(trackingNumber).trim().length < 3) {
+            violations.push({
+              rule: 'TRUTH-012-TRANSIT', model, field: 'trackingNumber',
+              message: `Shipment status=${status} requires a real trackingNumber (length >= 3). Morocco local Poste Maroc/Amana provide real refs; paste the real one here.`,
+              fatal: true,
+            })
+          }
+        }
+        // delivered: actualDelivery set → need (trackingVerified=true OR events > 50 chars non-empty JSON) + trackingNumber non-empty
+        if (statusLow === 'delivered' && !isEmpty(actualDelivery)) {
+          if (isEmpty(trackingNumber) || String(trackingNumber).trim().length < 3) {
+            violations.push({
+              rule: 'TRUTH-012-DELIVERED-TRACKING', model, field: 'trackingNumber',
+              message: `Shipment delivered with actualDelivery set requires real trackingNumber (can't deliver without a carrier-tracked parcel).`,
+              fatal: true,
+            })
+          }
+          const verified = (trackingVerified === true || trackingVerified === 'true' || trackingVerified === 1)
+          const hasEvents = !!events && events.trim().length > 50
+          if (!verified && !hasEvents) {
+            violations.push({
+              rule: 'TRUTH-012-DELIVERED-PROOF', model, field: 'trackingVerified/events',
+              message: `Shipment delivered requires EITHER trackingVerified=true (real carrier API returned a delivered event) OR events JSON populated with real delivery scan data (length > 50 chars, not empty). Never mark delivered based on a bare tracking string alone.`,
+              fatal: true,
+            })
+          }
+        }
+        // Placeholder carrier labels (International Shipping / Multi-carrier) now banned = replaced by NULL in carrier-acquire-sweep. Reject writes of them.
+        if (typeof carrier === 'string' && /international shipping|multi-carrier/i.test(carrier)) {
+          violations.push({
+            rule: 'TRUTH-012-PLACEHOLDER', model, field: 'carrier',
+            message: `Shipment carrier placeholder "${carrier}" BANNED: never write fabricated carrier labels. Set carrier=NULL until real carrier known, OR write real carrier (Poste Maroc/Amana/Aramex/DHL/FedEx/UPS/Chronopost).`,
+            fatal: true,
+          })
+        }
+        // If trackingUrl set without carrier, that's OK (it's keyless probe), but trackingNumber MUST be non-empty for trackingUrl to make sense
+        if (!isEmpty(trackingUrl) && isEmpty(trackingNumber)) {
+          violations.push({
+            rule: 'TRUTH-012-URLNOREF', model, field: 'trackingUrl',
+            message: `Shipment trackingUrl written but trackingNumber empty — impossible. Either write both or neither.`,
+            fatal: false, // warn only, don't fail-closed
+          })
         }
         break
       }
@@ -357,28 +534,18 @@ export function installTruthGuards(client: PrismaClient): void {
         )
       }
       if (violations.length > 0) {
+        // WARN-ONLY (2026-08-30 harmonization): the previous behavior mutated
+        // args.data to inject a `truthViolations` field — but no Prisma model has
+        // that column, so Prisma rejected the very write being audited with an
+        // "Unknown argument" error. Non-fatal violations are now log-only; the
+        // durable audit trail is the L3 sweep + AuditLedger, not payload mutation.
         const summary = violations
           .map(v => `[${v.rule}] ${v.model}.${v.field}: ${v.message}`)
           .join(' ; ')
         console.warn(`[TRUTH-GUARDS][WARN] ${violations.length} non-fatal violation(s) on ${p.model}.${p.action}: ${summary}`)
-        try {
-          const args = p.args || {} as Record<string, unknown>
-          const data = args.data && typeof args.data === 'object'
-            ? (args.data as Record<string, unknown>)
-            : undefined
-          if (data && !('truthViolations' in data)) {
-            const proof = sha256(`truth-v:${Date.now()}:${summary}`)
-            ;(data as Record<string, unknown>).truthViolations = {
-              detectedAt: new Date().toISOString(),
-              count: violations.length,
-              rules: violations.map(v => ({ rule: v.rule, model: v.model, field: v.field, fatal: v.fatal })),
-              proof,
-            }
-          }
-        } catch { /* non-critical; ignore */ }
       }
       return next(params)
     },
   )
-  console.info('[TRUTH-GUARDS] Installed 9 fail-closed rules on Prisma client. TRUTH-001…008 + TRUTH-006-GENERIC active. FAIL-CLOSED for status=completed.')
+  console.info('[TRUTH-GUARDS] Installed 16 fail-closed rules on Prisma client. TRUTH-001…014 (Finance+Procurement+Shipment) + TRUTH-006-GENERIC active. FAIL-CLOSED: status=completed/delivered/receipt_confirmed/settled ALWAYS requires REAL external-world proof, never synthetic/local references.')
 }

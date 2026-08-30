@@ -48,13 +48,20 @@ function getDb() {
 async function writeAudit(db, { model, id, oldStatus, newStatus, amount, currency, why, proofFields, actor = "PHANTOM-QUARANTINE-SWEEP" }) {
 	try {
 		const payload = {
-			entityModel: model,
+			entityType: model,
 			entityId: id,
 			action: "PHANTOM_COMPLETED_QUARANTINED",
-			before: JSON.stringify({ status: oldStatus, ...proofFields }),
-			after: JSON.stringify({ status: newStatus }),
-			detail: why,
-			actor,
+			previousHash: proofFields?.previousHash || null,
+			entryHash: proofFields?.entryHash || null,
+			proofHash: proofFields?.proofHash || null,
+			performedBy: actor,
+			metadata: JSON.stringify({
+				before: { status: oldStatus, ...proofFields },
+				after: { status: newStatus },
+				detail: why,
+				model, id,
+				quarantinedAt: new Date().toISOString(),
+			}),
 			createdAt: new Date(),
 		};
 		if (db.auditLedger) {
@@ -127,17 +134,17 @@ async function quarantinePayoutBatches(db) {
 		},
 		select: {
 			id: true, batchNumber: true, status: true, totalAmount: true, currency: true,
-			providerBatchRef: true, proofHash: true, paypalBatchId: true,
+			providerBatchRef: true, proofHash: true,
 		},
 	});
 	let moved = 0;
 	for (const row of rows) {
-		const refReal = !isSyntheticOrEmptyRef(row.providerBatchRef) && !isSyntheticOrEmptyRef(row.paypalBatchId);
+		const refReal = !isSyntheticOrEmptyRef(row.providerBatchRef);
 		const proofReal = !isSyntheticOrEmptyRef(row.proofHash);
 		const phantom = !refReal || !proofReal;
 		if (!phantom) continue;
 		const whyParts = [];
-		if (!refReal) whyParts.push(`provider refs empty/synthetic (providerBatchRef=${JSON.stringify(row.providerBatchRef)}, paypalBatchId=${JSON.stringify(row.paypalBatchId)})`);
+		if (!refReal) whyParts.push(`provider refs empty/synthetic (providerBatchRef=${JSON.stringify(row.providerBatchRef)})`);
 		if (!proofReal) whyParts.push(`batch proofHash empty/synthetic (${JSON.stringify(row.proofHash)})`);
 		const why = `PHANTOM PayoutBatch.completed BLOCKED: ${whyParts.join("; ")}. REQUIRED: attach REAL provider batch receipt (PayPal payout-batch PayoutBatchId, Wise batch ID, Attijari bulk WPS ID, Stripe Connect transfer group ID) as providerBatchRef, recompute proofHash=sha256(batchId:realRef:total:currency). If batch never actually disbursed, write status=processing/failed.`;
 		try {
@@ -156,7 +163,7 @@ async function quarantinePayoutBatches(db) {
 				model: "PayoutBatch", id: row.id,
 				oldStatus: row.status, newStatus: "processing",
 				amount: row.totalAmount, currency: row.currency, why,
-				proofFields: { providerBatchRef: row.providerBatchRef, paypalBatchId: row.paypalBatchId, proofHash: row.proofHash, batchNumber: row.batchNumber },
+				proofFields: { providerBatchRef: row.providerBatchRef, proofHash: row.proofHash, batchNumber: row.batchNumber },
 			});
 			console.error(`[PHANTOM-QUARANTINE] PayoutBatch ${row.id} (batchNumber=${row.batchNumber}, $${Number(row.totalAmount || 0).toFixed(2)}) moved ${row.status} → processing. ${why}`);
 			moved++;
@@ -175,19 +182,19 @@ async function quarantineOwnerSettlements(db) {
 		},
 		select: {
 			id: true, status: true, netAmount: true, currency: true,
-			externalRef: true, transactionRef: true, proofHash: true, connectorStatus: true,
-			ownerName: true,
+			externalRef: true, referenceId: true, proofHash: true, connectorStatus: true,
+			ownerAccountId: true,
 		},
 	});
 	let moved = 0;
 	for (const row of rows) {
-		const refReal = !isSyntheticOrEmptyRef(row.externalRef) && !isSyntheticOrEmptyRef(row.transactionRef);
+		const refReal = !isSyntheticOrEmptyRef(row.externalRef) && !isSyntheticOrEmptyRef(row.referenceId);
 		const connectorLive = !isNotLiveConnectorStatus(row.connectorStatus);
 		const proofReal = !isSyntheticOrEmptyRef(row.proofHash);
 		const phantom = !refReal || !connectorLive || !proofReal;
 		if (!phantom) continue;
 		const whyParts = [];
-		if (!refReal) whyParts.push(`refs empty/synthetic (ext=${JSON.stringify(row.externalRef)}, tx=${JSON.stringify(row.transactionRef)})`);
+		if (!refReal) whyParts.push(`refs empty/synthetic (ext=${JSON.stringify(row.externalRef)}, referenceId=${JSON.stringify(row.referenceId)})`);
 		if (!connectorLive) whyParts.push(`connectorStatus not live (${JSON.stringify(row.connectorStatus)})`);
 		if (!proofReal) whyParts.push(`proofHash empty/synthetic (${JSON.stringify(row.proofHash)})`);
 		const why = `PHANTOM OwnerSettlement BLOCKED: ${whyParts.join("; ")}. REQUIRED: attach REAL owner payout receipt (Attijari wire WPS ref + MT103 UETR, Wise transfer UETR to owner RIB 372, PayPal payout to OWNER_PAYPAL_EMAIL, crypto on-chain hash to OWNER_CRYPTO_WALLET) as externalRef + set connectorStatus=manual_attested_finance + write proofHash. If settlement never actually disbursed, revert status=processing/pending_approval.`;
@@ -204,9 +211,9 @@ async function quarantineOwnerSettlements(db) {
 				model: "OwnerSettlement", id: row.id,
 				oldStatus: row.status, newStatus: "needs_manual_proof",
 				amount: row.netAmount, currency: row.currency, why,
-				proofFields: { externalRef: row.externalRef, transactionRef: row.transactionRef, proofHash: row.proofHash, connectorStatus: row.connectorStatus, ownerName: row.ownerName },
+				proofFields: { externalRef: row.externalRef, referenceId: row.referenceId, proofHash: row.proofHash, connectorStatus: row.connectorStatus, ownerAccountId: row.ownerAccountId },
 			});
-			console.error(`[PHANTOM-QUARANTINE] OwnerSettlement ${row.id} (owner=${row.ownerName || "?"}, $${Number(row.netAmount || 0).toFixed(2)}) moved ${row.status} → needs_manual_proof. ${why}`);
+			console.error(`[PHANTOM-QUARANTINE] OwnerSettlement ${row.id} (ownerAccountId=${row.ownerAccountId || "?"}, $${Number(row.netAmount || 0).toFixed(2)}) moved ${row.status} → needs_manual_proof. ${why}`);
 			moved++;
 		} catch (e) {
 			console.error(`[PHANTOM-QUARANTINE] Failed to quarantine OwnerSettlement ${row.id}:`, e?.message || e);
@@ -216,132 +223,195 @@ async function quarantineOwnerSettlements(db) {
 }
 
 async function quarantineRevenueEvents(db) {
-	const rows = await db.revenueEvent.findMany({
-		where: {
-			status: { in: ["verified", "settled", "confirmed", "reconciled"] },
-			OR: [{ transactionRef: null }, { deliveryProofHash: null }],
-		},
-		select: {
-			id: true, status: true, amount: true, currency: true,
-			transactionRef: true, deliveryProofHash: true, source: true,
-		},
-	});
-	let moved = 0;
-	for (const row of rows) {
-		const refReal = !isSyntheticOrEmptyRef(row.transactionRef);
-		const proofReal = !isSyntheticOrEmptyRef(row.deliveryProofHash);
-		const phantom = !refReal || !proofReal;
-		if (!phantom) continue;
-		const whyParts = [];
-		if (!refReal) whyParts.push(`transactionRef empty/synthetic (${JSON.stringify(row.transactionRef)})`);
-		if (!proofReal) whyParts.push(`deliveryProofHash empty/synthetic (${JSON.stringify(row.deliveryProofHash)})`);
-		const why = `PHANTOM RevenueEvent terminal status BLOCKED (GooglePay-refund-style lost-revenue pattern): ${whyParts.join("; ")}. REQUIRED: attach REAL revenue receipt (Stripe charge pi_/in_ ID, PayPal capture ID, invoice number, bank deposit slip ref, AICC/AgentFlow platform payout confirmation ID) as transactionRef + write deliveryProofHash=sha256(eventId:realRef:amount:currency). If revenue never landed, write status=unbatched/pending with reason=lost.`;
-		try {
-			await db.revenueEvent.update({
-				where: { id: row.id },
-				data: {
-					status: "pending",
-					notes: why,
-				},
-			});
-			await writeAudit(db, {
-				model: "RevenueEvent", id: row.id,
-				oldStatus: row.status, newStatus: "pending",
-				amount: row.amount, currency: row.currency, why,
-				proofFields: { transactionRef: row.transactionRef, deliveryProofHash: row.deliveryProofHash, source: row.source },
-			});
-			console.error(`[PHANTOM-QUARANTINE] RevenueEvent ${row.id} (source=${row.source || "?"}, $${Number(row.amount || 0).toFixed(2)}) moved ${row.status} → pending. ${why}`);
-			moved++;
-		} catch (e) {
-			console.error(`[PHANTOM-QUARANTINE] Failed to quarantine RevenueEvent ${row.id}:`, e?.message || e);
+	try {
+		const rows = await db.revenueEvent.findMany({
+			where: {
+				status: { in: ["verified", "settled", "confirmed", "reconciled"] },
+				OR: [{ referenceId: null }, { proofHash: null }],
+			},
+			select: {
+				id: true, status: true, amount: true, currency: true,
+				referenceId: true, proofHash: true, source: true,
+			},
+		});
+		let moved = 0;
+		for (const row of rows) {
+			const refReal = !isSyntheticOrEmptyRef(row.referenceId);
+			const proofReal = !isSyntheticOrEmptyRef(row.proofHash);
+			const phantom = !refReal || !proofReal;
+			if (!phantom) continue;
+			const whyParts = [];
+			if (!refReal) whyParts.push(`referenceId empty/synthetic (${JSON.stringify(row.referenceId)})`);
+			if (!proofReal) whyParts.push(`proofHash empty/synthetic (${JSON.stringify(row.proofHash)})`);
+			const why = `PHANTOM RevenueEvent terminal status BLOCKED (GooglePay-refund-style lost-revenue pattern): ${whyParts.join("; ")}. REQUIRED: attach REAL revenue receipt (Stripe charge pi_/in_ ID, PayPal capture ID, invoice number, bank deposit slip ref, AICC/AgentFlow platform payout confirmation ID) as referenceId + write proofHash=sha256(eventId:realRef:amount:currency). If revenue never landed, write status=unbatched/pending with reason=lost.`;
+			try {
+				await db.revenueEvent.update({
+					where: { id: row.id },
+					data: {
+						status: "pending",
+						rejectedReason: why,
+					},
+				});
+				await writeAudit(db, {
+					model: "RevenueEvent", id: row.id,
+					oldStatus: row.status, newStatus: "pending",
+					amount: row.amount, currency: row.currency, why,
+					proofFields: { referenceId: row.referenceId, proofHash: row.proofHash, source: row.source },
+				});
+				console.error(`[PHANTOM-QUARANTINE] RevenueEvent ${row.id} (source=${row.source || "?"}, $${Number(row.amount || 0).toFixed(2)}) moved ${row.status} → pending. ${why}`);
+				moved++;
+			} catch (e) {
+				console.error(`[PHANTOM-QUARANTINE] Failed to quarantine RevenueEvent ${row.id}:`, e?.message || e);
+			}
 		}
+		return moved;
+	} catch (e) {
+		console.error(`[PHANTOM-QUARANTINE] RevenueEvent sweep failed (schema mismatch — check RevenueEvent fields):`, e?.message || String(e));
+		return 0;
 	}
-	return moved;
 }
 
 async function quarantineCryptoSettlements(db) {
-	const rows = await db.cryptoSettlement.findMany({
-		where: {
-			status: { in: ["confirmed", "settled", "completed", "onchain_finalized"] },
-			OR: [{ txHash: null }, { recipientAddress: null }],
-		},
-		select: {
-			id: true, status: true, amount: true, token: true, network: true,
-			txHash: true, recipientAddress: true, proofHash: true, connectorStatus: true,
-			ownerName: true, misplaced: true, recovered: true,
-		},
-	});
-	let moved = 0;
-	for (const row of rows) {
-		const hashReal = !isSyntheticOrEmptyRef(row.txHash);
-		const addrReal = !isSyntheticOrEmptyRef(row.recipientAddress) && /^(0x|T|bc1|[13])/i.test(String(row.recipientAddress || ""));
-		const connectorLive = !isNotLiveConnectorStatus(row.connectorStatus);
-		const phantom = !hashReal || !addrReal || !connectorLive;
-		if (!phantom) continue;
-		const whyParts = [];
-		if (!hashReal) whyParts.push(`txHash empty/synthetic (${JSON.stringify(row.txHash)})`);
-		if (!addrReal) whyParts.push(`recipientAddress missing/invalid (${JSON.stringify(row.recipientAddress)})`);
-		if (!connectorLive) whyParts.push(`connectorStatus not live (${JSON.stringify(row.connectorStatus)})`);
-		const why = `PHANTOM CryptoSettlement BLOCKED (funds could be lost to nowhere chain): ${whyParts.join("; ")}. REQUIRED: attach REAL on-chain tx hash (0x/T/bc1 prefix; not TX-RECOVER- placeholder) as txHash; confirm recipientAddress=OWNER_CRYPTO_WALLET address; set connectorStatus=live_onchain. If on-chain tx never happened (fees too low, wrong network) write status=failed + reason.`;
-		try {
-			await db.cryptoSettlement.update({
-				where: { id: row.id },
-				data: {
-					status: "pending",
-					connectorStatus: "not_configured",
-					proofHash: null,
-					notes: why,
-				},
-			});
-			await writeAudit(db, {
-				model: "CryptoSettlement", id: row.id,
-				oldStatus: row.status, newStatus: "pending",
-				amount: row.amount, currency: row.token + "/" + row.network, why,
-				proofFields: { txHash: row.txHash, recipientAddress: row.recipientAddress, proofHash: row.proofHash, connectorStatus: row.connectorStatus, ownerName: row.ownerName, misplaced: row.misplaced, recovered: row.recovered },
-			});
-			console.error(`[PHANTOM-QUARANTINE] CryptoSettlement ${row.id} (${row.amount || "?"} ${row.token || "?"} on ${row.network || "?"}) moved ${row.status} → pending. ${why}`);
-			moved++;
-		} catch (e) {
-			console.error(`[PHANTOM-QUARANTINE] Failed to quarantine CryptoSettlement ${row.id}:`, e?.message || e);
+	try {
+		const rows = await db.cryptoSettlement.findMany({
+			where: {
+				status: { in: ["confirmed", "settled", "completed", "onchain_finalized"] },
+				OR: [{ recipientAddress: null }],
+			},
+			select: {
+				id: true, status: true, amount: true, token: true, network: true,
+				recipientAddress: true,
+				misplaced: true, recovered: true, recoveredTxHash: true,
+				txTime: true,
+			},
+		});
+		let moved = 0;
+		for (const row of rows) {
+			const addrReal = !isSyntheticOrEmptyRef(row.recipientAddress) && /^(0x|T|bc1|[13])/i.test(String(row.recipientAddress || ""));
+			const phantom = !addrReal;
+			if (!phantom) continue;
+			const whyParts = [];
+			if (!addrReal) whyParts.push(`recipientAddress missing/invalid (${JSON.stringify(row.recipientAddress)})`);
+			const why = `PHANTOM CryptoSettlement BLOCKED (funds could be lost to nowhere chain): ${whyParts.join("; ")}. REQUIRED: attach REAL on-chain tx destination wallet address (0x/T/bc1 prefix; not TX-RECOVER- placeholder) as recipientAddress; set status=pending until on-chain tx confirmed. If on-chain tx never happened (fees too low, wrong network) write status=failed + reason.`;
+			try {
+				await db.cryptoSettlement.update({
+					where: { id: row.id },
+					data: {
+						status: "pending",
+						failureReason: why,
+						misplaced: true,
+					},
+				});
+				await writeAudit(db, {
+					model: "CryptoSettlement", id: row.id,
+					oldStatus: row.status, newStatus: "pending",
+					amount: row.amount, currency: row.token + "/" + row.network, why,
+					actor: "PHANTOM-QUARANTINE-SWEEP",
+					proofFields: {
+						recipientAddress: row.recipientAddress,
+						misplaced: row.misplaced, recovered: row.recovered,
+						recoveredTxHash: row.recoveredTxHash, txTime: row.txTime,
+					},
+				});
+				console.error(`[PHANTOM-QUARANTINE] CryptoSettlement ${row.id} (${row.amount || "?"} ${row.token || "?"} on ${row.network || "?"}) moved ${row.status} → pending. ${why}`);
+				moved++;
+			} catch (e) {
+				console.error(`[PHANTOM-QUARANTINE] Failed to quarantine CryptoSettlement ${row.id}:`, e?.message || e);
+			}
 		}
+		return moved;
+	} catch (e) {
+		console.error(`[PHANTOM-QUARANTINE] CryptoSettlement sweep failed (schema mismatch — safe skip):`, e?.message || String(e));
+		return 0;
 	}
-	return moved;
 }
 
 async function quarantineProcurementItems(db) {
 	try {
 		const rows = await db.procurementItem.findMany({
 			where: {
-				status: { in: ["delivered", "received", "completed", "paid"] },
-				OR: [{ deliveryProofHash: null }, { externalRef: null }],
+				status: { in: ["shipped", "in_transit", "delivered", "receipt_confirmed", "received", "completed", "settled", "paid"] },
 			},
 			select: {
-				id: true, status: true, totalAmount: true, currency: true,
-				deliveryProofHash: true, externalRef: true, supplier: true,
+				id: true, status: true, unitPriceEst: true, totalEst: true, currency: true, quantity: true,
+				deliveryProofHash: true, orderRef: true, supplierName: true, supplierId: true,
+				shippedAt: true, deliveredAt: true, receiptConfirmedAt: true, receiptConfirmedBy: true,
+				quantityReceived: true, name: true,
 			},
 		});
 		let moved = 0;
 		for (const row of rows) {
-			const refReal = !isSyntheticOrEmptyRef(row.externalRef);
-			const proofReal = !isSyntheticOrEmptyRef(row.deliveryProofHash);
-			const phantom = !refReal || !proofReal;
-			if (!phantom) continue;
-			const whyParts = [];
-			if (!refReal) whyParts.push(`externalRef (PO/INV/Delivery) empty/synthetic (${JSON.stringify(row.externalRef)})`);
-			if (!proofReal) whyParts.push(`deliveryProofHash empty/synthetic (${JSON.stringify(row.deliveryProofHash)})`);
-			const why = `PHANTOM ProcurementItem BLOCKED: ${whyParts.join("; ")}. REQUIRED: attach REAL supplier PO number / invoice number / delivery sign-off ref as externalRef + compute deliveryProofHash.`;
+			const status = (row.status || "").toLowerCase();
+			let why = "";
+			let demoteTo = null;
+			// shipped requires at LEAST supplierName or orderRef or shippedAt; else revert to ordered
+			if (status === "shipped" || status === "in_transit") {
+				const hasAny = !isSyntheticOrEmptyRef(row.supplierName || row.orderRef) || row.shippedAt != null || row.supplierId != null;
+				const hasTracking = !isSyntheticOrEmptyRef(row.orderRef);
+				if (!hasAny || !hasTracking || (status === "in_transit" && isSyntheticOrEmptyRef(row.orderRef))) {
+					demoteTo = "ordered";
+					why = `PHANTOM ProcurementItem.${status.toUpperCase()}: no real supplierName/tracking orderRef. Supplier="${row.supplierName || ""}" orderRef="${row.orderRef || ""}" shippedAt=${String(row.shippedAt || null)}. Reverted to ordered per sovereign ruling 2026-08-29: no carrier/tracking reference = no shipment. REQUIRED: paste real carrier (Poste Maroc/Amana/Aramex/DHL) and real tracking number, then status→shipped via pipeline with metadata.`;
+				}
+			}
+			// delivered requires deliveryProofHash non-synthetic
+			if (!demoteTo && (status === "delivered" || status === "completed" || status === "confirmed" || status === "received")) {
+				const proofReal = !isSyntheticOrEmptyRef(row.deliveryProofHash) && !/^[a-f0-9]{64}$/i.test(String(row.deliveryProofHash || "").trim());
+				if (!proofReal) {
+					demoteTo = "ordered";
+					why = `PHANTOM ProcurementItem.${status.toUpperCase()}: deliveryProofHash empty/null or locally-fabricated oracle SHA-256 (bare 64 hex = no external anchor). proofHash="${String(row.deliveryProofHash || "").slice(0,32)}…". Sovereign ruling 2026-08-29: NO SYNTHETIC PROOF, EVER. DEMOTED → ordered (fail-closed to avoid L2 L1 legacy trigger that also requires proofHash for "delivered"). REQUIRED: real POD photo hash with prefix (pod:/scan:/AMANA-/POSTE-/JUMIA-) or real on-chain/carrier anchor, or status stays ordered.`;
+				}
+			}
+			// receipt_confirmed/settled need proof+human+ts+qtyReceived triple
+			if (!demoteTo && (status === "receipt_confirmed" || status === "settled")) {
+				const proofReal = !isSyntheticOrEmptyRef(row.deliveryProofHash) && !/^[a-f0-9]{64}$/i.test(String(row.deliveryProofHash || "").trim());
+				const byReal = !!(row.receiptConfirmedBy && row.receiptConfirmedBy.trim().length >= 3 && String(row.receiptConfirmedBy).toLowerCase() !== "system-auto");
+				const atReal = row.receiptConfirmedAt != null;
+				const qtyReal = typeof row.quantityReceived === "number" && row.quantityReceived > 0;
+				if (!proofReal || !byReal || !atReal || !qtyReal) {
+					const parts = [];
+					if (!proofReal) parts.push("proof empty/synthetic (no external pod/carrier/scan anchor)");
+					if (!byReal) parts.push(`receiptConfirmedBy=${JSON.stringify(row.receiptConfirmedBy)} not real human`);
+					if (!atReal) parts.push("receiptConfirmedAt null");
+					if (!qtyReal) parts.push(`quantityReceived=${JSON.stringify(row.quantityReceived)} <= 0 or not set`);
+					// FAIL-CLOSED HONEST DEMOTION → ordered
+					// Note: demoting → delivered would still fail L2 legacy trigger (from finance migration 00300)
+					// because delivered also requires proofHash. So demote straight to ordered: truthful state
+					// (just PO placed with supplier; no handover proven yet). Operator can re-run pipeline
+					// with real proof when available to re-advance through shipped/in_transit/... properly.
+					demoteTo = "ordered";
+					why = `PHANTOM ProcurementItem.${status.toUpperCase()}: triple-proof chain broken (${parts.join("; ")}). DEMOTED → ordered (fail-closed honest state: verified supplier order but no carrier/handover or human sign-off proof). REQUIRED by sovereign ruling 2026-08-29: real POD deliveryProofHash + real human confirmedBy + timestamp + positive qtyReceived — ALL 4, before receipt_confirmed/settled permitted.`;
+				}
+			}
+			if (!demoteTo) continue;
 			try {
 				await db.procurementItem.update({
 					where: { id: row.id },
-					data: { status: "needs_review", notes: why },
+					data: {
+						status: demoteTo,
+						shippedAt: null,
+						deliveredAt: null,
+						deliveryProofHash: null,
+						receiptConfirmedAt: null,
+						receiptConfirmedBy: null,
+						quantityReceived: null,
+						notes: `[PHANTOM-QUARANTINE ${new Date().toISOString()}] ${why} ||| ${row.name ? ("item=" + row.name.slice(0,40) + " | ") : ""}old-status=${row.status}`,
+					},
 				});
 				await writeAudit(db, {
 					model: "ProcurementItem", id: row.id,
-					oldStatus: row.status, newStatus: "needs_review",
-					amount: row.totalAmount, currency: row.currency, why,
-					proofFields: { externalRef: row.externalRef, deliveryProofHash: row.deliveryProofHash, supplier: row.supplier },
+					oldStatus: row.status, newStatus: demoteTo,
+					amount: Number(row.totalEst || (Number(row.unitPriceEst || 0) * Number(row.quantity || 0))),
+					currency: row.currency || "USD", why,
+					actor: "PHANTOM-PROCUREMENT-QUARANTINE-SWEEP",
+					proofFields: {
+						deliveryProofHash: row.deliveryProofHash, orderRef: row.orderRef,
+						supplierName: row.supplierName, supplierId: row.supplierId,
+						shippedAt: row.shippedAt, deliveredAt: row.deliveredAt,
+						receiptConfirmedAt: row.receiptConfirmedAt, receiptConfirmedBy: row.receiptConfirmedBy,
+						quantityReceived: row.quantityReceived,
+					},
 				});
-				console.error(`[PHANTOM-QUARANTINE] ProcurementItem ${row.id} (supplier=${row.supplier || "?"}, $${Number(row.totalAmount || 0).toFixed(2)}) moved ${row.status} → needs_review. ${why}`);
+				console.error(`[PHANTOM-QUARANTINE] ProcurementItem ${row.id} (name="${String(row.name || "?").slice(0,40)}", $${Number(row.totalEst || (Number(row.unitPriceEst || 0) * Number(row.quantity || 0)) || 0).toFixed(2)}) moved ${row.status} → ${demoteTo}. ${why}`);
 				moved++;
 			} catch (e) {
 				console.error(`[PHANTOM-QUARANTINE] Failed to quarantine ProcurementItem ${row.id}:`, e?.message || e);
@@ -349,7 +419,147 @@ async function quarantineProcurementItems(db) {
 		}
 		return moved;
 	} catch (_e) {
-		// ProcurementItem model may not exist in older schemas; ignore gracefully
+		console.error(`[PHANTOM-QUARANTINE] ProcurementItems sweep failed (graceful skip):`, _e?.message || String(_e));
+		return 0;
+	}
+}
+
+async function quarantineShipments(db) {
+	try {
+		const rows = await db.shipment.findMany({
+			where: {
+				status: { in: ["label_created", "picked_up", "in_transit", "customs", "out_for_delivery", "delivered", "failed", "returned"] },
+			},
+			select: {
+				id: true, shipmentNumber: true, status: true, carrier: true,
+				trackingNumber: true, trackingVerified: true, actualDelivery: true,
+				events: true, trackingUrl: true, itemName: true,
+				procurementItemId: true, destinationCountry: true,
+			},
+		});
+		let moved = 0;
+		for (const row of rows) {
+			const status = (row.status || "").toLowerCase();
+			let demoteTo = null;
+			let why = "";
+			const FABRICATED = /international shipping|multi-carrier/i;
+			const hasCarrier = !!(row.carrier && row.carrier.trim().length && !FABRICATED.test(row.carrier));
+			const hasTracking = !!(row.trackingNumber && row.trackingNumber.trim().length >= 3 && !isSyntheticOrEmptyRef(row.trackingNumber));
+			// Any advanced state needs at least carrier OR real tracking
+			if (!hasCarrier && !hasTracking) {
+				demoteTo = "pending";
+				why = `PHANTOM Shipment.${status.toUpperCase()}: NEITHER real carrier NOR real trackingNumber (carrier="${row.carrier || ""}", tracking="${String(row.trackingNumber || "").slice(0,20)}"). Morocco local-sourcing sovereign rule: require a real carrier (Poste Maroc/Amana/Aramex/DHL/FedEx/UPS/Chronopost) OR real tracking ref. Placeholder International Shipping/Multi-carrier labels now banned.`;
+			}
+			// in_transit/out_for_delivery REQUIRE non-empty real tracking string
+			if (!demoteTo && ["in_transit","customs","out_for_delivery"].includes(status)) {
+				if (!hasTracking) {
+					demoteTo = "label_created";
+					why = `PHANTOM Shipment.${status.toUpperCase()}: requires real trackingNumber (length>=3). tracking="${String(row.trackingNumber || "").slice(0,20)}". Use carrier-acquire-sweep to paste a real Poste Maroc/Amana/Jumia tracking reference first. Only then status→in_transit.`;
+				}
+			}
+			// delivered REQUIRE actualDelivery set, AND (trackingVerified=true OR events >50 chars non-empty) AND hasTracking
+			if (!demoteTo && status === "delivered") {
+				const verified = row.trackingVerified === true;
+				const hasEvents = !!(row.events && String(row.events).trim().length > 50);
+				if (!hasTracking || row.actualDelivery == null || (!verified && !hasEvents)) {
+					demoteTo = "in_transit";
+					why = `PHANTOM Shipment.DELIVERED: proof broken. hasTracking=${hasTracking} (needs real tracking string >=3 chars), actualDelivery? ${row.actualDelivery != null ? "YES" : "NO"}, trackingVerified? ${verified ? "YES" : "NO"}, events JSON populated (>50 chars)? ${hasEvents ? "YES" : "NO"}. Sovereign rule: never mark as delivered without carrier-scan proof. Paste real delivered event scan data into events JSON OR verify via /api/carrier-tracking to flip trackingVerified=true, only then mark as delivered.`;
+				}
+			}
+			if (!demoteTo) continue;
+			try {
+				await db.shipment.update({
+					where: { id: row.id },
+					data: {
+						status: demoteTo,
+						carrier: FABRICATED.test(row.carrier || "") ? null : (row.carrier || null),
+						trackingUrl: (demoteTo === "pending" && !hasTracking) ? null : (row.trackingUrl || null),
+						trackingVerified: (demoteTo === "pending") ? false : row.trackingVerified,
+						notes: `[PHANTOM-SHIPMENT-QUARANTINE ${new Date().toISOString()}] ${why} ||| original carrier="${row.carrier || ""}" tracking="${String(row.trackingNumber || "").slice(0,20)}" original status=${row.status}`,
+					},
+				});
+				await writeAudit(db, {
+					model: "Shipment", id: row.id,
+					oldStatus: row.status, newStatus: demoteTo,
+					amount: 0, currency: "MAD/USD", why,
+					actor: "PHANTOM-SHIPMENT-QUARANTINE-SWEEP",
+					proofFields: {
+						shipmentNumber: row.shipmentNumber, carrier: row.carrier,
+						trackingNumber: row.trackingNumber, trackingVerified: row.trackingVerified,
+						actualDelivery: row.actualDelivery, events: (row.events || "").slice(0, 80),
+						procurementItemId: row.procurementItemId, itemName: row.itemName,
+						destinationCountry: row.destinationCountry,
+					},
+				});
+				console.error(`[PHANTOM-QUARANTINE] Shipment ${row.id} (number=${row.shipmentNumber || "?"}, item="${String(row.itemName || "?").slice(0,40)}") moved ${row.status} → ${demoteTo}. ${why}`);
+				moved++;
+			} catch (e) {
+				console.error(`[PHANTOM-QUARANTINE] Failed to quarantine Shipment ${row.id}:`, e?.message || e);
+			}
+		}
+		return moved;
+	} catch (_e) {
+		console.error(`[PHANTOM-QUARANTINE] Shipments sweep failed (graceful skip):`, _e?.message || String(_e));
+		return 0;
+	}
+}
+
+async function quarantinePurchaseOrders(db) {
+	try {
+		const rows = await db.purchaseOrder.findMany({
+			where: { status: { in: ["completed", "rejected", "cancelled"] } },
+			select: {
+				id: true, poNumber: true, status: true, totalAmount: true, currency: true,
+				lineItemCount: true, orderedAt: true, acknowledgedAt: true, ackStatus: true,
+				supplierName: true, completedAt: true,
+			},
+		});
+		let moved = 0;
+		for (const row of rows) {
+			const status = (row.status || "").toLowerCase();
+			if (status !== "completed") continue;
+			// completed requires: orderedAt != null AND one of (ackStatus=ACKNOWLEDGED OR acknowledgedAt != null OR completedAt != null AND line items actually delivered)
+			const ackOk = row.ackStatus === "ACKNOWLEDGED" || row.ackStatus === "RESOLVED" || row.acknowledgedAt != null;
+			const orderTsOk = row.orderedAt != null;
+			let demoteTo = null;
+			let why = "";
+			if (!orderTsOk) {
+				demoteTo = "ordered";
+				why = `PHANTOM PurchaseOrder.COMPLETED without orderedAt timestamp (${row.poNumber || row.id}). orderedAt=${JSON.stringify(row.orderedAt)} — cannot be completed if never ordered.`;
+			} else if (!ackOk) {
+				demoteTo = "ordered";
+				why = `PHANTOM PurchaseOrder.COMPLETED with ackStatus="${row.ackStatus}" (still AWAITING_ACK, no supplier acknowledgement, acknowledgedAt=null). Sovereign rule: POs cannot be marked completed unless supplier acknowledged. Supplier="${row.supplierName || ""}" lineItems=${row.lineItemCount} total=$${Number(row.totalAmount || 0).toFixed(2)}`;
+			}
+			if (!demoteTo) continue;
+			try {
+				await db.purchaseOrder.update({
+					where: { id: row.id },
+					data: {
+						status: demoteTo,
+						completedAt: null,
+						notes: `[PHANTOM-PO-QUARANTINE ${new Date().toISOString()}] ${why} ||| previous status=${row.status} ackStatus=${row.ackStatus} completedAt=${JSON.stringify(row.completedAt)}`,
+					},
+				});
+				await writeAudit(db, {
+					model: "PurchaseOrder", id: row.id,
+					oldStatus: row.status, newStatus: demoteTo,
+					amount: Number(row.totalAmount || 0), currency: row.currency || "USD", why,
+					actor: "PHANTOM-PO-QUARANTINE-SWEEP",
+					proofFields: {
+						poNumber: row.poNumber, supplierName: row.supplierName,
+						lineItemCount: row.lineItemCount, ackStatus: row.ackStatus,
+						orderedAt: row.orderedAt, acknowledgedAt: row.acknowledgedAt, completedAt: row.completedAt,
+					},
+				});
+				console.error(`[PHANTOM-QUARANTINE] PurchaseOrder ${row.id} (${row.poNumber || "?"}, $${Number(row.totalAmount || 0).toFixed(2)}, ${row.lineItemCount} lines) moved completed → ${demoteTo}. ${why}`);
+				moved++;
+			} catch (e) {
+				console.error(`[PHANTOM-QUARANTINE] Failed to quarantine PurchaseOrder ${row.id}:`, e?.message || e);
+			}
+		}
+		return moved;
+	} catch (_e) {
+		console.error(`[PHANTOM-QUARANTINE] PurchaseOrders sweep failed (graceful skip):`, _e?.message || String(_e));
 		return 0;
 	}
 }
@@ -367,6 +577,8 @@ export async function runPhantomCompletedQuarantineSweep(_opts = {}) {
 		["RevenueEvent", quarantineRevenueEvents],
 		["CryptoSettlement", quarantineCryptoSettlements],
 		["ProcurementItem", quarantineProcurementItems],
+		["Shipment", quarantineShipments],
+		["PurchaseOrder", quarantinePurchaseOrders],
 	];
 	const per = {};
 	for (const [name, fn] of steps) {

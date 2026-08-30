@@ -73,6 +73,29 @@ const SEED_SOVEREIGN_RULINGS = [
   },
   {
     namespace: "sovereign",
+    key: "fact.2026-08-30.crbt-cash-return-ledger",
+    value: JSON.stringify({
+      immutable: "OWNER-ruled",
+      date: "2026-08-30",
+      title: "CRBT — gestion des statuts de retour de cash (COD cash-return status ledger)",
+      doctrine:
+        "Moroccan e-commerce COD carriers collect cash at delivery and reverse it on a cadence " +
+        "(Forcelog retours de fond chaque 12h-24h; Quick Livraison automated DAILY bank transfers; " +
+        "Skypostal factoring ledgers 24-48h; G4D guaranteed J+1 RIB; Tawssil J+1 Cash Plus vouchers). " +
+        "CashReturn ledger statuses: cash_collected -> pending_remittance -> in_transit -> reconciled -> returned " +
+        "(disputed escape). FAIL-CLOSED: reconciled/returned REQUIRE a real external proofRef (bank RIB line, " +
+        "3PL balance movement, carrier reversal ref, digital voucher); bare 64-hex SHA rejected. A CashReturn row " +
+        "opens ONLY when a COD shipment is REAL-delivered (trackingVerified=true + actualDelivery). " +
+        "trackingVerified=true requires a real carrier 'delivered' event + 3-point PO fraud guard VERIFIED_OK " +
+        "(destination city / weight floor / timeline-not-recycled). Blind verify / length>=8 heuristics are REMOVED.",
+      implementation:
+        "src/lib/procurement/cash-return.ts + src/lib/procurement/tracking-fraud-guard.ts + " +
+        "src/lib/procurement/carrier-router.ts (full Morocco directory) + AutoPilot crbt_reconcile phase. " +
+        "Migrations 20260830000100 (fraud-guard PO fields) + 20260830000200 (CashReturn) applied to Neon.",
+    }),
+  },
+  {
+    namespace: "sovereign",
     key: "ruling.2026-08-29.all-roads-lead-to-mecca",
     value: JSON.stringify({
       immutable: "OWNER-ruled",

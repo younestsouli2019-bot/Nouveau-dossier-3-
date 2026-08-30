@@ -166,9 +166,11 @@ model ProcurementItem {
   recipientName      String         @default("Younes Tsouli")
   recipientAddress   String?
   deliveryAddress    String?
+  deliveryCity       String? // expected destination terminal/city for fraud-guard geographic match
+  expectedMinWeightKg Float? // expected minimum package weight for fraud-guard weight-variance threshold
   prePaidBySwarm     Boolean        @default(true)
   ownerInitiated     Boolean        @default(true)
-  status             String         @default("pending") // pending, ordered, shipped, delivered, cancelled
+  status             String         @default("pending") // pending, ordered, shipped, in_transit, delivered, receipt_confirmed, settled, cancelled (see pipeline.ts validTransitions)
   orderRef           String?
   supplierName       String?
   supplierId         String?
@@ -430,8 +432,47 @@ model Shipment {
   customsDutyEst     Float?
   notes              String?
   events             String? // JSON array of tracking events
+  lastFraudVerdict   String? // last 3-point fraud-guard verdict: VERIFIED_OK | FLAG_FRAUD:* | TRIGGER_MANUAL_REVIEW_HOLD:* (review-queue anchor)
+  lastFraudVerdictAt DateTime?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
+
+  cashReturn         CashReturn?
+}
+
+// CRBT — "Retour de cash" (COD cash return) status ledger.
+// Moroccan e-commerce COD: carriers (Amana/Forcelog/Chrono Diali/Cathedis/Aramex/...)
+// collect cash at delivery and reverse it to the merchant on a cadence
+// ("retour de fond chaque 12h-24h" — Forcelog). These are payments WE (the buyer /
+// procurement side) are OWED when a COD collect was used, or settled against the
+// 3PL/COD-proxy balance. Statuses track the collected cash through to reconciliation.
+// Fail-closed: reaching settled/returned requires a REAL external proofRef (bank
+// statement line, 3PL balance movement, carrier reversal reference). No synthetic proof.
+model CashReturn {
+  id                String    @id @default(cuid())
+  shipmentId        String?   @unique
+  procurementItemId String?
+  shipmentNumber    String? // denormalized
+  itemName          String?
+  carrier           String? // Amana, Forcelog, Chrono Diali, Cathedis, Aramex, ...
+  trackingNumber    String?
+  status            String    @default("cash_collected") // see TRANSITIONS in cash-return.ts
+  amountExpectedMAD Float     @default(0)
+  amountCollectedMAD Float    @default(0)
+  currency          String    @default("MAD")
+  collectionBranch  String? // where the cash was collected / terminal
+  destinationCity   String? // fraud-guard cross-check anchor
+  collectedAt       DateTime?
+  reversedAt        DateTime? // carrier reversed cash to merchant/3PL
+  reconciledAt      DateTime? // matched against amountExpectedMAD with external proof
+  settledAt         DateTime? // funds actually available / paid out from escrow
+  proofRef          String? // EXTERNAL reference (bank line, 3PL balance movement, reversal ref)
+  proofHash         String?
+  disputeReason     String?
+  notes             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  shipment          Shipment? @relation(fields: [shipmentId], references: [id])
 }
 
 model CryptoSettlement {

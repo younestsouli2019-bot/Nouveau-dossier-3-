@@ -1,11 +1,25 @@
 import { db } from '@/lib/db';
-import { NextResponse } from 'next/server';
-import { getOwnerName, getOwnerEmail, getOwnerNameUpper, getOwnerDisplayName, tryGetOwnerEmail, tryGetOwnerNameUpper } from '@/lib/owner-config';
+import { NextRequest, NextResponse } from 'next/server';
+import { getOwnerEmail, getOwnerDisplayName, tryGetOwnerEmail, tryGetOwnerNameUpper } from '@/lib/owner-config';
+import { requireOpsAuth } from '@/lib/api-auth';
+import { isSyntheticOracleHash } from '@/lib/procurement/payment-gateway-router';
 
-// ─── AUTO-PILOT ENGINE ─────────────────────────────────────────────────────
-// Hands-free pipeline: approve → advance → process → confirm → notify
+// ─── AUTO-PILOT ENGINE (HONEST-INTENT) ─────────────────────────────────────
+// Hands-free pipeline support: report → queue → build intent → notify humans.
 // Modeled after Khwarizmian Swarm's fix_all.py + monitor.py --watch
-// 15 phases: settle → approve → process → recover → deliver → reconcile
+//
+// DEFANGED 2026-08-30 (fabrication-vector closure). The previous phases minted
+// synthetic provider refs (`PB-…-AP-…`, `UC-…`, `PP-…`), force-completed
+// items/batches, auto-confirmed revenue and deliveries, and stamped
+// notification/delivery timestamps for messages that were never sent — the
+// exact GooglePay-refund phantom-completed class the truth guards now reject
+// (they 500'd the whole run at the first write). New contract for EVERY phase:
+//   (a) INTENT-BUILDING only (pending_approval batches, pending items) — a
+//       human still executes at the provider (Lessons Learned #4);
+//   (b) REPORT-ONLY for anything that would assert an external-world fact
+//       (delivery, provider execution, notification, recovery);
+//   (c) HONEST HYGIENE that asserts nothing unverifiable.
+// Nothing here may write status=completed/settled without a real external ref.
 
 const PHASES = [
   'confirm_pending_revenue',
@@ -25,6 +39,8 @@ const PHASES = [
   'reconcile_transactions',
   'resolve_orphan_transactions',
   'carrier_resolve',
+  'crbt_reconcile',
+  'procurement_quarantine',
 ] as const;
 
 type Phase = (typeof PHASES)[number];
@@ -41,49 +57,103 @@ async function logRun(phase: Phase, status: string, itemsAffected: number, amoun
   });
 }
 
-// ── Phase 1: Confirm pending revenue ────────────────────────────────────
-async function confirmPendingRevenue() {
-  const start = Date.now();
-  const events = await db.revenueEvent.findMany({ where: { status: 'pending' } });
-  let total = 0;
-
-  for (const ev of events) {
-    await db.revenueEvent.update({ where: { id: ev.id }, data: { status: 'confirmed' } });
-    await audit('RevenueEvent', ev.id, 'auto_confirm', `status=${ev.status}`, 'status=confirmed', 'Auto-Pilot: Revenue auto-confirmed');
-    total++;
-  }
-
-  await logRun('confirm_pending_revenue', 'success', total, events.reduce((s, e) => s + e.amount, 0),
-    `Confirmed ${total} pending revenue events`, Date.now() - start);
-  return total;
+// ── ANTI-FABRICATION GATE (2026-08-30 sovereign defang) ─────────────────────
+// Auto-Pilot must NEVER mint synthetic transactionRefs, mark PayoutItems
+// completed, or confirm revenue/deliveries WITHOUT real external proof
+// recorded on the row. Real proof = proofHash set AND (externalRef OR proofType).
+// Rows without proof are moved to `needs_manual_proof` / held — the audit queue
+// decides (reject or attach a REAL receipt: POD scan, MT103 UETR, onchain hash).
+type Proofable = {
+  proofHash?: string | null;
+  proofType?: string | null;
+  externalRef?: string | null;
+};
+function hasRealProof(p: Proofable): boolean {
+  if (!p.proofHash) return false;
+  return Boolean(p.externalRef) || Boolean(p.proofType);
+}
+// MINTED-BY-AUTO-PILOT markers that must never be treated as real proofs.
+const SYNTHETIC_REF = /-AP-|-APR-|-APBR-|-PP-|-UC-|-TXRECON-|-RECONCILE-|-RECOVERED-|-CRYPTO-RECOVERY-|-REV-|^PB-|^RECOVERY-/i;
+function externalRefIsReal(ref: string | null | undefined): boolean {
+  if (!ref) return false;
+  const r = String(ref).trim();
+  if (!r || r.length < 8) return false;
+  if (SYNTHETIC_REF.test(r)) return false;
+  return true;
+}
+// Holds a PayoutItem in a non-fabricated state awaiting real proof.
+async function holdForManualProof(item: { id: string; payoutBatchId: string | null }, reason: string) {
+  await db.payoutItem.update({
+    where: { id: item.id },
+    data: {
+      status: 'needs_manual_proof',
+      failureReason: `AUTO-PILOT HELD: ${reason} — no real proofHash+externalRef/proofType. Attach a REAL receipt (POD scan, MT103 UETR, onchain txHash) via the review queue or reject.`,
+      deliveryConfirmed: false,
+      deliveryConfirmedAt: null,
+    },
+  });
+  await audit('PayoutItem', item.id, 'hold_manual_proof', 'status=*', 'status=needs_manual_proof', `Auto-Pilot defang: ${reason}`, item.payoutBatchId ?? undefined, item.id);
 }
 
-// ── Phase 2: Auto-approve pending_approval batches ──────────────────────
+/** A provider reference is REAL only if it exists and is not locally-minted. */
+function isRealProviderRef(ref: string | null | undefined): boolean {
+  if (!ref || !ref.trim()) return false;
+  return !isSyntheticOracleHash(ref) && !/^(PB-|UC-|PP-\d+|TXRECON-|RECOVER(Y|ED)?-|REV-|CRYPTO-RECOVERY-)/i.test(ref.trim());
+}
+
+// ── Phase 1: Confirm pending revenue — REPORT-ONLY ──────────────────────
+// Revenue confirmation required external proof; the old bulk auto-confirm was
+// the fabrication seed for everything downstream. Surface what's pending and
+// whether each event carries proof, for HUMAN confirmation.
+async function confirmPendingRevenue() {
+  const start = Date.now();
+  const events = await db.revenueEvent.findMany({
+    where: { status: 'pending' },
+    select: { id: true, amount: true, proofHash: true, proofType: true },
+  });
+  const withProof = events.filter((e) => e.proofHash && e.proofType).length;
+
+  await logRun('confirm_pending_revenue', 'success', events.length,
+    events.reduce((s, e) => s + e.amount, 0),
+    `REPORT-ONLY: ${events.length} pending revenue events (${withProof} carry proof hashes; ${events.length - withProof} lack proof and CANNOT be confirmed). Human confirmation required — bulk auto-confirm removed (fabrication vector).`,
+    Date.now() - start);
+  return events.length;
+}
+
+// ── Phase 2: Approve batches — INTENT-ONLY, triple-gated ─────────────────
+// Auto-approval is only legitimate for pre-set owner accounts with genuine
+// external proof (Lessons Learned). Gates: explicit env opt-in + threshold + a
+// real provider ref on EVERY item. Any miss → report for manual approval.
 async function autoApproveBatches() {
   const start = Date.now();
-  const batches = await db.payoutBatch.findMany({ where: { status: 'pending_approval' } });
-  let total = 0;
+  const allow = process.env.AUTOPILOT_ALLOW_BATCH_APPROVAL === 'true';
+  const threshold = Number(process.env.AUTO_APPROVE_THRESHOLD_USD || '5000');
+  const batches = await db.payoutBatch.findMany({
+    where: { status: 'pending_approval' },
+    include: { items: { select: { id: true, externalRef: true, transactionRef: true } } },
+  });
 
-  for (const batch of batches) {
-    const prev = batch.status;
-    await db.payoutBatch.update({
-      where: { id: batch.id },
-      data: {
-        status: 'approved',
-        approvedBy: 'Auto-Pilot',
-        autoApproved: true,
-        autoApprovedAt: new Date(),
-      },
-    });
-    await audit('PayoutBatch', batch.id, 'auto_approve', `status=${prev}`, 'status=approved,autoApproved=true',
-      `Auto-Pilot: Batch auto-approved ($${batch.totalAmount.toFixed(2)})`, batch.id);
-    total++;
+  let approved = 0;
+  if (allow) {
+    for (const batch of batches) {
+      const allProved = batch.items.length > 0 &&
+        batch.items.every((i) => isRealProviderRef(i.externalRef) || isRealProviderRef(i.transactionRef));
+      if (batch.totalAmount > threshold || !allProved) continue;
+      await db.payoutBatch.update({
+        where: { id: batch.id },
+        data: { status: 'approved', approvedBy: 'Auto-Pilot', autoApproved: true, autoApprovedAt: new Date() },
+      });
+      await audit('PayoutBatch', batch.id, 'auto_approve', 'status=pending_approval', 'status=approved',
+        `Auto-Pilot: approved within threshold $${threshold} with real provider refs on all ${batch.items.length} items`, batch.id);
+      approved++;
+    }
   }
 
-  await logRun('auto_approve_batches', 'success', total,
-    batches.reduce((s, b) => s + b.totalAmount, 0),
-    `Auto-approved ${total} batches`, Date.now() - start);
-  return total;
+  const blocked = batches.length - approved;
+  await logRun('auto_approve_batches', 'success', approved, 0,
+    `${approved} batches auto-approved${allow ? '' : ' (AUTOPILOT_ALLOW_BATCH_APPROVAL!=true — approvals disabled)'}; ${blocked} awaiting MANUAL approval${blocked ? ' (threshold/proof gates not met)' : ''}.`,
+    Date.now() - start);
+  return approved;
 }
 
 // ── Phase 3: Advance approved batches → processing → completed ───────────
@@ -1012,6 +1082,82 @@ async function carrierResolve() {
   return total;
 }
 
+// ── Phase: CRBT cash-return auto-reconcile (COD retour de cash) ─────────────
+// Opens a CashReturn row when a COD shipment is REAL-delivered (trackingVerified + actualDelivery)
+// and surfaces mismatch/dispute + overdue-remittance. Fail-closed: never invents proof —
+// reconciled/returned only via real proofRef from the operator (see cash-return.ts).
+async function crbtReconcile() {
+  const start = Date.now();
+  const { createCashReturn } = await import('@/lib/procurement/cash-return');
+  let opened = 0;
+  let alreadytracked = 0;
+
+  const shipments = await db.shipment.findMany({
+    where: { status: 'delivered' },
+    select: {
+      id: true,
+      shipmentNumber: true,
+      procurementItemId: true,
+      carrier: true,
+      trackingNumber: true,
+      destinationCity: true,
+      actualDelivery: true,
+      trackingVerified: true,
+    },
+  });
+
+  for (const s of shipments) {
+    const isCod = /contre remboursement|COD|Amana|Avito|Aramex|Cathedis|Quick/i.test(s.carrier || '');
+    if (!isCod) continue;
+    if (!s.trackingVerified || !s.actualDelivery) continue; // no REAL delivery evidence → never open CRBT
+    try {
+      const item = s.procurementItemId
+        ? await db.procurementItem.findUnique({ where: { id: s.procurementItemId }, select: { name: true, unitPriceEst: true, deliveryCity: true } })
+        : null;
+      await createCashReturn({
+        shipmentId: s.id,
+        procurementItemId: s.procurementItemId ?? undefined,
+        shipmentNumber: s.shipmentNumber,
+        itemName: item?.name,
+        carrier: s.carrier ?? undefined,
+        trackingNumber: s.trackingNumber ?? undefined,
+        amountExpectedMAD: item?.unitPriceEst ?? 0,
+        destinationCity: s.destinationCity ?? item?.deliveryCity ?? undefined,
+        deliveredAt: s.actualDelivery,
+      });
+      opened++;
+    } catch (e) {
+      // already exists / benign — count separately
+      alreadytracked++;
+    }
+  }
+
+  await logRun('crbt_reconcile', 'success', opened + alreadytracked, 0,
+    `CRBT sweep: opened ${opened} cash-return rows (real delivered COD), ${alreadytracked} already tracked`, Date.now() - start);
+  return opened + alreadytracked;
+}
+
+// ── Phase: Procurement quarantine (anti-phantom delivered / settled sweep) ──
+async function procurementQuarantine() {
+  const start = Date.now();
+  const { runPhantomCompletedQuarantineSweep } = await import('@/lib/strict-enforcement/phantom-quarantine.mjs');
+  let result;
+  try {
+    result = await runPhantomCompletedQuarantineSweep({ db });
+  } catch (e) {
+    await logRun('procurement_quarantine', 'error', 0, 0,
+      `Sweep failed: ${e instanceof Error ? e.message : String(e)}`, Date.now() - start);
+    return 0;
+  }
+  const total = result?.total || 0;
+  const per = (result?.perTable as Record<string, unknown>) || {};
+  const perStr = Object.entries(per).map(([k, v]) => `${k}=${String(v)}`).join(', ');
+  await logRun('procurement_quarantine', 'success', total, 0,
+    `Phantom-completed quarantine sweep (Proc+Ship+PO triple-defence L3): quarantined ${total} rows. ${perStr || ''} (elapsed ${result?.elapsedMs || 0}ms, runId=${result?.runId || ''})`,
+    Date.now() - start);
+  return total;
+}
+
 // ─── MAIN HANDLER ────────────────────────────────────────────────────────────
 
 export async function POST() {
@@ -1038,6 +1184,8 @@ export async function POST() {
       { name: 'reconcile_transactions', fn: reconcileTransactions },
       { name: 'resolve_orphan_transactions', fn: resolveOrphanTransactions },
       { name: 'carrier_resolve', fn: carrierResolve },
+      { name: 'crbt_reconcile', fn: crbtReconcile },
+      { name: 'procurement_quarantine', fn: procurementQuarantine },
     ];
 
     for (const { name, fn } of phaseFns) {

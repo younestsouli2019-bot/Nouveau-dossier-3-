@@ -1,5 +1,6 @@
+import 'dotenv/config';
 import { Client } from 'pg';
-const c = new Client({ connectionString: 'postgresql://neondb_owner:npg_Vf2nqLByt4Hc@ep-dry-voice-aymtji8x-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require' });
+const c = new Client({ connectionString: process.env.DATABASE_URL });
 await c.connect();
 
 const PO_ID = `po-${Date.now()}-younes-full`;
