@@ -1,0 +1,157 @@
+name: Owner Crypto Withdraw
+on:
+  workflow_dispatch:
+    inputs:
+      amount:
+        description: USDT amount to withdraw
+        type: number
+        required: true
+      network:
+        description: Network (BEP20=BSC, ERC20=ETH, TRON=TRX)
+        type: string
+        required: false
+        default: BEP20
+      address:
+        description: Recipient wallet address
+        type: string
+        required: false
+        default: "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7"
+      audit_only:
+        description: Run validation without submitting withdrawal
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: owner-crypto-withdraw
+  cancel-in-progress: false
+
+jobs:
+  withdraw:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: owner-crypto-withdraw
+      cancel-in-progress: false
+    env:
+      SWARM_LIVE: "true"
+      CRYPTO_NETWORK: ${{ inputs.network }}
+      TRUST_WALLET_ADDRESS: ${{ inputs.address }}
+      TRUST_WALLET_USDT_BEP20: ${{ inputs.address }}
+      TRUST_WALLET_USDT_ERC20: ${{ inputs.address }}
+      BINANCE_API_BASE: https://api.binance.com
+      ALLOWED_WITHDRAW_ADDRESSES: ${{ secrets.CRYPTO_ALLOWED_ADDRESSES }}
+      WITHDRAW_ENABLE: ${{ secrets.CRYPTO_WITHDRAW_ENABLE || 'false' }}
+      BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
+      BINANCE_API_SECRET: ${{ secrets.BINANCE_API_SECRET }}
+      BINANCE_ED25519_PRIVATE_KEY: ${{ secrets.BINANCE_ED25519_PRIVATE_KEY }}
+      BINANCE_SIGNATURE_ENCODING: ${{ secrets.BINANCE_SIGNATURE_ENCODING }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Validate inputs
+        id: validate
+        run: |
+          set -euo pipefail
+          AMOUNT="${{ inputs.amount }}"
+          ADDR="${{ inputs.address }}"
+          NETWORK="${{ inputs.network }}"
+          echo "amount=$AMOUNT"
+          echo "network=$NETWORK"
+          echo "address=${ADDR:0:6}…${ADDR: -4}"
+          # Amount sanity: positive numeric
+          if ! awk -v a="$AMOUNT" 'BEGIN { exit !(a+0 > 0) }'; then
+            echo "::error::amount must be numeric and > 0"
+            exit 1
+          fi
+          if [ "${#ADDR}" -lt 26 ]; then
+            echo "::error::address looks too short"
+            exit 1
+          fi
+          ALLOWED_RAW="${ALLOWED_WITHDRAW_ADDRESSES}"
+          if [ -n "$ALLOWED_RAW" ]; then
+            MATCH=0
+            IFS=',' read -ra PARTS <<< "$ALLOWED_RAW"
+            for p in "${PARTS[@]}"; do
+              CLEAN="$(echo "$p" | tr -d '[:space:]' | tr -d '\r')"
+              if [ "$CLEAN" = "$ADDR" ]; then MATCH=1; break; fi
+            done
+            if [ "$MATCH" != "1" ]; then
+              echo "::error::address $ADDR is not in CRYPTO_ALLOWED_ADDRESSES"
+              exit 1
+            fi
+            echo "✓ Address allowlisted"
+          else
+            echo "::warning::CRYPTO_ALLOWED_ADDRESSES not set — skipping allowlist check (danger zone)"
+          fi
+          if [ "${WITHDRAW_ENABLE}" != "true" ]; then
+            echo "::warning::CRYPTO_WITHDRAW_ENABLE != true — will still build payload but skip submission (audit-only semantics)"
+            echo "skip_submit=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_submit=false" >> $GITHUB_OUTPUT
+          fi
+          if [ "${{ inputs.audit_only }}" = "true" ]; then
+            echo "audit_only=true" >> $GITHUB_OUTPUT
+          else
+            echo "audit_only=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "npm"
+      - name: Install dependencies (with retries)
+        run: |
+          set -euo pipefail
+          n=0
+          until [ $n -ge 3 ]; do
+            if npm ci --no-audit --no-fund 2>/dev/null; then break; fi
+            n=$((n+1))
+            echo "Install retry ($n)..."
+            sleep 5
+          done
+      - name: Execute withdraw
+        id: withdraw
+        run: |
+          set -euo pipefail
+          AUDIT="${{ steps.validate.outputs.audit_only }}"
+          SKIP="${{ steps.validate.outputs.skip_submit }}"
+          mkdir -p out/crypto
+          if [ -f ./scripts/execute-crypto-withdraw.mjs ]; then
+            if [ "$AUDIT" = "true" ] || [ "$SKIP" = "true" ]; then
+              echo "Audit-only / withdraw disabled; running script without live execution."
+              node ./scripts/execute-crypto-withdraw.mjs --amount "${{ inputs.amount }}" --dry-run > out.json || true
+            else
+              node ./scripts/execute-crypto-withdraw.mjs --amount "${{ inputs.amount }}" > out.json || true
+            fi
+            cat out.json | jq -c 'walk( if type == "string" and (tostring | length > 48) then (.[0:8] + "…" + .[-6:]) else . end )' || true
+          else
+            echo '{"status":"SKIPPED","reason":"script not found"}' > out.json
+            echo "scripts/execute-crypto-withdraw.mjs not found"
+          fi
+      - name: Upload artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: owner-crypto-withdraw-${{ github.run_id }}
+          path: |
+            out.json
+            out/crypto/
+          if-no-files-found: ignore
+      - name: Commit out/crypto artifacts if present
+        if: steps.validate.outputs.audit_only != 'true'
+        run: |
+          if [[ -n "$(git status --porcelain out out/crypto 2>/dev/null)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add out out/crypto 2>/dev/null || true
+            if ! git diff --cached --quiet; then
+              git commit -m "owner crypto withdraw executed via workflow dispatch" || true
+              git push origin "HEAD:${{ github.ref_name }}"
+            else
+              echo "No out/crypto artifacts to commit."
+            fi
+          else
+            echo "No out/crypto artifacts to commit."
+          fi

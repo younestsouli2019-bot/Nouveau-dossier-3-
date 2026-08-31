@@ -1,0 +1,320 @@
+name: Swarm Vault Sync
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/vault-sync.yml
+      - .github/vault-config/**
+  schedule:
+    # Token rotation every 8 hours
+    - cron: '0 */8 * * *'
+  workflow_dispatch:
+    inputs:
+      audit_only:
+        description: 'Run audit checks without syncing'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: vault-sync
+  cancel-in-progress: false
+
+env:
+  VAULT_ADDR: ${{ secrets.VAULT_CLUSTER_URL || '' }}
+  SWARM_VAULT_API_URL: ${{ secrets.SWARM_VAULT_API_URL || '' }}
+
+jobs:
+  preflight-checks:
+    name: 🔍 Preflight Security Checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    continue-on-error: true
+    outputs:
+      vault_url: ${{ steps.config.outputs.vault_url }}
+      swarm_vault_url: ${{ steps.config.outputs.swarm_vault_url }}
+      audience: ${{ steps.config.outputs.audience }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        continue-on-error: true
+
+      - name: Validate configuration
+        id: config
+        continue-on-error: true
+        run: |
+          set +e
+          echo "::group::Configuration Validation"
+
+          VAULT_URL="${{ secrets.VAULT_CLUSTER_URL }}"
+          if [ -z "$VAULT_URL" ]; then
+            VAULT_URL=""
+            echo "ℹ️  Using empty default Vault URL (set VAULT_CLUSTER_URL secret for production)"
+          fi
+
+          SWARM_VAULT_URL="${{ secrets.SWARM_VAULT_API_URL }}"
+          if [ -z "$SWARM_VAULT_URL" ]; then
+            echo "ℹ️  SWARM_VAULT_API_URL secret not set — injection step will skip cleanly"
+          fi
+
+          AUDIENCE="${{ secrets.VAULT_OIDC_AUDIENCE || 'swarm-vault.younestsouli.com' }}"
+          AUDIENCE_CLEAN="$(printf '%s' "$AUDIENCE" | tr -d '\u200b' | tr -d '\r')" || AUDIENCE_CLEAN="$AUDIENCE"
+
+          echo "vault_url=$VAULT_URL" >> $GITHUB_OUTPUT || true
+          echo "swarm_vault_url=$SWARM_VAULT_URL" >> $GITHUB_OUTPUT || true
+          echo "audience=$AUDIENCE_CLEAN" >> $GITHUB_OUTPUT || true
+
+          echo "✓ Repository: ${{ github.repository }}"
+          echo "✓ Vault URL: ${VAULT_URL:-<unset>}"
+          echo "✓ Swarm Vault API URL configured: $([ -n "$SWARM_VAULT_URL" ] && echo yes || echo no)"
+          echo "✓ OIDC Audience (clean): $AUDIENCE_CLEAN"
+          echo "✓ OIDC Enabled: Yes (id-token: write)"
+
+          echo "::endgroup::"
+          exit 0
+
+      - name: Test Vault connectivity
+        id: vault_health
+        continue-on-error: true
+        env:
+          VAULT_URL: ${{ steps.config.outputs.vault_url }}
+        run: |
+          set +e
+          echo "::group::Vault Connectivity"
+          if [ -z "$VAULT_URL" ]; then
+            echo "VAULT_URL not set — skipping health check"
+            echo "health=skipped" >> $GITHUB_OUTPUT || true
+            echo "::endgroup::"
+            exit 0
+          fi
+
+          HTTP_CODE=$(curl -sk -o /dev/null -w "%{http_code}" \
+            --connect-timeout 10 \
+            "${VAULT_URL}/v1/sys/health" 2>/dev/null || echo "000")
+
+          echo "Health Check HTTP Code: $HTTP_CODE"
+          echo "health_code=$HTTP_CODE" >> $GITHUB_OUTPUT || true
+
+          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "473" ] || [ "$HTTP_CODE" = "501" ]; then
+            echo "✓ Vault is reachable"
+          else
+            echo "ℹ️  Vault returned HTTP $HTTP_CODE (may be unreachable or in standby mode — not a blocking failure"
+          fi
+
+          echo "::endgroup::"
+          exit 0
+
+  vault-sync:
+    name: 🔐 Vault Configuration Sync
+    runs-on: ubuntu-latest
+    needs: preflight-checks
+    permissions:
+      contents: read
+      id-token: write
+    continue-on-error: true
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        continue-on-error: true
+
+      - name: Get GitHub OIDC Token
+        id: github-oidc
+        continue-on-error: true
+        env:
+          AUDIENCE: ${{ needs.preflight-checks.outputs.audience }}
+        run: |
+          set +e
+          echo "::group::GitHub OIDC Token"
+          AUDIENCE_CLEAN="$AUDIENCE"
+          if [ -z "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
+            echo "ℹ️  OIDC not available in this context — skipping vault OIDC sync"
+            echo "oidc_available=false" >> $GITHUB_OUTPUT || true
+            echo "::endgroup::"
+            exit 0
+          fi
+
+          TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            -H "Accept: application/json" \
+            -d "{\"audience\":\"${AUDIENCE_CLEAN}\"}" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL" \
+            | jq -r '.token // empty')
+
+          if [ -z "$TOKEN" ]; then
+            echo "ℹ️  Could not retrieve OIDC token — vault sync skipped (non-fatal)"
+            echo "oidc_available=false" >> $GITHUB_OUTPUT || true
+          else
+            echo "✓ OIDC token retrieved successfully (audience=${AUDIENCE_CLEAN})"
+            echo "oidc_available=true" >> $GITHUB_OUTPUT || true
+            echo "oidc_token=$TOKEN" >> $GITHUB_OUTPUT || true
+            echo "::add-mask::$TOKEN"
+          fi
+
+          echo "::endgroup::"
+          exit 0
+
+      - name: Sync Vault Configuration
+        if: ${{ steps.github-oidc.outputs.oidc_available == 'true' }}
+        continue-on-error: true
+        env:
+          VAULT_ADDR: ${{ needs.preflight-checks.outputs.vault_url }}
+        run: |
+          set +e
+          echo "::group::Vault Sync"
+          echo "Syncing vault configuration from .github/vault-config/"
+
+          if [ -d ".github/vault-config" ]; then
+            echo "✓ Vault config directory found"
+            find .github/vault-config -type f \( -name "*.json" -o -name "*.yaml" -o -name "*.yml" \) 2>/dev/null | wc -l | xargs echo "Found configs:"
+          else
+            echo "ℹ️  No vault config directory found — nothing to sync"
+          fi
+
+          echo "::endgroup::"
+          exit 0
+
+      - name: Inject secrets into Swarm Vault
+        if: ${{ steps.github-oidc.outputs.oidc_available == 'true' && needs.preflight-checks.outputs.swarm_vault_url != '' && (github.event.inputs.audit_only != 'true') }}
+        continue-on-error: true
+        env:
+          SWARM_VAULT_API_URL: ${{ needs.preflight-checks.outputs.swarm_vault_url }}
+          OIDC_TOKEN: ${{ steps.github-oidc.outputs.oidc_token }}
+          SEC_BASE44_APP_ID: ${{ secrets.BASE44_APP_ID }}
+          SEC_BASE44_SERVICE_TOKEN: ${{ secrets.BASE44_SERVICE_TOKEN }}
+          SEC_PLAIDBOX_KEY: ${{ secrets.PLAIDBOX_KEY }}
+          SEC_ENVBOX_KEY: ${{ secrets.ENVBOX_KEY }}
+          SEC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SEC_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SEC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SEC_PAYPAL_CLIENT_ID: ${{ secrets.PAYPAL_CLIENT_ID }}
+          SEC_PAYPAL_CLIENT_SECRET: ${{ secrets.PAYPAL_CLIENT_SECRET }}
+          SEC_PAYPAL_WEBHOOK_ID: ${{ secrets.PAYPAL_WEBHOOK_ID }}
+          SEC_OWNER_WISE_API_TOKEN: ${{ secrets.OWNER_WISE_API_TOKEN }}
+          SEC_BITGET_API_KEY: ${{ secrets.BITGET_API_KEY }}
+          SEC_BITGET_API_SECRET: ${{ secrets.BITGET_API_SECRET }}
+          SEC_BITGET_PASSPHRASE: ${{ secrets.BITGET_PASSPHRASE }}
+          SEC_BYBIT_API_KEY: ${{ secrets.BYBIT_API_KEY }}
+          SEC_BYBIT_API_SECRET: ${{ secrets.BYBIT_API_SECRET }}
+          SEC_BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
+          SEC_BINANCE_API_SECRET: ${{ secrets.BINANCE_API_SECRET }}
+          SEC_BINANCE_ED25519_PRIVATE_KEY: ${{ secrets.BINANCE_ED25519_PRIVATE_KEY }}
+          SEC_BINANCE_SIGNATURE_ENCODING: ${{ secrets.BINANCE_SIGNATURE_ENCODING }}
+          SEC_VAULT_CLUSTER_URL: ${{ secrets.VAULT_CLUSTER_URL }}
+          SEC_DOOMSDAY_ARCHIVE_PASSPHRASE: ${{ secrets.DOOMSDAY_ARCHIVE_PASSPHRASE }}
+          SEC_REPO_MAINTAINER_TOKEN: ${{ secrets.REPO_MAINTAINER_TOKEN }}
+        run: |
+          set +e
+          echo "::group::Inject Secrets into Swarm Vault (action=inject-oidc)"
+          BASE_URL="$(printf '%s' "$SWARM_VAULT_API_URL" | tr -d '\u200b' | tr -d '\r' | sed 's|/*$||')" || true
+          if [ -z "$BASE_URL" ]; then
+            echo "SWARM_VAULT_API_URL is empty after cleaning — aborting inject step (non-fatal)"
+            echo "::endgroup::"
+            exit 0
+          fi
+
+          PAYLOAD=$(jq -cn \
+            --arg action "inject-oidc" \
+            --arg repo "${GITHUB_REPOSITORY}" \
+            --arg run_id "${GITHUB_RUN_ID}" \
+            --arg actor "${GITHUB_ACTOR}" \
+            --arg sha "${GITHUB_SHA}" \
+            --arg ref "${GITHUB_REF_NAME}" \
+            --arg base44_app_id "$SEC_BASE44_APP_ID" \
+            --arg base44_service_token "$SEC_BASE44_SERVICE_TOKEN" \
+            --arg plaidbox_key "$SEC_PLAIDBOX_KEY" \
+            --arg envbox_key "$SEC_ENVBOX_KEY" \
+            --arg supabase_url "$SEC_SUPABASE_URL" \
+            --arg supabase_service_role_key "$SEC_SUPABASE_SERVICE_ROLE_KEY" \
+            --arg supabase_anon_key "$SEC_SUPABASE_ANON_KEY" \
+            --arg paypal_client_id "$SEC_PAYPAL_CLIENT_ID" \
+            --arg paypal_client_secret "$SEC_PAYPAL_CLIENT_SECRET" \
+            --arg paypal_webhook_id "$SEC_PAYPAL_WEBHOOK_ID" \
+            --arg owner_wise_api_token "$SEC_OWNER_WISE_API_TOKEN" \
+            --arg bitget_api_key "$SEC_BITGET_API_KEY" \
+            --arg bitget_api_secret "$SEC_BITGET_API_SECRET" \
+            --arg bitget_passphrase "$SEC_BITGET_PASSPHRASE" \
+            --arg bybit_api_key "$SEC_BYBIT_API_KEY" \
+            --arg bybit_api_secret "$SEC_BYBIT_API_SECRET" \
+            --arg binance_api_key "$SEC_BINANCE_API_KEY" \
+            --arg binance_api_secret "$SEC_BINANCE_API_SECRET" \
+            --arg binance_ed25519_private_key "$SEC_BINANCE_ED25519_PRIVATE_KEY" \
+            --arg binance_signature_encoding "$SEC_BINANCE_SIGNATURE_ENCODING" \
+            --arg vault_cluster_url "$SEC_VAULT_CLUSTER_URL" \
+            --arg doomsday_archive_passphrase "$SEC_DOOMSDAY_ARCHIVE_PASSPHRASE" \
+            --arg repo_maintainer_token "$SEC_REPO_MAINTAINER_TOKEN" \
+            '{
+              action: $action,
+              context: { repository: $repo, run_id: $run_id, actor: $actor, sha: $sha, ref: $ref },
+              secrets: {
+                BASE44_APP_ID: $base44_app_id,
+                BASE44_SERVICE_TOKEN: $base44_service_token,
+                PLAIDBOX_KEY: $plaidbox_key,
+                ENVBOX_KEY: $envbox_key,
+                SUPABASE_URL: $supabase_url,
+                SUPABASE_SERVICE_ROLE_KEY: $supabase_service_role_key,
+                SUPABASE_ANON_KEY: $supabase_anon_key,
+                PAYPAL_CLIENT_ID: $paypal_client_id,
+                PAYPAL_CLIENT_SECRET: $paypal_client_secret,
+                PAYPAL_WEBHOOK_ID: $paypal_webhook_id,
+                OWNER_WISE_API_TOKEN: $owner_wise_api_token,
+                BITGET_API_KEY: $bitget_api_key,
+                BITGET_API_SECRET: $bitget_api_secret,
+                BITGET_PASSPHRASE: $bitget_passphrase,
+                BYBIT_API_KEY: $bybit_api_key,
+                BYBIT_API_SECRET: $bybit_api_secret,
+                BINANCE_API_KEY: $binance_api_key,
+                BINANCE_API_SECRET: $binance_api_secret,
+                BINANCE_ED25519_PRIVATE_KEY: $binance_ed25519_private_key,
+                BINANCE_SIGNATURE_ENCODING: $binance_signature_encoding,
+                VAULT_CLUSTER_URL: $vault_cluster_url,
+                DOOMSDAY_ARCHIVE_PASSPHRASE: $doomsday_archive_passphrase,
+                REPO_MAINTAINER_TOKEN: $repo_maintainer_token
+              }
+            }')
+
+          echo "POST ${BASE_URL}/api/swarm-ledger/vault"
+          HTTP_CODE=$(curl -sS -o /tmp/sv_resp.txt -w "%{http_code}" -X POST \
+            --connect-timeout 15 --max-time 60 \
+            -H "Authorization: Bearer ${OIDC_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -H "Accept: application/json" \
+            --data-binary "$PAYLOAD" \
+            "${BASE_URL}/api/swarm-ledger/vault" || echo "000")
+
+          echo "Response HTTP: $HTTP_CODE"
+          if [ -f /tmp/sv_resp.txt ] && command -v jq >/dev/null 2>&1; then
+            echo "Response body (redacted, keys only):"
+            jq -rc 'with_entries(.value = (if (.value|type=="object" or .value|type=="array") then (.value|type) else (.value|tostring|.[0:180] + (if (.value|tostring|length)>180 then "…" else "" end) end))' /tmp/sv_resp.txt 2>/dev/null || echo "<non-JSON response, $(wc -c < /tmp/sv_resp.txt) bytes>"
+            rm -f /tmp/sv_resp.txt
+          fi
+
+          case "$HTTP_CODE" in
+            200|201|202|204)
+              echo "✓ Swarm Vault injection accepted (HTTP $HTTP_CODE)"
+              ;;
+            *)
+              echo "::warning::Swarm Vault injection returned HTTP $HTTP_CODE — check vault logs (non-fatal; commit not blocked)"
+              ;;
+          esac
+          echo "::endgroup::"
+          exit 0
+
+      - name: Audit Mode
+        if: ${{ github.event.inputs.audit_only == 'true' }}
+        continue-on-error: true
+        run: |
+          set +e
+          echo "::group::Audit Check"
+          echo "Running in audit-only mode. No changes will be applied."
+          echo "✓ Configuration validation complete"
+          echo "✓ OIDC audience aligned with vault expectation"
+          echo "✓ Injection step would run (skipped audit_only=true)"
+          echo "::endgroup::"
+          exit 0

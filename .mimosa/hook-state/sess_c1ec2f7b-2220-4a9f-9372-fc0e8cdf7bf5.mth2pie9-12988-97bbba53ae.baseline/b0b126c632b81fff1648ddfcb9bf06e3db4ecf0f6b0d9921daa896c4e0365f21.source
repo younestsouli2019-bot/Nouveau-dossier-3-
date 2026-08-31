@@ -1,0 +1,640 @@
+import http from "node:http"
+import fs from "node:fs"
+import path from "node:path"
+
+const ROOT = import.meta.dirname
+const STATE_DIR = path.join(ROOT, ".state")
+const STATE_FILE = path.join(STATE_DIR, "router-state.json")
+const METRICS_FILE = path.join(STATE_DIR, "router-metrics.jsonl")
+const ENV_FILE = path.join(ROOT, ".env")
+const PORT = Number(process.env.ROUTER_PORT || "3001")
+const STICKY_MINUTES = Number(process.env.ROUTER_STICKY_MINUTES || "10")
+const TIMEOUT_MS = Number(process.env.ROUTER_TIMEOUT_MS || "120000")
+const ROUTING_MODE = process.env.ROUTING_MODE || "adaptive"
+
+type ModelDef = {
+  id: string
+  context: number
+  coding: number
+  reasoning?: boolean
+  tools?: boolean
+  external_ids?: string[]
+}
+type Provider = {
+  id: string
+  name: string
+  base_url: string
+  api_key_env: string | null
+  no_key: boolean
+  local: boolean
+  auth?: string
+  rpm: number | null
+  rpd: number | null
+  priority: number
+  models: ModelDef[]
+}
+type ProviderState = {
+  id: string
+  health: number
+  ewmaLatency: number
+  requests: number
+  errors: number
+  success: number
+  consecutiveFailures: number
+  circuitOpenUntil: number
+  cooldownUntil: number
+  disabled: boolean
+  disabledReason: string
+  quota: { windowStart: number; count: number }
+  lastUsed: number
+  unavailableModels: Record<string, number>
+}
+type Session = { providerId: string; model: string; expireAt: number }
+type Entry = { provider: Provider; model: ModelDef; state: ProviderState }
+
+const registry: Provider[] = JSON.parse(
+  fs.readFileSync(path.join(ROOT, "providers.json"), "utf8"),
+).providers
+
+function loadEnv(p: string): void {
+  if (!fs.existsSync(p)) return
+  for (const raw of fs.readFileSync(p, "utf8").split(/\r?\n/)) {
+    const m = raw.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/)
+    if (m && !(m[1] in process.env)) {
+      process.env[m[1]] = m[2].replace(/^["']|["']$/g, "")
+    }
+  }
+}
+loadEnv(ENV_FILE)
+
+if (!fs.existsSync(STATE_DIR)) fs.mkdirSync(STATE_DIR, { recursive: true })
+
+const sessions: Record<string, Session> = {}
+const states = new Map<string, ProviderState>()
+const modelIndex = new Map<string, Entry[]>()
+
+for (const p of registry) {
+  const existing = loadStateFile()
+  states.set(
+    p.id,
+    existing && existing[p.id]
+      ? { ...(existing[p.id] as ProviderState), id: p.id, quota: { windowStart: Date.now(), count: 0 } }
+      : {
+          id: p.id,
+          health: 1,
+          ewmaLatency: 0,
+          requests: 0,
+          errors: 0,
+          success: 0,
+          consecutiveFailures: 0,
+          circuitOpenUntil: 0,
+          cooldownUntil: 0,
+          disabled: false,
+          disabledReason: "",
+          quota: { windowStart: Date.now(), count: 0 },
+          lastUsed: 0,
+          unavailableModels: {},
+        },
+  )
+  for (const md of p.models) {
+    const entry: Entry = { provider: p, model: md, state: states.get(p.id)! }
+    const keys = [md.id, ...(md.external_ids ?? [])]
+    for (const k of keys) {
+      const arr = modelIndex.get(k) ?? []
+      arr.push(entry)
+      modelIndex.set(k, arr)
+    }
+  }
+}
+
+function loadStateFile(): Record<string, ProviderState> | null {
+  try {
+    return JSON.parse(fs.readFileSync(STATE_FILE, "utf8"))
+  } catch {
+    return null
+  }
+}
+
+function snapState(): Record<string, ProviderState> {
+  const out: Record<string, ProviderState> = {}
+  for (const [k, v] of states) out[k] = { ...v }
+  return out
+}
+
+let dirty = false
+function persist(): void {
+  fs.writeFileSync(STATE_FILE, JSON.stringify(snapState(), null, 2))
+  dirty = false
+}
+setInterval(() => {
+  if (dirty) persist()
+  pruneSessions()
+}, 5000)
+
+function appendMetric(line: Record<string, unknown>): void {
+  try {
+    fs.appendFileSync(METRICS_FILE, JSON.stringify({ t: Date.now(), ...line }) + "\n")
+  } catch {
+    void 0
+  }
+}
+
+function keyFor(p: Provider): string {
+  return p.api_key_env && process.env[p.api_key_env] ? process.env[p.api_key_env]! : ""
+}
+function isUsable(p: Provider, st: ProviderState): { ok: boolean; reason: string } {
+  if (st.disabled) return { ok: false, reason: `hard-disabled: ${st.disabledReason}` }
+  if (!p.no_key && !keyFor(p)) return { ok: false, reason: `no api key (${p.api_key_env})` }
+  return { ok: true, reason: "" }
+}
+function circuitOpen(st: ProviderState): boolean {
+  return st.circuitOpenUntil > Date.now()
+}
+function inCooldown(st: ProviderState): boolean {
+  return st.cooldownUntil > Date.now()
+}
+function quotaOk(p: Provider, st: ProviderState): boolean {
+  if (!p.rpm) return true
+  const now = Date.now()
+  if (now - st.quota.windowStart >= 60000) {
+    st.quota.windowStart = now
+    st.quota.count = 0
+  }
+  if (st.quota.count >= p.rpm) return false
+  return true
+}
+function quotaHeadroom(p: Provider, st: ProviderState): number {
+  if (!p.rpm) return 1
+  const used = Math.min(st.quota.count, p.rpm)
+  return Math.max(0, 1 - used / p.rpm)
+}
+function consumeQuota(p: Provider, st: ProviderState): void {
+  const now = Date.now()
+  if (now - st.quota.windowStart >= 60000) {
+    st.quota.windowStart = now
+    st.quota.count = 0
+  }
+  st.quota.count++
+}
+
+function healthPenalty(st: ProviderState, factor: number): void {
+  st.health = Math.max(0, st.health * factor)
+  st.consecutiveFailures++
+}
+function recordSuccess(st: ProviderState, latencyMs: number): void {
+  st.success++
+  st.requests++
+  st.consecutiveFailures = 0
+  st.circuitOpenUntil = 0
+  st.cooldownUntil = 0
+  st.health = Math.min(1, st.health + 0.05)
+  st.ewmaLatency = st.ewmaLatency === 0 ? latencyMs : st.ewmaLatency * 0.8 + latencyMs * 0.2
+  st.lastUsed = Date.now()
+}
+
+function markDisabled(id: string, reason: string): void {
+  const st = states.get(id)
+  if (!st) return
+  st.disabled = true
+  st.disabledReason = reason
+  st.health = 0
+  dirty = true
+}
+function markUnavailable(id: string, model: string): void {
+  const st = states.get(id)
+  if (!st) return
+  st.unavailableModels[model] = Date.now()
+  st.consecutiveFailures++
+  st.health = Math.max(0, st.health * 0.3)
+  dirty = true
+}
+
+type TaskKind = "chat" | "coding" | "tool" | "context"
+function estimateTokens(messages: unknown[]): number {
+  let chars = 0
+  for (const m of messages) {
+    const msg = m as { content?: string | unknown[] }
+    if (typeof msg.content === "string") chars += msg.content.length
+    else if (Array.isArray(msg.content)) {
+      for (const c of msg.content) {
+        const part = c as { text?: string; type?: string; input_text?: string }
+        if (part.text) chars += part.text.length
+        if (part.input_text) chars += part.input_text.length
+      }
+    }
+  }
+  return Math.ceil(chars / 4)
+}
+
+function scoreOf(
+  body: Record<string, unknown>,
+  e: Entry,
+  task: TaskKind,
+  session: Session | undefined,
+): number {
+  const { provider: p, model: md, state: st } = e
+  const messages = (body.messages as unknown[]) ?? []
+  const inputTokens = estimateTokens(messages)
+  const tools = Array.isArray(body.tools) && (body.tools as unknown[]).length > 0
+
+  let capability = 1
+  if (task === "tool" && tools && !md.tools) capability *= 0.2
+  else if (task === "coding" && md.coding < 7) capability *= 0.4
+  else if (task === "coding" && md.reasoning) capability *= 1.05
+  if (inputTokens > md.context * 0.8) capability *= 0.1
+  if (inputTokens > md.context) return 0
+
+  let health = st.health
+  if (inCooldown(st)) health *= 0.3
+  if (circuitOpen(st)) health *= 0.1
+  if (st.unavailableModels[md.id] && Date.now() - st.unavailableModels[md.id] < 15 * 60000) health *= 0.15
+
+  const quota = quotaHeadroom(p, st)
+  const reliability = st.requests === 0 ? 0.9 : st.success / st.requests
+  let latency = 1
+  const lat = st.ewmaLatency
+  if (lat > 0) latency = lat > 120000 ? 0.05 : lat > 60000 ? 0.2 : lat > 30000 ? 0.4 : lat > 15000 ? 0.7 : 1
+
+  let score = capability * health * quota * reliability * latency * (p.priority / 100)
+  if (session && session.providerId === p.id && session.model === md.id) score *= 1.25
+  return score
+}
+
+function pick(
+  body: Record<string, unknown>,
+  task: TaskKind,
+  session: Session | undefined,
+): { entry: Entry | null; mode: string; reason: string } {
+  const brand = body.model as string
+  const candidates = modelIndex.get(brand) ?? []
+
+  const eligible = candidates.filter((e) => {
+    const u = isUsable(e.provider, e.state)
+    if (!u.ok) return false
+    if (circuitOpen(e.state)) return false
+    if (inCooldown(e.state)) return false
+    if (!quotaOk(e.provider, e.state)) return false
+    return true
+  })
+
+  const totalHealthy = [...states.values()].filter((s) => s.health > 0.4 && !s.disabled).length
+  const mode =
+    eligible.length >= 2
+      ? "NORMAL"
+      : eligible.length === 1
+        ? totalHealthy >= 2
+          ? "DEGRADED"
+          : "SURVIVAL"
+        : "EMERGENCY"
+
+  if (eligible.length === 0) {
+    const reason = "no-capability"
+    return { entry: null, mode: "NO-CAPABILITY", reason: reason }
+  }
+
+  if (eligible.length === 1) {
+    const only = eligible[0]
+    return { entry: only, mode: mode, reason: "single-eligible" }
+  }
+
+  const best = eligible.reduce((a, b) => (scoreOf(body, a, task, session) >= scoreOf(body, b, task, session) ? a : b))
+  return { entry: best, mode, reason: "scored" }
+}
+
+async function forward(
+  e: Entry,
+  body: Record<string, unknown>,
+  headers: http.IncomingHttpHeaders,
+): Promise<{ status: number; headers: Headers; body: ReadableStream<Uint8Array> | null; json: unknown }> {
+  const { provider: p, model: md, state: st } = e
+  const urlBase = p.base_url.replace(/\/+$/, "")
+  const pathTo = "/chat/completions"
+  let urlStr = urlBase + pathTo
+  if (p.auth === "query_key") urlStr += urlStr.includes("?") ? "&" : "?" + `key=${encodeURIComponent(keyFor(p))}`
+
+  const upstreamHeaders: Record<string, string> = {
+    "content-type": "application/json",
+  }
+  if (keyFor(p) && p.auth !== "query_key") upstreamHeaders["authorization"] = `Bearer ${keyFor(p)}`
+  if (p.id === "openrouter") {
+    const app = headers["x-openrouter-app"] as string | undefined
+    const title = headers["x-title"] as string | undefined
+    if (app) upstreamHeaders["x-openrouter-app"] = app
+    if (title) upstreamHeaders["x-title"] = title
+  }
+
+  const stream = body.stream === true
+  const payload: Record<string, unknown> = { ...body, model: md.id }
+
+  const ac = new AbortController()
+  const timer = setTimeout(() => ac.abort(), TIMEOUT_MS)
+  st.lastUsed = Date.now()
+  dirty = true
+
+  const start = Date.now()
+  try {
+    const upstream = await fetch(urlStr, {
+      method: "POST",
+      headers: upstreamHeaders,
+      body: JSON.stringify(payload),
+      signal: ac.signal,
+    })
+    const elapsed = Date.now() - start
+    if (!upstream.ok) {
+      const errText = await upstream.text().catch(() => "")
+      recordFailure(p, st, upstream.status, errText, elapsed)
+      if (
+        (upstream.status === 404 && /not found|does not exist|model/i.test(errText)) ||
+        (upstream.status === 400 && /model.*unavailable|unavailable.*model|invalid_request_error/i.test(errText))
+      ) {
+        markUnavailable(p.id, md.id)
+      }
+      if (upstream.status === 401 || upstream.status === 403) {
+        markDisabled(p.id, `auth ${upstream.status}`)
+      }
+      return {
+        status: upstream.status,
+        headers: upstream.headers,
+        body: null,
+        json: { error: { message: errText.slice(0, 400) || "upstream error" } },
+      }
+    }
+    recordSuccess(st, elapsed)
+    appendMetric({
+      evt: "success",
+      provider: p.id,
+      model: md.id,
+      status: upstream.status,
+      elapsedMs: elapsed,
+    })
+    const buf = await upstream.arrayBuffer().catch(() => new ArrayBuffer(0))
+    const ct = upstream.headers.get("content-type") ?? "application/json"
+    const isStream = ct.includes("text/event-stream")
+    if (isStream || stream) {
+      return { status: upstream.status, headers: upstream.headers, body: toReadable(buf), json: null }
+    }
+    const parsed = JSON.parse(new TextDecoder().decode(buf).length ? new TextDecoder().decode(buf) : "{}")
+    return { status: upstream.status, headers: upstream.headers, body: null, json: parsed }
+  } catch (err) {
+    const elapsed = Date.now() - start
+    const isTimeout = err instanceof Error && err.name === "AbortError"
+    recordFailure(p, st, isTimeout ? 599 : 0, isTimeout ? "timeout" : String((err as Error).message), elapsed)
+    throw err
+  } finally {
+    clearTimeout(timer)
+    dirty = true
+  }
+}
+
+function recordFailure(p: Provider, st: ProviderState, status: number, detail: string, elapsed: number): void {
+  st.requests++
+  st.errors++
+  st.lastUsed = Date.now()
+  if (status === 429) {
+    st.cooldownUntil = Date.now() + 5 * 60000
+    healthPenalty(st, 0.5)
+    st.health = Math.max(0, st.health)
+  } else if (status >= 500 || status === 0 || status === 599) {
+    st.circuitOpenUntil = Date.now() + 30000
+    healthPenalty(st, 0.5)
+  } else {
+    healthPenalty(st, 0.7)
+  }
+  appendMetric({ evt: "failure", provider: p.id, model: "", status, detail: detail.slice(0, 200), elapsedMs: elapsed })
+  dirty = true
+}
+
+function toReadable(buf: ArrayBuffer): ReadableStream<Uint8Array> {
+  const bytes = new Uint8Array(buf)
+  return new ReadableStream({
+    start(c) {
+      c.enqueue(bytes)
+      c.close()
+    },
+  })
+}
+
+function httpError(res: http.ServerResponse, status: number, msg: string): void {
+  res.writeHead(status, { "content-type": "application/json" })
+  res.end(JSON.stringify({ error: { message: msg } }))
+}
+
+function sessionIdOf(req: http.IncomingMessage, body: Record<string, unknown>): string | undefined {
+  const header = req.headers["x-session-id"]
+  const bodyId = body.session_id
+  return typeof header === "string" && header ? header : typeof bodyId === "string" && bodyId ? bodyId : undefined
+}
+function pruneSessions(): void {
+  const now = Date.now()
+  for (const k of Object.keys(sessions)) if (sessions[k].expireAt < now) delete sessions[k]
+}
+
+function taskOf(body: Record<string, unknown>): TaskKind {
+  const tools = Array.isArray(body.tools) && (body.tools as unknown[]).length > 0
+  const messages = (body.messages as unknown[]) ?? []
+  if (tools) return "tool"
+  const joined = messages.map((m) => JSON.stringify(m)).join(" ").toLowerCase()
+  const codeHints = ["function ", "const ", "def ", "import ", "class ", "```", " refactor", "implement ", "bug", "fix "]
+  if (codeHints.some((h) => joined.includes(h))) return "coding"
+  const inputTokens = estimateTokens(messages)
+  if (inputTokens > 30000) return "context"
+  return "chat"
+}
+
+
+
+const server = http.createServer(async (req, res) => {
+  const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`)
+  const p = url.pathname
+  try {
+    if (req.method === "GET" && p === "/health") {
+      res.writeHead(200, { "content-type": "application/json" })
+      res.end(
+        JSON.stringify({
+          ok: true,
+          service: "ai-router",
+          version: 1,
+          providers: registry.length,
+          mode: ROUTING_MODE,
+        }),
+      )
+      return
+    }
+    if (req.method === "GET" && p === "/status") {
+      const statuses = [...states.entries()].map(([id, st]) => ({
+        id,
+        health: Math.round(st.health * 100) / 100,
+        requests: st.requests,
+        errors: st.errors,
+        successRate: st.requests ? Math.round((st.success / st.requests) * 100) / 100 : null,
+        circuitOpen: circuitOpen(st) || null,
+        circuitOpenMs: Math.max(0, st.circuitOpenUntil - Date.now()),
+        cooldownMs: Math.max(0, st.cooldownUntil - Date.now()),
+        ewmaLatencyMs: Math.round(st.ewmaLatency),
+        disabled: st.disabled || null,
+        disabledReason: st.disabledReason || null,
+        rpm: registry.find((x) => x.id === id)?.rpm ?? null,
+        quotaCount: st.quota.count,
+      }))
+      const enabled = statuses.filter((s) => !s.disabled).length
+      res.writeHead(200, { "content-type": "application/json" })
+      res.end(
+        JSON.stringify({
+          ok: true,
+          mode: ROUTING_MODE,
+          enabledProviders: enabled,
+          totalProviders: statuses.length,
+          knownModels: modelIndex.size,
+          sessions: Object.keys(sessions).length,
+          providers: statuses,
+        }),
+      )
+      return
+    }
+    if (req.method === "GET" && p === "/diagnostics") {
+      const lines: string[] = []
+      for (const [id, st] of states) {
+        const provider = registry.find((x) => x.id === id)
+        lines.push(
+          `${id}: health=${st.health.toFixed(2)} req=${st.requests} err=${st.errors} lat=${Math.round(st.ewmaLatency)}ms ` +
+            `breaker=${circuitOpen(st) ? "OPEN" : "closed"} cooldown=${inCooldown(st) ? "Y" : "n"} disabled=${st.disabled} ` +
+            `key=${provider && !provider.no_key ? (keyFor(provider) ? "set" : "missing") : "n/a"} rpm=${provider?.rpm ?? "-"}`,
+        )
+        for (const md of provider?.models ?? []) {
+          if (st.unavailableModels[md.id]) lines.push(`  - ${md.id}: unavailable (marked)`)
+        }
+      }
+      res.writeHead(200, { "content-type": "text/plain" })
+      res.end(lines.join("\n") + "\n")
+      return
+    }
+    if (req.method === "GET" && p === "/v1/models") {
+      const seen = new Set<string>()
+      const models = []
+      for (const e of modelIndex.values()) {
+        const first = e[0]
+        if (!first) continue
+        const sel = first.model
+        if (seen.has(sel.id)) continue
+        seen.add(sel.id)
+        models.push({
+          id: sel.id,
+          object: "model",
+          owned_by: first.provider.id,
+          context: sel.context,
+          coding: sel.coding,
+          tools: !!sel.tools,
+          reasoning: !!sel.reasoning,
+        })
+      }
+      res.writeHead(200, { "content-type": "application/json" })
+      res.end(JSON.stringify({ object: "list", data: models }))
+      return
+    }
+    if (req.method === "POST" && (p === "/v1/chat/completions" || p === "/v1/responses")) {
+      const chunks: Buffer[] = []
+      for await (const c of req) chunks.push(c as Buffer)
+      let body: Record<string, unknown>
+      try {
+        body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}")
+      } catch {
+        httpError(res, 400, "invalid json body")
+        return
+      }
+      const brand = body.model as string | undefined
+      if (!brand) {
+        httpError(res, 400, "missing model")
+        return
+      }
+      const sessionId = sessionIdOf(req, body)
+      let session: Session | undefined
+      if (sessionId && sessions[sessionId] && sessions[sessionId].expireAt > Date.now()) {
+        session = sessions[sessionId]
+      }
+      const task = taskOf(body)
+      const { entry, mode, reason } = pick(body, task, session)
+      if (!entry) {
+        const providersInfo = [...states.entries()]
+          .map(([id, st]) => `${id}${st.disabled ? ` (disabled:${st.disabledReason})` : ""}`)
+          .join(", ")
+        const msg = `no-capability: no eligible provider for model "${brand}" [${reason}]. ${providersInfo}`
+        appendMetric({ evt: "reject", model: brand, reason: msg.slice(0, 200) })
+        res.writeHead(503, { "content-type": "application/json", "x-router-mode": "NO-CAPABILITY" })
+        res.end(JSON.stringify({ error: { message: msg, router: { mode: "NO-CAPABILITY" } } }))
+        return
+      }
+      if (sessionId) {
+        sessions[sessionId] = {
+          providerId: entry.provider.id,
+          model: entry.model.id,
+          expireAt: Date.now() + STICKY_MINUTES * 60000,
+        }
+      }
+      try {
+        const out = await forward(entry, body, req.headers)
+        const hdrs: Record<string, string> = {
+          "content-type": out.headers?.get("content-type") ?? "application/json",
+          "x-router-mode": mode,
+          "x-router-provider": entry.provider.id,
+          "x-router-model": entry.model.id,
+          "x-router-reason": reason,
+        }
+        res.writeHead(out.status, hdrs)
+        if (out.body) {
+          const reader = out.body.getReader()
+          for (;;) {
+            const { done, value } = await reader.read()
+            if (done) break
+            res.write(Buffer.from(value))
+          }
+          res.end()
+        } else if (out.json !== null) {
+          res.end(JSON.stringify(out.json))
+        } else {
+          res.end("{}")
+        }
+      } catch {
+        httpError(res, 502, `upstream failed ${entry.provider.id}/${entry.model.id} (breakers engaged)`)
+      }
+      return
+    }
+    if (p.startsWith("/v1/")) {
+      const split = p.split("/")
+      if (split[2] === "embeddings" || split[2] === "images" || split[2] === "audio") {
+        const sessionId = req.headers["x-session-id"] as string | undefined
+        void sessionId
+        httpError(res, 501, `endpoint not supported: ${p} (request its upstream provider directly)`)
+        return
+      }
+    }
+    httpError(res, 404, `not found: ${p}`)
+  } catch (err) {
+    httpError(res, 500, `router error: ${String((err as Error).message)}`)
+  }
+})
+
+server.on("error", (err: NodeJS.ErrnoException) => {
+  if (err.code === "EADDRINUSE") {
+    console.error(`ai-router: port ${PORT} already in use (is another router running?)`)
+    process.exit(1)
+  }
+  console.error("ai-router error:", err.message)
+  alert(err.message)
+  process.exit(1)
+})
+
+server.listen(PORT, "127.0.0.1", () => {
+  console.log(`asterisk-free ai-router listening on http://127.0.0.1:${PORT} (mode=${ROUTING_MODE})`)
+  console.log(`providers: ${registry.map((p) => p.id).join(", ")}`)
+  console.log(`endpoints: /health /status /diagnostics /v1/models /v1/chat/completions`)
+})
+
+function shutdown(): void {
+  persist()
+  process.exit(0)
+}
+process.once("SIGINT", shutdown)
+process.once("SIGTERM", shutdown)
+function alert(m: string): void {
+  console.error(m)
+}
