@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-30T21:01:22.242Z",
+  "generatedAt": "2026-08-31T13:12:26.088Z",
   "note": "Config-declared route openness does NOT imply send capability. This report reconciles both. A rail is deliverable only if configOpen AND authOk AND canSend.",
   "routes": {
     "payoneer": {
@@ -15,10 +15,10 @@
       "declared": true,
       "deliverable": false,
       "configOpen": true,
-      "authOk": true,
+      "authOk": false,
       "canSend": false,
-      "reason": "403 AUTHORIZATION_ERROR on payout POST - awaiting PayPal C.I.P./identity review clearance (dashboard: Payouts permission pending). Retry after clearance.",
-      "measuredAt": "2026-08-28T00:20:00Z"
+      "reason": "Live OAuth probe 2026-08-31 -> 401 invalid_client (Client Authentication failed) against api-m.paypal.com. Credentials currently fail auth; Payouts scope NOT confirmed. C.I.P. status moot until creds authenticate.",
+      "measuredAt": "2026-08-31T12:48Z"
     },
     "bank": {
       "declared": true,
@@ -67,8 +67,9 @@
   },
   "summary": {
     "deliverableOutboundRails": [
-      "NONE pending PayPal C.I.P. clearance (single candidate blocked)"
+      "bank_wire (Banking Circle USD, no-FX, 35bps) via supervised optimum route — route assigned, funds NOT yet moved",
+      "NONE live-authenticated outbound sender currently moves funds (PayPal OAuth client auth fail)"
     ],
-    "topBlocker": "PayPal payout 403 AUTHORIZATION_ERROR - waiting C.I.P./identity review. Once cleared, re-run scripts/owner-payout-paypal.mjs --amount 150"
+    "topBlocker": "Outbound funds movement requires a live-authenticated sender rail. PayPal creds fail OAuth 401 invalid_client (live probe 2026-08-31). Supervised optimum route resolved to Banking Circle — Primary for the $6,224.55 pipeline; pending a live bank-send credential before funds move."
   }
 }

@@ -1,0 +1,287 @@
+{
+  "generatedAt": "2026-08-31T13:03:32.307Z",
+  "engine": "financial-supervisor",
+  "scope": "recompute_optimum_route_only_NO_MONEY_MOVED",
+  "methodology": "Resolver: least per-rail fee, no-FX bonus, velocity headroom, primary-account bonus.",
+  "ownerAccountsScored": 5,
+  "intentsRouted": 16,
+  "totalRoutedUSD": 6224.549999999998,
+  "distribution": {
+    "Banking Circle — Primary": 6224.549999999998
+  },
+  "decisions": [
+    {
+      "intentId": "f479a778-d957-473c-85d8-13696e36d000",
+      "amount": 1400,
+      "currency": "USD",
+      "source": "PayoutItem:568dfc77-7412-4a7b-b481-654e3eb862bb",
+      "optimumOwnerAccount": {
+        "id": "01afb980-d04f-4e9a-87bb-e8caa25a516a",
+        "label": "Banking Circle — Primary",
+        "rail": "bank_wire",
+        "accountCurrency": "USD",
+        "feeBps": 35,
+        "currencyMatch": true,
+        "reason": "primary-account + fee/FX optimum"
+      },
+      "action": "ROUTE_ASSIGNED",
+      "fundsMoved": false
+    },
+    {
+      "intentId": "3309cd11-0b17-4c5d-9b4f-1a99456987d6",
+      "amount": 1050,
+      "currency": "USD",
+      "source": "PayoutItem:44e1598c-7da3-4bab-a690-73da0c87ed92",
+      "optimumOwnerAccount": {
+        "id": "01afb980-d04f-4e9a-87bb-e8caa25a516a",
+        "label": "Banking Circle — Primary",
+        "rail": "bank_wire",
+        "accountCurrency": "USD",
+        "feeBps": 35,
+        "currencyMatch": true,
+        "reason": "primary-account + fee/FX optimum"
+      },
+      "action": "ROUTE_ASSIGNED",
+      "fundsMoved": false
+    },
+    {
+      "intentId": "ebcc8fad-c06e-4e11-9422-8348b0431bcd",
+      "amount": 700,
+      "currency": "USD",
+      "source": "PayoutItem:bfdabf00-81b8-4d50-8398-0e39adb711d0",
+      "optimumOwnerAccount": {
+        "id": "01afb980-d04f-4e9a-87bb-e8caa25a516a",
+        "label": "Banking Circle — Primary",
+        "rail": "bank_wire",
+        "accountCurrency": "USD",
+        "feeBps": 35,
+        "currencyMatch": true,
+        "reason": "primary-account + fee/FX optimum"
+      },
+      "action": "ROUTE_ASSIGNED",
+      "fundsMoved": false
+    },
+    {
+      "intentId": "6c2aea37-e070-40b1-b32c-4b0700c660e5",
+      "amount": 500,
+      "currency": "USD",
+      "source": "PayoutItem:2b72f2ec-a5f1-4992-bb38-3888ebf64f18",
+      "optimumOwnerAccount": {
+        "id": "01afb980-d04f-4e9a-87bb-e8caa25a516a",
+        "label": "Banking Circle — Primary",
+        "rail": "bank_wire",
+        "accountCurrency": "USD",
+        "feeBps": 35,
+        "currencyMatch": true,
+        "reason": "primary-account + fee/FX optimum"
+      },
+      "action": "ROUTE_ASSIGNED",
+      "fundsMoved": false
+    },
+    {
+      "intentId": "e013331e-a6ea-49ec-9ea5-9f2e29e82bad",
+      "amount": 500,
+      "currency": "USD",
+      "source": "PayoutItem:630b0d98-7e4b-453f-9b6b-baf2df95d282",
+      "optimumOwnerAccount": {
+        "id": "01afb980-d04f-4e9a-87bb-e8caa25a516a",
+        "label": "Banking Circle — Primary",
+        "rail": "bank_wire",
+        "accountCurrency": "USD",
+        "feeBps": 35,
+        "currencyMatch": true,
+        "reason": "primary-account + fee/FX optimum"
+      },
+      "action": "ROUTE_ASSIGNED",
+      "fundsMoved": false
+    },
+    {
+      "intentId": "824e50af-0004-4412-8e38-79c439c585ba",
+      "amount": 356.2,
+      "currency": "USD",
+      "source": "PayoutItem:b3790e47-901e-4138-8a8a-e6ef1f3e8f75",
+      "optimumOwnerAccount": {
+        "id": "01afb980-d04f-4e9a-87bb-e8caa25a516a",
+        "label": "Banking Circle — Primary",
+        "rail": "bank_wire",
+        "accountCurrency": "USD",
+        "feeBps": 35,
+        "currencyMatch": true,
+        "reason": "primary-account + fee/FX optimum"
+      },
+      "action": "ROUTE_ASSIGNED",
+      "fundsMoved": false
+    },
+    {
+      "intentId": "3690d717-e17f-4d0e-b0fb-f2d8ed323f06",
+      "amount": 350,
+      "currency": "USD",
+      "source": "PayoutItem:cc7a0b5d-afe5-4603-85c8-77d2fe4841d3",
+      "optimumOwnerAccount": {
+        "id": "01afb980-d04f-4e9a-87bb-e8caa25a516a",
+        "label": "Banking Circle — Primary",
+        "rail": "bank_wire",
+        "accountCurrency": "USD",
+        "feeBps": 35,
+        "currencyMatch": true,
+        "reason": "primary-account + fee/FX optimum"
+      },
+      "action": "ROUTE_ASSIGNED",
+      "fundsMoved": false
+    },
+    {
+      "intentId": "8f7853b7-a686-422b-8fc8-86a5a91c36ea",
+      "amount": 267.15,
+      "currency": "USD",
+      "source": "PayoutItem:94d96b50-6018-4c33-adf1-f55139517c21",
+      "optimumOwnerAccount": {
+        "id": "01afb980-d04f-4e9a-87bb-e8caa25a516a",
+        "label": "Banking Circle — Primary",
+        "rail": "bank_wire",
+        "accountCurrency": "USD",
+        "feeBps": 35,
+        "currencyMatch": true,
+        "reason": "primary-account + fee/FX optimum"
+      },
+      "action": "ROUTE_ASSIGNED",
+      "fundsMoved": false
+    },
+    {
+      "intentId": "384cc1b9-7c89-4937-863a-c79b588338c5",
+      "amount": 267.15,
+      "currency": "USD",
+      "source": "PayoutItem:c9c8c553-3b76-4e9a-bf2a-c655eef1b5a9",
+      "optimumOwnerAccount": {
+        "id": "01afb980-d04f-4e9a-87bb-e8caa25a516a",
+        "label": "Banking Circle — Primary",
+        "rail": "bank_wire",
+        "accountCurrency": "USD",
+        "feeBps": 35,
+        "currencyMatch": true,
+        "reason": "primary-account + fee/FX optimum"
+      },
+      "action": "ROUTE_ASSIGNED",
+      "fundsMoved": false
+    },
+    {
+      "intentId": "8b8ea838-f4eb-4694-a961-2322864f3763",
+      "amount": 250,
+      "currency": "USD",
+      "source": "PayoutItem:64a90afd-4d95-4e6c-9a9c-815dd6edf449",
+      "optimumOwnerAccount": {
+        "id": "01afb980-d04f-4e9a-87bb-e8caa25a516a",
+        "label": "Banking Circle — Primary",
+        "rail": "bank_wire",
+        "accountCurrency": "USD",
+        "feeBps": 35,
+        "currencyMatch": true,
+        "reason": "primary-account + fee/FX optimum"
+      },
+      "action": "ROUTE_ASSIGNED",
+      "fundsMoved": false
+    },
+    {
+      "intentId": "a5999d95-fad5-4e98-8dc9-7c19161cb0c4",
+      "amount": 182.7,
+      "currency": "USD",
+      "source": "PayoutItem:0a193f48-a3e6-472c-a04c-22522a691e3d",
+      "optimumOwnerAccount": {
+        "id": "01afb980-d04f-4e9a-87bb-e8caa25a516a",
+        "label": "Banking Circle — Primary",
+        "rail": "bank_wire",
+        "accountCurrency": "USD",
+        "feeBps": 35,
+        "currencyMatch": true,
+        "reason": "primary-account + fee/FX optimum"
+      },
+      "action": "ROUTE_ASSIGNED",
+      "fundsMoved": false
+    },
+    {
+      "intentId": "4f029ec0-555e-44d4-88a0-f68b69fc1628",
+      "amount": 137.03,
+      "currency": "USD",
+      "source": "PayoutItem:c406d87b-b9dc-4a4f-a5e9-ad92a8a81e6d",
+      "optimumOwnerAccount": {
+        "id": "01afb980-d04f-4e9a-87bb-e8caa25a516a",
+        "label": "Banking Circle — Primary",
+        "rail": "bank_wire",
+        "accountCurrency": "USD",
+        "feeBps": 35,
+        "currencyMatch": true,
+        "reason": "primary-account + fee/FX optimum"
+      },
+      "action": "ROUTE_ASSIGNED",
+      "fundsMoved": false
+    },
+    {
+      "intentId": "3c750d96-a224-4ec8-b539-94dc98d76229",
+      "amount": 137.02,
+      "currency": "USD",
+      "source": "PayoutItem:a62915a2-c475-4ee9-a18f-d738b654306c",
+      "optimumOwnerAccount": {
+        "id": "01afb980-d04f-4e9a-87bb-e8caa25a516a",
+        "label": "Banking Circle — Primary",
+        "rail": "bank_wire",
+        "accountCurrency": "USD",
+        "feeBps": 35,
+        "currencyMatch": true,
+        "reason": "primary-account + fee/FX optimum"
+      },
+      "action": "ROUTE_ASSIGNED",
+      "fundsMoved": false
+    },
+    {
+      "intentId": "7569b92d-5eca-41c9-8a9b-965dc08c4cdf",
+      "amount": 50.92,
+      "currency": "USD",
+      "source": "PayoutItem:c39deac4-5ff8-4a31-87ca-51bb088704cb",
+      "optimumOwnerAccount": {
+        "id": "01afb980-d04f-4e9a-87bb-e8caa25a516a",
+        "label": "Banking Circle — Primary",
+        "rail": "bank_wire",
+        "accountCurrency": "USD",
+        "feeBps": 35,
+        "currencyMatch": true,
+        "reason": "primary-account + fee/FX optimum"
+      },
+      "action": "ROUTE_ASSIGNED",
+      "fundsMoved": false
+    },
+    {
+      "intentId": "34d4311e-abf8-4f24-8623-78b784398c66",
+      "amount": 38.19,
+      "currency": "USD",
+      "source": "PayoutItem:e27744e7-e2a9-4331-98e0-142692bf96a5",
+      "optimumOwnerAccount": {
+        "id": "01afb980-d04f-4e9a-87bb-e8caa25a516a",
+        "label": "Banking Circle — Primary",
+        "rail": "bank_wire",
+        "accountCurrency": "USD",
+        "feeBps": 35,
+        "currencyMatch": true,
+        "reason": "primary-account + fee/FX optimum"
+      },
+      "action": "ROUTE_ASSIGNED",
+      "fundsMoved": false
+    },
+    {
+      "intentId": "edf83654-64e4-40f1-90cc-238664fee2b3",
+      "amount": 38.19,
+      "currency": "USD",
+      "source": "PayoutItem:c65a848e-b931-46b9-b759-46a6e6dae7ab",
+      "optimumOwnerAccount": {
+        "id": "01afb980-d04f-4e9a-87bb-e8caa25a516a",
+        "label": "Banking Circle — Primary",
+        "rail": "bank_wire",
+        "accountCurrency": "USD",
+        "feeBps": 35,
+        "currencyMatch": true,
+        "reason": "primary-account + fee/FX optimum"
+      },
+      "action": "ROUTE_ASSIGNED",
+      "fundsMoved": false
+    }
+  ],
+  "integrityHash": "ef127c5e2a0d06f704ebf25973e47f214e01bc2d570a798271b12cdbc35f6913"
+}
