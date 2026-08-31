@@ -81,6 +81,141 @@ const CREDENTIAL_REGISTRY: Record<string, ConnectorCredential> = {
     activatedAt: null,
     isActive: false,
   },
+  payoneer: {
+    id: 'payoneer',
+    name: 'Payoneer',
+    type: 'payment_processor',
+    mode: 'offline',
+    config: {
+      apiToken: process.env.PAYONEER_API_TOKEN || '',
+      programId: process.env.PAYONEER_PROGRAM_ID || '',
+      partnerId: process.env.PAYONEER_PARTNER_ID || '',
+    },
+    envFallbacks: {
+      apiToken: 'PAYONEER_API_TOKEN',
+      programId: 'PAYONEER_PROGRAM_ID',
+      partnerId: 'PAYONEER_PARTNER_ID',
+    },
+    activatedAt: null,
+    isActive: false,
+  },
+  binance: {
+    id: 'binance',
+    name: 'Binance',
+    type: 'crypto_exchange',
+    mode: 'offline',
+    config: {
+      apiKey: process.env.BINANCE_API_KEY || '',
+      apiSecret: process.env.BINANCE_API_SECRET || '',
+      baseUrl: process.env.BINANCE_API_BASE || 'https://api.binance.com',
+    },
+    envFallbacks: {
+      apiKey: 'BINANCE_API_KEY',
+      apiSecret: 'BINANCE_API_SECRET',
+    },
+    activatedAt: null,
+    isActive: false,
+  },
+  bybit: {
+    id: 'bybit',
+    name: 'Bybit',
+    type: 'crypto_exchange',
+    mode: 'offline',
+    config: {
+      apiKey: process.env.BYBIT_API_KEY || '',
+      apiSecret: process.env.BYBIT_API_SECRET || '',
+    },
+    envFallbacks: {
+      apiKey: 'BYBIT_API_KEY',
+      apiSecret: 'BYBIT_API_SECRET',
+    },
+    activatedAt: null,
+    isActive: false,
+  },
+  bitget: {
+    id: 'bitget',
+    name: 'Bitget',
+    type: 'crypto_exchange',
+    mode: 'offline',
+    config: {
+      apiKey: process.env.BITGET_API_KEY || '',
+      apiSecret: process.env.BITGET_API_SECRET || '',
+      passphrase: process.env.BITGET_PASSPHRASE || '',
+    },
+    envFallbacks: {
+      apiKey: 'BITGET_API_KEY',
+      apiSecret: 'BITGET_API_SECRET',
+      passphrase: 'BITGET_PASSPHRASE',
+    },
+    activatedAt: null,
+    isActive: false,
+  },
+  wise: {
+    id: 'wise',
+    name: 'Wise',
+    type: 'wire_transfer',
+    mode: 'offline',
+    config: {
+      apiToken: process.env.WISE_API_TOKEN || process.env.OWNER_WISE_API_TOKEN || '',
+      baseUrl: process.env.WISE_API_BASE || 'https://api.wise.com',
+    },
+    envFallbacks: {
+      apiToken: 'WISE_API_TOKEN',
+      baseUrl: 'WISE_API_BASE',
+    },
+    activatedAt: null,
+    isActive: false,
+  },
+  stripe: {
+    id: 'stripe',
+    name: 'Stripe',
+    type: 'payment_processor',
+    mode: 'offline',
+    config: {
+      secretKey: process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY || '',
+      publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '',
+    },
+    envFallbacks: {
+      secretKey: 'STRIPE_SECRET_KEY',
+      publishableKey: 'STRIPE_PUBLISHABLE_KEY',
+    },
+    activatedAt: null,
+    isActive: false,
+  },
+  tron: {
+    id: 'tron',
+    name: 'Tron (TRC20)',
+    type: 'crypto_rail',
+    mode: 'offline',
+    config: {
+      privateKey: process.env.TRON_PRIVATE_KEY || process.env.OWNER_TRON_PRIVATE_KEY || '',
+      usdtAddress: process.env.TRON_USDT_ADDRESS || process.env.OWNER_TRON_USDT_ADDRESS || '',
+      gridNode: process.env.TRON_GRID_NODE || 'https://api.trongrid.io',
+    },
+    envFallbacks: {
+      privateKey: 'TRON_PRIVATE_KEY',
+      usdtAddress: 'TRON_USDT_ADDRESS',
+    },
+    activatedAt: null,
+    isActive: false,
+  },
+  googlepay: {
+    id: 'googlepay',
+    name: 'Google Pay',
+    type: 'wallet',
+    mode: 'offline',
+    config: {
+      merchantId: process.env.GOOGLEPAY_MERCHANT_ID || '',
+      clientId: process.env.GOOGLEPAY_CLIENT_ID || '',
+      ownerEmail: process.env.OWNER_GOOGLEPAY_EMAIL || '',
+    },
+    envFallbacks: {
+      merchantId: 'GOOGLEPAY_MERCHANT_ID',
+      clientId: 'GOOGLEPAY_CLIENT_ID',
+    },
+    activatedAt: null,
+    isActive: false,
+  },
 };
 
 const CREDENTIALS: Record<string, ConnectorCredential> = {};
