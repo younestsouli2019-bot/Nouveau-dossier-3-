@@ -1,0 +1,161 @@
+name: Deploy to Vercel (Supply Chain Swarm)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Deployment target
+        required: true
+        default: production
+        type: choice
+        options:
+          - production
+          - preview
+
+concurrency:
+  group: vercel-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment
+        run: vercel pull --yes --environment=${{ github.event.inputs.environment || 'production' }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      # Owner-directed runtime env vars. Values come from GitHub Actions
+      # secrets (masked in logs). If a secret is unset, vercel env add is
+      # skipped for that key so a stale placeholder never ships.
+      # ONLY runs on production deploys; preview inherits prod env.
+      - name: Provision OWNER runtime env vars (production)
+        if: ${{ github.event.inputs.environment != 'preview' && github.event.inputs.environment != '' }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+          _provision() {
+            local key="$1" val="${2:-}"
+            [ -n "$val" ] || { echo "skip $key (secret unset)"; return 0; }
+            # idempotent: if the var already exists, remove then re-add (env add errors on existing)
+            vercel env rm "$key" production --yes --token="${{ secrets.VERCEL_TOKEN }}" 2>/dev/null || true
+            printf '%s' "$val" | vercel env add "$key" production --yes --token="${{ secrets.VERCEL_TOKEN }}" 2>/dev/null \
+              || echo "warn: could not set $key"
+          }
+          _provision OWNER_PAYOUT_RAIL       "${{ secrets.OWNER_PAYOUT_RAIL }}"
+          _provision OWNER_PAYOUT_CURRENCY   "${{ secrets.OWNER_PAYOUT_CURRENCY }}"
+          _provision OWNER_KYC_STATUS        "${{ secrets.OWNER_KYC_STATUS }}"
+          _provision PLAN_TRANSITION_MODE    "${{ secrets.PLAN_TRANSITION_MODE }}"
+          _provision OWNER_EXEC_UNLOCK       "${{ secrets.OWNER_EXEC_UNLOCK }}"
+          _provision OWNER_PAYOUT_IDENTIFIER "${{ secrets.OWNER_PAYOUT_IDENTIFIER }}"
+          _provision OWNER_PAYOUT_COUNTRY    "${{ secrets.OWNER_PAYOUT_COUNTRY }}"
+          _provision OWNER_PAYOUT_HOLDER_NAME "${{ secrets.OWNER_PAYOUT_HOLDER_NAME }}"
+          _provision OWNER_PAYOUT_BANK_BIC   "${{ secrets.OWNER_PAYOUT_BANK_BIC }}"
+
+      - name: Install project dependencies
+        run: npm ci || npm install
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Apply database migrations (Neon)
+        continue-on-error: true
+        run: |
+          set +euo pipefail
+          if [ -z "${DATABASE_URL:-}" ]; then
+            echo "::warning::DATABASE_URL secret empty — skip prisma migrate deploy. Neon columns (ownerInitiated etc.) must be applied manually or on next run."
+            exit 0
+          fi
+          RETRIES=0; MAX=3
+          while [ "$RETRIES" -lt "$MAX" ]; do
+            npx prisma migrate deploy
+            RC=$?
+            if [ "$RC" -eq 0 ]; then
+              echo "✓ Prisma migrations applied on attempt $((RETRIES+1))/$MAX"
+              exit 0
+            fi
+            RETRIES=$((RETRIES+1))
+            echo "::warning::Prisma migrate deploy failed (rc=$RC) on attempt $RETRIES/$MAX — Neon might be waking from autosuspend. Waiting 4s and retrying..."
+            sleep 4
+          done
+          echo "::warning::Prisma migrate deploy failed all $MAX attempts — build continues without Neon migration. Apply ownerInitiated SQL manually via Neon console (see P0.2 docs)."
+          exit 0
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NODE_OPTIONS: --max-old-space-size=8192
+
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          if [ "${{ github.event.inputs.environment || 'production' }}" = "production" ]; then
+            URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          else
+            URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          fi
+          echo "Deployed to: $URL"
+          echo "url=$URL" >> $GITHUB_OUTPUT
+
+      - name: Post-deploy — verify healthz
+        run: |
+          URL="${{ steps.deploy.outputs.url }}"
+          echo "Health check: $URL/api/healthz"
+          sleep 5
+          for i in 1 2 3 4 5; do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL/api/healthz" || echo "000")
+            echo "Attempt $i: HTTP $CODE"
+            if [ "$CODE" = "200" ]; then exit 0; fi
+            sleep 5
+          done
+          echo "WARNING: healthz did not return 200 after 5 attempts; deployment may still be warming up"
+
+      - name: Write deployment summary
+        run: |
+          echo "## Vercel Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Item | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Target | ${{ github.event.inputs.environment || 'production' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| URL | ${{ steps.deploy.outputs.url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Domain (alias) | https://supply-chain-swarm.vercel.app |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | $GITHUB_SHA |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next: Verify procurement local-sourcing optimization" >> $GITHUB_STEP_SUMMARY
+          echo "1. Open **Procurement** tab → click **Optimize** or POST to \`/api/procurement/optimize\`" >> $GITHUB_STEP_SUMMARY
+          echo "2. Confirm \`LOCAL_SUPPLIERS\` price factors (70–88% of import) applied to matching items" >> $GITHUB_STEP_SUMMARY
+          echo "3. Run \`/api/procurement/fix-recipients\` to ensure 3 recipients have POs routed" >> $GITHUB_STEP_SUMMARY
