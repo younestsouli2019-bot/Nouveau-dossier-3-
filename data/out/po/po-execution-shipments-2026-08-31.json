@@ -1,0 +1,129 @@
+{
+  "at": "2026-08-31T19:45:39.251Z",
+  "action": "create",
+  "shipmentsCreated": 135,
+  "alreadyLinked": 40,
+  "note": "Real shipments created from live DB with LOCAL Moroccan carriers + Morocco origin + real per-recipient destinations. trackingVerified=false, NO synthetic waybills. Provide real waybills: node scripts/execute-pos-local-carriers.mjs --action waybill --item <id> --tracking <realTracking>",
+  "creators": [
+    {
+      "id": "shp-local-1788205511114-1",
+      "recipient": "M Bachir Tsouli",
+      "item": "Superfood.ma Nitric Oxide Pack",
+      "qty": 1,
+      "carrier": "Aramex Morocco",
+      "supplier": "Superfood.ma"
+    },
+    {
+      "id": "shp-local-1788205511325-2",
+      "recipient": "M Bachir Tsouli",
+      "item": "Superfood.ma Diabetes Pack",
+      "qty": 1,
+      "carrier": "Aramex Morocco",
+      "supplier": "Superfood.ma"
+    },
+    {
+      "id": "shp-local-1788205511518-3",
+      "recipient": "M Bachir Tsouli",
+      "item": "Superfood.ma Tablet",
+      "qty": 1,
+      "carrier": "Aramex Morocco",
+      "supplier": "Superfood.ma"
+    },
+    {
+      "id": "shp-local-1788205511708-4",
+      "recipient": "M Bachir Tsouli",
+      "item": "Perfumes (Assorted)",
+      "qty": 3,
+      "carrier": "Poste Maroc (Barid Al-Maghrib)",
+      "supplier": "ParfumMaroc"
+    },
+    {
+      "id": "shp-local-1788205511893-5",
+      "recipient": "M Bachir Tsouli",
+      "item": "Walking Cane",
+      "qty": 1,
+      "carrier": "Jumia Logistics",
+      "supplier": "Jumia Maroc"
+    },
+    {
+      "id": "shp-local-1788205512094-6",
+      "recipient": "M Bachir Tsouli",
+      "item": "Slippers",
+      "qty": 1,
+      "carrier": "Jumia Logistics",
+      "supplier": "Jumia Maroc"
+    },
+    {
+      "id": "shp-local-1788205512308-7",
+      "recipient": "M Bachir Tsouli",
+      "item": "Tablette CR 10.1 Android 16 8GB/128GB",
+      "qty": 1,
+      "carrier": "Jumia Logistics",
+      "supplier": "VASOUN / Jumia"
+    },
+    {
+      "id": "shp-local-1788205512509-8",
+      "recipient": "M Bachir Tsouli",
+      "item": "Parfum Paco Rabanne One Million 50ml",
+      "qty": 1,
+      "carrier": "Poste Maroc (Barid Al-Maghrib)",
+      "supplier": "ParfumMaroc"
+    },
+    {
+      "id": "shp-local-1788205512696-9",
+      "recipient": "M Bachir Tsouli",
+      "item": "Parfum Mont Blanc Legend 50ml",
+      "qty": 1,
+      "carrier": "Jumia Logistics",
+      "supplier": "Jumia"
+    },
+    {
+      "id": "shp-local-1788205512891-10",
+      "recipient": "M Bachir Tsouli",
+      "item": "Canne orthopedique premium pliable aluminium",
+      "qty": 1,
+      "carrier": "Jumia Logistics",
+      "supplier": "Locamed / Jumia"
+    },
+    {
+      "id": "shp-local-1788205513089-11",
+      "recipient": "M Bachir Tsouli",
+      "item": "Pantoufles orthopediques cuir medical unisexe",
+      "qty": 1,
+      "carrier": "Jumia Logistics",
+      "supplier": "VEADA / Jumia"
+    },
+    {
+      "id": "shp-local-1788205513298-12",
+      "recipient": "M Bachir Tsouli",
+      "item": "Superfood.ma Pack Nitric Oxide",
+      "qty": 1,
+      "carrier": "Aramex Morocco",
+      "supplier": "Superfood.ma"
+    },
+    {
+      "id": "shp-local-1788205513498-13",
+      "recipient": "M Bachir Tsouli",
+      "item": "Superfood.ma Pack Diabetes",
+      "qty": 1,
+      "carrier": "Aramex Morocco",
+      "supplier": "Superfood.ma"
+    },
+    {
+      "id": "shp-local-1788205513690-14",
+      "recipient": "Mr Younes Tsouli",
+      "item": "Dell Laptop (Refurbished from Avito)",
+      "qty": 1,
+      "carrier": "Amana (Contre Remboursement / COD)",
+      "supplier": "Avito Maroc (Refurbished)"
+    },
+    {
+      "id": "shp-local-1788205513967-15",
+      "recipient": "Mr Younes Tsouli",
+      "item": "Cigarettes + Filters (lepiceriefineandco.ma)",
+      "qty": 10,
+      "carrier": "Aramex Morocco",
+      "supplier": "lepiceriefineandco.ma"
+    }
+  ]
+}

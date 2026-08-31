@@ -1,0 +1,43 @@
+{
+  "at": "2026-08-31T19:59:47.974Z",
+  "title": "PO EXECUTION - LOCAL CARRIER DELIVERY MANIFEST",
+  "source": "data/procurement-requests.json + live ProcurementItem/Shipment rows",
+  "truthGuard": "trackingVerified=false; NO synthetic waybills. Shipments pending until a REAL waybill is recorded and verified by carrier.",
+  "totals": {
+    "shipments": 135,
+    "units": 422
+  },
+  "recipients": [
+    {
+      "recipient": "M Bachir Tsouli",
+      "address": "45 Avenue Ibn Sina, Agdal, Rabat, Rabat",
+      "items": 15,
+      "byCarrier": {
+        "Aramex Morocco": 5,
+        "Poste Maroc (Barid Al-Maghrib)": 2,
+        "Jumia Logistics": 6
+      }
+    },
+    {
+      "recipient": "Mr Younes Tsouli",
+      "address": "Lot. Rita LOT C Im B, APT 17, BOUZNIKA, CASABLANCA SETTAT 13100, BOUZNIKA",
+      "items": 397,
+      "byCarrier": {
+        "Amana (Contre Remboursement / COD)": 3,
+        "Aramex Morocco": 91,
+        "Poste Maroc (Barid Al-Maghrib)": 3,
+        "Jumia Logistics": 15
+      }
+    },
+    {
+      "recipient": "Mrs Hind Tsouli",
+      "address": "Etage 2 JASMIN II IMM H3 APPT 21, SIDI-YAHYA-ZAIR, 12150 Casablanca, Casablanca",
+      "items": 10,
+      "byCarrier": {
+        "Poste Maroc (Barid Al-Maghrib)": 2,
+        "Jumia Logistics": 7,
+        "Aramex Morocco": 1
+      }
+    }
+  ]
+}
