@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-08-28T00:32:58.264Z",
+  "generatedAt": "2026-08-31T11:27:27.708Z",
   "engine": "postgres-integrity-audit",
   "kv": {
     "settlementsTotal": 27,
-    "settlementsCompletedNoProof": 27,
+    "settlementsCompletedNoProof": 0,
     "batchesTotal": 5,
-    "batchesCompletedNoProof": 5,
+    "batchesCompletedNoProof": 0,
     "itemsTotal": 16,
     "itemsSyntheticRefs": 16,
     "revTotal": 8,
@@ -17,19 +17,9 @@
   "verdict": "INTEGRITY_GAP",
   "findings": [
     {
-      "level": "CRITICAL",
-      "area": "settlement_integrity",
-      "message": "27/27 OwnerSettlement rows marked 'completed' with NO proofHash/externalRef/verifiedAt. Amounts sum to $13744.11 with zero verifiable external receipt."
-    },
-    {
-      "level": "CRITICAL",
-      "area": "payout_integrity",
-      "message": "5/5 PayoutBatch marked 'completed' with NULL providerBatchRef/proofHash/integrity hash and autoApproved=autoProcessed=false. No rail confirmation backs these."
-    },
-    {
       "level": "WARN",
       "area": "payout_integrity",
-      "message": "16/16 PayoutItem use sequential synthetic transactionRefs (e.g. BC-LU-2026-001) instead of real rail transaction IDs. deliveryConfirmed=true without external confirmation."
+      "message": "16/16 PayoutItem use sequential synthetic transactionRefs (e.g. BC-POOL-2026-001) instead of real rail transaction IDs. deliveryConfirmed=true without external confirmation."
     },
     {
       "level": "CRITICAL",

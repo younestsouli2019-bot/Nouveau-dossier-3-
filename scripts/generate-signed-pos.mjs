@@ -86,19 +86,24 @@ for (let i = 0; i < procurement.recipients.length; i++) {
     },
   }
 
-  // Integrity hash
-  const integrityHash = hashObject(poBody)
-  poBody.integrityHash = integrityHash
+  // Canonicalize the body WITHOUT the self-referential hash.
+  // The exact bytes hashed are preserved in verification.canonicalPayload,
+  // so re-hashing the payload MUST reproduce the integrityHash.
+  const canonicalPayload = canonicalJSON(poBody)
+  const integrityHash = sha256(canonicalPayload)
 
-  // Build the complete PO with hash
+  // Build the complete PO. integrityHash + verification are top-level
+  // metadata and are NOT part of the hashed payload (the payload was
+  // serialized before these were attached).
   const po = {
     ...poBody,
+    integrityHash,
     verification: {
       algorithm: 'SHA-256',
       hash: integrityHash,
       previousHash,
       chainValid: true,
-      canonicalPayload: canonicalJSON(poBody),
+      canonicalPayload,
     },
   }
 
