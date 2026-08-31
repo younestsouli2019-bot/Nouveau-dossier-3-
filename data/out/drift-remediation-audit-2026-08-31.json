@@ -1,0 +1,103 @@
+{
+  "title": "Drift Remediation Audit — Ledger Reconciliation & External Intelligence",
+  "reportId": "SWARM-DRIFT-AUDIT-2026-08-31",
+  "generatedAt": "2026-08-31T00:00:00.000Z",
+  "status": "LIVE_WET_RUN",
+  "engine": "postgres-integrity-audit + base44-batch-analysis + ledger-recon",
+  "integrity": {
+    "verdict": "INTEGRITY_GAP",
+    "summary": "Local DB is honest and enforcement-held. Base44 API datastore is polluted by synthetic failed-batch reprocessing (~$2.27M of failed phantom batches). The real settled-eligible value is only $6,224.55."
+  },
+
+  "reconciliation": {
+    "localLedgerUSD": {
+      "_note": "Canonical, honest, DB-of-record",
+      "revenuePending": { "count": 4, "sum": 8723.25 },
+      "revenueCompleted": { "count": 4, "sum": 5767.80 },
+      "revenueGrossTotal": 14491.05,
+      "ownerSettlements": { "status": "needs_manual_proof", "count": 27, "sum": 13744.11, "note": "Correctly HELD — none falsely marked completed. Enforcement working." },
+      "payoutBatches": { "status": "processing", "count": 5, "sum": 6224.55 },
+      "payoutItems": { "count": 16, "sum": 6224.55 },
+      "paymentIntents": { "status": "PENDING_REASONING", "count": 16, "sum": 6224.55, "note": "Canonical honest intent registry — the authoritative settled-eligible pipeline" }
+    },
+    "base44ClaimedUSD": {
+      "_note": "Datastore as reported by Base44 API",
+      "payoutBatches": { "total": 810, "claimedSum": 2551586.10, "byStatus": { "failed": { "count": 604, "sum": 2271068.50 }, "submitted": { "count": 203, "sum": 280055.84 }, "pending_manual": { "count": 3, "sum": 461.76 } } },
+      "payoutItems": { "total": 1990, "claimedSum": 2659219.21, "byStatus": { "failed": 960, "success": 189, "pending": 28, "submitted": 801, "pending_manual": 12 } }
+    }
+  },
+
+  "driftAnalysis": {
+    "theUnexplainedGap": 2551586.10,
+    "honestValue": 6224.55,
+    "driftMultiple": "~410x",
+    "rootCause": "The $2.5M+ 'drift' is NOT real value. 604 of 810 PayoutBatches ($2,271,068.50 = 89% of the claimed total) are FAILED batches. The outbound auto-runner repeatedly re-batched / re-attempted the same phantom cash without any external rail confirmation, producing an accumulating paper trail of synthetic, sequential transaction refs (e.g. BC-POOL-2026-001) marked deliveryConfirmed=true with no provider receipt. Combined with 960 failed PayoutItems on the API side, this synthetic reprocessing loop is the entire source of the apparent ledger inflation.",
+    "whySoBig": "Each non-confirmed attempt spawned a new batch/item. With no rail confirmation ever arriving (PayPal 403 C.I.P. block, bank receipt-mode, no crypto), retries compounded. Sequential synthetic refs (BC-POOL-####-###, MANUAL-PAY-*) passed the schema but fail the strict-enforcement proof requirement.",
+    "drift_is_not_revenue": "Revenue is real and small: $14,491 gross, $6,224.55 pipeline. The $2.5M is fabricated reprocessing trail, NOT receivable cash."
+  },
+
+  "violationsIdentified": [
+    { "type": "synthetic_transaction_refs", "severity": "CRITICAL", "detail": "16/16 PayoutItems use sequential synthetic refs (BC-POOL-2026-001) with deliveryConfirmed=true and no external confirmation." },
+    { "type": "failed_batch_inflation", "severity": "CRITICAL", "detail": "604 failed PayoutBatches sum to $2,271,068.50 — synthetic reprocessing noise that inflates any naive payout-health aggregate." },
+    { "type": "revenue_without_proof", "severity": "CRITICAL", "detail": "3/8 RevenueEvents marked completed with proofHash=null, including a $3,500 manual_attestation with no cryptographic hash." },
+    { "type": "unverifiable_completed", "severity": "HIGH", "detail": "OwnerSettlements correctly held at needs_manual_proof (enforcement OK) — but historical 'completed' rows (none in current set) must be re-verified before any payout." }
+  ],
+
+  "externalIntelligence": {
+    "summary": "Three actionable findings change the payout-rail and compliance strategy for the Morocco corridor.",
+    "newRailCandidate_CurrencyCloud": {
+      "provider": "CurrencyCloud / Visa Cross-Border Solutions (apis.io catalog + developer docs)",
+      "relevance": "Directly addresses the Blocked PayPal C.I.P. issue. CurrencyCloud explicitly lists MA/Morocco as a supported home_country; People API (POST /v1/forms/{form_id}/people) models the exact person/beneficiary KYC entity flow that blocks us. 36 payout currencies, 180+ countries, SWIFT + local rails, real transaction IDs (MT103-class) that satisfy our proofHash/externalRef strict-enforcement.",
+      "action": "Evaluate as primary owner-payout rail for Younes → Attijariwafa Bank RIB 372 and Banking Circle USD. Requires BAM-compliant KYC (Law 43-05 / 12-18): CIN for Younes (Moroccan national), ownership %, UBO, SDD/EDD risk calibre."
+    },
+    "regulatory_Morocco": {
+      "centralBank": "Bank Al-Maghrib (BAM) — sole licensor/supervisor under Law 103-12 (Dahir 1-14-193)",
+      "recentChange": "Law No. 87.21 (approved May 2026) amends Law 103-12 + BAM statute (Law 40-09).",
+      "paymentInstitutionLicence": "First VC-backed standalone PI licence granted 15 Oct 2025 (Chari); formal fintech project-holder licensing guide published Dec 2025.",
+      "instantRail": "Virement Instantané (GSIMT) live June 2023, ISO 20022, 24/7, MAD 20,000 cap; Morocco joined PAPSS in 2025 for pan-African settlement.",
+      "acquiring": "CMI monopoly dismantled from 1 May 2025 (Competition Council ruling) — ~11 acquirers approved; ~74% of transactions still cash, ~71,000 POS vs 2M+ merchants = large TAM.",
+      "openBanking": "NOT yet regulated — only consent-based data-sharing exploration; no PSD3-equivalent API framework. Windows of opportunity + regulatory gap.",
+      "crypto": "Cryptocurrencies domestically BANNED. Any crypto-adjacent onboarding requires legal counsel. Directly constrains our CRYPTO_WITHDRAW_ENABLE rail: regulatory non-compliant as currently scoped.",
+      "cdbc": "BAM building e-Dirham CBDC, migrating to ISO 20022."
+    },
+    "kycAml_morocco": {
+      "framework": "Law 43-05 (2007) as amended by Law 12-18 (2021): mandatory risk-based CDD, UBO threshold 25%+, expanded scope.",
+      "reportingThreshold": "Cash > MAD 200,000 (~$20,000) triggers mandatory ANRF reporting regardless of suspicion; suspicious activity reportable independently.",
+      "recordKeeping": "10-year minimum retention of identity + transaction records. Direct compliance burden on our audit ledger/snapshots.",
+      "entity": "ANRF = financial intelligence unit, 340+ int'l data-sharing requests in 2024 via Egmont/Interpol.",
+      "nationalId": "CIN is the standard doc for Moroccan nationals (fits Younes/Hind/Bachir). No national eID infra; verification depends on document capture + biometric liveness.",
+      "fatf": "Removed from FATF grey list Feb 2023 — enforcement has increased materially."
+    },
+    "competitorMarketSignals_CurrencycloudWise": {
+      "note": "CurrencyCloud (Visa) is the cross-border infra leader (36 currencies, 180+ countries, JP Morgan as principal bank). Wise operates a different settlement model. For our corridor, CurrencyCloud's SWIFT/local + People-API KYC is the most direct fit over PayPal (blocked) and Payoneer (no creds)."
+    }
+  },
+
+  "correctiveActions": {
+    "immediate": [
+      { "priority": "P0", "action": "Turn OFF the outbound auto-runner (AUTONOMOUS_AUTO_SUBMIT_PAYPAL_PAYOUT_BATCHES) until rails are real. It is the source of the synthetic reprocessing loop." },
+      { "priority": "P0", "action": "Stop generating synthetic sequential transaction refs. Require provider-issued rail IDs (MT103, bank_txn) before any PayoutItem/batch can be marked deliveryConfirmed." },
+      { "priority": "P1", "action": "Purge/archive the 604 failed + retry-spawned synthetic batches on Base44 so drift aggregates reflect reality; keep an immutable audit trail of the archived rows." },
+      { "priority": "P1", "action": "Re-verify the 27 needs_manual_proof OwnerSettlements ($13,744.11) and the 3 revenue rows lacking proofHash before progressing any payout." }
+    ],
+    "strategic": [
+      { "priority": "P2", "action": "Evaluate CurrencyCloud (Visa Cross-Border) as the primary outbound rail for Younes → Attijariwafa (RIB 372) and Banking Circle USD; satisfies strict proofHash/externalRef via real rail txn IDs." },
+      { "priority": "P2", "action": "Scope a BAM-compliant eKYC flow (Law 43-05/12-18): CIN + liveness for the 3 beneficiaries, UBO 25%+ documentation, SDD/EDD risk classification — required for both currency-cloud onboarding and any PI-licence ambitions." },
+      { "priority": "P2", "action": "Model the crypto ban: as-is, CRYPTO_WITHDRAW_ENABLE conflicts with Morocco's blanket prohibition. Get legal counsel before activating any crypto settlement to the corridor." },
+      { "priority": "P2", "action": "Implement 10-year record retention + ANRF MAD 200k cash-reporting hooks in the audit ledger to stay ahead of Law 43-05 / 12-18." },
+      { "priority": "P3", "action": "Track the GSIMT instant rail + e-Dirham CBDC + open-banking roadmap; the MAD 20k cap and ISO 20022 shape a future real-time settlement posture." }
+    ]
+  },
+
+  "deliverablesGenerated": {
+    "signedPOs": [
+      "data/out/po/SWARM-PO-2026-001.json (Hind Tsouli, 4547 MAD)",
+      "data/out/po/SWARM-PO-2026-002.json (Younes Tsouli, 18065 MAD)",
+      "data/out/po/SWARM-PO-2026-003.json (Bachir Tsouli, 3302 MAD)"
+    ],
+    "audits": [
+      "data/out/postgres-integrity-audit.json",
+      "data/out/rail-health-report.json"
+    ]
+  }
+}
