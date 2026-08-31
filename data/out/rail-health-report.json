@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-28T00:52:15.150Z",
+  "generatedAt": "2026-08-30T21:01:22.242Z",
   "note": "Config-declared route openness does NOT imply send capability. This report reconciles both. A rail is deliverable only if configOpen AND authOk AND canSend.",
   "routes": {
     "payoneer": {

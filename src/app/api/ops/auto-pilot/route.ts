@@ -947,7 +947,10 @@ async function procurementQuarantine() {
 
 // ─── MAIN HANDLER ────────────────────────────────────────────────────────────
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  const denied = requireOpsAuth(request)
+  if (denied) return denied
+
   const pipelineStart = Date.now();
   const phaseResults: { phase: string; status: string; itemsAffected: number; amountAffected: number; durationMs: number; details: string }[] = [];
 

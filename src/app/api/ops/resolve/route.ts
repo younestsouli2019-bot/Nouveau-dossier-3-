@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { getOwnerName, getOwnerEmail, getOwnerNameUpper, getOwnerDisplayName } from '@/lib/owner-config';
+import { requireOpsAuth } from '@/lib/api-auth';
 import { sha256 } from '@/lib/strict-enforcement/crypto-utils';
 
 type ResolutionAction =
@@ -1207,6 +1208,9 @@ async function resolveAll() {
 // ─── HANDLER ────────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
+  const denied = requireOpsAuth(request)
+  if (denied) return denied
+
   try {
     const body: ResolutionRequest = await request.json();
     const { action } = body;
