@@ -53,10 +53,14 @@ export async function POST() {
 
     // 1. Re-route misassigned items from Younes → Bachir
     for (const reroute of ITEMS_TO_REROUTE) {
+      // Match records across honorific forms ("Mr Younes Tsouli", "Younes Tsouli", …)
       const wrongEntry = await db.procurementItem.findFirst({
         where: {
           name: reroute.name,
-          recipientName: 'Younes Tsouli',
+          OR: [
+            { recipientName: { contains: 'Younes Tsouli' } },
+            { recipientName: { contains: 'Mr Younes' } },
+          ],
         },
       })
 

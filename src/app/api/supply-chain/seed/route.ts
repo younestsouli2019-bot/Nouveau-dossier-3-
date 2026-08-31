@@ -1,12 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-
-const HIND_ADDRESS = 'Etage 2 JASMIN II IMM H3 APPT 21, Sidi Yahya Zair, Kenitra 12150, Morocco'
-const HIND_CITY = 'Kenitra'
-const YOUNES_ADDRESS = 'Lot. Rita LOT C Im B, APT 17, Bouznika, Casablanca-Settat 13100, Morocco'
-const YOUNES_CITY = 'Bouznika'
-const BACHIR_ADDRESS = '45 Avenue Ibn Sina, Agdal, Rabat, Morocco'
-const BACHIR_CITY = 'Rabat'
+import { seedProcurement, getDestinationInfo } from '@/lib/procurement/seed-data'
 
 const CARRIERS = [
   'DHL Express',
@@ -58,12 +52,6 @@ function generateTrackingNumber(carrier: string, idx: number): string {
     default:
       return `TRK${String(idx).padStart(14, '0')}`
   }
-}
-
-function getDestinationInfo(recipientName: string): { address: string; city: string } {
-  if (recipientName.includes('Hind')) return { address: HIND_ADDRESS, city: HIND_CITY }
-  if (recipientName.includes('Bachir')) return { address: BACHIR_ADDRESS, city: BACHIR_CITY }
-  return { address: YOUNES_ADDRESS, city: YOUNES_CITY }
 }
 
 function getPurpose(itemName: string): string {
@@ -250,23 +238,14 @@ export async function POST() {
       }, { status: 409 })
     }
 
-    // Step 1: Call procurement seed internally
+    // Step 1: Seed procurement items in-process (avoids self-referential HTTP
+    // fetch which fails on serverless/deployed environments where localhost is
+    // not the app itself).
     let procurementResult: { created: number; skipped: number } = { created: 0, skipped: 0 }
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-      const seedRes = await fetch(`${baseUrl}/api/procurement/seed`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      })
-      if (seedRes.ok) {
-        const seedData = await seedRes.json()
-        procurementResult = {
-          created: seedData.created || 0,
-          skipped: seedData.skipped || 0,
-        }
-      }
-    } catch (e) {
-      console.error('[supply-chain/seed] Procurement seed call failed (may already exist):', e)
+    const seedResult = await seedProcurement(db)
+    procurementResult = {
+      created: seedResult.created,
+      skipped: seedResult.skipped,
     }
 
     // Step 2: Fetch all procurement items
