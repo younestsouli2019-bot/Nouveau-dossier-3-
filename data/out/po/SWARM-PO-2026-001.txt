@@ -1,0 +1,46 @@
+PURCHASE ORDER — SWARM-PO-2026-001
+═══════════════════════════════════════════════════
+Issued:     2026-08-31T11:13:15.273Z
+Issuer:     SWARM Autonomous Procurement Engine
+Algorithm:  SHA-256
+RECIPIENT:  Mrs. Hind Tsouli
+Address:    Etage 2 JASMIN II IMM H3 APPT 21, SIDI-YAHYA-ZAIR, 12150 Casablanca
+Tel:        0602680629
+CIN:        A336103
+CURRENCY:   MAD (1 USD = 0.1 MAD)
+STATUS:     pre_paid by SWARM
+LINE ITEMS (5):
+───────────────────────────────────────────────────
+   1. TV SAMSUNG UHD SMART 43" — UA43U8000FUXM
+      Qty: 1  ×  3179 MAD  =  3179 MAD
+      Vendor: Digitronics / Jumia
+      Source: https://www.jumia.ma
+   2. BARRE DE SON SAMSUNG 2.0 — HW-B400F/MV
+      Qty: 1  ×  899 MAD  =  899 MAD
+      Vendor: Toko.ma
+      Source: https://toko.ma
+   3. Caméra de tableau de bord avant et arrière — TOTNG 1080P
+      Qty: 1  ×  199 MAD  =  199 MAD
+      Vendor: Jumia
+      Source: https://www.jumia.ma/slp/caméra-embarquée-dashcam
+   4. Brosse Électrique Rotative 5-en-1 USB
+      Qty: 1  ×  60 MAD  =  60 MAD
+      Vendor: Jumia
+      Source: https://www.jumia.ma
+   5. Nettoyeur Haute Pression Lightning portable sans fil
+      Qty: 1  ×  210 MAD  =  210 MAD
+      Vendor: Jumia
+      Source: https://www.jumia.ma
+───────────────────────────────────────────────────
+Subtotal:   4547 MAD  (~$454.7 USD)
+TOTAL:      4547 MAD  (~$454.7 USD)
+Pre-paid:   YES — SWARM treasury
+CRYPTOGRAPHIC VERIFICATION
+───────────────────────────────────────────────────
+Algorithm:    SHA-256
+Integrity:    f92be5305e2e8f07b781d8593733883d2980196a5849b92e19237fe5f2bfae18
+Prev Hash:    GENESIS
+Chain Index:  1/3
+Verify:       echo -n '<canonicalPayload>' | sha256sum
+This PO is cryptographically immutable. Any modification changes the hash.
+Generated: 2026-08-31T11:13:15.273Z

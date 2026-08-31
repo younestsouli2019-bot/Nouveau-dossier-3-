@@ -1,0 +1,326 @@
+{
+  "poNumber": "SWARM-PO-2026-002",
+  "issuedAt": "2026-08-31T11:13:15.273Z",
+  "issuer": "SWARM Autonomous Procurement Engine",
+  "issuerSignatureAlgorithm": "SHA-256",
+  "recipient": {
+    "name": "Mr Younes Tsouli",
+    "address": "Lot. Rita LOT C Im B, APT 17, BOUZNIKA, CASABLANCA SETTAT 13100",
+    "tel": "+212639158209",
+    "cin": null
+  },
+  "currency": "MAD",
+  "exchangeRateUSD": 0.1,
+  "lineItems": [
+    {
+      "lineId": "YT-001",
+      "description": "Dell Precision 3541 (i7, 32GB, 4TB SSD) — refurbished",
+      "quantity": 2,
+      "unitPriceMAD": 3250,
+      "totalMAD": 6500,
+      "vendor": "Avito (refurbished)",
+      "source": "https://www.avito.ma",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-002",
+      "description": "Winston Filter Soft",
+      "quantity": 20,
+      "unitPriceMAD": 37,
+      "totalMAD": 740,
+      "vendor": "lepiceriefineandco.ma",
+      "source": "https://www.lepiceriefineandco.ma/winston-filter-soft.html",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-003",
+      "description": "Panter Mignon",
+      "quantity": 5,
+      "unitPriceMAD": 90,
+      "totalMAD": 450,
+      "vendor": "lepiceriefineandco.ma",
+      "source": "https://www.lepiceriefineandco.ma/panter-mignon.html",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-004",
+      "description": "Panter Cafe Creme Original (Cigarillos)",
+      "quantity": 5,
+      "unitPriceMAD": 70,
+      "totalMAD": 350,
+      "vendor": "Brooklyn Smoke Shop",
+      "source": "https://brooklynsmokeshop.ma/produit/cafe-creme-original/",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-005",
+      "description": "Camel Yellow Soft Filters",
+      "quantity": 5,
+      "unitPriceMAD": 36,
+      "totalMAD": 180,
+      "vendor": "Your Night Shop",
+      "source": "https://yournightshop.ma/product/camel-jaune/",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-006",
+      "description": "CAFÉ PUR ARABICA 1KG — BALI",
+      "quantity": 3,
+      "unitPriceMAD": 169,
+      "totalMAD": 507,
+      "vendor": "Mirka.ma",
+      "source": "https://mirka.ma",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-007",
+      "description": "Mini-Bar \"ELEXIA\" RM004",
+      "quantity": 1,
+      "unitPriceMAD": 600,
+      "totalMAD": 600,
+      "vendor": "Elexia",
+      "source": "Local supplier",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-008",
+      "description": "Téléviseur SAMSUNG SMART TV UHD 65\"",
+      "quantity": 1,
+      "unitPriceMAD": 1250,
+      "totalMAD": 1250,
+      "vendor": "Samsung",
+      "source": "Local supplier",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-009",
+      "description": "Kit Pause Café Gold",
+      "quantity": 1,
+      "unitPriceMAD": 1700,
+      "totalMAD": 1700,
+      "vendor": "Café Gold",
+      "source": "Local supplier",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-010",
+      "description": "Mini PC + Monitor (bon rapport qualité/prix, compatible caméras)",
+      "quantity": 1,
+      "unitPriceMAD": 903,
+      "totalMAD": 903,
+      "vendor": "Lenovo ThinkCentre refurbished i3 / Jumia",
+      "source": "https://www.jumia.ma",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-011",
+      "description": "Pack caméras de sécurité magasin — Dahua DVR + 4 caméras 2MP",
+      "quantity": 1,
+      "unitPriceMAD": 1199,
+      "totalMAD": 1199,
+      "vendor": "Jumia / Dahua",
+      "source": "https://www.jumia.ma/pack-systeme-de-surveillance-de-dvr-et-4-cameras-2mp-bloc-4",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-012",
+      "description": "Pack de Légumes Frais Maroc + Poisson frais 5Kg",
+      "quantity": 1,
+      "unitPriceMAD": 350,
+      "totalMAD": 350,
+      "vendor": "Marché local Bouznika",
+      "source": "Local market",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-013",
+      "description": "Kricely trail shoes EU 49 US 13",
+      "quantity": 2,
+      "unitPriceMAD": 550,
+      "totalMAD": 1100,
+      "vendor": "AliExpress / Kricely",
+      "source": "https://aliexpress.com",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-014",
+      "description": "Brandit M-65 Giant Jacket Olive 2XL",
+      "quantity": 1,
+      "unitPriceMAD": 359,
+      "totalMAD": 359,
+      "vendor": "Jumia",
+      "source": "https://www.jumia.ma",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-015",
+      "description": "Mil-Tec US Tactical Flight Jacket Black 2XL",
+      "quantity": 1,
+      "unitPriceMAD": 229,
+      "totalMAD": 229,
+      "vendor": "Jumia",
+      "source": "https://www.jumia.ma/generic-veste-bomber-noire-homme-style-original-ma-1-matelassee-legere-et-chaude-67281672.html",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-016",
+      "description": "Protecteurs d'éclaboussures pour évier de cuisine",
+      "quantity": 8,
+      "unitPriceMAD": 17,
+      "totalMAD": 135,
+      "vendor": "Jumia",
+      "source": "https://www.jumia.ma",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-017",
+      "description": "Autocollants de dessin animé de joueur de football (54 pcs)",
+      "quantity": 1,
+      "unitPriceMAD": 39,
+      "totalMAD": 39,
+      "vendor": "Jumia",
+      "source": "https://www.jumia.ma/mlp-stickers-football",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-018",
+      "description": "Autocollants thème football (50 pcs)",
+      "quantity": 1,
+      "unitPriceMAD": 39,
+      "totalMAD": 39,
+      "vendor": "Jumia",
+      "source": "https://www.jumia.ma/mlp-stickers-football",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-019",
+      "description": "Boîte de rangement créative murale (4 pièces)",
+      "quantity": 1,
+      "unitPriceMAD": 70,
+      "totalMAD": 70,
+      "vendor": "Jumia",
+      "source": "https://www.jumia.ma/stockage-organisation-organisateurs-accessoires/",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-020",
+      "description": "Cendrier Créatif Noir (1 pc)",
+      "quantity": 1,
+      "unitPriceMAD": 69,
+      "totalMAD": 69,
+      "vendor": "Jumia",
+      "source": "https://www.jumia.ma/generic-cendrier-en-verre-noir-67649302.html",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-021",
+      "description": "Mini Téléphone Portable 2G Dual SIM",
+      "quantity": 4,
+      "unitPriceMAD": 105,
+      "totalMAD": 420,
+      "vendor": "Jumia / BM10",
+      "source": "https://www.jumia.ma/lbstar-bm10-mini-telephone-portable-double-carte-sim-65956171.html",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-022",
+      "description": "Couteau de poche compact et pliable",
+      "quantity": 1,
+      "unitPriceMAD": 49,
+      "totalMAD": 49,
+      "vendor": "Jumia / Lamacom",
+      "source": "https://www.jumia.ma/lamacom-couteau-pliant-petit-modele-couteau-de-cuisine-couteau-de-chasse-63855091.html",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-023",
+      "description": "Outils d'impression 3D (spatule + pince) — 2 pièces",
+      "quantity": 1,
+      "unitPriceMAD": 75,
+      "totalMAD": 75,
+      "vendor": "TAGin3D",
+      "source": "https://tagin3d.ma",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-024",
+      "description": "Rouleau de papier peint à motif marbré 500x40cm (3 rouleaux)",
+      "quantity": 1,
+      "unitPriceMAD": 147,
+      "totalMAD": 147,
+      "vendor": "Coucou / Jumia",
+      "source": "https://www.jumia.ma",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-025",
+      "description": "OnePlus 15 5G Android Smartphone",
+      "quantity": 1,
+      "unitPriceMAD": 2790,
+      "totalMAD": 2790,
+      "vendor": "Iris.ma",
+      "source": "https://iris.ma",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-026",
+      "description": "Alternatives naturelles au NAC (compléments)",
+      "quantity": 1,
+      "unitPriceMAD": 200,
+      "totalMAD": 200,
+      "vendor": "Superfood.ma",
+      "source": "https://superfood.ma",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-027",
+      "description": "Crest 3D Whitestrips Professional Effects",
+      "quantity": 1,
+      "unitPriceMAD": 22,
+      "totalMAD": 22,
+      "vendor": "Marjane Mall",
+      "source": "https://marjanemall.ma",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-028",
+      "description": "Opalescence Go (dentifrice blanchissant)",
+      "quantity": 1,
+      "unitPriceMAD": 45,
+      "totalMAD": 45,
+      "vendor": "Amed.ma",
+      "source": "https://www.amed.ma/produit/opalescence-dentifrice/",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "YT-029",
+      "description": "Electronics wholesale list (20 items under $10 each)",
+      "quantity": 20,
+      "unitPriceMAD": 35,
+      "totalMAD": 700,
+      "vendor": "JemlaMaroc / Jumia wholesale",
+      "source": "https://jemlamaroc.com + https://www.jumia.ma",
+      "prePaidBySwarm": true
+    }
+  ],
+  "lineItemCount": 29,
+  "subtotalMAD": 21217,
+  "subtotalUSD": 2121.7,
+  "totalMAD": 18065,
+  "totalUSD": 1806.5,
+  "prePaidBySwarm": true,
+  "paymentStatus": "pre_paid",
+  "integrityChain": {
+    "previousHash": "f92be5305e2e8f07b781d8593733883d2980196a5849b92e19237fe5f2bfae18",
+    "sequenceIndex": 2,
+    "totalPOs": 3
+  },
+  "integrityHash": "170adf2085f78ef14e9efa231eb1159185b4d1e94dc47267abd661bd8a53e93c",
+  "verification": {
+    "algorithm": "SHA-256",
+    "hash": "170adf2085f78ef14e9efa231eb1159185b4d1e94dc47267abd661bd8a53e93c",
+    "previousHash": "f92be5305e2e8f07b781d8593733883d2980196a5849b92e19237fe5f2bfae18",
+    "chainValid": true,
+    "canonicalPayload": "{\"currency\":\"MAD\",\"exchangeRateUSD\":0.1,\"integrityChain\":{},\"issuedAt\":\"2026-08-31T11:13:15.273Z\",\"issuer\":\"SWARM Autonomous Procurement Engine\",\"issuerSignatureAlgorithm\":\"SHA-256\",\"lineItemCount\":29,\"lineItems\":[{\"prePaidBySwarm\":true,\"totalMAD\":6500},{\"prePaidBySwarm\":true,\"totalMAD\":740},{\"prePaidBySwarm\":true,\"totalMAD\":450},{\"prePaidBySwarm\":true,\"totalMAD\":350},{\"prePaidBySwarm\":true,\"totalMAD\":180},{\"prePaidBySwarm\":true,\"totalMAD\":507},{\"prePaidBySwarm\":true,\"totalMAD\":600},{\"prePaidBySwarm\":true,\"totalMAD\":1250},{\"prePaidBySwarm\":true,\"totalMAD\":1700},{\"prePaidBySwarm\":true,\"totalMAD\":903},{\"prePaidBySwarm\":true,\"totalMAD\":1199},{\"prePaidBySwarm\":true,\"totalMAD\":350},{\"prePaidBySwarm\":true,\"totalMAD\":1100},{\"prePaidBySwarm\":true,\"totalMAD\":359},{\"prePaidBySwarm\":true,\"totalMAD\":229},{\"prePaidBySwarm\":true,\"totalMAD\":135},{\"prePaidBySwarm\":true,\"totalMAD\":39},{\"prePaidBySwarm\":true,\"totalMAD\":39},{\"prePaidBySwarm\":true,\"totalMAD\":70},{\"prePaidBySwarm\":true,\"totalMAD\":69},{\"prePaidBySwarm\":true,\"totalMAD\":420},{\"prePaidBySwarm\":true,\"totalMAD\":49},{\"prePaidBySwarm\":true,\"totalMAD\":75},{\"prePaidBySwarm\":true,\"totalMAD\":147},{\"prePaidBySwarm\":true,\"totalMAD\":2790},{\"prePaidBySwarm\":true,\"totalMAD\":200},{\"prePaidBySwarm\":true,\"totalMAD\":22},{\"prePaidBySwarm\":true,\"totalMAD\":45},{\"prePaidBySwarm\":true,\"totalMAD\":700}],\"paymentStatus\":\"pre_paid\",\"poNumber\":\"SWARM-PO-2026-002\",\"prePaidBySwarm\":true,\"recipient\":{},\"subtotalMAD\":21217,\"subtotalUSD\":2121.7,\"totalMAD\":18065,\"totalUSD\":1806.5}"
+  }
+}

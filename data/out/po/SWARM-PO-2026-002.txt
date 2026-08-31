@@ -1,0 +1,141 @@
+PURCHASE ORDER — SWARM-PO-2026-002
+═══════════════════════════════════════════════════
+Issued:     2026-08-31T11:13:15.273Z
+Issuer:     SWARM Autonomous Procurement Engine
+Algorithm:  SHA-256
+RECIPIENT:  Mr Younes Tsouli
+Address:    Lot. Rita LOT C Im B, APT 17, BOUZNIKA, CASABLANCA SETTAT 13100
+Tel:        +212639158209
+CURRENCY:   MAD (1 USD = 0.1 MAD)
+STATUS:     pre_paid by SWARM
+LINE ITEMS (29):
+───────────────────────────────────────────────────
+   1. Dell Precision 3541 (i7, 32GB, 4TB SSD) — refurbished
+      Qty: 2  ×  3250 MAD  =  6500 MAD
+      Vendor: Avito (refurbished)
+      Source: https://www.avito.ma
+   2. Winston Filter Soft
+      Qty: 20  ×  37 MAD  =  740 MAD
+      Vendor: lepiceriefineandco.ma
+      Source: https://www.lepiceriefineandco.ma/winston-filter-soft.html
+   3. Panter Mignon
+      Qty: 5  ×  90 MAD  =  450 MAD
+      Vendor: lepiceriefineandco.ma
+      Source: https://www.lepiceriefineandco.ma/panter-mignon.html
+   4. Panter Cafe Creme Original (Cigarillos)
+      Qty: 5  ×  70 MAD  =  350 MAD
+      Vendor: Brooklyn Smoke Shop
+      Source: https://brooklynsmokeshop.ma/produit/cafe-creme-original/
+   5. Camel Yellow Soft Filters
+      Qty: 5  ×  36 MAD  =  180 MAD
+      Vendor: Your Night Shop
+      Source: https://yournightshop.ma/product/camel-jaune/
+   6. CAFÉ PUR ARABICA 1KG — BALI
+      Qty: 3  ×  169 MAD  =  507 MAD
+      Vendor: Mirka.ma
+      Source: https://mirka.ma
+   7. Mini-Bar "ELEXIA" RM004
+      Qty: 1  ×  600 MAD  =  600 MAD
+      Vendor: Elexia
+      Source: Local supplier
+   8. Téléviseur SAMSUNG SMART TV UHD 65"
+      Qty: 1  ×  1250 MAD  =  1250 MAD
+      Vendor: Samsung
+      Source: Local supplier
+   9. Kit Pause Café Gold
+      Qty: 1  ×  1700 MAD  =  1700 MAD
+      Vendor: Café Gold
+      Source: Local supplier
+  10. Mini PC + Monitor (bon rapport qualité/prix, compatible caméras)
+      Qty: 1  ×  903 MAD  =  903 MAD
+      Vendor: Lenovo ThinkCentre refurbished i3 / Jumia
+      Source: https://www.jumia.ma
+  11. Pack caméras de sécurité magasin — Dahua DVR + 4 caméras 2MP
+      Qty: 1  ×  1199 MAD  =  1199 MAD
+      Vendor: Jumia / Dahua
+      Source: https://www.jumia.ma/pack-systeme-de-surveillance-de-dvr-et-4-cameras-2mp-bloc-4
+  12. Pack de Légumes Frais Maroc + Poisson frais 5Kg
+      Qty: 1  ×  350 MAD  =  350 MAD
+      Vendor: Marché local Bouznika
+      Source: Local market
+  13. Kricely trail shoes EU 49 US 13
+      Qty: 2  ×  550 MAD  =  1100 MAD
+      Vendor: AliExpress / Kricely
+      Source: https://aliexpress.com
+  14. Brandit M-65 Giant Jacket Olive 2XL
+      Qty: 1  ×  359 MAD  =  359 MAD
+      Vendor: Jumia
+      Source: https://www.jumia.ma
+  15. Mil-Tec US Tactical Flight Jacket Black 2XL
+      Qty: 1  ×  229 MAD  =  229 MAD
+      Vendor: Jumia
+      Source: https://www.jumia.ma/generic-veste-bomber-noire-homme-style-original-ma-1-matelassee-legere-et-chaude-67281672.html
+  16. Protecteurs d'éclaboussures pour évier de cuisine
+      Qty: 8  ×  17 MAD  =  135 MAD
+      Vendor: Jumia
+      Source: https://www.jumia.ma
+  17. Autocollants de dessin animé de joueur de football (54 pcs)
+      Qty: 1  ×  39 MAD  =  39 MAD
+      Vendor: Jumia
+      Source: https://www.jumia.ma/mlp-stickers-football
+  18. Autocollants thème football (50 pcs)
+      Qty: 1  ×  39 MAD  =  39 MAD
+      Vendor: Jumia
+      Source: https://www.jumia.ma/mlp-stickers-football
+  19. Boîte de rangement créative murale (4 pièces)
+      Qty: 1  ×  70 MAD  =  70 MAD
+      Vendor: Jumia
+      Source: https://www.jumia.ma/stockage-organisation-organisateurs-accessoires/
+  20. Cendrier Créatif Noir (1 pc)
+      Qty: 1  ×  69 MAD  =  69 MAD
+      Vendor: Jumia
+      Source: https://www.jumia.ma/generic-cendrier-en-verre-noir-67649302.html
+  21. Mini Téléphone Portable 2G Dual SIM
+      Qty: 4  ×  105 MAD  =  420 MAD
+      Vendor: Jumia / BM10
+      Source: https://www.jumia.ma/lbstar-bm10-mini-telephone-portable-double-carte-sim-65956171.html
+  22. Couteau de poche compact et pliable
+      Qty: 1  ×  49 MAD  =  49 MAD
+      Vendor: Jumia / Lamacom
+      Source: https://www.jumia.ma/lamacom-couteau-pliant-petit-modele-couteau-de-cuisine-couteau-de-chasse-63855091.html
+  23. Outils d'impression 3D (spatule + pince) — 2 pièces
+      Qty: 1  ×  75 MAD  =  75 MAD
+      Vendor: TAGin3D
+      Source: https://tagin3d.ma
+  24. Rouleau de papier peint à motif marbré 500x40cm (3 rouleaux)
+      Qty: 1  ×  147 MAD  =  147 MAD
+      Vendor: Coucou / Jumia
+      Source: https://www.jumia.ma
+  25. OnePlus 15 5G Android Smartphone
+      Qty: 1  ×  2790 MAD  =  2790 MAD
+      Vendor: Iris.ma
+      Source: https://iris.ma
+  26. Alternatives naturelles au NAC (compléments)
+      Qty: 1  ×  200 MAD  =  200 MAD
+      Vendor: Superfood.ma
+      Source: https://superfood.ma
+  27. Crest 3D Whitestrips Professional Effects
+      Qty: 1  ×  22 MAD  =  22 MAD
+      Vendor: Marjane Mall
+      Source: https://marjanemall.ma
+  28. Opalescence Go (dentifrice blanchissant)
+      Qty: 1  ×  45 MAD  =  45 MAD
+      Vendor: Amed.ma
+      Source: https://www.amed.ma/produit/opalescence-dentifrice/
+  29. Electronics wholesale list (20 items under $10 each)
+      Qty: 20  ×  35 MAD  =  700 MAD
+      Vendor: JemlaMaroc / Jumia wholesale
+      Source: https://jemlamaroc.com + https://www.jumia.ma
+───────────────────────────────────────────────────
+Subtotal:   21217 MAD  (~$2121.7 USD)
+TOTAL:      18065 MAD  (~$1806.5 USD)
+Pre-paid:   YES — SWARM treasury
+CRYPTOGRAPHIC VERIFICATION
+───────────────────────────────────────────────────
+Algorithm:    SHA-256
+Integrity:    170adf2085f78ef14e9efa231eb1159185b4d1e94dc47267abd661bd8a53e93c
+Prev Hash:    f92be5305e2e8f07b781d8593733883d2980196a5849b92e19237fe5f2bfae18
+Chain Index:  2/3
+Verify:       echo -n '<canonicalPayload>' | sha256sum
+This PO is cryptographically immutable. Any modification changes the hash.
+Generated: 2026-08-31T11:13:15.273Z

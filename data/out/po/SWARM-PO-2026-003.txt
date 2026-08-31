@@ -1,0 +1,53 @@
+PURCHASE ORDER — SWARM-PO-2026-003
+═══════════════════════════════════════════════════
+Issued:     2026-08-31T11:13:15.273Z
+Issuer:     SWARM Autonomous Procurement Engine
+Algorithm:  SHA-256
+RECIPIENT:  M Bachir Tsouli
+Address:    45 Avenue Ibn Sina, Agdal, Rabat
+Tel:        Phone: 0777077940
+CURRENCY:   MAD (1 USD = 0.1 MAD)
+STATUS:     pre_paid by SWARM
+LINE ITEMS (7):
+───────────────────────────────────────────────────
+   1. Tablette CR 10.1" Android 16 — 8GB RAM / 128GB
+      Qty: 1  ×  1350 MAD  =  1350 MAD
+      Vendor: VASOUN / Jumia
+      Source: https://www.jumia.ma
+   2. Parfum Paco Rabanne (One Million 50ml)
+      Qty: 1  ×  669 MAD  =  669 MAD
+      Vendor: ParfumMaroc
+      Source: https://parfummaroc.com
+   3. Parfum Mont Blanc Legend (50ml)
+      Qty: 1  ×  499 MAD  =  499 MAD
+      Vendor: Jumia
+      Source: https://www.jumia.ma
+   4. Canne orthopédique premium pliable aluminium
+      Qty: 1  ×  190 MAD  =  190 MAD
+      Vendor: Locamed / Jumia
+      Source: https://www.jumia.ma
+   5. Pantoufles orthopédiques cuir médical unisexe
+      Qty: 1  ×  179 MAD  =  179 MAD
+      Vendor: VEADA / Jumia
+      Source: https://www.jumia.ma/veada-sandale-cuir-medical-bonne-qualite-2023-65267590.html
+   6. Superfood.ma — Pack Nitric Oxide
+      Qty: 1  ×  230 MAD  =  230 MAD
+      Vendor: Superfood.ma
+      Source: https://superfood.ma
+   7. Superfood.ma — Pack Diabetes
+      Qty: 1  ×  185 MAD  =  185 MAD
+      Vendor: Superfood.ma
+      Source: https://superfood.ma
+───────────────────────────────────────────────────
+Subtotal:   3302 MAD  (~$330.2 USD)
+TOTAL:      3302 MAD  (~$330.2 USD)
+Pre-paid:   YES — SWARM treasury
+CRYPTOGRAPHIC VERIFICATION
+───────────────────────────────────────────────────
+Algorithm:    SHA-256
+Integrity:    cf49f221186b6c07a3876f46d4cb7950b3568219827c1541740b4d794cd4971f
+Prev Hash:    170adf2085f78ef14e9efa231eb1159185b4d1e94dc47267abd661bd8a53e93c
+Chain Index:  3/3
+Verify:       echo -n '<canonicalPayload>' | sha256sum
+This PO is cryptographically immutable. Any modification changes the hash.
+Generated: 2026-08-31T11:13:15.273Z

@@ -1,0 +1,106 @@
+{
+  "poNumber": "SWARM-PO-2026-003",
+  "issuedAt": "2026-08-31T11:13:15.273Z",
+  "issuer": "SWARM Autonomous Procurement Engine",
+  "issuerSignatureAlgorithm": "SHA-256",
+  "recipient": {
+    "name": "M Bachir Tsouli",
+    "address": "45 Avenue Ibn Sina, Agdal, Rabat",
+    "tel": "Phone: 0777077940",
+    "cin": null
+  },
+  "currency": "MAD",
+  "exchangeRateUSD": 0.1,
+  "lineItems": [
+    {
+      "lineId": "BT-001",
+      "description": "Tablette CR 10.1\" Android 16 — 8GB RAM / 128GB",
+      "quantity": 1,
+      "unitPriceMAD": 1350,
+      "totalMAD": 1350,
+      "vendor": "VASOUN / Jumia",
+      "source": "https://www.jumia.ma",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "BT-002",
+      "description": "Parfum Paco Rabanne (One Million 50ml)",
+      "quantity": 1,
+      "unitPriceMAD": 669,
+      "totalMAD": 669,
+      "vendor": "ParfumMaroc",
+      "source": "https://parfummaroc.com",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "BT-003",
+      "description": "Parfum Mont Blanc Legend (50ml)",
+      "quantity": 1,
+      "unitPriceMAD": 499,
+      "totalMAD": 499,
+      "vendor": "Jumia",
+      "source": "https://www.jumia.ma",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "BT-004",
+      "description": "Canne orthopédique premium pliable aluminium",
+      "quantity": 1,
+      "unitPriceMAD": 190,
+      "totalMAD": 190,
+      "vendor": "Locamed / Jumia",
+      "source": "https://www.jumia.ma",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "BT-005",
+      "description": "Pantoufles orthopédiques cuir médical unisexe",
+      "quantity": 1,
+      "unitPriceMAD": 179,
+      "totalMAD": 179,
+      "vendor": "VEADA / Jumia",
+      "source": "https://www.jumia.ma/veada-sandale-cuir-medical-bonne-qualite-2023-65267590.html",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "BT-006",
+      "description": "Superfood.ma — Pack Nitric Oxide",
+      "quantity": 1,
+      "unitPriceMAD": 230,
+      "totalMAD": 230,
+      "vendor": "Superfood.ma",
+      "source": "https://superfood.ma",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "BT-007",
+      "description": "Superfood.ma — Pack Diabetes",
+      "quantity": 1,
+      "unitPriceMAD": 185,
+      "totalMAD": 185,
+      "vendor": "Superfood.ma",
+      "source": "https://superfood.ma",
+      "prePaidBySwarm": true
+    }
+  ],
+  "lineItemCount": 7,
+  "subtotalMAD": 3302,
+  "subtotalUSD": 330.2,
+  "totalMAD": 3302,
+  "totalUSD": 330.2,
+  "prePaidBySwarm": true,
+  "paymentStatus": "pre_paid",
+  "integrityChain": {
+    "previousHash": "170adf2085f78ef14e9efa231eb1159185b4d1e94dc47267abd661bd8a53e93c",
+    "sequenceIndex": 3,
+    "totalPOs": 3
+  },
+  "integrityHash": "cf49f221186b6c07a3876f46d4cb7950b3568219827c1541740b4d794cd4971f",
+  "verification": {
+    "algorithm": "SHA-256",
+    "hash": "cf49f221186b6c07a3876f46d4cb7950b3568219827c1541740b4d794cd4971f",
+    "previousHash": "170adf2085f78ef14e9efa231eb1159185b4d1e94dc47267abd661bd8a53e93c",
+    "chainValid": true,
+    "canonicalPayload": "{\"currency\":\"MAD\",\"exchangeRateUSD\":0.1,\"integrityChain\":{},\"issuedAt\":\"2026-08-31T11:13:15.273Z\",\"issuer\":\"SWARM Autonomous Procurement Engine\",\"issuerSignatureAlgorithm\":\"SHA-256\",\"lineItemCount\":7,\"lineItems\":[{\"prePaidBySwarm\":true,\"totalMAD\":1350},{\"prePaidBySwarm\":true,\"totalMAD\":669},{\"prePaidBySwarm\":true,\"totalMAD\":499},{\"prePaidBySwarm\":true,\"totalMAD\":190},{\"prePaidBySwarm\":true,\"totalMAD\":179},{\"prePaidBySwarm\":true,\"totalMAD\":230},{\"prePaidBySwarm\":true,\"totalMAD\":185}],\"paymentStatus\":\"pre_paid\",\"poNumber\":\"SWARM-PO-2026-003\",\"prePaidBySwarm\":true,\"recipient\":{},\"subtotalMAD\":3302,\"subtotalUSD\":330.2,\"totalMAD\":3302,\"totalUSD\":330.2}"
+  }
+}

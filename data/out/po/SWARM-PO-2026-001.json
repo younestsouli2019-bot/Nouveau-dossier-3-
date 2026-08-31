@@ -1,0 +1,86 @@
+{
+  "poNumber": "SWARM-PO-2026-001",
+  "issuedAt": "2026-08-31T11:13:15.273Z",
+  "issuer": "SWARM Autonomous Procurement Engine",
+  "issuerSignatureAlgorithm": "SHA-256",
+  "recipient": {
+    "name": "Mrs. Hind Tsouli",
+    "address": "Etage 2 JASMIN II IMM H3 APPT 21, SIDI-YAHYA-ZAIR, 12150 Casablanca",
+    "tel": "0602680629",
+    "cin": "A336103"
+  },
+  "currency": "MAD",
+  "exchangeRateUSD": 0.1,
+  "lineItems": [
+    {
+      "lineId": "HT-001",
+      "description": "TV SAMSUNG UHD SMART 43\" — UA43U8000FUXM",
+      "quantity": 1,
+      "unitPriceMAD": 3179,
+      "totalMAD": 3179,
+      "vendor": "Digitronics / Jumia",
+      "source": "https://www.jumia.ma",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "HT-002",
+      "description": "BARRE DE SON SAMSUNG 2.0 — HW-B400F/MV",
+      "quantity": 1,
+      "unitPriceMAD": 899,
+      "totalMAD": 899,
+      "vendor": "Toko.ma",
+      "source": "https://toko.ma",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "HT-003",
+      "description": "Caméra de tableau de bord avant et arrière — TOTNG 1080P",
+      "quantity": 1,
+      "unitPriceMAD": 199,
+      "totalMAD": 199,
+      "vendor": "Jumia",
+      "source": "https://www.jumia.ma/slp/caméra-embarquée-dashcam",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "HT-004",
+      "description": "Brosse Électrique Rotative 5-en-1 USB",
+      "quantity": 1,
+      "unitPriceMAD": 60,
+      "totalMAD": 60,
+      "vendor": "Jumia",
+      "source": "https://www.jumia.ma",
+      "prePaidBySwarm": true
+    },
+    {
+      "lineId": "HT-005",
+      "description": "Nettoyeur Haute Pression Lightning portable sans fil",
+      "quantity": 1,
+      "unitPriceMAD": 210,
+      "totalMAD": 210,
+      "vendor": "Jumia",
+      "source": "https://www.jumia.ma",
+      "prePaidBySwarm": true
+    }
+  ],
+  "lineItemCount": 5,
+  "subtotalMAD": 4547,
+  "subtotalUSD": 454.7,
+  "totalMAD": 4547,
+  "totalUSD": 454.7,
+  "prePaidBySwarm": true,
+  "paymentStatus": "pre_paid",
+  "integrityChain": {
+    "previousHash": "GENESIS",
+    "sequenceIndex": 1,
+    "totalPOs": 3
+  },
+  "integrityHash": "f92be5305e2e8f07b781d8593733883d2980196a5849b92e19237fe5f2bfae18",
+  "verification": {
+    "algorithm": "SHA-256",
+    "hash": "f92be5305e2e8f07b781d8593733883d2980196a5849b92e19237fe5f2bfae18",
+    "previousHash": "GENESIS",
+    "chainValid": true,
+    "canonicalPayload": "{\"currency\":\"MAD\",\"exchangeRateUSD\":0.1,\"integrityChain\":{},\"issuedAt\":\"2026-08-31T11:13:15.273Z\",\"issuer\":\"SWARM Autonomous Procurement Engine\",\"issuerSignatureAlgorithm\":\"SHA-256\",\"lineItemCount\":5,\"lineItems\":[{\"prePaidBySwarm\":true,\"totalMAD\":3179},{\"prePaidBySwarm\":true,\"totalMAD\":899},{\"prePaidBySwarm\":true,\"totalMAD\":199},{\"prePaidBySwarm\":true,\"totalMAD\":60},{\"prePaidBySwarm\":true,\"totalMAD\":210}],\"paymentStatus\":\"pre_paid\",\"poNumber\":\"SWARM-PO-2026-001\",\"prePaidBySwarm\":true,\"recipient\":{},\"subtotalMAD\":4547,\"subtotalUSD\":454.7,\"totalMAD\":4547,\"totalUSD\":454.7}"
+  }
+}
