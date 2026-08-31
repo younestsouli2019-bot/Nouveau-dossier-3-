@@ -29,10 +29,10 @@ function flag(name) {
 const measured = {
   paypal: {
     configOpen: flag("PAYPAL_PPP2_APPROVED") && flag("PAYPAL_PPP2_ENABLE_SEND") && !flag("PAYPAL_DISABLED"),
-    authOk: true,
+    authOk: false,
     canSend: false,
-    reason: "403 AUTHORIZATION_ERROR on payout POST - awaiting PayPal C.I.P./identity review clearance (dashboard: Payouts permission pending). Retry after clearance.",
-    measuredAt: "2026-08-28T00:20:00Z",
+    reason: "Live OAuth probe 2026-08-31 -> 401 invalid_client (Client Authentication failed) against api-m.paypal.com. Credentials currently fail auth; Payouts scope NOT confirmed. C.I.P. status moot until creds authenticate.",
+    measuredAt: "2026-08-31T12:48Z",
   },
   binance: { configOpen: flag("CRYPTO_WITHDRAW_ENABLE"), authOk: false, canSend: false, reason: "-2015 Invalid API-key/IP/permissions (both key sets).", measuredAt: "2026-08-28" },
   bitget: { configOpen: flag("CRYPTO_WITHDRAW_ENABLE"), authOk: true, canSend: false, reason: "Auth OK now (IP allowlist fixed; previous 40018 resolved on retest). Balance: ~80,203 VND (~$3.20) + 0.128 BGB; USDT=$0.00. No meaningful funds to send.", measuredAt: "2026-08-28T00:50Z" },
@@ -62,8 +62,8 @@ const report = {
     wiseDeclared: { declared: measured.wise.configOpen, deliverable: false, ...measured.wise },
   },
   summary: {
-    deliverableOutboundRails: ["NONE pending PayPal C.I.P. clearance (single candidate blocked)"],
-    topBlocker: "PayPal payout 403 AUTHORIZATION_ERROR - waiting C.I.P./identity review. Once cleared, re-run scripts/owner-payout-paypal.mjs --amount 150",
+    deliverableOutboundRails: ["bank_wire (Banking Circle USD, no-FX, 35bps) via supervised optimum route — route assigned, funds NOT yet moved", "NONE live-authenticated outbound sender currently moves funds (PayPal OAuth client auth fail)"],
+    topBlocker: "Outbound funds movement requires a live-authenticated sender rail. PayPal creds fail OAuth 401 invalid_client (live probe 2026-08-31). Supervised optimum route resolved to Banking Circle — Primary for the $6,224.55 pipeline; pending a live bank-send credential before funds move.",
   },
 };
 
