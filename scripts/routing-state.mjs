@@ -1,0 +1,16 @@
+import 'dotenv/config';
+import { Client } from 'pg';
+const c = new Client({ connectionString: process.env.DATABASE_URL, ssl:{rejectUnauthorized:false} });
+await c.connect();
+console.log('== OwnerAccounts (active) ==');
+const a = await c.query('SELECT label, "accountType", currency, "isPrimary", "isActive", "totalSent", "accountNumberLast", "paypalEmail", "walletAddressShort", "payoneerId" FROM "OwnerAccount" WHERE "isActive"=true ORDER BY "sortOrder"');
+for (const r of a.rows) console.log(' -', r.label, '|', r.accountType, '|', r.currency, '| primary:', r.isPrimary, '| sent:', Number(r.totalSent||0).toFixed(2), '| id:', (r.accountNumberLast||r.paypalEmail||r.walletAddressShort||r.payoneerId||'NONE'));
+const pcols = (await c.query("SELECT column_name FROM information_schema.columns WHERE table_name='PaymentIntent'")).rows.map(x=>x.column_name);
+console.log('PaymentIntent cols:', pcols.join(', '));
+console.log('== Pending PaymentIntents ==');
+const p = await c.query("SELECT * FROM \"PaymentIntent\" WHERE status='PENDING_REASONING' ORDER BY id LIMIT 20");
+for (const r of p.rows) console.log(' -', r.id, '|', r.amount, r.currency, '|', r.status, '|', JSON.stringify(r.metadata||{}).slice(0,160));
+console.log('== Pending OwnerSettlements (needs_manual_proof) sample ==');
+const s = await c.query('SELECT id, amount, currency, "ownerAccountId", "dataSource" FROM "OwnerSettlement" WHERE status=\'needs_manual_proof\' LIMIT 10');
+for (const r of s.rows) console.log(' -', r.id.slice(0,20), '|', r.amount, r.currency, '| acct:', r.ownerAccountId||'');
+await c.end();
