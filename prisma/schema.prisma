@@ -327,6 +327,17 @@ model OwnerAccount {
   totalSent     Float     @default(0) // cumulative sent amount
   txCount       Int       @default(0)
 
+  // HELD -> SPENDABLE separation. Reconciled/attributed value lands in
+  // heldBalance (locked on the ledger, not yet authorized). Only after a real
+  // external-rail release (Attijari PIS wire, etc.) produces a real externalRef
+  // does value move to spendableBalance / increment totalSent. The financial
+  // supervisor authorizes dispatch ONLY from spendableBalance (fail-closed:
+  // never from heldBalance). This fixes the prior flaw where totalReceived grew
+  // forever and reconciled funds were never released.
+  heldBalance            Float     @default(0) // reconciled + attributed but locked (not yet authorized to move)
+  spendableBalance       Float     @default(0) // authorized + released, available for real dispatch to the owner
+  spendableLastReleasedAt DateTime? // when spendableBalance was last topped up by a real rail release
+
   // Linked payment config (optional)
   ownerPaymentConfigId String?
   ownerPaymentConfig   OwnerPaymentConfig? @relation(fields: [ownerPaymentConfigId], references: [id])

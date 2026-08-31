@@ -17,5 +17,5 @@
     "plugins": [{ "name": "next" }]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "swarm-ops-project"]
+  "exclude": ["node_modules", "swarm-ops-project", "autopublisher-v3-*"]
 }

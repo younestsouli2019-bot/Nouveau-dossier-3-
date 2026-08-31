@@ -30,3 +30,6 @@ swarm-ops-project/
 
 # encrypted doomsday backup vault (contains encrypted archives + passphrase file)
 doomsday-vault/
+
+# generated stub project (unrelated; keep out of typecheck/git)
+autopublisher-v3-*/
