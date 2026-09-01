@@ -75,6 +75,29 @@ To send EUR → MAD to the local Attijari RIB, use `type: 'iban'` and provide th
 RIB as `details.IBAN`. The Wise sandbox cannot reach real domestic MAD RIBs; use
 sandbox account details when testing.
 
+## CLI runners (fail-closed)
+
+Two safety-gated CLI entry points wire the services through TreasuryEdge-style
+caps (per-txn < 5000 USD, daily < 10000 USD). They **dry-run by default** and only
+move money with `--confirm` + real credentials.
+
+- `scripts/wise-sample-workflow.mjs` — Wise EUR→MAD payout. `WISE_API_KEY` (or
+  `WISE_CLIENT_ID`/`WISE_CLIENT_SECRET`), `WISE_RECIPIENT_RIB` or
+  `WISE_RECIPIENT_ACCOUNT_ID` (opts: `WISE_SANDBOX=1`, `WISE_MODE=live`).
+  ```
+  node --import tsx scripts/wise-sample-workflow.mjs --dry-run --amount=1200
+  node --import tsx scripts/wise-sample-workflow.mjs --confirm --amount=1200 --idem-key=<stable>
+  ```
+- `scripts/paypal-payout-workflow.mjs` — PayPal payout. Needs `PAYPAL_CLIENT_ID` +
+  `PAYPAL_CLIENT_SECRET`, `PAYPAL_RECIPIENT_EMAIL` (opts: `PAYPAL_MODE=live`).
+  ```
+  node --import tsx scripts/paypal-payout-workflow.mjs --dry-run --amount=1
+  node --import tsx scripts/paypal-payout-workflow.mjs --confirm --amount=1 --recipient=<email>
+  ```
+
+Both rely on the deterministic idempotency keys described below, so a retried
+logical payout is deduplicated rather than double-issued.
+
 ## Idempotency keys
 
 `AxiosClient` generates `idemp-<ts>-<rand>` automatically and accepts a caller
