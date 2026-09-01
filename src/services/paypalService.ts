@@ -167,7 +167,7 @@ export class PayPalService {
         amount: { value: value, currency: currency },
         receiver,
         note: note ?? 'Payout',
-        sender_item_id: `item-${Date.now()}`,
+        sender_item_id: `item-${batchId}`,
       },
     ];
     return await this.createPayoutBatch(batchId, items);
