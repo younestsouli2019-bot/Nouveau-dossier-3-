@@ -21,11 +21,10 @@ import { SignedEventStore } from './SignedEventStore.mjs';
 import { TransferMetrics } from './TransferMetrics.mjs';
 import { assertSafeBaseUrl, assertSafeExternalUrl } from '../lib/url-guard';
 
-// The real AxiosClient / PayPalService implementations live on
-// feature/paypal-wise-integration and are stubs (`export {}`) on main. Static
-// named imports of the stubs break tsc (TS2305) and crash at runtime
-// ("not a constructor"), so they are resolved LAZILY and FAIL-CLOSED with an
-// operator-actionable error instead of importing a missing export.
+// AxiosClient / PayPalService are resolved LAZILY (dynamic import) and FAIL-CLOSED
+// with an operator-actionable error instead of a crashing constructor. Lazy loading
+// keeps the module importable even if a dependency is temporarily missing (e.g. on a
+// branch where one is stubbed), and defers provider construction to first use.
 interface HttpClientLike {
   post<T = unknown>(url: string, body?: unknown, cfg?: { idempotencyKey?: string; retries?: number }): Promise<{ data: T }>;
 }
@@ -121,8 +120,8 @@ export class TreasuryEdge {
     };
     if (typeof axMod.AxiosClient !== 'function') {
       throw new Error(
-        'TreasuryEdge fail-closed: AxiosClient implementation is not present on this branch ' +
-        '(it lives on feature/paypal-wise-integration). Merge the feature branch before executing transfers.',
+        'TreasuryEdge fail-closed: AxiosClient implementation is not present on this branch. ' +
+        'This module was merged in 81a0d32416 (feature/paypal-wise-integration) — report a packaging/import regression.',
       );
     }
     this.http = new axMod.AxiosClient({ baseURL: resolvedBaseUrl, fetchAccessToken: this.cfg.getAccessToken });
@@ -133,8 +132,8 @@ export class TreasuryEdge {
       };
       if (typeof ppMod.PayPalService !== 'function') {
         throw new Error(
-          'TreasuryEdge fail-closed: PayPalService implementation is not present on this branch ' +
-          '(it lives on feature/paypal-wise-integration). Merge the feature branch before executing transfers.',
+          'TreasuryEdge fail-closed: PayPalService implementation is not present on this branch. ' +
+          'This module was merged in 81a0d32416 (feature/paypal-wise-integration) — report a packaging/import regression.',
         );
       }
       this.paypal = new ppMod.PayPalService({
