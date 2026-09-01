@@ -58,8 +58,35 @@ export function isReservedIPv6(raw: string): boolean {
   const ip = raw.replace(/^\[|\]$/g, '').toLowerCase();
   const bare = ip.split('%')[0]; // strip zone id (fe80::1%eth0)
 
-  // v4-embedded forms: ::ffff:a.b.c.d (mapped), 64:ff9b::a.b.c.d (NAT64), 2002::a.b.c.d (6to4)
-  const v4Embedded = bare.match(/^(?:::ffff:|64:ff9b::|2002:)(\d+\.\d+\.\d+\.\d+)$/);
+  // 6to4: 2002:<8-hex v4>::/16 — decode the embedded 32-bit v4 from the first two groups.
+  const _6to4Hex = bare.match(/^2002:([0-9a-f]{1,4}):([0-9a-f]{1,4})(?::|$)/);
+  if (_6to4Hex) {
+    const a = parseInt(_6to4Hex[1], 16) >>> 8;
+    const b = parseInt(_6to4Hex[1], 16) & 255;
+    const c = parseInt(_6to4Hex[2], 16) >>> 8;
+    const d = parseInt(_6to4Hex[2], 16) & 255;
+    return isReservedIPv4(`${a}.${b}.${c}.${d}`);
+  }
+
+  // NAT64 well-known /96: 64:ff9b::<v4>. Handle the dotted-quad form and the
+  // compressed hex form (64:ff9b::a9fe:a9fe). Must be checked before fc00.
+  if (bare === '64:ff9b::' || bare.startsWith('64:ff9b:')) {
+    const tail = bare.slice('64:ff9b'.length).replace(/^:::/, '::');
+    const dotted = tail.match(/:(\d+\.\d+\.\d+\.\d+)$/);
+    if (dotted) return isReservedIPv4(dotted[1]);
+    const hexPair = tail.match(/::([0-9a-f]{1,4})(?::([0-9a-f]{1,4}))?$/) || tail.match(/([0-9a-f]{1,4}):([0-9a-f]{1,4})$/);
+    if (hexPair) {
+      const hi = parseInt(hexPair[1] || '0', 16);
+      const lo = parseInt(hexPair[2] || '0', 16);
+      if (Number.isInteger(hi) && Number.isInteger(lo)) {
+        return isReservedIPv4(`${hi >> 8}.${hi & 255}.${lo >> 8}.${lo & 255}`);
+      }
+    }
+    return true; // any other 64:ff9b::/* form is NAT64 — treat as reserved-ambiguous
+  }
+
+  // Other v4-embedded forms: ::ffff:a.b.c.d (mapped)
+  const v4Embedded = bare.match(/^:::ffff:(\d+\.\d+\.\d+\.\d+)$/);
   if (v4Embedded) return isReservedIPv4(v4Embedded[1]);
 
   if (bare === '::' || bare === '::1') return true;           // unspecified / loopback
@@ -106,9 +133,13 @@ export function checkUrlStatic(rawUrl: string): string | null {
     return `host "${host}" is a loopback/local name`;
   }
 
-  const fam = isIP(host);
-  if (fam === 4 && isReservedIPv4(host)) return `host "${host}" is a private/reserved IPv4 address`;
-  if (fam === 6 && isReservedIPv6(host)) return `host "${host}" is a loopback/private/reserved IPv6 address`;
+  // Normalise bracketed IPv6 literals ([::1]) to their bare form so isIP()
+  // classifies them instead of returning 0 (which would otherwise fall through
+  // as "allowed" — an SSRF bypass for loopback/ULA literals).
+  const ipHost = host.replace(/^\[|\]$/g, '');
+  const fam = isIP(ipHost);
+  if (fam === 4 && isReservedIPv4(ipHost)) return `host "${host}" is a private/reserved IPv4 address`;
+  if (fam === 6 && isReservedIPv6(ipHost)) return `host "${host}" is a loopback/private/reserved IPv6 address`;
 
   return null;
 }
