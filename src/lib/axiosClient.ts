@@ -4,6 +4,7 @@
 // - This file intentionally keeps token refresh logic pluggable: implement fetchAccessToken() to integrate with your KMS/Vault.
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { assertSafeExternalUrl } from './url-guard';
 
 // Simple exponential backoff helper
 function wait(ms: number) {
@@ -49,6 +50,18 @@ export class AxiosClient {
     return `idemp-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
   }
 
+  /**
+   * Fail-closed SSRF guard (see url-guard.ts). Resolves a possibly relative
+   * request URL against the instance baseURL and runs the DNS-aware
+   * `assertSafeExternalUrl` before any bytes are sent. Throws UrlBlockedError
+   * on localhost/private/reserved targets (direct or via DNS resolution).
+   */
+  private async guardUrl(url: string): Promise<void> {
+    const baseUrl = this.instance?.defaults?.baseURL;
+    const absoluteUrl = baseUrl && !/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(url) ? new URL(url, baseUrl).href : url;
+    await assertSafeExternalUrl(absoluteUrl);
+  }
+
   // Generic POST wrapper with idempotency and retry/backoff logic
   async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig & { idempotencyKey?: string; retries?: number }): Promise<AxiosResponse<T>> {
     const idKey = config?.idempotencyKey ?? AxiosClient.idempotencyKey();
@@ -59,6 +72,7 @@ export class AxiosClient {
 
     while (attempt <= retries) {
       try {
+        await this.guardUrl(url);
         const mergedConfig: AxiosRequestConfig = {
           ...config,
           headers: {
@@ -99,6 +113,7 @@ export class AxiosClient {
     let lastErr: any = null;
     while (attempt <= retries) {
       try {
+        await this.guardUrl(url);
         return await this.instance.get<T>(url, config);
       } catch (err: any) {
         lastErr = err;
