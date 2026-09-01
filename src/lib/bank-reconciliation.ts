@@ -285,6 +285,18 @@ export function parseCamt053(input: string): BankStatementEntry[] {
   throw new Error('Unrecognized Camt.053 format: expected XML or JSON');
 }
 
+export function getReconcilableLedgerCriteria() {
+  return {
+    status: {
+      in: ['pending', 'processing', 'needs_manual_proof'],
+    },
+    // Both directions: a settled payout (outbound debit) resolves to a bank debit,
+    // an inbound revenue resolves to a bank credit. Direction is NOT a filter here;
+    // exact amount+currency+reference matching in matchSettlementToBank is the
+    // safety gate, and the Camt.053 harness remains strictly fail-closed.
+  };
+}
+
 export async function runBankReconciliation(
   camt053Input: string,
 ): Promise<ReconciliationReport> {
@@ -292,10 +304,7 @@ export async function runBankReconciliation(
   const bankEntries = parseCamt053(camt053Input);
 
   const unsettledSettlements = await db.ownerSettlement.findMany({
-    where: {
-      status: { in: ['pending', 'processing'] },
-      direction: 'inbound',
-    },
+    where: getReconcilableLedgerCriteria(),
   });
 
   const matchedSettlementIds = new Set<string>();
@@ -402,8 +411,8 @@ export async function approveAmountDiscrepancy(
   if (!settlement) {
     return { success: false, error: 'Settlement not found' };
   }
-  if (settlement.status !== 'pending' && settlement.status !== 'processing') {
-    return { success: false, error: `Settlement status is ${settlement.status}, expected pending/processing` };
+  if (settlement.status !== 'pending' && settlement.status !== 'processing' && settlement.status !== 'needs_manual_proof') {
+    return { success: false, error: `Settlement status is ${settlement.status}, expected pending/processing/needs_manual_proof` };
   }
 
   const now = new Date();
