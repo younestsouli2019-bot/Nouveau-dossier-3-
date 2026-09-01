@@ -9,6 +9,11 @@ const WEBHOOK_SECRET = process.env.GITHUB_WEBHOOK_SECRET || '';
 
 const KNOWN_SECRET_CONNECTORS: Record<string, string> = {
   LIVE_BANK_API: 'attijariwafa',
+  ATTIJARI_CLIENT_ID: 'attijariwafa',
+  ATTIJARI_CLIENT_SECRET: 'attijariwafa',
+  ATTIJARI_SCOPE: 'attijariwafa',
+  ATTIJARI_API_BASE_URL: 'attijariwafa',
+  ATTIJARI_PSD2_BASE_URL: 'attijariwafa',
   OPENROUTER_API_KEY: 'base44',
   ZAI_API_KEY: 'base44',
   BASE44_API_KEY: 'base44',
