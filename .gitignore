@@ -33,3 +33,6 @@ doomsday-vault/
 
 # generated stub project (unrelated; keep out of typecheck/git)
 autopublisher-v3-*/
+
+# Quarantined foreign/decompiled clone (contains fake creds + leaked-secret history). Never commit.
+workspace-*.tar
