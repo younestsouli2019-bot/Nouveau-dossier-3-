@@ -1,0 +1,70 @@
+# Curated Local Supplier Shortlist (from OWNER's TikTok export 210-following, 2026-09-01)
+# Maps real Moroccan/wholesale suppliers w/ contacts to the stale ProcurementItem categories.
+# Source: TTExporter-younes.li00-210-following.csv (OWNER attachment). Hand-curated for actionability.
+# NOTE: These are candidate leads to resolve the 60 'sourced' + 63 'Wholesale supplier' stalled items.
+# Fulfilment MUST still produce orderRef + carrier trackingNumber + deliveryProofHash before 'delivered'.
+
+category,supplier,tiktok,what,contact,notes
+electronics,Alfa Gros,alfagros,"Electronics wholesale, direct importer","0630000011 (tm alfagros)",grossiste direct import-electronic; Casablanca kaysariya
+electronics,Orgostech,orgostech,"Cameras, PCs, TV box, abn_tv",,tech retailer
+electronics,Planet Electro,planet.electro1,"All electronics wholesale + resale (eveny).",0684390026,"Kénitra; wholesale + installment
+electronics,Electro Rachid,electro76rachid,"Electronics, household appliances","+212607751166 (Driouch)",street shop
+electronics,Electro Ragragui,electroragragui,"PCs, phones, accessories; free delivery",,electronics chain
+electronics,Electroissame,electroissame,"Wholesale electronics",,Ouled Taïma weekly market
+electronics,Meza Phone,meza_phone1,"Phones + accessories",0646472014 (Salé),phone shop
+electronics,MobileLand,mobilelandlcd,"LCD/OLED screens, wholesale & retail",,phone screens
+electronics,MONTA Phone (MOUNIR),mouniir8,"Phone bulk/wholesale",0666155803,phone wholesale
+electronics,Kamal Phone,kamalgerizmne,"Phones repair+resale",0681793843 (Salé)
+electronics,Errammech,errammech,"Phones, high quality, good price",,phone seller
+electronics,Khalid Phone,khalidphone45,"Phone spare parts","0644545464 (Marrakech)",spare parts
+electronics,gk_6och,gk_6och,"Phones, iPads + accessories",0665544024,game top-up + phones
+electronics,AI7 Store,ai7store,"Gadgets/phones store",0664472999
+electronics,onestore Jawhara,onestorejawhara,"Tech retailer",0661439726
+electronics,PCYAT,pcyat.officiel,"Laptops/PCs + accessories",0655555582
+electronics,KRTechPro,krtechpro,"Used/refurb PCs & workstations","0604118058 (Casa)",refurb laptops alternative (mirrors Avito)
+electronics,Huo/3C factory,huangchuxin3,"China 3C parts factory; phone parts wholesale","+8613802916563 (WA)",import spare-parts source
+electronics,CoolSilk,coolsilkapparel,"Factory: tech/garment",,low-MOQ factory
+electronics,Aura Sport,aurasport01,"Wholesale electronics/sport",+905378403920,Türkiye wholesale
+electronics,lorex toptan,lorextoptan,"Wholesale only",05366044996,Türkiye wholesale
+perfumes,Milan Scent,milanscent,"Fragrances art",milanscent@gmail.com,strong brand 156k
+perfumes,NoirScent,noirscent28,"Perfume reviews",,fragrance
+perfumes,Clay Note Fragrance,clay.note.fragrance,"Fragrance store","arina.fragrance@gmail.com / Telegram clay_note_fragrance"
+perfumes,Fragrantix,fragrantix,"Fragrance",,trend store
+perfumes,Riyal Aroma,riyal.aroma,"Fragrance store UK",,uk store
+perfumes,Parfumerie Prestige,parfumerie_presti,"Parfumerie.ma (online)",0782-920468,official site
+perfumes,Parfumerie Ghali,parfumrie.ghali,"Authentic perfumes, décants 5-20ml, deliv MA"
+perfumes,Lazrak Fragrances,lazrak.fragrances,"Exception perfumes; occ. dist. shaikhsaeed.ma",,Fès official distributor
+perfumes,Rokn Taib,rokn_taib,"Perfumes/oud/incense/saffron; Hajj/Umra",0636552840 (Casa habous)
+perfumes,6och/gk,,-perfumes,,,
+tobacco,lepiceriefineandco.ma,,(already in skill approved list),,use skill platform
+tobacco,Brooklyn Smoke Shop,,(already in skill approved list),,use skill platform
+health,Superfood.ma,,(already in skill approved list) — packs currently stuck 'ordered/sourced/purchased' but none shipped,attach real order+tracking,use skill platform
+health,Opalescence,,(already in skill approved list / Amed.ma),,oral-care whitening
+health,NectrabioOffic,nectrabio_officiel,"Health/supplements made in CH",,optional wellness sourcing
+health,NutronApp,nutronapp,"Food/health scanner",,not a supplier; context
+home,Déco Shop,decoshopdecoshop,"Crystal decoration + household items","0651296438 (Fès)",covers 'home' category gap
+home,Tout à Tous,tout.a.tous,"Home decor + kitchen essentials",,decor/kitchen
+home,tajhizatnakhil,tajhizatnakhil,"Household/houseware",,Marrakech mhamid
+home,awani.hicham,awani.hicham,"Household items",,Khouribga marked 141
+home,stockageproo,stockageproo,"Shelving, material handling, office/school furniture",,furniture/racking
+fashion,3abidine_dgdage,3abidine_dgdage,"Men's clothing wholesale",,Sidi Moumen
+fashion,haroun.lamri,haroun.lamri,"Men's clothing bulk",,clothing wholesale
+fashion,Monte Carlo,montecarlo.48,"Men's clothing, deliv MA",0600099914 (Oujda)
+fashion,simo_shoop_,simo_shoop_,"Clothing bulk only (t-shirts, polos, trousers, shorts)",0784499160 (Casa derb sultan)
+fashion,Salm Couture,salm_couture,"Abayas",,capsule/abaya
+fashion,SB Gallery,sb.gallery,"Men's luxury clothing",,Rabat
+fashion,King Fashion gros,king.fashoin.gros_13,"Wholesale only, 58 wilayas DZ",+213792211211,Algeria wholesale
+fashion,Oran Wholesale,oran.wholesale,"Lacoste/Eden Park/Fashion bulk",0774442587 (Oran),Algeria wholesale
+fashion,Houcin Store,houcin.store,"Clothing store",,clothing
+fashion,KZ Mode,oran.wholesale,,,
+fashion,Moroccan wholesale (Wholesale supplier 63 items),,(stalled 'Wholesale supplier' block),REPLACE with concrete per-supplier refs below,consolidate into discrete orders
+auto,MB Moto,mb.moto.casa,"Moto parts/accessories",077974811,for accessories
+auto,Coding Auto,codingauto,"Car accessories",0602942029 (Agadir)
+food,Mirka.ma,,(skill approved) ethanol/coffee,attach ref,use skill platform
+food,Marche local Bouznika,,(local fresh produce/deadline),attach ref,use skill platform
+food,Beta Miel,betamielmaroc,"Honey / edible coffee packs",,local food
+sourcing,moroccosupport.com / investmorocco.ai,(from procurement skill),sourcing-agent service + verified suppliers,use skill platform,preferred B2B channel
+
+# REMINDER — fail-closed invariant: an item only reaches 'delivered' with a real orderRef + carrier
+# trackingNumber + deliveryProofHash (or 'received' receipt). POs / payments (externalRef) must be
+# reconciled against real Attijari/PayPal/onchain statements via Base44 App (app 6888ac155ebf84dd9855ea98).
