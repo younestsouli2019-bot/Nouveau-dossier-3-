@@ -5,7 +5,7 @@ import { db } from '../src/lib/db';
     select: { name: true, category: true, status: true, quantity: true, unitPriceEst: true, totalEst: true, currency: true, supplierName: true, orderRef: true, notes: true },
     orderBy: [{ category: 'asc' }, { status: 'asc' }],
   });
-  const byCat = {};
+  const byCat: Record<string, typeof items> = {};
   for (const it of items) {
     const cat = it.category || 'unknown';
     (byCat[cat] = byCat[cat] || []).push(it);
