@@ -92,8 +92,8 @@ function matchLead(cat, name) {
     orderBy: [{ category: 'asc' }],
   });
 
-  const rows = [];
-  const leadPicks = {};
+  const rows: Array<Record<string, unknown>> = [];
+  const leadPicks: Record<string, number> = {};
   for (const it of items) {
     const lead = matchLead(it.category, it.name)
       || (String(it.supplierName || '').toLowerCase().includes('wholesale')
