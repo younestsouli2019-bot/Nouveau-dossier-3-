@@ -130,6 +130,7 @@ export class WiseService {
     amount: number;
     targetAccount: string;
     flipFocus?: boolean;
+    idempotencyKey?: string;
   }): Promise<any> {
     const res = await this.client().post<any>(
       '/v1/quotes',
@@ -142,7 +143,12 @@ export class WiseService {
         preferredPayIn: 'BANK_TRANSFER',
         rateType: 'FIXED',
       },
-      { idempotencyKey: `wise-quote-${params.targetAccount}-${Date.now()}`, retries: 3 },
+      {
+        idempotencyKey: params.idempotencyKey
+          // Caller-provided stable key REUSED across retries of the logical op.
+          ?? `wise-quote-${params.targetAccount}-${params.sourceCurrency}${params.targetCurrency}-${params.amount}`,
+        retries: 3,
+      },
     );
     return res.data;
   }
@@ -158,7 +164,11 @@ export class WiseService {
         accountHolderName: params.accountHolderName,
         details: params.details,
       },
-      { idempotencyKey: params.idempotencyKey ?? `wise-account-${Date.now()}`, retries: 3 },
+      {
+        idempotencyKey: params.idempotencyKey
+          ?? `wise-account-${params.currency}-${params.type}-${String(params.details.IBAN ?? params.accountHolderName).trim()}`,
+        retries: 3,
+      },
     );
     return res.data;
   }
@@ -176,14 +186,17 @@ export class WiseService {
       {
         targetAccount: params.targetAccount,
         quoteUuid: params.quoteUuid,
-        reference: params.reference ?? `settlement-${Date.now()}`,
-        customerTransactionId: params.idempotencyKey ?? `txn-${Date.now()}`,
+        reference: params.reference ?? `settlement-${params.targetAccount}`,
+        customerTransactionId: params.idempotencyKey ?? `txn-${params.targetAccount}-${params.quoteUuid}`,
         details: {
-          reference: params.reference ?? `settlement-${Date.now()}`,
+          reference: params.reference ?? `settlement-${params.targetAccount}`,
           transferPurpose: 'TRADING',
         },
       },
-      { idempotencyKey: params.idempotencyKey ?? `wise-transfer-${Date.now()}`, retries: 3 },
+      {
+        idempotencyKey: params.idempotencyKey ?? `wise-transfer-${params.targetAccount}-${params.quoteUuid}`,
+        retries: 3,
+      },
     );
 
     // Fund the transfer (only after creation succeeds).
