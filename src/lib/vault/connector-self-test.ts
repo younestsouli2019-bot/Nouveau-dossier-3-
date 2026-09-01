@@ -104,7 +104,7 @@ export const VAULT_CONNECTORS: ConnectorDefinition[] = [
     name: 'Wise',
     type: 'wire_transfer',
     requiredEnv: ['WISE_API_TOKEN'],
-    probeUrl: 'https://api.wise.com/v1/profiles',
+    probeUrl: 'https://api.transferwise.com/v1/profiles',
     probeMethod: 'GET',
   },
   {

@@ -165,7 +165,7 @@ const CREDENTIAL_REGISTRY: Record<string, ConnectorCredential> = {
     mode: 'offline',
     config: {
       apiToken: process.env.WISE_API_TOKEN || process.env.OWNER_WISE_API_TOKEN || '',
-      baseUrl: process.env.WISE_API_BASE || 'https://api.wise.com',
+      baseUrl: process.env.WISE_API_BASE || 'https://api.transferwise.com',
     },
     envFallbacks: {
       apiToken: 'WISE_API_TOKEN',
