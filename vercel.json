@@ -9,12 +9,6 @@
       "maxDuration": 300
     }
   },
-  "domains": [
-    {
-      "name": "supply-chain-swarm.vercel.app",
-      "redirects": []
-    }
-  ],
   "headers": [
     {
       "source": "/api/(.*)",
