@@ -16,11 +16,24 @@
  * pass. Without `confirm: true` it returns a plan / dry-run and writes nothing.
  */
 
-import { AxiosClient } from '../lib/axiosClient';
-import { PayPalService } from '../services/paypalService';
 import { FingerprintManager } from './FingerprintManager.mjs';
 import { SignedEventStore } from './SignedEventStore.mjs';
 import { TransferMetrics } from './TransferMetrics.mjs';
+import { assertSafeBaseUrl, assertSafeExternalUrl } from '../lib/url-guard';
+
+// The real AxiosClient / PayPalService implementations live on
+// feature/paypal-wise-integration and are stubs (`export {}`) on main. Static
+// named imports of the stubs break tsc (TS2305) and crash at runtime
+// ("not a constructor"), so they are resolved LAZILY and FAIL-CLOSED with an
+// operator-actionable error instead of importing a missing export.
+interface HttpClientLike {
+  post<T = unknown>(url: string, body?: unknown, cfg?: { idempotencyKey?: string; retries?: number }): Promise<{ data: T }>;
+}
+interface PayPalLike {
+  createSinglePayout(
+    idempotencyKey: string, recipient: string, currency: string, amount: string, note?: string,
+  ): Promise<unknown>;
+}
 
 // ------------------------------------------------------------------ types
 export type Rail = 'wise' | 'paypal' | 'payoneer' | 'crypto';
@@ -67,11 +80,10 @@ interface DailyState { day: string; usedUsd: number }
 
 // ------------------------------------------------------------ executor
 export class TreasuryEdge {
-  private http: AxiosClient;
+  private http: HttpClientLike | null = null;
+  private paypal: PayPalLike | null = null;
   private daily: DailyState = { day: '', usedUsd: 0 };
   private idemSeen = new Set<string>();
-  /** optional PayPal delegate (upstream PayPalService) for the paypal rail. */
-  private paypal?: PayPalService;
 
   constructor(
     public cfg: EdgeConfig,
@@ -79,18 +91,57 @@ export class TreasuryEdge {
     public events = new SignedEventStore({}),
     public metrics = new TransferMetrics({}),
   ) {
-    // Compose the upstream, already-audited AxiosClient (token refresh,
-    // idempotency, retry/backoff) instead of a bespoke axios instance.
-    this.http = new AxiosClient({
-      baseURL: cfg.baseUrl || (cfg.rail === 'paypal' ? (process.env.PAYPAL_MODE === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com') : undefined),
-      fetchAccessToken: cfg.getAccessToken,
-    });
-    if (cfg.rail === 'paypal') {
-      this.paypal = new PayPalService({
+    // SSRF guard on the provider base URL BEFORE any client is built
+    // (fail-closed on a localhost/private/reserved base).
+    const effectiveBase = cfg.baseUrl
+      || (cfg.rail === 'paypal'
+        ? (process.env.PAYPAL_MODE === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com')
+        : undefined);
+    if (effectiveBase) this.cfg.baseUrl = assertSafeBaseUrl(effectiveBase);
+  }
+
+  /**
+   * Resolve the feature-branch implementations (AxiosClient + PayPalService)
+   * lazily. Throws (fail-closed) when the implementation is not on this branch
+   * — never falls back to moving money without the audited client.
+   */
+  private async ensureDeps(): Promise<void> {
+    if (this.http) return;
+
+    const resolvedBaseUrl = this.cfg.baseUrl
+      || (this.cfg.rail === 'paypal'
+        ? (process.env.PAYPAL_MODE === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com')
+        : undefined);
+    if (!resolvedBaseUrl) {
+      throw new Error('TreasuryEdge fail-closed: no provider baseUrl configured for rail ' + this.cfg.rail);
+    }
+
+    const axMod = (await import('../lib/axiosClient')) as unknown as {
+      AxiosClient?: new (o: unknown) => HttpClientLike;
+    };
+    if (typeof axMod.AxiosClient !== 'function') {
+      throw new Error(
+        'TreasuryEdge fail-closed: AxiosClient implementation is not present on this branch ' +
+        '(it lives on feature/paypal-wise-integration). Merge the feature branch before executing transfers.',
+      );
+    }
+    this.http = new axMod.AxiosClient({ baseURL: resolvedBaseUrl, fetchAccessToken: this.cfg.getAccessToken });
+
+    if (this.cfg.rail === 'paypal') {
+      const ppMod = (await import('../services/paypalService')) as unknown as {
+        PayPalService?: new (o: unknown) => PayPalLike;
+      };
+      if (typeof ppMod.PayPalService !== 'function') {
+        throw new Error(
+          'TreasuryEdge fail-closed: PayPalService implementation is not present on this branch ' +
+          '(it lives on feature/paypal-wise-integration). Merge the feature branch before executing transfers.',
+        );
+      }
+      this.paypal = new ppMod.PayPalService({
         clientId: process.env.PAYPAL_CLIENT_ID,
         clientSecret: process.env.PAYPAL_CLIENT_SECRET,
         sandbox: process.env.PAYPAL_MODE !== 'live',
-        fetchAccessToken: cfg.getAccessToken,
+        fetchAccessToken: this.cfg.getAccessToken,
       });
     }
   }
@@ -148,11 +199,19 @@ export class TreasuryEdge {
     if (plan.verdict !== 'APPROVE') return { ...plan, transferId: undefined };
     if (req.confirm !== true) return { ...plan, verdict: 'DRY_RUN', transferId: undefined };
 
+    // Lazy-resolve the feature-branch HTTP/PayPal implementations — throws
+    // fail-closed (never a silent generic-path fallback) when absent.
+    await this.ensureDeps();
+    // Re-validate the provider base at request time (DNS-aware SSRF guard —
+    // catches hostnames that resolve into private/reserved space).
+    if (this.cfg.baseUrl) await assertSafeExternalUrl(this.cfg.baseUrl);
+
     const start = Date.now();
     let ok = false;
     let providerMeta: Record<string, unknown> = {};
     try {
-      if (this.cfg.rail === 'paypal' && this.paypal) {
+      if (this.cfg.rail === 'paypal') {
+        if (!this.paypal) throw new Error('TreasuryEdge fail-closed: PayPal delegate missing after ensureDeps');
         // Delegate to the upstream, audited PayPalService (PayPal-Request-Id idempotency).
         const result: any = await this.paypal.createSinglePayout(
           plan.idempotencyKey,
@@ -163,6 +222,7 @@ export class TreasuryEdge {
         );
         providerMeta = { payoutId: result?.batch_header?.payout_batch_id || result?.batch_header?.sender_batch_id, quoteId: null, transferId: result?.batch_header?.payout_batch_id };
       } else {
+        if (!this.http) throw new Error('TreasuryEdge fail-closed: HTTP client missing after ensureDeps');
         // generic provider transfer via the audited AxiosClient (idempotency + retry/backoff).
         const res = await this.http.post('/transfer', {
           amount: req.amountUsd,
