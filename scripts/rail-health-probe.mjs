@@ -20,7 +20,7 @@ async function probeWise() {
   try {
     const ctl = new AbortController();
     const timer = setTimeout(() => ctl.abort(), 25000);
-    const resp = await fetch("https://api.wise.com/v1/profiles", {
+    const resp = await fetch("https://api.transferwise.com/v1/profiles", {
       headers: { Authorization: `Bearer ${token}` },
       signal: ctl.signal,
     });

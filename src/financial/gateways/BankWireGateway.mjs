@@ -15,7 +15,7 @@ export class BankWireGateway {
 	wiseBase() {
 		const raw = String(process.env.WISE_API_BASE || "").trim();
 		if (raw) return raw.replace(/\/+$/, "");
-		return "https://api.wise.com";
+		return "https://api.transferwise.com";
 	}
 
 	wiseHeaders() {
