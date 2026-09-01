@@ -36,3 +36,6 @@ autopublisher-v3-*/
 
 # Quarantined foreign/decompiled clone (contains fake creds + leaked-secret history). Never commit.
 workspace-*.tar
+
+# transient hook/session tooling state (never commit)
+.mimosa/
