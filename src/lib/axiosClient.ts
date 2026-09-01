@@ -32,7 +32,7 @@ export class AxiosClient {
       try {
         const token = await this.fetchAccessToken();
         if (token) {
-          config.headers = config.headers ?? {};
+          config.headers = config.headers ?? axios.AxiosHeaders.from({});
           config.headers['Authorization'] = `Bearer ${token}`;
         }
       } catch (err) {
