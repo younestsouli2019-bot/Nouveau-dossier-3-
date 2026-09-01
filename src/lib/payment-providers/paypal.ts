@@ -14,6 +14,13 @@ import type {
 const SANDBOX_BASE_URL = 'https://api-m.sandbox.paypal.com';
 const LIVE_BASE_URL = 'https://api-m.paypal.com';
 
+// OAuth2 access-token cache (PayPal tokens are valid up to ~9h via expires_in).
+// Reusing one token per environment until near-expiry cuts ~90% of OAuth calls
+// and is the leading fix for HTTP 429 (RATE_LIMIT_REACHED). FAIL-CLOSED: refresh
+// 60s early so a stale token is never replayed after expiry, and on any OAuth
+// failure the cache is cleared so the next call retries fresh.
+let tokenCache: { env: 'sandbox' | 'live'; token: string; expiresAt: number } | null = null;
+
 /**
  * Build PayPal configuration from environment variables.
  * Returns null if credentials are not configured.
@@ -42,7 +49,14 @@ export function getPayPalConfig(): PayPalConfig | null {
  * POST /v1/oauth2/token with Basic auth (CLIENT_ID:CLIENT_SECRET).
  */
 async function getAccessToken(config: PayPalConfig): Promise<string> {
+  const env = config.sandbox ? 'sandbox' : 'live';
   const baseUrl = config.sandbox ? SANDBOX_BASE_URL : LIVE_BASE_URL;
+
+  // Reuse a still-valid cached token for this environment (60s safety buffer).
+  if (tokenCache && tokenCache.env === env && tokenCache.expiresAt > Date.now() + 60000) {
+    return tokenCache.token;
+  }
+
   const auth = Buffer.from(`${config.clientId}:${config.clientSecret}`).toString(
     'base64',
   );
@@ -62,6 +76,7 @@ async function getAccessToken(config: PayPalConfig): Promise<string> {
       `[PayPal] Failed to obtain access token. Status: ${response.status}`,
       errorBody,
     );
+    tokenCache = null;
     throw new Error(
       `PayPal OAuth2 token request failed (${response.status}): ${errorBody}`,
     );
@@ -71,6 +86,13 @@ async function getAccessToken(config: PayPalConfig): Promise<string> {
   console.log(
     `[PayPal] Access token obtained. Expires in ${data.expires_in}s. Scope: ${data.scope}`,
   );
+
+  tokenCache = {
+    env,
+    token: data.access_token,
+    // expires_in is seconds; refresh 60s early (never reuse a near-expired token).
+    expiresAt: Date.now() + Math.max(60, (data.expires_in ?? 3600) - 60) * 1000,
+  };
 
   return data.access_token;
 }
