@@ -27,12 +27,13 @@
 //
 // USAGE:
 //   node scripts/attijari-cib-scraper.mjs
-//       --download            login + export statements for all configured MAD RIBs
-//       --camt053 <file>      convert a downloaded CSV/statement to Camt.053 XML
-//                             and print to stdout (pipe into camt053-reconcile.ts)
-//       --reconcile <file>    download then run the fail-closed reconcile harness
-//       --headed              show the browser (debug selectors)
-//       --out <dir>           output dir (default data/out/bank)
+//       --download [--reconcile]   login + export statements for all MAD RIBs; --reconcile
+//                                  auto-feeds each download to the FAIL-CLOSED harness
+//       --reconcile-local <dir>    re-run the harness on existing statement files (.csv/.xml)
+//                                  without a browser (e.g. after a manual statement drop)
+//       --camt053 <file>           convert a CSV/statement to Camt.053 XML, print to stdout
+//       --headed                   show the browser (debug selectors)
+//       --out <dir>                output dir (default data/out/bank)
 // =============================================================================
 import 'dotenv/config';
 import fs from 'node:fs';
@@ -41,6 +42,9 @@ import { fileURLToPath } from 'node:url';
 import { parse } from 'node:url';
 import os from 'node:os';
 import crypto from 'node:crypto';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -133,6 +137,40 @@ ${ndd.join('\n')}
 </Document>`;
 }
 
+// ----- Reconcile files (shared by --reconcile and --reconcile-local) -------
+// Feeds each statement file to the FAIL-CLOSED harness (camt053-reconcile.ts),
+// converting CSV downloads to Camt.053 first. Never writes to the ledger except
+// via exact-match auto-settle inside the harness.
+function reconcileFiles(saved) {
+  const { spawnSync } = require('node:child_process');
+  console.log('\n[cib-scraper] reconciling each statement via the fail-closed harness...');
+  let ok = 0, fail = 0;
+  for (const s of saved.slice()) {
+    let file = s;
+    const ext = path.extname(file).toLowerCase();
+    const head = fs.readFileSync(file, 'utf8').trimStart();
+    // The harness consumes Camt.053 XML; convert non-XML (CSV) downloads first.
+    if (ext !== '.xml' && !head.startsWith('<')) {
+      const outDir = path.dirname(file);
+      fs.mkdirSync(outDir, { recursive: true });
+      file = path.join(outDir, path.basename(file, ext) + '.camt053.xml');
+      fs.writeFileSync(file, csvToCamt053(fs.readFileSync(s, 'utf8')));
+      console.log('[cib-scraper] converted CSV ->', file);
+    }
+    console.log(`[cib-scraper] reconciling ${file}...`);
+    // Robust Windows-safe invocation: node --import tsx (no .bin/tsx shim, no shell).
+    const res = spawnSync(process.execPath, [
+      '--import', 'tsx',
+      path.join(ROOT, 'scripts/camt053-reconcile.ts'),
+      file,
+    ], { encoding: 'utf8', shell: false, maxBuffer: 64 * 1024 * 1024 });
+    process.stdout.write(res.stdout || '');
+    process.stderr.write(res.stderr || '');
+    if (res.status === 0) ok++; else { fail++; console.error(`[cib-scraper] reconcile exited ${res.status} for ${file}`); }
+  }
+  console.log(`\n[cib-scraper] reconcile done: ${ok} ok, ${fail} failed.`);
+}
+
 // ----- Download mode --------------------------------------------------------
 async function runDownload() {
   const { chromium } = await import('playwright');
@@ -214,7 +252,7 @@ async function runDownload() {
     console.log('\n[cib-scraper] done. Saved files:');
     for (const s of saved) console.log('  -', s);
     if (process.argv.includes('--reconcile') && saved.length) {
-      // reconcile post-download fallback handled by caller outside
+      reconcileFiles(saved);
     }
   } finally {
     await browser.close();
@@ -238,13 +276,23 @@ if (flags.includes('--camt053')) {
   }
   process.stdout.write(xml + '\n');
   console.error(`[cib-scraper] wrote Camt.053 (${xml.length} bytes). Pipe into camt053-reconcile.ts or save to a file.`);
+} else if (flags.includes('--reconcile-local')) {
+  const i = flags.indexOf('--reconcile-local');
+  const dir = path.resolve(flags[i + 1] || OUT);
+  if (!fs.existsSync(dir)) die(`dir not found: ${dir}`);
+  const files = fs.readdirSync(dir)
+    .filter(f => /\.(csv|xml|camt053)$/i.test(f))
+    .map(f => path.join(dir, f));
+  if (!files.length) die(`no statement files (.csv/.xml) in ${dir}`);
+  console.log(`[cib-scraper] --reconcile-local: ${files.length} file(s) in ${dir}`);
+  reconcileFiles(files);
 } else if (flags.includes('--download') || process.argv.length <= 2) {
   await runDownload();
 } else {
   console.log(`Usage:
-  node scripts/attijari-cib-scraper.mjs --download [--headed]
+  node scripts/attijari-cib-scraper.mjs --download [--reconcile] [--headed]
+  node scripts/attijari-cib-scraper.mjs --reconcile-local <dir>   (re-run reconcile after manual statement drop)
   node scripts/attijari-cib-scraper.mjs --camt053 <statement.csv|xml>
-  node scripts/attijari-cib-scraper.mjs --reconcile
 `);
   process.exit(0);
 }
