@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
 import { installTruthGuards } from './strict-enforcement/truth-guards'
 
 const globalForPrisma = globalThis as unknown as {
@@ -6,11 +7,21 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 function createPrismaClient() {
-  // Prisma 7: datasourceUrl removed from constructor — connection URL
-  // is now configured in prisma.config.ts. Connection tuning params
-  // (connect_timeout, pool_timeout, statement_timeout) are also moved
-  // to prisma.config.ts datasource.url.
+  // Prisma 7: driver adapter is mandatory — no more datasourceUrl or
+  // env-based connections. PrismaPg wraps the `pg` package and connects
+  // using the DATABASE_URL environment variable.
+  const connectionString = process.env.DATABASE_URL || ''
+  
+  // Connection tuning params (connect_timeout, pool_timeout, etc.)
+  // are passed via the connection string query params
+  const sep = connectionString.includes('?') ? '&' : '?'
+  const caps = 'connect_timeout=10&pool_timeout=15&statement_timeout=30000&application_name=supply-chain-swarm'
+  const tunedUrl = connectionString ? `${connectionString}${sep}${caps}` : connectionString
+
+  const adapter = new PrismaPg({ connectionString: tunedUrl })
+  
   const client = new PrismaClient({
+    adapter,
     log: process.env.DEBUG_PRISMA === '1' ? ['query', 'info', 'warn', 'error'] : ['warn', 'error'],
     transactionOptions: {
       maxWait: 8000,
