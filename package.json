@@ -73,7 +73,7 @@
     "playwright": "^1.62.1",
     "tsx": "^4.19.0",
     "typescript": "^5.5.0",
-    "vitest": "^2.1.0"
+    "vitest": "^3.2.6"
   },
   "engines": {
     "node": ">=18.0.0"
