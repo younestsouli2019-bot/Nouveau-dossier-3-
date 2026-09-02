@@ -4,6 +4,18 @@ This is the canonical registry of live swarm/base44 deployments. The actual reve
 machinery is deployed as Base44 apps (`*.base44.app`) fronted by `space-z.ai` public URLs,
 plus the Vercel supply-chain front-end.
 
+## Status Snapshot (2026-09-02) — Deployment Stability Restored
+
+### Build & deploy chain — all patches live on `main` through `a3a2e99`
+
+| Surface | Status | Notes |
+|---------|--------|-------|
+| Next.js 16 + Turbopack build (Space-Z CI) | ✅ GREEN 2026-09-02 | `build-verify` + `verify-secrets` + `trigger-deploy` all pass. Fixes: `turbopack: {}` + `serverExternalPackages` in next.config.mjs; BOM stripped from tsconfig.json (unblocked 164 alias-resolution errors); `react-is` added; Prisma 7 migration (mandatory `PrismaPg` driver adapter in `db.ts` + `phantom-quarantine.mjs`, truth-guards `$use` → `$extends` query extension, `datasourceUrl` removed). 57/57 static pages, exit 0. |
+| Vercel (`supply-chain-swarm.vercel.app`) | ✅ LIVE on latest commit (a3a2e99) | GitHub-app native deploy; `/api/healthz` 200, `/api/dashboard` 200, `/api/owner-accounts` 200. |
+| Space-Z instance `t1trn6kunnv1-d` | ❌ STILL DOWN — Z.ai expiry-recycle (platform-side) | 502 re-confirmed 2026-09-02. NOT a code fault — code builds green. **Redeploy via Space-Z dashboard** (no SPACEZ_TOKEN in-repo). |
+| Space-Z instance `x1he4604ap01-deploy` (HIT Swarm) | ❌ STILL DOWN — Z.ai expiry-recycle (platform-side) | Same 502 signature. Redeploy via Space-Z dashboard. |
+| `deploy-vercel.yml` CI path | ⚠️ redundant failure | Fails at "Pull Vercel Environment" (expired VERCEL_TOKEN). Harmless: Vercel GitHub app handles deploys natively. |
+
 ## Status Snapshot (2026-08-29)
 
 ### 🔐 OWNER RULING — "All roads lead to Mecca" (IMMUTABLE unless changed by OWNER)
