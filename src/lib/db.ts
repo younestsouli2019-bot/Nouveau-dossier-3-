@@ -6,14 +6,12 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 function createPrismaClient() {
-  const base = process.env.DATABASE_URL || ''
-  const sep = base.includes('?') ? '&' : '?'
-  const caps =
-    'connect_timeout=10&pool_timeout=15&statement_timeout=30000&application_name=supply-chain-swarm'
-  const tunedUrl = base ? `${base}${sep}${caps}` : base
+  // Prisma 7: datasourceUrl removed from constructor — connection URL
+  // is now configured in prisma.config.ts. Connection tuning params
+  // (connect_timeout, pool_timeout, statement_timeout) are also moved
+  // to prisma.config.ts datasource.url.
   const client = new PrismaClient({
     log: process.env.DEBUG_PRISMA === '1' ? ['query', 'info', 'warn', 'error'] : ['warn', 'error'],
-    datasourceUrl: tunedUrl || undefined,
     transactionOptions: {
       maxWait: 8000,
       timeout: 15000,
