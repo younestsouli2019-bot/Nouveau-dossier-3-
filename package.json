@@ -23,7 +23,8 @@
         "guard:selftest": "node --import tsx scripts/url-guard-self-test.mjs",
         "audit:truth": "node scripts/truth-invariant-audit.mjs",
         "payout:wise": "node --import tsx scripts/wise-sample-workflow.mjs",
-        "payout:paypal": "node --import tsx scripts/paypal-payout-workflow.mjs"
+        "payout:paypal": "node --import tsx scripts/paypal-payout-workflow.mjs",
+        "audit:all": "npm run typecheck && npm run audit:truth && npm run guard:selftest"
     },
     "dependencies": {
         "@base44/sdk": "^0.8.13",

@@ -105,6 +105,28 @@ async function main() {
   if (/UNVERIFIED|NOT BOOKED|no real money moved/.test(recText)) ok('INV-5: truth doc explicitly marks unverified figures');
   else bad('INV-5', 'truth doc does not flag the external-supervisor figures as unverified');
 
+  // INV-6: no timestamp/random idempotency keys in the money engines (regression
+  // guard for the deterministic-key fixes). Only checks assignment/idempotency
+  // config, post string/comment stripping.
+  const idemRe = /idempotencyKey\s*:\s*`[^`]*(?:Date\.now\(\)|Math\.random\(|getTime\(\))[^`]*`|idempotencyKey\s*:\s*`[^`]*\$\{[^`]*(?:Date\.now|Math\.random|getTime)[^`]*\}/;
+  const idemOffenders = moneyFiles.filter((p) => containsCode(join(ROOT, p), idemRe));
+  if (idemOffenders.length === 0) ok('INV-6: no timestamp/random idempotency keys in money engines');
+  else bad('INV-6', `timestamp/random idempotency keys in: ${idemOffenders.join(', ')}`);
+
+  // INV-7: Wise production base host is consistently api.transferwise.com.
+  const wiseHost = /api\.wise\.com/;
+  const grok = (p) => { try { return readFileSync(join(ROOT, p), 'utf8'); } catch { return ''; } };
+  const wiseRefs = [
+    'src/services/wiseService.ts',
+    'src/lib/connector-credentials.ts',
+    'src/lib/vault/connector-self-test.ts',
+    'src/financial/gateways/BankWireGateway.mjs',
+    'scripts/rail-health-probe.mjs',
+  ];
+  const legacy = wiseRefs.filter((p) => wiseHost.test(grok(p)));
+  if (legacy.length === 0) ok('INV-7: no legacy api.wise.com host refs in Wise modules');
+  else bad('INV-7', `legacy api.wise.com still referenced in: ${legacy.join(', ')}`);
+
   console.log(`\n──────────────────────────────`);
   console.log(`result: ${pass} passed, ${fail} failed`);
   if (violations.length) {
