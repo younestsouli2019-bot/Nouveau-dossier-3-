@@ -48,15 +48,15 @@ const containsCode = (path, re) => {
   catch { return false; }
 };
 
-function walk(dir) {
+function walk(dir, exts = EXTS) {
   const out = [];
   let entries;
   try { entries = readdirSync(dir); } catch { return out; }
   for (const e of entries) {
     const p = join(dir, e);
     let st; try { st = statSync(p); } catch { continue; }
-    if (st.isDirectory()) { if (!SKIP.has(e)) out.push(...walk(p)); }
-    else if (EXTS.has(e.slice(e.lastIndexOf('.')))) out.push(p);
+    if (st.isDirectory()) { if (!SKIP.has(e)) out.push(...walk(p, exts)); }
+    else if (exts.has(e.slice(e.lastIndexOf('.')))) out.push(p);
   }
   return out;
 }
@@ -68,14 +68,22 @@ function contains(path, re) {
 async function main() {
   console.log('truth-invariant audit (static, no DB/network)\n');
 
-  // INV-1: no hardcoded real secrets in tracked source (exclude .env which is ignored).
+  // INV-1: no hardcoded real secrets in tracked source OR docs/config.
+  // Covers src/scripts/prisma, plus docs/ and root config — the "one `git add .`
+  // away from history" failure mode that already bit this repo once (plaintext
+  // Neon owner password lived in scripts). Exclude .env which is gitignored.
   let leakedCount = 0;
-  const files = walk(join(ROOT, 'src')).concat(walk(join(ROOT, 'scripts'))).concat(walk(join(ROOT, 'prisma')));
-  for (const f of files) {
-    if (contains(f, SECRET_RE)) { leakedCount += 1; }
+  const leakedAt = [];
+  const trackedDirs = [join(ROOT, 'src'), join(ROOT, 'scripts'), join(ROOT, 'prisma'), join(ROOT, 'docs')];
+  const docExts = new Set(['.md', '.json', '.mjs', '.js', '.ts']);
+  for (const d of trackedDirs) {
+    for (const f of walk(d, docExts)) if (contains(f, SECRET_RE)) { leakedCount += 1; leakedAt.push(f); }
   }
-  if (leakedCount === 0) ok('INV-1: no hardcoded live-secret markers in src/scripts/prisma');
-  else bad('INV-1', `found ${leakedCount} file(s) matching secret markers`);
+  for (const f of ['package.json', 'DEPLOYMENTS.md', 'INTEGRATION.md'].map((p) => join(ROOT, p))) {
+    if (existsSync(f) && contains(f, SECRET_RE)) { leakedCount += 1; leakedAt.push(f); }
+  }
+  if (leakedCount === 0) ok('INV-1: no hardcoded live-secret markers in src/scripts/prisma/docs/config');
+  else bad('INV-1', `found ${leakedCount} file(s) matching secret markers: ${leakedAt.join(', ')}`);
 
   // INV-2: no hardcoded confirm=true bypass in the money engines.
   const moneyFiles = [

@@ -2,7 +2,7 @@
 
 ## [2026-09-02]
 - **feat(tooling): decision support + verification CLIs all fail-closed (no money).** Built and pushed to `main`
-  (c952-track commits): (1) `scripts/edge-plan-tool.mjs` (`npm run edge:plan`) — constructs a REAL
+  (0f58bdd via 4b57df1): (1) `scripts/edge-plan-tool.mjs` (`npm run edge:plan`) — constructs a REAL
   `TreasuryEdge`, injects lightweight non-blocking fingerprint/event/metrics collaborators, and evaluates the
   FULL gate stack (per-txn cap / daily cap / velocity / multi-sig) for a hypothetical transfer WITHOUT moving
   money; SSRF-validates the base URL and fails closed BEFORE any client is built. (2) `scripts/url-guard-self-test.mjs`
