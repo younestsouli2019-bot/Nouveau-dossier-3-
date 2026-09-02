@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 const LIVE_CONNECTOR_STATUSES = new Set([
 	"live",
@@ -40,6 +41,8 @@ let _prisma = null;
 function getDb() {
 	if (_prisma) return _prisma;
 	_prisma = new PrismaClient({
+		// Prisma 7: driver adapter is mandatory
+		adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL || "" }),
 		log: ["warn", "error"],
 	});
 	return _prisma;

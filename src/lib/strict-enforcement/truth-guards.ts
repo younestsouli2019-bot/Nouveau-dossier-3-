@@ -515,37 +515,47 @@ function auditMutation(params: {
  * FAIL-CLOSED for status=completed: any FATAL violation THROWS to prevent
  * writing phantom-completed records (GooglePay-style "refund never arrived"
  * class of bug). Non-fatal violations (processing/submitted in-flight) are
- * tagged with truthViolations metadata for audit.
+ * logged for audit.
+ *
+ * Prisma 7 migration: `client.$use()` middleware was REMOVED. This now uses
+ * the `$extends` query API and RETURNS the extended client — callers must
+ * use the return value (the original client is not mutated).
  */
-export function installTruthGuards(client: PrismaClient): void {
-  ;(client as unknown as { $use: (fn: (params: unknown, next: (p: unknown) => unknown) => unknown) => void }).$use(
-    async (params: unknown, next: (p: unknown) => unknown) => {
-      const p = params as { model?: string; action: string; args: Record<string, unknown> }
-      const violations = auditMutation(p)
-      const fatal = violations.filter(v => v.fatal)
-      if (fatal.length > 0) {
-        const summary = fatal
-          .map(v => `[${v.rule}] ${v.model}.${v.field}: ${v.message}`)
-          .join(' ; ')
-        console.error(`[TRUTH-GUARDS][FAIL-CLOSED] ${fatal.length} FATAL violation(s) on ${p.model}.${p.action} — MUTATION REJECTED to prevent lost revenue: ${summary}`)
-        throw Object.assign(
-          new Error(`TRUTH-GUARDS-FAILCLOSED: Refusing write to status=completed without verifiable proof. Violations: ${summary}`),
-          { code: 'TRUTH_FAILCLOSED', details: fatal, model: p.model, action: p.action }
-        )
-      }
-      if (violations.length > 0) {
-        // WARN-ONLY (2026-08-30 harmonization): the previous behavior mutated
-        // args.data to inject a `truthViolations` field — but no Prisma model has
-        // that column, so Prisma rejected the very write being audited with an
-        // "Unknown argument" error. Non-fatal violations are now log-only; the
-        // durable audit trail is the L3 sweep + AuditLedger, not payload mutation.
-        const summary = violations
-          .map(v => `[${v.rule}] ${v.model}.${v.field}: ${v.message}`)
-          .join(' ; ')
-        console.warn(`[TRUTH-GUARDS][WARN] ${violations.length} non-fatal violation(s) on ${p.model}.${p.action}: ${summary}`)
-      }
-      return next(params)
+export function installTruthGuards(client: PrismaClient): PrismaClient {
+  const extended = client.$extends({
+    query: {
+      $allModels: {
+        async $allOperations({ model, operation, args, query }) {
+          const violations = auditMutation({
+            model: model ?? undefined,
+            action: operation,
+            args: (args ?? {}) as Record<string, unknown>,
+          })
+          const fatal = violations.filter(v => v.fatal)
+          if (fatal.length > 0) {
+            const summary = fatal
+              .map(v => `[${v.rule}] ${v.model}.${v.field}: ${v.message}`)
+              .join(' ; ')
+            console.error(`[TRUTH-GUARDS][FAIL-CLOSED] ${fatal.length} FATAL violation(s) on ${model}.${operation} — MUTATION REJECTED to prevent lost revenue: ${summary}`)
+            throw Object.assign(
+              new Error(`TRUTH-GUARDS-FAILCLOSED: Refusing write to status=completed without verifiable proof. Violations: ${summary}`),
+              { code: 'TRUTH_FAILCLOSED', details: fatal, model, action: operation }
+            )
+          }
+          if (violations.length > 0) {
+            // WARN-ONLY (2026-08-30 harmonization): non-fatal violations are
+            // log-only; the durable audit trail is the L3 sweep + AuditLedger,
+            // not payload mutation.
+            const summary = violations
+              .map(v => `[${v.rule}] ${v.model}.${v.field}: ${v.message}`)
+              .join(' ; ')
+            console.warn(`[TRUTH-GUARDS][WARN] ${violations.length} non-fatal violation(s) on ${model}.${operation}: ${summary}`)
+          }
+          return query(args)
+        },
+      },
     },
-  )
-  console.info('[TRUTH-GUARDS] Installed 16 fail-closed rules on Prisma client. TRUTH-001…014 (Finance+Procurement+Shipment) + TRUTH-006-GENERIC active. FAIL-CLOSED: status=completed/delivered/receipt_confirmed/settled ALWAYS requires REAL external-world proof, never synthetic/local references.')
+  })
+  console.info('[TRUTH-GUARDS] Installed 16 fail-closed rules on Prisma client via $extends (Prisma 7). TRUTH-001…014 (Finance+Procurement+Shipment) + TRUTH-006-GENERIC active. FAIL-CLOSED: status=completed/delivered/receipt_confirmed/settled ALWAYS requires REAL external-world proof, never synthetic/local references.')
+  return extended as unknown as PrismaClient
 }
