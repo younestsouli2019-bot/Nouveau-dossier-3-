@@ -20,7 +20,7 @@ function getBaseUrl() {
 	const sandbox =
 		String(process.env.WISE_ENV ?? "live").toLowerCase() === "sandbox";
 	return sandbox
-		? "https://api.wise-sandbox.com"
+		? "https://api.sandbox.transferwise.tech"
 		: "https://api.transferwise.com";
 }
 
