@@ -11,7 +11,7 @@ function createPrismaClient() {
   // env-based connections. PrismaPg wraps the `pg` package and connects
   // using the DATABASE_URL environment variable.
   const connectionString = process.env.DATABASE_URL || ''
-  
+
   // Connection tuning params (connect_timeout, pool_timeout, etc.)
   // are passed via the connection string query params
   const sep = connectionString.includes('?') ? '&' : '?'
@@ -19,8 +19,8 @@ function createPrismaClient() {
   const tunedUrl = connectionString ? `${connectionString}${sep}${caps}` : connectionString
 
   const adapter = new PrismaPg({ connectionString: tunedUrl })
-  
-  const client = new PrismaClient({
+
+  const base = new PrismaClient({
     adapter,
     log: process.env.DEBUG_PRISMA === '1' ? ['query', 'info', 'warn', 'error'] : ['warn', 'error'],
     transactionOptions: {
@@ -30,9 +30,9 @@ function createPrismaClient() {
     },
   })
 
-  installTruthGuards(client)
-
-  return client
+  // Prisma 7: $extends returns a NEW extended client (the original is not
+  // mutated) — always use the return value.
+  return installTruthGuards(base)
 }
 
 export const db =
