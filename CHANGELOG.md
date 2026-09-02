@@ -24,6 +24,11 @@
   by observing `--currency=MAD` printing "USD" and `--rail=paypal` producing `edge-wise-` idempotency keys.
   Fixed and re-verified (paypal now resolves `api-m.sandbox.paypal.com`, currency parses, per-txn + multi-sig
   correctly REJECT above thresholds).
+- **feat(test): durable vitest suite for the SSRF guard — `src/lib/url-guard.test.ts`.** 14 cases
+  (IPv4/IPv6 classifiers, `checkUrlStatic`, `assertSafeBaseUrl`) that lock in the 4 IPv6 bypass fixes:
+  bracketed `[::1]` literals blocked, NAT64 `64:ff9b::a9fe:a9fe` metadata blocked,
+  6to4 `2002:0a00:0001::`/`2002:7f00:0001::` private blocked, while public 6to4/NAT64/doc forms stay
+  allowed. Confirmed behaviors via live probe before asserting. Full `npm test` now 30/30 passing.
 - **docs(INTEGRATION.md / CHANGELOG):** refreshed stale "on the feature/paypal-wise-integration branch" →
   merged into `main`; added the decision-support & verification tooling section.
 
