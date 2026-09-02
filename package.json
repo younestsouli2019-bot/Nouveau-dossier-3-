@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "postinstall": "prisma generate",
+    "postinstall": "if [ -n \"$DATABASE_URL\" ]; then prisma generate; else echo \"skip prisma generate (no DATABASE_URL)\"; fi",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:seed-pos": "node scripts/seed-pos.mjs",
