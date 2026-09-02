@@ -14,11 +14,14 @@
   timestamp/random idempotency keys, no legacy `api.wise.com` refs). `npm run audit:all` = one-shot
   `typecheck && audit:truth && guard:selftest`. Also `scripts/wise-sample-workflow.mjs` + `scripts/paypal-payout-workflow.mjs`
   runnable payout runners (dry-run default, `--confirm` only with real creds, deterministic idempotency keys).
-- **ops(latent issue surfaced): `new TreasuryEdge()` with its DEFAULT `FingerprintManager` never lets the
-  process exit on tsx/Windows** — the manager's `_startRotation()` timer keeps the event loop alive, so any CLI
-  or worker that constructs a default TreasuryEdge can hang at exit. The new `edge:plan` tool works around it
-  by injecting non-blocking collaborators. Recommend an upstream fix (inject mode / explicit `stop()` on the
-  manager).
+- **fix(fingerprint): root-caused & FIXED the exit-hang.** `_startRotation()` in `FingerprintManager.mjs`
+  called `setInterval.unref?.()` — that calls `.unref` on the **function** (a no-op), not on the returned
+  **Timeout** object, so the 6h rotation timer was never actually unref'd. Any default `FingerprintManager`
+  (including via `new TreasuryEdge()`) pinned the Node event loop and hung the process at exit on
+  tsx/Windows. Now the Timeout is captured and explicitly `.unref()`'d; rotation still fires on
+  long-running workers but no longer blocks clean exit. Verified: bare `new FingerprintManager()` and
+  default `new TreasuryEdge()` both now exit (~1s / ~0.6s) instead of hanging. The `edge:plan` tool's
+  lightweight-collaborator injection remains as an extra belt for decision-support runs.
 - **fix(edge-plan-tool arg parser):** flags were stored under bare keys but read with a `--` prefix, so
   `--currency=MAD`, `--rail=paypal`, `--base-url`, `--amount` were silently ignored (defaults used) — caught
   by observing `--currency=MAD` printing "USD" and `--rail=paypal` producing `edge-wise-` idempotency keys.
