@@ -19,7 +19,11 @@
         "carrier:acquire": "tsx scripts/carrier-acquire-sweep.ts",
         "prod:migrate": "tsx scripts/apply-crbt-migration.ts",
         "proc:reconcile": "tsx scripts/proc-reconcile.ts",
-        "proc:status": "tsx scripts/proc-status-check.ts"
+        "proc:status": "tsx scripts/proc-status-check.ts",
+        "guard:selftest": "node --import tsx scripts/url-guard-self-test.mjs",
+        "audit:truth": "node scripts/truth-invariant-audit.mjs",
+        "payout:wise": "node --import tsx scripts/wise-sample-workflow.mjs",
+        "payout:paypal": "node --import tsx scripts/paypal-payout-workflow.mjs"
     },
     "dependencies": {
         "@base44/sdk": "^0.8.13",
