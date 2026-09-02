@@ -1,7 +1,7 @@
 # Payment Rails Integration
 
-This documents the PayPal + Wise payment integration on the
-`feature/paypal-wise-integration` branch.
+This documents the PayPal + Wise payment integration (merged into `main` in
+`81a0d32416` from `feature/paypal-wise-integration`).
 
 ## Overview
 
@@ -108,3 +108,28 @@ logical payout is deduplicated rather than double-issued.
 
 - `npx tsc --noEmit -p tsconfig.json` — must pass.
 - Run the examples in sandbox mode before enabling production credentials.
+
+## Decision support & safeguards (new)
+
+Beyond the payout runners, the repo ships security/verification tooling that is
+safe to run anywhere (no DB/network, no money moves):
+
+- `npm run edge:plan` — `scripts/edge-plan-tool.mjs`. Builds a **real**
+  `TreasuryEdge` and evaluates the full gate stack (per-txn cap, daily cap,
+  velocity, multi-sig) for a hypothetical transfer **without moving money** —
+  operator decision support before running a payout. Pass `--rail=wise|paypal`,
+  `--amount=<n>`, `--counterparty=<id>`, `--currency=<ISO>`, `--confirm` (still
+  never sends). Fails closed if the base URL is rejected by the SSRF guard.
+- `npm run guard:selftest` — `scripts/url-guard-self-test.mjs`. 38-case SSRF
+  regression test (IPv4/IPv6 classifiers, scheme/host static checks, and
+  DNS-resolving cases).
+- `npm run audit:truth` — `scripts/truth-invariant-audit.mjs`. Static truth
+  invariants: no hardcoded secrets, no confirm-gate auto-submit bypass,
+  SSRF guard wired into AxiosClient, reconciliation doc present + flags the
+  external-supervisor figures unverified, no timestamp/random idempotency keys,
+  no legacy `api.wise.com` refs.
+- `npm run audit:all` — one-shot CI gate:
+  `typecheck && audit:truth && guard:selftest`.
+
+All of the above are purely read-only / dry-run: they never submit a transfer
+and never require live credentials.

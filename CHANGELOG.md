@@ -1,5 +1,32 @@
 # Changelog
 
+## [2026-09-02]
+- **feat(tooling): decision support + verification CLIs all fail-closed (no money).** Built and pushed to `main`
+  (c952-track commits): (1) `scripts/edge-plan-tool.mjs` (`npm run edge:plan`) — constructs a REAL
+  `TreasuryEdge`, injects lightweight non-blocking fingerprint/event/metrics collaborators, and evaluates the
+  FULL gate stack (per-txn cap / daily cap / velocity / multi-sig) for a hypothetical transfer WITHOUT moving
+  money; SSRF-validates the base URL and fails closed BEFORE any client is built. (2) `scripts/url-guard-self-test.mjs`
+  (`npm run guard:selftest`) — 38-case SSRF regression suite that **caught and drove fixes for 4 real IPv6
+  bypasses** in `src/lib/url-guard.ts` (bracketed `[::1]` literals were allowed, NAT64/6to4 hex-embedded
+  cloud-metadata/private forms slipped though) — now 38/38 pass. (3) `scripts/truth-invariant-audit.mjs`
+  (`npm run audit:truth`) — 7 static invariants (no hardcoded secrets, no confirm-gate auto-submit bypass,
+  SSRF guard wired into AxiosClient, reconciliation doc marks external figures UNVERIFIED, no
+  timestamp/random idempotency keys, no legacy `api.wise.com` refs). `npm run audit:all` = one-shot
+  `typecheck && audit:truth && guard:selftest`. Also `scripts/wise-sample-workflow.mjs` + `scripts/paypal-payout-workflow.mjs`
+  runnable payout runners (dry-run default, `--confirm` only with real creds, deterministic idempotency keys).
+- **ops(latent issue surfaced): `new TreasuryEdge()` with its DEFAULT `FingerprintManager` never lets the
+  process exit on tsx/Windows** — the manager's `_startRotation()` timer keeps the event loop alive, so any CLI
+  or worker that constructs a default TreasuryEdge can hang at exit. The new `edge:plan` tool works around it
+  by injecting non-blocking collaborators. Recommend an upstream fix (inject mode / explicit `stop()` on the
+  manager).
+- **fix(edge-plan-tool arg parser):** flags were stored under bare keys but read with a `--` prefix, so
+  `--currency=MAD`, `--rail=paypal`, `--base-url`, `--amount` were silently ignored (defaults used) — caught
+  by observing `--currency=MAD` printing "USD" and `--rail=paypal` producing `edge-wise-` idempotency keys.
+  Fixed and re-verified (paypal now resolves `api-m.sandbox.paypal.com`, currency parses, per-txn + multi-sig
+  correctly REJECT above thresholds).
+- **docs(INTEGRATION.md / CHANGELOG):** refreshed stale "on the feature/paypal-wise-integration branch" →
+  merged into `main`; added the decision-support & verification tooling section.
+
 ## [2026-09-01]
 - **verify(deployment check, P0 re-confirm 2026-09-01):** (1) **AICC `https://b1fx661hzse0-d.space-z.ai/` confirmed LIVE** from an external/web path — AgentFlow AI Command Center shell serves correctly (Truth-Only UI: ON · `NO_PLATFORM_WALLET=true` · `SWARM_LIVE=true`), and backend `agent-flow-ai-9855ea98.base44.app/api` responds. ⚠️ **Methodology note:** local-shell `curl` returned HTTP 000 / exit 7 ("Could not connect") for this domain, but a **control test showed `github.com` failing identically** — so the machine's outbound TLS is blocked/intercepted (even though `Test-NetConnection` opens TCP 443). The curl failure is a **local-network artifact, NOT a service outage**; the external WebFetch backend confirmed the service is live. (2) **Supply Chain Main `https://t1trn6kunnv1-d.space-z.ai/` re-confirmed DOWN — HTTP 502** from the external path, unchanged from DEPLOYMENTS.md, still the Z.ai expiry-recycle signature → **P0 redeploy via Space-Z dashboard** (no SPACEZ_TOKEN in-repo). Reconfirmed too: the AICC backend API still exposes 26+ nav page names keyless (enumeration leak), as previously flagged.
 - **fix(finance/treasury-edge): repaired the main-branch break introduced by the stub commit.** `TreasuryEdge.ts` statically imported `AxiosClient` / `PayPalService`, which d1ae95c stubbed to `export {}` on main — a guaranteed TS2305 (`has no exported member`) AND runtime `TypeError: … is not a constructor` the moment the edge is constructed. The two feature-branch implementations are now resolved LAZILY via dynamic `import()` inside `ensureDeps()`, typed by local structural interfaces (`HttpClientLike`, `PayPalLike`) instead of importing types the stubs don't export. Fail-closed: absent implementation → descriptive error naming the branch to merge; the paypal rail can no longer silently fall through to the generic HTTP path when the delegate is missing (`this.paypal` null-guard added). **Verification still BLOCKED** (see ops note) — run `npx tsc --noEmit` in a working container before deploy.
