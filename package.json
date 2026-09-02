@@ -26,6 +26,7 @@
         "payout:wise": "node --import tsx scripts/wise-sample-workflow.mjs",
         "payout:paypal": "node --import tsx scripts/paypal-payout-workflow.mjs",
         "edge:plan": "node --import tsx scripts/edge-plan-tool.mjs",
+        "swarm:tick:clickless": "node scripts/swarm-clickless-tick.mjs",
         "audit:all": "npm run typecheck && npm run audit:truth && npm run guard:selftest"
     },
     "dependencies": {

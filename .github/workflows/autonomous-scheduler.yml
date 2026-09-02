@@ -112,6 +112,8 @@ jobs:
     env:
       AUTOCOMMIT_ENABLE: ${{ vars.AUTOCOMMIT_ENABLE }}
       SWARM_CYCLE_REF: "cycle-1786593501227"
+      VERCEL_PROJECT_URL: ${{ secrets.VERCEL_PROJECT_URL }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -133,45 +135,29 @@ jobs:
             sleep 5
           done
           exit 0
-      - name: Pre-tick pattern guardrails (WARN if score > 30; tolerate Neon flake)
+      - name: Plan-transition fail-closed (read-only tick guard)
+        run: |
+          # READ-ONLY clickless tick: NEVER moves money. PLAN_TRANSITION_MODE=1
+          # is the documented isolation flag; it keeps this tick assessment-only.
+          echo "PLAN_TRANSITION_MODE=1" >> "$GITHUB_ENV"
+      - name: Security + truth audits (real static scripts; read-only)
         continue-on-error: true
         run: |
-          set +euo pipefail
-          node ./src/swarm-guardrails.mjs --lock-cycle cycle-1786593501227 || true
-          export SWARM_FAIL_SCORE=30
-          RETRIES=0; MAX=3
-          while [ "$RETRIES" -lt "$MAX" ]; do
-            ATTEMPT=$((RETRIES+1))
-            echo "::group::pre-tick scan attempt $ATTEMPT/$MAX"
-            node ./src/swarm-guardrails.mjs --scan; RC=$?
-            echo "::endgroup::"
-            if [ "$RC" -eq 0 ]; then exit 0; fi
-            echo "::warning::pre-tick scan rc=$RC attempt $ATTEMPT/$MAX — Neon autosuspend; wait 4s."
-            RETRIES=$ATTEMPT
-            sleep 4
-          done
-          echo "::warning::pre-tick scan failed all $MAX attempts — tick continues (non-fatal)."
-          exit 0
-      - name: Register baseline agents
-        run: npm run swarm:add:agents || echo "swarm:add:agents failed"
-      - name: Headhunter discovery
-        run: npm run swarm:headhunter:once || echo "headhunter:once failed"
-      - name: Deploy pending missions
-        run: node ./scripts/deploy-missions.mjs || echo "deploy-missions failed"
-      - name: Autonomous once
-        run: npm run autonomous:once || echo "autonomous:once failed"
-      - name: Health readiness ping
-        run: npm run live:readiness:ping || echo "live:readiness:ping failed"
-      - name: Build catalogue (ultimate)
-        run: npm run catalogue:ultimate || echo "catalogue:ultimate failed"
-      - name: Build catalogue (advanced)
-        run: npm run catalogue:pdfkit || echo "catalogue:pdfkit failed"
-      - name: Sync catalogue PDF into static artifact
-        run: node ./scripts/sync-catalogue-to-static.mjs || echo "sync-catalogue-to-static failed"
-      - name: Fallback placeholder if missing
+          node ./scripts/truth-invariant-audit.mjs || echo "truth-invariant-audit exit≠0 (non-fatal)"
+          npx tsx ./scripts/url-guard-self-test.mjs || echo "url-guard-self-test exit≠0 (non-fatal)"
+      - name: Clickless read-only swarm tick (reconcile+audit+journal)
+        continue-on-error: true
         run: |
-          if [ ! -f "catalogue/catalogue_master.pdf" ]; then
-            node ./scripts/generate-catalogue-placeholder.mjs
+          node ./scripts/swarm-clickless-tick.mjs || echo "clickless tick exit≠0 (non-fatal)"
+      - name: Health readiness ping (real route)
+        continue-on-error: true
+        run: |
+          if [ -n "${VERCEL_PROJECT_URL:-}" ]; then
+            echo "Health target: ${VERCEL_PROJECT_URL}"
+            curl -sf --max-time 40 "https://${VERCEL_PROJECT_URL#https://}/api/healthz" \
+              && echo "healthz OK" || echo "healthz unreachable (non-fatal)"
+          else
+            echo "VERCEL_PROJECT_URL not set — skipping health ping (non-fatal)"
           fi
       - name: Write real-world truth marker
         run: node ./scripts/realworld-truth.mjs || echo "realworld-truth failed"
@@ -183,13 +169,10 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if [ -d "rank/output/site-data" ]; then git add -A "rank/output/site-data"; fi
-          if [ -f "catalogue/catalogue_master.pdf" ]; then git add -A "catalogue/catalogue_master.pdf"; fi
-          if [ -d "catalogue/static" ]; then git add -A "catalogue/static"; fi
-          if [ -f "logs/mirror-status.json" ]; then git add -A "logs/mirror-status.json"; fi
+          if [ -d "logs/swarm_clickless" ]; then git add -A "logs/swarm_clickless"; fi
           if [ -f "logs/realworld-truth.json" ]; then git add -A "logs/realworld-truth.json"; fi
           if ! git diff --cached --quiet; then
-            git commit -m "autonomous tick: agents, readiness, and state updates"
+            git commit -m "autonomous read-only tick: audits, journal, health (no money moved)"
             git push origin HEAD:${{ github.ref_name }}
           else
             echo "No changes to commit."

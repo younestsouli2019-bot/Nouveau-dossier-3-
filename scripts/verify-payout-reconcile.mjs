@@ -15,7 +15,7 @@ console.log('PayoutBatch columns:', pb.rows.map(r => r.column_name).join(', '));
 const sum = await c.query(`SELECT COALESCE(SUM(amount::numeric),0) AS total, COUNT(*)::int AS n FROM "PayoutItem"`);
 console.log('PayoutItem total amount:', sum.rows[0].total, 'count:', sum.rows[0].n);
 
-const pbSum = await c.query(`SELECT COALESCE(SUM(amount::numeric),0) AS total, COUNT(*)::int AS n FROM "PayoutBatch"`);
+const pbSum = await c.query(`SELECT COALESCE(SUM("totalAmount"::numeric),0) AS total, COUNT(*)::int AS n FROM "PayoutBatch"`);
 console.log('PayoutBatch total amount:', pbSum.rows[0].total, 'count:', pbSum.rows[0].n);
 
 const setSum = await c.query(`SELECT COALESCE(SUM(amount::numeric),0) AS total, COUNT(*)::int AS n FROM "OwnerSettlement"`);

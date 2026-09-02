@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-08-31T11:27:27.708Z",
+  "generatedAt": "2026-09-02T13:59:49.416Z",
   "engine": "postgres-integrity-audit",
   "kv": {
     "settlementsTotal": 27,
     "settlementsCompletedNoProof": 0,
-    "batchesTotal": 5,
+    "batchesTotal": 6,
     "batchesCompletedNoProof": 0,
-    "itemsTotal": 16,
+    "itemsTotal": 23,
     "itemsSyntheticRefs": 16,
-    "revTotal": 8,
+    "revTotal": 10,
     "revCompletedNoProof": 3,
     "piTotal": 16,
     "piPendingSumUsd": 6224.549999999998,
@@ -19,12 +19,12 @@
     {
       "level": "WARN",
       "area": "payout_integrity",
-      "message": "16/16 PayoutItem use sequential synthetic transactionRefs (e.g. BC-POOL-2026-001) instead of real rail transaction IDs. deliveryConfirmed=true without external confirmation."
+      "message": "16/23 PayoutItem use sequential synthetic transactionRefs (e.g. BC-POOL-2026-001) instead of real rail transaction IDs. deliveryConfirmed=true without external confirmation."
     },
     {
       "level": "CRITICAL",
       "area": "revenue_integrity",
-      "message": "3/8 RevenueEvent status=completed but proofHash=null (proofType: api_receipt,manual_attestation,api_receipt). One is manual_attestation=$3,500 with no hash."
+      "message": "3/10 RevenueEvent status=completed but proofHash=null (proofType: api_receipt,manual_attestation,api_receipt). One is manual_attestation=$3,500 with no hash."
     },
     {
       "level": "INFO",
@@ -34,7 +34,7 @@
     {
       "level": "INFO",
       "area": "reconciliation",
-      "message": "DB-of-record total: OwnerSettlement=$13744.11, PayoutBatch=$6224.55."
+      "message": "DB-of-record total: OwnerSettlement=$13744.11, PayoutBatch=$10851.23."
     }
   ]
 }
