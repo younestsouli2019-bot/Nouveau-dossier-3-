@@ -107,6 +107,9 @@ logical payout is deduplicated rather than double-issued.
 ## Verification
 
 - `npx tsc --noEmit -p tsconfig.json` — must pass.
+- `npm test` (vitest) — includes a durable `src/lib/url-guard.test.ts` suite that
+  locks in the SSRF fixes (bracketed IPv6 loopback, NAT64/6to4 private-embedded
+  forms, cloud metadata, localhost, non-http schemes).
 - Run the examples in sandbox mode before enabling production credentials.
 
 ## Decision support & safeguards (new)
