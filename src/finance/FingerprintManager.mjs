@@ -94,11 +94,16 @@ export class FingerprintManager {
   }
 
   _startRotation() {
-    if (typeof setInterval === 'undefined') return;
-    setInterval(() => {
+    if (typeof setInterval === 'undefined' || typeof setInterval !== 'function') return;
+    const timer = setInterval(() => {
       try { this._rotate(); } catch { /* non-fatal */ }
     }, this.rotateEveryMs);
-    if (typeof setInterval === 'function') setInterval.unref?.();
+    // IMPORTANT: unref the returned *Timeout* so a long-lived rotation timer
+    // cannot keep the Node process alive after the caller is done. (Calling
+    // `setInterval.unref` — on the function, not the Timeout — was a no-op, so
+    // any default FingerprintManager, e.g. via `new TreasuryEdge()`, previously
+    // pinned the event loop and hung the process on exit.)
+    if (timer && typeof timer.unref === 'function') timer.unref();
   }
 
   /** Current fingerprint snapshot (share between Playwright + axios). */
