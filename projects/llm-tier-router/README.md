@@ -1,8 +1,8 @@
-<h1 align="center">LLM Tier Router — send the cheap model the easy prompts</h1>
+<h1 align="center">LLM Tier Router — stop paying for the big model on easy questions</h1>
 
 <p align="center">
-  <strong>A millisecond classifier that decides, per message, whether your agent needs the expensive model or the cheap one.</strong><br/>
-  97.6 % accuracy, multilingual, fail-safe by design. Trained on 12,130 labelled prompts, included in this repo.
+  <strong>Most of what people ask an AI is easy. This tells you which questions those are, before you have paid to find out.</strong><br/>
+  A tiny classifier that reads the message in about a millisecond and picks the cheap model or the expensive one.
 </p>
 
 <p align="center">
@@ -15,23 +15,43 @@
 
 ---
 
-## The problem
+## What it is
 
-Most messages an assistant receives do not need a frontier model. "hi", "what does
-API stand for", "translate this line" — a small model answers them identically for a
-fraction of the price. But you cannot know which is which until you have already
-paid to find out.
+If you run an assistant or a chatbot, every message goes to whichever model you picked.
+Usually the good one, because you cannot risk the cheap one fumbling something hard.
 
-This is the router that decides first. It reads the user's message and outputs one
-bit before any model is called:
+But look at what people actually send: "hi", "what does API stand for", "translate this
+line", "thanks". A small model answers those identically, for a fraction of the price.
+The problem has always been telling them apart *before* spending the money.
 
-- **`1` = premium** — tool use (email, calendar, web, files), writing and analysis,
+This is that filter. It is a classifier — a small model that reads the incoming message
+and outputs one bit, in about a millisecond, before any LLM is called:
+
+- **`1` = premium** → tool use (email, calendar, web, files), writing and analysis,
   multi-step reasoning, code, planning, high-level explanation.
-- **`0` = economy** — greetings, small talk, one-step facts, single definitions,
-  one-off translation or conversion, simple explanations.
+- **`0` = economy** → greetings, small talk, one-step facts, single definitions,
+  a one-off translation or conversion, simple explanations.
 
-It is deliberately **fail-safe**: when in doubt, it escalates to premium. A wrong
-cheap answer costs a user; a wrong expensive answer costs a cent.
+It is deliberately **fail-safe**: when unsure, it escalates to premium. A wrong cheap
+answer costs you a user; a wrong expensive answer costs you a cent.
+
+It works on Italian and English out of the same model, and it comes with the
+**12,130-example dataset** it was trained on — which is usable on its own, for any
+routing task, independently of this code.
+
+## Who it is for
+
+- **Anyone paying per token** on an assistant, a chatbot or an agent, watching the bill
+  scale with traffic that is mostly trivial.
+- **Anyone running models locally**, where "cheap" means a 3B model that answers instantly
+  instead of a 70B that makes the user wait for a greeting.
+- **Anyone who needs a training set** for premium/economy routing and does not want to
+  label 12,000 prompts by hand.
+
+## What it is not
+
+It does not answer anything and it does not call any model. It is one decision, taken
+before yours. You keep your own stack; this just tells it which door to use.
 
 ## Two approaches, benchmarked
 
