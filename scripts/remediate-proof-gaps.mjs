@@ -79,8 +79,8 @@ try {
     actions.push(action);
     manifest.findings.push(action);
     if (WRITE && !real) {
-      await c.query('UPDATE "RevenueEvent" SET status=$2, "proofHash"=$3, "proofRejectedAt"=$4 WHERE id=$1', [
-        r.id, "PENDING_REASONING", null, new Date().toISOString(),
+      await c.query('UPDATE "RevenueEvent" SET status=$2, "proofHash"=$3, "proofType"=$4, "updatedAt"=NOW() WHERE id=$1', [
+        r.id, "PENDING_REASONING", null, "none",
       ]);
     } else if (WRITE && real) {
       await c.query('UPDATE "RevenueEvent" SET "proofHash"=$2 WHERE id=$1', [r.id, sha256(real)]);
@@ -97,8 +97,8 @@ try {
     actions.push(action);
     manifest.findings.push(action);
     if (WRITE && !real) {
-      await c.query('UPDATE "OwnerSettlement" SET status=$2, "proofHash"=$3, "proofRejectedAt"=$4 WHERE id=$1', [
-        s.id, "PENDING_REASONING", null, new Date().toISOString(),
+      await c.query('UPDATE "OwnerSettlement" SET status=$2, "proofHash"=$3, "verifiedAt"=NULL, "settledAt"=NULL, "updatedAt"=NOW() WHERE id=$1', [
+        s.id, "PENDING_REASONING", null,
       ]);
     } else if (WRITE && real) {
       await c.query('UPDATE "OwnerSettlement" SET "proofHash"=$2 WHERE id=$1', [s.id, sha256(real)]);
