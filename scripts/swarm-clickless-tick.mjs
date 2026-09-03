@@ -66,6 +66,14 @@ if (existsSync(join(ROOT, 'scripts/rail-health-report.mjs'))) {
   runStatic('rail-health', 'scripts/rail-health-report.mjs');
 }
 
+// ── Phase 3.5: autonomous watchers (dry/read-only, no money movement) ─────
+// These NEVER move money and NEVER fabricate proof/delivery. They only
+// (a) report the proof-integrity remediation plan, (b) emit the fail-closed
+// settlement green-light, and (c) advance procurement only on real waybills.
+runStatic('audit-remediate-proof', 'scripts/remediate-proof-gaps.mjs');
+runStatic('rail-funding-monitor', 'scripts/rail-funding-monitor.mjs');
+runStatic('procurement-watchdog', 'scripts/procurement-delivery-watchdog.mjs');
+
 // ── Phase 4: journal stamp ───────────────────────────────────────────────────
 const report = {
   at: new Date().toISOString(),
