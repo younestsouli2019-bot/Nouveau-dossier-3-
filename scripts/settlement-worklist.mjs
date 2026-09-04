@@ -62,8 +62,11 @@ const c = new Client({ connectionString: process.env.DATABASE_URL, ssl: { reject
 
 // Owner bank details (pre-authed, real)
 const OWNER_IBAN = 'MA59007810000448500030594182';
+const OWNER_RIB = '007810000448500030594182';
+const OWNER_RESERVE_IBAN = 'MA820007810000448200061321372';
+const OWNER_RESERVE_RIB = '007810000448200061321372';
 const OWNER_BANK = 'Attijari Wafa Bank';
-const OWNER_NAME = 'Younes Souli';
+const OWNER_NAME = 'M TSOULI YOUNES';
 
 // Known owner account labels (derived from earlier audit)
 const ACCT_LABELS = {
@@ -126,7 +129,12 @@ try {
   const worklist = {
     at: new Date().toISOString(),
     engine: 'settlement-worklist',
-    bank: { name: OWNER_BANK, iban: OWNER_IBAN, holder: OWNER_NAME },
+    bank: {
+      name: OWNER_BANK,
+      holder: OWNER_NAME,
+      primary: { iban: OWNER_IBAN, rib: OWNER_RIB, label: 'Compte Courant (primary)' },
+      reserve: { iban: OWNER_RESERVE_IBAN, rib: OWNER_RESERVE_RIB, label: 'Compte Réserve (RIB 372)' },
+    },
     evmWallet: evm.available ? {
       address: evm.address,
       totalUsdt: evm.totalUsdt,
