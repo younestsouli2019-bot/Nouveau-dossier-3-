@@ -41,6 +41,9 @@
     "wallet:payout": "node scripts/owner-payout-evm.mjs",
     "wallet:ton": "node scripts/ton-wallet-rail.mjs",
     "wallet:status": "node scripts/evm-wallet-rail.mjs --action balance && node scripts/ton-wallet-rail.mjs --action balance",
+    "binance:balance": "node scripts/binance-rail.mjs --action balance",
+    "binance:networks": "node scripts/binance-rail.mjs --action networks",
+    "binance:withdraw": "node scripts/binance-rail.mjs --action withdraw",
     "audit:all": "npm run typecheck && npm run audit:truth && npm run guard:selftest"
   },
   "dependencies": {
