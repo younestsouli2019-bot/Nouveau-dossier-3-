@@ -44,6 +44,7 @@
     "binance:balance": "node scripts/binance-rail.mjs --action balance",
     "binance:networks": "node scripts/binance-rail.mjs --action networks",
     "binance:withdraw": "node scripts/binance-rail.mjs --action withdraw",
+    "inbound:scout": "node scripts/inbound-scout.mjs",
     "audit:all": "npm run typecheck && npm run audit:truth && npm run guard:selftest"
   },
   "dependencies": {
