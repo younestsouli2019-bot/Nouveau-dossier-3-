@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-02T13:59:49.416Z",
+  "generatedAt": "2026-09-03T12:05:38.542Z",
   "engine": "postgres-integrity-audit",
   "kv": {
     "settlementsTotal": 27,
@@ -9,22 +9,17 @@
     "itemsTotal": 23,
     "itemsSyntheticRefs": 16,
     "revTotal": 10,
-    "revCompletedNoProof": 3,
+    "revCompletedNoProof": 0,
     "piTotal": 16,
     "piPendingSumUsd": 6224.549999999998,
     "piSettled": 0
   },
-  "verdict": "INTEGRITY_GAP",
+  "verdict": "OK",
   "findings": [
     {
       "level": "WARN",
       "area": "payout_integrity",
       "message": "16/23 PayoutItem use sequential synthetic transactionRefs (e.g. BC-POOL-2026-001) instead of real rail transaction IDs. deliveryConfirmed=true without external confirmation."
-    },
-    {
-      "level": "CRITICAL",
-      "area": "revenue_integrity",
-      "message": "3/10 RevenueEvent status=completed but proofHash=null (proofType: api_receipt,manual_attestation,api_receipt). One is manual_attestation=$3,500 with no hash."
     },
     {
       "level": "INFO",
