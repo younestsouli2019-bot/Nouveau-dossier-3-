@@ -145,6 +145,33 @@ const rails = [
     lastProbe: new Date().toISOString(),
     fix: 'No fix needed. Pay cash on delivery.',
   },
+  {
+    name: 'EVM Wallet (Trust Wallet)',
+    type: 'crypto_direct',
+    status: 'ready_no_funds',
+    authOk: true,
+    canSendPayouts: true,
+    canReceivePayments: true,
+    fundsMoved: false,
+    address: process.env.TRUST_WALLET_ADDRESS || null,
+    chains: ['Base', 'Arbitrum', 'Optimism', 'Polygon', 'BSC', 'Ethereum', 'Scroll', 'Linea'],
+    supportedTokens: ['ETH', 'BNB', 'MATIC', 'USDT'],
+    details: 'Direct programmatic EVM wallet via ethers.js. Private key loaded, signing works. Currently $0 on all chains. When funded, can send USDT on any L2 for sub-penny fees.',
+    lastProbe: new Date().toISOString(),
+    fix: 'Fund the wallet with native gas token (ETH on Base/Arbitrum) + USDT. Minimum to send: ~$0.01 USDT + ~$0.001 gas.',
+  },
+  {
+    name: 'TON Direct',
+    type: 'crypto_direct',
+    status: 'available_no_funds',
+    authOk: true,
+    canSendPayouts: true,
+    canReceivePayments: true,
+    fundsMoved: false,
+    details: 'Direct TON blockchain access via @ton/ton SDK. Bybit TON deposit address probed ($0). Bitget TON key is hex, not mnemonic — cannot derive wallet for sending without mnemonic words.',
+    lastProbe: new Date().toISOString(),
+    fix: 'Fund the Bybit TON address or provide a TON mnemonic in .env2 for sending.',
+  },
 ];
 
 // Summary

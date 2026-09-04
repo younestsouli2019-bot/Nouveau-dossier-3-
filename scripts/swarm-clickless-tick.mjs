@@ -82,6 +82,7 @@ runStatic('procurement-queue', 'scripts/procurement-payment-queue.mjs');
 runStatic('po-execution-queue', 'scripts/po-execution-queue.mjs');
 runStatic('payment-routing-table', 'scripts/payment-routing-table.mjs');
 runStatic('po-fulfillment-orchestrator', 'scripts/po-fulfillment-orchestrator.mjs');
+runStatic('evm-wallet-balance', 'scripts/evm-wallet-rail.mjs', ['--action', 'balance']);
 
 // ── Phase 4: journal stamp ───────────────────────────────────────────────────
 const report = {
