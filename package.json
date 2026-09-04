@@ -35,6 +35,7 @@
     "settlement:worklist": "node scripts/settlement-worklist.mjs",
     "po:execution": "node scripts/po-execution-queue.mjs",
     "rail:table": "node scripts/payment-routing-table.mjs",
+    "po:orchestrator": "node scripts/po-fulfillment-orchestrator.mjs",
     "audit:all": "npm run typecheck && npm run audit:truth && npm run guard:selftest"
   },
   "dependencies": {
