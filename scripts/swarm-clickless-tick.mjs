@@ -74,6 +74,12 @@ runStatic('audit-remediate-proof', 'scripts/remediate-proof-gaps.mjs');
 runStatic('rail-funding-monitor', 'scripts/rail-funding-monitor.mjs');
 runStatic('procurement-watchdog', 'scripts/procurement-delivery-watchdog.mjs');
 
+// ── Phase 3.6: autonomous worklist generators (no-API execution path) ──────
+// These generate structured action queues for the operator to execute through
+// their own Attijari mobile app or cash on delivery. No API, no fabrication.
+runStatic('settlement-worklist', 'scripts/settlement-worklist.mjs');
+runStatic('procurement-queue', 'scripts/procurement-payment-queue.mjs');
+
 // ── Phase 4: journal stamp ───────────────────────────────────────────────────
 const report = {
   at: new Date().toISOString(),

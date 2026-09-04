@@ -31,6 +31,8 @@
     "rail:funding": "node scripts/rail-funding-monitor.mjs",
     "audit:proof": "node scripts/remediate-proof-gaps.mjs",
     "proc:watchdog": "node scripts/procurement-delivery-watchdog.mjs",
+    "proc:queue": "node scripts/procurement-payment-queue.mjs",
+    "settlement:worklist": "node scripts/settlement-worklist.mjs",
     "audit:all": "npm run typecheck && npm run audit:truth && npm run guard:selftest"
   },
   "dependencies": {
