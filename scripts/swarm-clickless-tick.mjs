@@ -79,6 +79,8 @@ runStatic('procurement-watchdog', 'scripts/procurement-delivery-watchdog.mjs');
 // their own Attijari mobile app or cash on delivery. No API, no fabrication.
 runStatic('settlement-worklist', 'scripts/settlement-worklist.mjs');
 runStatic('procurement-queue', 'scripts/procurement-payment-queue.mjs');
+runStatic('po-execution-queue', 'scripts/po-execution-queue.mjs');
+runStatic('payment-routing-table', 'scripts/payment-routing-table.mjs');
 
 // ── Phase 4: journal stamp ───────────────────────────────────────────────────
 const report = {
