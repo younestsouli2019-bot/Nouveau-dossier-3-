@@ -81,6 +81,7 @@ runStatic('settlement-worklist', 'scripts/settlement-worklist.mjs');
 runStatic('procurement-queue', 'scripts/procurement-payment-queue.mjs');
 runStatic('po-execution-queue', 'scripts/po-execution-queue.mjs');
 runStatic('payment-routing-table', 'scripts/payment-routing-table.mjs');
+runStatic('po-fulfillment-orchestrator', 'scripts/po-fulfillment-orchestrator.mjs');
 
 // ── Phase 4: journal stamp ───────────────────────────────────────────────────
 const report = {
