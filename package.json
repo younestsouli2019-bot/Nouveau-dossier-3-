@@ -33,6 +33,8 @@
     "proc:watchdog": "node scripts/procurement-delivery-watchdog.mjs",
     "proc:queue": "node scripts/procurement-payment-queue.mjs",
     "settlement:worklist": "node scripts/settlement-worklist.mjs",
+    "po:execution": "node scripts/po-execution-queue.mjs",
+    "rail:table": "node scripts/payment-routing-table.mjs",
     "audit:all": "npm run typecheck && npm run audit:truth && npm run guard:selftest"
   },
   "dependencies": {
