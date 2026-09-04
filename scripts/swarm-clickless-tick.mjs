@@ -60,6 +60,7 @@ runStatic('url-guard-self-test', 'scripts/url-guard-self-test.mjs', [], { tsx: t
 // ── Phase 2: DB read-only reconciles (only when DATABASE_URL present) ────────
 runDbAudit('payout-reconcile', 'scripts/verify-payout-reconcile.mjs');
 runDbAudit('postgres-integrity', 'scripts/postgres-integrity-audit.mjs');
+runStatic('inbound-scout', 'scripts/inbound-scout.mjs', ['--dir', 'data/inbound/receipts']);
 
 // ── Phase 3: rail health (read-only probe) ───────────────────────────────────
 if (existsSync(join(ROOT, 'scripts/rail-health-report.mjs'))) {
