@@ -53,6 +53,29 @@ async function probeEvmWallet() {
   return { available: true, address: EVW_WALLET, totalUsdt, totalGasChains: Object.values(chains).filter(c => c.canSend).length, chains };
 }
 
+// ── Binance balance probe (read-only) ────────────────────────────────────
+import crypto from 'crypto';
+
+async function probeBinance() {
+  const key = process.env.BINANCE_API_KEY;
+  const secret = process.env.BINANCE_API_SECRET;
+  if (!key || !secret) return { available: false, error: 'no_creds' };
+  try {
+    const timeR = await fetch('https://api.binance.com/api/v3/time');
+    const { serverTime } = await timeR.json();
+    const qs = new URLSearchParams({ timestamp: serverTime, recvWindow: 10000 }).toString();
+    const sig = crypto.createHmac('sha256', secret).update(qs).digest('hex');
+    const r = await fetch(`https://api.binance.com/api/v3/account?${qs}&signature=${sig}`, { headers: { 'X-MBX-APIKEY': key } });
+    const j = await r.json();
+    if (j.code || r.status !== 200) return { available: false, error: j.msg || 'http_' + r.status };
+    const usdt = (j.balances || []).find(b => b.asset === 'USDT');
+    const balance = usdt ? parseFloat(usdt.free) + parseFloat(usdt.locked) : 0;
+    return { available: true, usdt: balance, canWithdraw: balance >= 3, withdrawalFee: 0.01, minWithdraw: 3, network: 'BSC' };
+  } catch (e) {
+    return { available: false, error: e.message.slice(0, 120) };
+  }
+}
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const OUT = resolve(ROOT, 'data', 'out');
@@ -91,6 +114,7 @@ try {
 
   // Probe EVM wallet (read-only, no money movement)
   const evm = await probeEvmWallet();
+  const binance = await probeBinance();
 
   // RevenueEvents: the revenue side (what funds these settlements)
   const revenues = (await c.query(
@@ -142,6 +166,14 @@ try {
       chains: evm.chains,
       routing: evm.totalUsdt > 0 ? 'EVM_AUTO' : 'EVM_UNFUNDED',
     } : { available: false, routing: 'NONE' },
+    binance: binance.available ? {
+      usdt: binance.usdt,
+      canWithdraw: binance.canWithdraw,
+      withdrawalFee: binance.withdrawalFee,
+      minWithdraw: binance.minWithdraw,
+      network: binance.network,
+      routing: binance.canWithdraw ? 'BINANCE_WITHDRAW' : 'BINANCE_UNFUNDED',
+    } : { available: false, error: binance.error, routing: 'NONE' },
     totalUnsettled: settlements.reduce((a, r) => a + Number(r.amount), 0),
     totalSettlements: settlements.length,
     totalRevenueUnsettled: revenues.reduce((a, r) => a + Number(r.amount), 0),
