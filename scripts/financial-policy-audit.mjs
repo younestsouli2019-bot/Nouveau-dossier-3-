@@ -1,0 +1,126 @@
+// scripts/financial-policy-audit.mjs
+// READ-ONLY machine-enforced financial policy audit.
+// Runs the deterministic invariants from the FinancialPolicyFirewall and the
+// IncomingReceiptStateMachine against static fixtures + the live
+// ReplenishmentProtocol (observe-only). Emits report JSON. Never moves money.
+//
+// Run:  node scripts/financial-policy-audit.mjs
+
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import {
+  evaluateFinancialAction,
+  FORBIDDEN_RECEIVE_PREREQUISITES,
+} from '../src/finance/FinancialPolicyFirewall.mjs';
+import {
+  assertReceiptStateValid,
+  nextReceiptState,
+  initialReceiptState,
+  ReceiptStateViolation,
+} from '../src/crypto/IncomingReceiptStateMachine.mjs';
+import { ReplenishmentProtocol } from '../src/finance/ReplenishmentProtocol.mjs';
+
+const OUT = join(process.cwd(), 'data', 'out');
+if (!existsSync(OUT)) mkdirSync(OUT, { recursive: true });
+
+const checks = [];
+const pass = (name, detail = '') => checks.push({ name, ok: true, detail });
+const fail = (name, detail = '') => checks.push({ name, ok: false, detail });
+
+// C1: every forbidden receive prerequisite is blocked (I1).
+for (const p of FORBIDDEN_RECEIVE_PREREQUISITES) {
+  const r = evaluateFinancialAction({
+    operation: 'RECEIVE_CRYPTO',
+    prerequisites: [p],
+    evidence: [{ source: 'LLM', value: p, verified: false }],
+  });
+  if (r.status === 'BLOCKED') pass(`block_i1_${p}`);
+  else fail(`block_i1_${p}`, JSON.stringify(r));
+}
+
+// C2: plain RECEIVE_CRYPTO is ALLOWED with direct receipt flow.
+const plain = evaluateFinancialAction({
+  operation: 'RECEIVE_CRYPTO',
+  prerequisites: [],
+  evidence: [{ source: 'ONCHAIN_RPC', value: '0xtx', verified: true }],
+});
+plain.status === 'ALLOWED'
+  ? pass('i1_plain_receive_allowed', plain.strategy)
+  : fail('i1_plain_receive_allowed', JSON.stringify(plain));
+
+// C3: semantic funding wording is normalized and blocked (I1).
+const wording = [
+  'Please deposit first',
+  'Top up your account',
+  'Provide collateral',
+  'Fund the reserve',
+  'Activate the wallet',
+  'Pay the release fee',
+  'Settle debt before receiving',
+];
+for (const w of wording) {
+  const r = evaluateFinancialAction({
+    operation: 'RECEIVE_CRYPTO',
+    prerequisites: [],
+    description: w,
+    evidence: [{ source: 'LLM', value: w, verified: false }],
+  });
+  r.status === 'BLOCKED' ? pass(`semantic_${w.indexOf('receive') >= 0 ? 'debt' : 'funding'}`) : fail(`semantic_${w}`, w);
+}
+
+// C4: ReplenishmentProtocol — UNKNOWN balance ⇒ no deficit, no debt, no
+//     seizure (I2 / I11). Observe-only invocation.
+const proto = new ReplenishmentProtocol();
+(async () => {
+  const r = await proto.executeReplenishment({ verifiedReserveBalance: null });
+  if (r.status === 'UNKNOWN' && r.debtCreated === false && r.assetsSeized === 0)
+    pass('i2_unknown_no_debt', r.reason);
+  else fail('i2_unknown_no_debt', JSON.stringify(r));
+
+  // C5: receipt state machine — canonical path to SETTLED, no forbidden edge.
+  let s = initialReceiptState();
+  assertReceiptStateValid(s);
+  const path = [
+    'WAITING_FOR_TRANSACTION',
+    'TRANSACTION_DETECTED',
+    'TRANSACTION_VALIDATED',
+    'CONFIRMATIONS_PENDING',
+    'CONFIRMED',
+    'RECEIPT_RECORDED',
+    'SETTLEMENT_PENDING',
+    'SETTLED',
+  ];
+  try {
+    for (const t of path) s = nextReceiptState({ currentState: s, requestedState: t });
+    s === 'SETTLED' ? pass('fsm_happy_path_to_settled') : fail('fsm_happy_path_to_settled', s);
+  } catch (e) {
+    fail('fsm_happy_path_to_settled', e.message);
+  }
+
+  try {
+    nextReceiptState({ currentState: 'WAITING_FOR_TRANSACTION', requestedState: 'WAITING_FOR_DEPOSIT' });
+    fail('fsm_no_deposit_edge', 'W A I T I N G _ F O R _ D E P O S I T reachable');
+  } catch (e) {
+    e instanceof ReceiptStateViolation
+      ? pass('fsm_no_deposit_edge', e.message)
+      : fail('fsm_no_deposit_edge', e.message);
+  }
+
+  const rejected = checks.filter((c) => !c.ok);
+  const report = {
+    engine: 'financial-policy-audit',
+    at: new Date().toISOString(),
+    verdict: rejected.length === 0 ? 'POLICY_CLEAN' : 'POLICY_VIOLATION',
+    checksTotal: checks.length,
+    checksPassed: checks.length - rejected.length,
+    checksFailed: rejected.length,
+    rejected: rejected,
+    caution: rejected.length > 0
+      ? 'Suspected policy violation — QUARANTINE/FINANCIAL_SAFE_MODE per blueprint.'
+      : 'All machine-enforced invariants hold.',
+    note: 'READ-ONLY. No debt, no seizures, no funding requests, no money moved.',
+  };
+  writeFileSync(join(OUT, 'financial-policy-audit.json'), JSON.stringify(report, null, 2));
+  console.log(JSON.stringify(report, null, 2));
+  process.exit(rejected.length === 0 ? 0 : 2);
+})();

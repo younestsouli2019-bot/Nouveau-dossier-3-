@@ -71,6 +71,7 @@ if (existsSync(join(ROOT, 'scripts/rail-health-report.mjs'))) {
 // These NEVER move money and NEVER fabricate proof/delivery. They only
 // (a) report the proof-integrity remediation plan, (b) emit the fail-closed
 // settlement green-light, and (c) advance procurement only on real waybills.
+runStatic('financial-policy', 'scripts/financial-policy-audit.mjs');
 runStatic('audit-remediate-proof', 'scripts/remediate-proof-gaps.mjs');
 runStatic('rail-funding-monitor', 'scripts/rail-funding-monitor.mjs');
 runStatic('procurement-watchdog', 'scripts/procurement-delivery-watchdog.mjs');
