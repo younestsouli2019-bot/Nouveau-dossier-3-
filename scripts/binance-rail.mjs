@@ -38,8 +38,17 @@ function sign(queryString) {
   return crypto.createHmac('sha256', API_SECRET).update(queryString).digest('hex');
 }
 
+async function serverTimeMs() {
+  try {
+    const r = await fetch(`${BASE}/api/v3/time`);
+    const j = await r.json();
+    if (j.serverTime) return j.serverTime;
+  } catch {}
+  return Date.now();
+}
+
 async function binanceGet(path, params = {}) {
-  const timestamp = Date.now();
+  const timestamp = await serverTimeMs();
   const qs = new URLSearchParams({ ...params, timestamp, recvWindow: 10000 }).toString();
   const signature = sign(qs);
   const r = await fetch(`${BASE}${path}?${qs}&signature=${signature}`, {
@@ -49,7 +58,7 @@ async function binanceGet(path, params = {}) {
 }
 
 async function binancePost(path, params = {}) {
-  const timestamp = Date.now();
+  const timestamp = await serverTimeMs();
   const body = new URLSearchParams({ ...params, timestamp, recvWindow: 10000 }).toString();
   const signature = sign(body);
   const r = await fetch(`${BASE}${path}?signature=${signature}`, {
