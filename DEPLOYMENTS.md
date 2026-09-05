@@ -4,6 +4,21 @@ This is the canonical registry of live swarm/base44 deployments. The actual reve
 machinery is deployed as Base44 apps (`*.base44.app`) fronted by `space-z.ai` public URLs,
 plus the Vercel supply-chain front-end.
 
+## Deploy-mechanism findings (2026-09-05 ~19:00, verified)
+
+### t1trn6kunnv1-d (Supply Chain Main) — build is STALE, auto-rebuild BROKEN at platform layer
+
+The z.ai platform intercepts `/api/webhook/deploy` with its own deploy orchestrator (GET returns its deploy log; the app route schema on `main` was never deployed). Findings from the platform deploy log:
+
+- Every rebuild attempt fails instantly with **`Command failed: git pull origin main`** (duration 4–16 ms — auth failure, not a code issue). The z.ai workspace lost its GitHub credentials in the Sept 1 expiry-recycle; the repo is private, so unauthenticated pulls cannot work.
+- Fingerprint of the live build: `/api/healthz` → 404 (route added to `main` on 2026-09-02), `/api/bybit|revenue|swarm` → 404, while `/api/payout-batches` + `/api/settlements` → 200. The instance serves a **pre-2026-09-02 build** — working but stale.
+- GitHub push deliveries are accepted by the platform hook ("HTTP OK"), but the resulting rebuilds all die at `git pull`. `totalDeploys: 0`.
+- **Remediation (owner, dashboard):** in the z.ai dashboard for `t1trn6kunnv1-d`, reconnect the GitHub repo (or use "Fetch Latest Commit") so the workspace regains pull credentials, then redeploy. `main` at `54667cf` builds green (fresh Space-Z CI run 2026-09-05: 57/57 pages).
+
+### b1fx661hzse0-d (AgentFlow AICC) — already CURRENT, nothing to update
+
+The space-z front proxies the Base44 app `agent-flow-ai-9855ea98.base44.app` (Base44 app status: ready, HTTP 200, title "AgentFlow AI · Command Center"). Base44 apps deploy on edit; no GitHub-repo build exists for this instance, so the repo's Prisma/Next fixes do not apply to it. No action needed.
+
 ## Status Snapshot (2026-09-05) — Space-Z Main recovered; Binance rail live
 
 ### Verified live status (external probes, 2026-09-05 ~18:00 UTC+1)
