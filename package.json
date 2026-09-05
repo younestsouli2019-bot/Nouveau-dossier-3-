@@ -66,7 +66,7 @@
     "@ton/ton": "^16.3.0",
     "@types/react-dom": "^19.2.5",
     "autoprefixer": "^10.5.4",
-    "ccxt": "^4.5.76",
+    "ccxt": "^4.5.77",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^3.0.0",
