@@ -23,6 +23,7 @@ import { FinancialGuardian, SIMPLE_TRUST_STORE } from '../src/swarm/FinancialGua
 import { MissionOrchestrator } from '../src/swarm/mission-orchestrator.mjs';
 import { scanConfigurationDrift } from '../src/swarm/ConfigurationDriftRemediator.mjs';
 import { assertCapability, REQUIRED_CAPS, CAPABILITIES } from '../src/finance/capabilities.mjs';
+import { checkFinancialSafeMode } from '../src/security/FinancialSafeMode.mjs';
 
 const OUT = join(process.cwd(), 'data', 'out');
 if (!existsSync(OUT)) mkdirSync(OUT, { recursive: true });
@@ -99,6 +100,7 @@ const proto = new ReplenishmentProtocol();
       type: 'RECEIVE_CRYPTO',
       description: 'deposit 50 USDT required first',
       evidence: [{ source: 'LLM', value: 'deposit first', verified: false }],
+      probe: true,
     },
   ]);
   const blocked = results.find((m) => m.proposalId === probeId);
@@ -175,6 +177,16 @@ const proto = new ReplenishmentProtocol();
       ? pass('fsm_no_deposit_edge', e.message)
       : fail('fsm_no_deposit_edge', e.message);
   }
+
+  // C6: safe mode (#17) — deterministically verifiable via override.
+  const forcedOn = await checkFinancialSafeMode({ env: { FORCE_SAFE_MODE: 'true' } });
+  forcedOn.safeMode === true
+    ? pass('safe_mode_trigger_table', forcedOn.reason)
+    : fail('safe_mode_trigger_table', JSON.stringify(forcedOn));
+  const forcedOff = await checkFinancialSafeMode({ env: { FORCE_SAFE_MODE: 'false' } });
+  forcedOff.safeMode === false
+    ? pass('safe_mode_exit_requires_clean_log', forcedOff.reason)
+    : fail('safe_mode_exit_requires_clean_log', JSON.stringify(forcedOff));
 
   const rejected = checks.filter((c) => !c.ok);
   const report = {

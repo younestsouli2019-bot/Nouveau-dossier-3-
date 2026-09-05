@@ -122,6 +122,7 @@ export class MissionOrchestrator {
 					agentId: proposal.agentId || proposal.sourceAgent || "unknown",
 					proposal,
 					trigger: scan,
+					probe: proposal.probe === true,
 				});
 				const blocked = {
 					missionId: `mission_blocked_${proposal.id}`,

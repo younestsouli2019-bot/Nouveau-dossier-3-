@@ -23,6 +23,7 @@ import {
   CAPABILITIES,
 } from './capabilities.mjs'
 import { BANNED_PATTERNS } from '../swarm/ConfigurationDriftRemediator.mjs'
+import { isFinancialSafeMode } from '../security/FinancialSafeMode.mjs'
 
 // ── I1: RECEIVE_CRYPTO never requires a user deposit ────────────────────────
 
@@ -171,6 +172,72 @@ describe('incoming receipt state machine is structurally funding-free', () => {
 
 // ── I8/I9: allowlisted context + evidence-first ─────────────────────────────
 
+// ── #15: property-based funding-phrase fuzzing ──────────────────────────────
+
+describe('I1 property-based: funding phrasing is never required to receive', () => {
+  const variants = [
+    'deposit first',
+    'deposit required',
+    'please deposit first to continue',
+    'you must fund your account',
+    'top up your account',
+    'top-up before we pay you',
+    'provide collateral',
+    'collateral required',
+    'fund the reserve',
+    'fund the wallet first',
+    'activate the wallet',
+    'please activate your account',
+    'pay the release fee',
+    'settle debt before receiving',
+    'replenish the treasury',
+    'reserve balance required',
+    'customer must deposit 100 USDT',
+    'we need you to deposit funds before we can release anything',
+    'pay activation fee of 5 USDT to unlock',
+    'fund account first',
+    'provide 0.5 BNB activation payment',
+  ]
+  it.each(variants)('blocks: "%s"', (phrase) => {
+    const r = evaluateFinancialAction({
+      operation: 'RECEIVE_CRYPTO',
+      prerequisites: [],
+      description: phrase,
+      evidence: [{ source: 'LLM', value: phrase, verified: false }],
+    })
+    expect(r.status).toBe('BLOCKED')
+  })
+  it('benign receive explanation is not blocked', () => {
+    const r = evaluateFinancialAction({
+      operation: 'RECEIVE_CRYPTO',
+      prerequisites: [],
+      description: 'no deposit needed, receiving is free and immediate',
+      evidence: [{ source: 'ONCHAIN_RPC', value: '0xtx', verified: true }],
+    })
+    expect(r.status).toBe('ALLOWED')
+  })
+})
+
+// ── #17: financial safe mode ────────────────────────────────────────────────
+
+describe('financial safe mode (#17)', () => {
+  const now = Date.parse('2026-09-05T12:00:00Z')
+  it('is OFF with a clean incident log', () => {
+    expect(isFinancialSafeMode({ incidents: [], now }).safeMode).toBe(false)
+  })
+  it('is ON with a recent CRITICAL incident', () => {
+    const recent = [{ severity: 'CRITICAL', timestamp: '2026-09-05T10:00:00Z' }]
+    expect(isFinancialSafeMode({ incidents: recent, now }).safeMode).toBe(true)
+  })
+  it('ignores non-critical or ancient incidents', () => {
+    const mixed = [
+      { severity: 'INFO', timestamp: '2026-09-05T10:00:00Z' },
+      { severity: 'CRITICAL', timestamp: '2020-01-01T00:00:00Z' },
+    ]
+    expect(isFinancialSafeMode({ incidents: mixed, now }).safeMode).toBe(false)
+  })
+});
+
 describe('context projection is allowlisted', () => {
   it('only whitelisted fields cross into a receipt context', () => {
     const ctx = createReceiptContext({
@@ -214,6 +281,7 @@ describe('FinancialGuardian blocks funding leakage in agent proposals', () => {
   it('quarantines the agent and hits its trust score', async () => {
     const incident = await guardian.quarantineAgent({
       agentId: 'revenue-agent',
+      probe: true,
       proposal: { operation: 'RECEIVE_CRYPTO', evidence: [{ source: 'LLM', value: 'deposit now' }] },
       trigger: { blocked: true, operation: 'RECEIVE_CRYPTO', violation: 'unauthorized_funding_request' },
     })
@@ -248,6 +316,7 @@ describe('MissionOrchestrator financial policy gate', () => {
         type: 'RECEIVE_CRYPTO',
         description: 'deposit 50 USDT required first',
         evidence: [{ source: 'LLM', value: 'deposit first', verified: false }],
+        probe: true,
       },
       {
         id: `p_clean_${run}`,

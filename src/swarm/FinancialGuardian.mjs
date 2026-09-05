@@ -110,6 +110,7 @@ export class FinancialGuardian {
 		proposal = {},
 		reason = "FINANCIAL_POLICY_VIOLATION",
 		trigger = {},
+		probe = false,
 	}) {
 		const penaltyKey =
 			trigger.violation && TRUST_PENALTIES[trigger.violation]
@@ -129,6 +130,7 @@ export class FinancialGuardian {
 			id: `fin_${crypto.randomBytes(4).toString("hex")}`,
 			timestamp: new Date().toISOString(),
 			severity: "CRITICAL",
+			probe: probe === true,
 			agentId,
 			prohibitedBehavior: penaltyKey,
 			operation: trigger.operation || null,
