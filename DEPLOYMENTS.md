@@ -4,6 +4,33 @@ This is the canonical registry of live swarm/base44 deployments. The actual reve
 machinery is deployed as Base44 apps (`*.base44.app`) fronted by `space-z.ai` public URLs,
 plus the Vercel supply-chain front-end.
 
+## Status Snapshot (2026-09-05) — Space-Z Main recovered; Binance rail live
+
+### Verified live status (external probes, 2026-09-05 ~18:00 UTC+1)
+
+| Surface | Status | Notes |
+|---------|--------|-------|
+| Vercel (`supply-chain-swarm.vercel.app`) | ✅ LIVE on latest commit (b9e8952) | `/api/healthz` 200 · `/api/dashboard` 200 · `/api/owner-accounts` 200 · `/api/procurement` 200 |
+| Space-Z Supply Chain Main (`t1trn6kunnv1-d.space-z.ai`) | ✅ **RECOVERED** (was 502 since Sept 1) | `/` 200 · `/api/dashboard` 200 · `/api/owner-accounts` 200 · `/api/webhook/deploy` 200. Deploy webhook accepting GitHub push deliveries again (HTTP OK, 2026-09-05). Note: `/api/healthz` 404s on this instance — use `/api/dashboard` as the health probe. |
+| Space-Z HIT Swarm (`x1he4604ap01-deploy.space-z.ai`) | ❌ STILL DOWN — Z.ai expiry-recycle | Empty-body 502 from Alibaba FC gateway (re-probed 3x). Its `/api/webhooks/github-secrets` hook rejects deliveries with 401. **Redeploy via Space-Z dashboard** (still no SPACEZ_TOKEN in-repo). |
+| Space-Z AgentFlow AICC (`b1fx661hzse0-d.space-z.ai`) | ✅ LIVE | App shell renders (200). |
+| Space-Z CI build (b9e8952) | ✅ GREEN | `Deploy to Space-Z` workflow success on latest commit. |
+| Binance rail | ✅ **LIVE** | New API key accepted, withdrawals enabled (commit `6b8326a`). Funding gate now reports a single actionable blocker. |
+
+### New machinery merged Sept 2–5 (16 commits through `b9e8952`)
+
+Direct EVM + TON wallet rails (exchange bypass) · Binance direct rail · FinancialGuardian + orchestrator execution gate · machine-enforced financial policy (kill synthetic deficit) · I8 capability tokens + capability gate on EVM/TON send rails · safe mode + CI security gates · config-drift remediator · PO execution queue + fulfillment orchestrator · no-API settlement worklist · proof remediator + rail-funding monitor + delivery watchdog.
+
+### CI failures found 2026-09-05 (with remediation)
+
+| Workflow | Cause | Fix |
+|----------|-------|-----|
+| Swarm Tick | Job-level `NODE_ENV: production` makes `npm ci` omit devDependencies → `npx tsc` downloads the FAKE `tsc` registry package ("This is not the tsc command you are looking for") → exit 1 | ✅ FIXED this commit: `npm ci --include=dev` |
+| Sync Secrets (Secure) | `APP_WEBHOOK_URL` / `APP_WEBHOOK_SECRET` repo Actions secrets missing | ⚠️ Operator must set both as repo Actions secrets |
+| Autonomous Scheduler | Logs expired before capture (BlobNotFound) | 👁 Monitor next scheduled run |
+| Deploy to Vercel (CI path) | Expired VERCEL_TOKEN (known) | Redundant — Vercel GitHub app deploys natively |
+| Enterprise pipeline | Unconfigured platform mocks (known) | Non-blocking |
+
 ## Status Snapshot (2026-09-02) — Deployment Stability Restored
 
 ### Build & deploy chain — all patches live on `main` through `a3a2e99`
