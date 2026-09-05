@@ -23,6 +23,7 @@
     "proc:waybills": "node scripts/apply-waybills.mjs",
     "guard:selftest": "node --import tsx scripts/url-guard-self-test.mjs",
     "audit:truth": "node scripts/truth-invariant-audit.mjs",
+    "test:secgates": "node scripts/security-gates.mjs",
     "payout:wise": "node --import tsx scripts/wise-sample-workflow.mjs",
     "payout:paypal": "node --import tsx scripts/paypal-payout-workflow.mjs",
     "edge:plan": "node --import tsx scripts/edge-plan-tool.mjs",
