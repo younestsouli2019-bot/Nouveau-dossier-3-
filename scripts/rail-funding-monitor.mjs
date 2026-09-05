@@ -29,6 +29,7 @@ import { writeFileSync, existsSync, mkdirSync, readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { BankingCircleGateway } from "../src/financial/gateways/BankingCircleGateway.mjs";
+import crypto from "crypto";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -43,9 +44,33 @@ const integrityClean = !existsSync(resolve(OUT, "postgres-integrity-audit.json")
   ? null // not measured this session — treat as unknown (do not assume)
   : JSON.parse(readFileSync(resolve(OUT, "postgres-integrity-audit.json"), "utf8")).verdict !== "INTEGRITY_GAP";
 
+// ── Probe Binance rail (read-only balance check) ─────────────────────────
+async function probeBinance() {
+  const key = process.env.BINANCE_API_KEY;
+  const secret = process.env.BINANCE_API_SECRET;
+  if (!key || !secret) return { authOk: false, error: "no_creds", usdt: 0 };
+  try {
+    const t = await fetch("https://api.binance.com/api/v3/time");
+    const { serverTime } = await t.json();
+    const qs = new URLSearchParams({ timestamp: serverTime, recvWindow: 10000 }).toString();
+    const sig = crypto.createHmac("sha256", secret).update(qs).digest("hex");
+    const r = await fetch(`https://api.binance.com/api/v3/account?${qs}&signature=${sig}`, { headers: { "X-MBX-APIKEY": key } });
+    const j = await r.json();
+    if (j.code || r.status !== 200) return { authOk: false, error: j.msg || "http_" + r.status, usdt: 0 };
+    const usdt = (j.balances || []).find(b => b.asset === "USDT");
+    const free = usdt ? parseFloat(usdt.free) + parseFloat(usdt.locked) : 0;
+    return { authOk: true, usdt: free, canWithdrawBsc: free >= 3.01 };
+  } catch (e) {
+    return { authOk: false, error: e.message.slice(0, 120), usdt: 0 };
+  }
+}
+
 const blockers = [];
 let bc = null;
+let binance = null;
+
 if (!live) blockers.push("SWARM_LIVE not true");
+
 if (!bcEnabled) blockers.push("BANKING_CIRCLE_ENABLE not true (route off)");
 else {
   try {
@@ -58,6 +83,17 @@ else {
   }
 }
 if (!bcFunded) blockers.push("BANKING_CIRCLE_FUNDED not set (cannot assume funds)");
+
+binance = await probeBinance();
+if (binance.authOk && binance.canWithdrawBsc) {
+  // Binance is a live funded outbound rail → settlement green-light is satisfied
+  blockers.splice(0, blockers.filter(b => b.startsWith("BANKING_CIRCLE")).length);
+} else if (binance.authOk) {
+  blockers.push(`Binance rail live (auth OK) but UNFUNDED (${binance.usdt} USDT < 3.01 minimum). Deposit USDT to Binance spot to unlock settlement.`);
+} else {
+  blockers.push(`Binance rail not available (${binance.error || "auth failed"})`);
+}
+
 if (integrityClean === null) blockers.push("integrity verdict not measured yet (run postgres-integrity-audit)");
 else if (!integrityClean) blockers.push("INTEGRITY_GAP still present (unverified completed rows) — do not settle");
 
@@ -72,9 +108,15 @@ const report = {
     authenticated: Boolean(bc?.ok),
     funded: bcFunded,
   },
+  binanceRail: {
+    authOk: binance.authOk,
+    usdt: binance.usdt,
+    canWithdrawBsc: binance.canWithdrawBsc,
+    fix: binance.canWithdrawBsc ? "READY" : "Deposit USDT to Binance spot (≥3.01 USDT incl $0.01 BSC fee)",
+  },
   integrityClean,
   blockers,
-  note: "READ-ONLY. deliverable=true is the ONLY honest green-light for settlement. Money stays pending_manual until it is true.",
+  note: "READ-ONLY. deliverable=true is the ONLY honest green-light for settlement. Any live+funded outbound rail (Binance BSC → owner wallet 0xA462...) satisfies the funding gate; Banking Circle remains optional.",
 };
 
 writeFileSync(resolve(OUT, "rail-funding-monitor.json"), JSON.stringify(report, null, 2));

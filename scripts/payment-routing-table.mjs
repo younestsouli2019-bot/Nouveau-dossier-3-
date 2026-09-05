@@ -58,9 +58,9 @@ const rails = [
     authOk: true,
     canSendPayouts: true,
     fundsMoved: false,
-    details: 'NEW API key accepted. Account: 12 assets, USDT $0, BNB $0. Withdrawals ENABLED: USDT BSC fee=$0.01 min=3, 17 networks. Needs funds.',
+    details: 'NEW API key accepted. Account: 12 assets, USDT $0, BNB $0. Withdrawals ENABLED: USDT BSC fee=$0.01 min=3, 17 networks. Needs funds. Owner settlement DIRECT: withdraw BSC → 0xA46225a9... (owner Trust Wallet) — Binance pays gas, no BNB needed.',
     lastProbe: new Date().toISOString(),
-    fix: 'Deposit USDT to Binance spot. Then withdraw BSC to Trust Wallet address 0xA46225a9... at $0.01 fee. Script: node scripts/binance-rail.mjs --action withdraw --amount <n> --network bsc --confirm',
+    fix: 'Deposit USDT to Binance spot. Then withdraw BSC to owner Trust Wallet 0xA46225a9... at $0.01 fee (sender/Binance pays gas — no BNB required for receiving). Script: node scripts/binance-rail.mjs --action withdraw --amount <n> --network bsc --confirm',
     railScript: 'binance-rail.mjs',
   },
   {
@@ -171,9 +171,9 @@ const rails = [
     address: process.env.TRUST_WALLET_ADDRESS || null,
     chains: ['Base', 'Arbitrum', 'Optimism', 'Polygon', 'BSC', 'Ethereum', 'Scroll', 'Linea'],
     supportedTokens: ['ETH', 'BNB', 'MATIC', 'USDT'],
-    details: 'Direct programmatic EVM wallet via ethers.js. Private key loaded, signing works. Currently $0 on all chains. When funded, can send USDT on any L2 for sub-penny fees.',
+    details: 'Direct programmatic EVM wallet via ethers.js. Private key loaded, signing works. Address == owner wallet (0xA462...). Currently $0 on all chains. Receive costs NO gas (sender pays). Sending onward (supplier payouts) needs native gas ~$0.001.',
     lastProbe: new Date().toISOString(),
-    fix: 'Fund the wallet with native gas token (ETH on Base/Arbitrum) + USDT. Minimum to send: ~$0.01 USDT + ~$0.001 gas.',
+    fix: 'For OWNER SETTLEMENT: fund via Binance BSC withdrawal (no gas needed). For SUPPLIER PAYOUTS from this wallet: need tiny native gas (~$0.001 ETH/BNB) + USDT. Minimum to send: ~$0.01 USDT + ~$0.001 gas.',
   },
   {
     name: 'TON Direct',
