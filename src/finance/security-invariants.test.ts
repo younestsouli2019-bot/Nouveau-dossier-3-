@@ -17,6 +17,12 @@ import {
   SIMPLE_TRUST_STORE,
 } from '../swarm/FinancialGuardian.mjs'
 import { MissionOrchestrator } from '../swarm/mission-orchestrator.mjs'
+import {
+  grantedCapabilities,
+  assertCapability,
+  CAPABILITIES,
+} from './capabilities.mjs'
+import { BANNED_PATTERNS } from '../swarm/ConfigurationDriftRemediator.mjs'
 
 // ── I1: RECEIVE_CRYPTO never requires a user deposit ────────────────────────
 
@@ -256,4 +262,44 @@ describe('MissionOrchestrator financial policy gate', () => {
     expect(blocked.safe_mode).toBe(true)
     expect(clean.status).toMatch(/planned|completed|in_progress/)
   })
+})
+
+// ── I8: capability tokens (least privilege) ────────────────────────────────
+
+describe('financial capabilities are explicit, never implicit', () => {
+  it('grants nothing when no CAP_* flags are set', () => {
+    expect(grantedCapabilities({}).size).toBe(0)
+  })
+
+  it('denies money movement without an explicit grant', () => {
+    const r = assertCapability(CAPABILITIES.WITHDRAW_CRYPTO, {})
+    expect(r.ok).toBe(false)
+    expect(r.error).toMatch(/CAPABILITY_NOT_GRANTED/)
+  })
+
+  it('allows only the explicitly granted capability', () => {
+    const env = { CAP_SEND_CRYPTO: 'true' }
+    expect(assertCapability(CAPABILITIES.SEND_CRYPTO, env).ok).toBe(true)
+    expect(assertCapability(CAPABILITIES.WITHDRAW_CRYPTO, env).ok).toBe(false)
+    expect(assertCapability(CAPABILITIES.CREATE_DEBT, env).ok).toBe(false)
+  })
+})
+
+// ── Regression: banned patterns never re-enter the source tree ─────────────
+
+describe('configuration drift banned patterns', () => {
+  it.each(BANNED_PATTERNS.map((p) => [p.id, p]))(
+    'regression pattern %s matches its canonical defect expression',
+    (_id, p) => {
+      // Each banned pattern must still match the exact old defect form.
+      const canonical = {
+        SYNTHETIC_RESERVE_BALANCE: 'const currentReserve = 0.0;',
+        EMERGENT_DEBT_PANIC: 'URGENT_SWARM_DEBT_NOTICE',
+        RESERVE_AS_RECEIVE_GATE:
+          'if (reserve.status === "UNKNOWN") require user deposit before receiving',
+        CAP_ON_BY_DEFAULT: 'CAP_WITHDRAW_CRYPTO=true',
+      }[p.id]
+      expect(p.re.test(canonical)).toBe(true)
+    },
+  )
 })

@@ -17,6 +17,7 @@ import { ethers } from 'ethers';
 import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { assertCapability } from '../src/finance/capabilities.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -91,6 +92,17 @@ if (!CONFIRM) {
   plan.status = 'DRY_RUN';
   plan.gasEstimate = '~$0.001';
   plan.note = 'Add --confirm to execute. Wallet has gas + USDT on ' + selected.name + '.';
+  console.log(JSON.stringify(plan, null, 2));
+  process.exit(0);
+}
+
+// I8: explicit capability grant required for actual money movement.
+const cap = assertCapability('WITHDRAW_CRYPTO');
+if (!cap.ok) {
+  plan.status = 'CAPABILITY_BLOCKED';
+  plan.error = cap.error;
+  plan.fundsMoved = false;
+  plan.note = 'Set the CAP_WITHDRAW_CRYPTO flag (and CAP_SEND_CRYPTO for supplier sends) to the literal boolean true to authorize.';
   console.log(JSON.stringify(plan, null, 2));
   process.exit(0);
 }
