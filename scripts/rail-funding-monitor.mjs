@@ -65,7 +65,7 @@ async function probeBinance() {
   }
 }
 
-const blockers = [];
+let blockers = [];
 let bc = null;
 let binance = null;
 
@@ -86,10 +86,11 @@ if (!bcFunded) blockers.push("BANKING_CIRCLE_FUNDED not set (cannot assume funds
 
 binance = await probeBinance();
 if (binance.authOk && binance.canWithdrawBsc) {
-  // Binance is a live funded outbound rail → settlement green-light is satisfied
-  blockers.splice(0, blockers.filter(b => b.startsWith("BANKING_CIRCLE")).length);
+  // Binance is a live funded outbound rail → settlement green-light is satisfied.
+  // Remove by value (BC blockers are not a contiguous prefix once SWARM_LIVE sits at index 0).
+  blockers = blockers.filter(b => !b.startsWith("BANKING_CIRCLE"));
 } else if (binance.authOk) {
-  blockers.push(`Binance rail live (auth OK) but UNFUNDED (${binance.usdt} USDT < 3.01 minimum). Deposit USDT to Binance spot to unlock settlement.`);
+  blockers.push(`Binance rail live (auth OK) but UNFUNDED (${binance.usdt} USDT < 3.01 minimum). Deposit USDT to Binance spot to unlock settlement. Once funded, withdraw via: node scripts/binance-rail.mjs --action withdraw --amount <n> --network bsc --confirm (capability CAP_WITHDRAW_CRYPTO armed).`);
 } else {
   blockers.push(`Binance rail not available (${binance.error || "auth failed"})`);
 }

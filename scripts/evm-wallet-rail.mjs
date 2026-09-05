@@ -14,12 +14,14 @@
  *   node scripts/evm-wallet-rail.mjs --action send --chain arbitrum --token ETH --amount 0.001 --to 0x...
  *
  * Fail-closed: never sends without --action send, never fabricates tx hashes.
+ * I8: even with --confirm, a CAP_SEND_CRYPTO capability grant is required before any send.
  */
 import 'dotenv/config';
 import { ethers } from 'ethers';
 import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { assertCapability } from '../src/finance/capabilities.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -198,6 +200,19 @@ async function sendTransaction() {
 
   if (!flag('confirm')) {
     console.log('Add --confirm to actually send. This is a dry run.');
+    return;
+  }
+
+  // I8: explicit capability grant required for actual money movement.
+  const cap = assertCapability('SEND_CRYPTO');
+  if (!cap.ok) {
+    console.log(JSON.stringify({
+      ok: false,
+      status: 'CAPABILITY_BLOCKED',
+      error: cap.error,
+      fundsMoved: false,
+      note: 'Set the CAP_SEND_CRYPTO flag to the literal boolean true to authorize. Dry-run planning is always allowed.',
+    }, null, 2));
     return;
   }
 
