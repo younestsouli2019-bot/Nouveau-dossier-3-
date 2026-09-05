@@ -1,12 +1,14 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { PaymentAssuranceProtocol } from "../finance/PaymentAssuranceProtocol.mjs";
+import { FinancialGuardian } from "./FinancialGuardian.mjs";
 
 export class MissionOrchestrator {
 	constructor(config = {}) {
 		this.config = config;
 		this.ledgerPath = path.resolve("data/swarm/mission-ledger.json");
 		this.assurance = new PaymentAssuranceProtocol();
+		this.guardian = config.guardian || new FinancialGuardian(config.guardianOptions);
 	}
 
 	async loadLedger() {
@@ -108,6 +110,32 @@ export class MissionOrchestrator {
 		for (const proposal of proposals) {
 			// check if already processed
 			if (ledger.missions.find((m) => m.proposalId === proposal.id)) {
+				continue;
+			}
+
+			// ── FINANCIAL POLICY GATE (I3): a proposal may not carry funding
+			// prerequisites into a receive/revenue flow. Blocked proposals are
+			// recorded and quarantined — never planned nor executed.
+			const scan = await this.guardian.scan(proposal);
+			if (scan.blocked) {
+				const incident = await this.guardian.quarantineAgent({
+					agentId: proposal.agentId || proposal.sourceAgent || "unknown",
+					proposal,
+					trigger: scan,
+				});
+				const blocked = {
+					missionId: `mission_blocked_${proposal.id}`,
+					proposalId: proposal.id,
+					status: "blocked_financial_policy",
+					block_reason: scan.detail,
+					severity: scan.severity,
+					safe_mode: true,
+					incidentId: incident.id,
+					created_at: new Date().toISOString(),
+					tasks: [],
+				};
+				ledger.missions.push(blocked);
+				results.push(blocked);
 				continue;
 			}
 

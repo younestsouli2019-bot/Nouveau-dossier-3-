@@ -19,6 +19,8 @@ import {
   ReceiptStateViolation,
 } from '../src/crypto/IncomingReceiptStateMachine.mjs';
 import { ReplenishmentProtocol } from '../src/finance/ReplenishmentProtocol.mjs';
+import { FinancialGuardian, SIMPLE_TRUST_STORE } from '../src/swarm/FinancialGuardian.mjs';
+import { MissionOrchestrator } from '../src/swarm/mission-orchestrator.mjs';
 
 const OUT = join(process.cwd(), 'data', 'out');
 if (!existsSync(OUT)) mkdirSync(OUT, { recursive: true });
@@ -72,6 +74,36 @@ for (const w of wording) {
 //     seizure (I2 / I11). Observe-only invocation.
 const proto = new ReplenishmentProtocol();
 (async () => {
+  const guardian = new FinancialGuardian({ trustStore: SIMPLE_TRUST_STORE() });
+
+  // C4b: FinancialGuardian blocks funding leakage (I1/I3/I9).
+  const gScan = await guardian.scan({
+    operation: 'RECEIVE_CRYPTO',
+    description: 'Customer must deposit 100 USDT before any payout',
+    evidence: [{ source: 'LLM', value: 'deposit 100 USDT', verified: false }],
+  });
+  gScan.blocked && gScan.safeMode
+    ? pass('guardian_blocks_deposit_demand', JSON.stringify(gScan))
+    : fail('guardian_blocks_deposit_demand', JSON.stringify(gScan));
+
+  // C4c: orchestrator gate — blocked proposal is never planned/executed.
+  const orchestrator = new MissionOrchestrator({
+    guardian: new FinancialGuardian({ trustStore: SIMPLE_TRUST_STORE() }),
+  });
+  const probeId = `audit_probe_deposit_${Date.now()}`;
+  const results = await orchestrator.processProposals([
+    {
+      id: probeId,
+      type: 'RECEIVE_CRYPTO',
+      description: 'deposit 50 USDT required first',
+      evidence: [{ source: 'LLM', value: 'deposit first', verified: false }],
+    },
+  ]);
+  const blocked = results.find((m) => m.proposalId === probeId);
+  blocked && blocked.status === 'blocked_financial_policy' && blocked.safe_mode === true
+    ? pass('gate_blocked_proposal_isolation', blocked.status)
+    : fail('gate_blocked_proposal_isolation', JSON.stringify(blocked));
+
   const r = await proto.executeReplenishment({ verifiedReserveBalance: null });
   if (r.status === 'UNKNOWN' && r.debtCreated === false && r.assetsSeized === 0)
     pass('i2_unknown_no_debt', r.reason);

@@ -65,7 +65,7 @@ export function normalizeFundingClaim(action) {
 		.join(" ")
 		.toLowerCase();
 	return (
-		/\b(deposit first|deposit required|top up|top-up|provide collateral|collateral required|fund the reserve|fund wallet|activate.*(account|wallet|card)|activation (fee|payment)|release fee|settle debt|replenish|reserve.*required|fund account first)\b/.test(
+		/\b(deposit first|deposit required|top up|top-up|provide collateral|collateral required|fund the reserve|fund wallet|activate.*(account|wallet|card)|activation (fee|payment)|release fee|settle debt|replenish|reserve.*required|fund account first|must (deposit|pay|fund|provide|top up)|deposit .{0,48}(before|first|required|needed)|deposit .{0,48} to (receive|release|unlock)|before (receiving|release|unlock|payout))\b/.test(
 			text,
 		) && !/not (required|needed)|optional|no (deposit|fee|collateral)/.test(text)
 	);
