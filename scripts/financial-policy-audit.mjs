@@ -21,6 +21,8 @@ import {
 import { ReplenishmentProtocol } from '../src/finance/ReplenishmentProtocol.mjs';
 import { FinancialGuardian, SIMPLE_TRUST_STORE } from '../src/swarm/FinancialGuardian.mjs';
 import { MissionOrchestrator } from '../src/swarm/mission-orchestrator.mjs';
+import { scanConfigurationDrift } from '../src/swarm/ConfigurationDriftRemediator.mjs';
+import { assertCapability, REQUIRED_CAPS, CAPABILITIES } from '../src/finance/capabilities.mjs';
 
 const OUT = join(process.cwd(), 'data', 'out');
 if (!existsSync(OUT)) mkdirSync(OUT, { recursive: true });
@@ -103,6 +105,42 @@ const proto = new ReplenishmentProtocol();
   blocked && blocked.status === 'blocked_financial_policy' && blocked.safe_mode === true
     ? pass('gate_blocked_proposal_isolation', blocked.status)
     : fail('gate_blocked_proposal_isolation', JSON.stringify(blocked));
+
+  // C4d: CANARY (#16) — a harmless synthetic RECEIVE_CRYPTO must reach
+  //      DIRECT_RECEIPT. Any funding/deposit suggestion ⇒ SAFE_MODE verdict.
+  const canary = evaluateFinancialAction({
+    operation: 'RECEIVE_CRYPTO',
+    prerequisites: [],
+    evidence: [{ source: 'ONCHAIN_RPC', value: '0xcanary', verified: true }],
+    requiresFunding: false,
+  });
+  canary.status === 'ALLOWED'
+    ? pass('canary_direct_receipt', canary.strategy)
+    : fail('canary_direct_receipt', JSON.stringify(canary));
+
+  // C4e: capability least-privilege (I8) — grants must be explicit.
+  const capNeeded = [];
+  for (const [op, cap] of Object.entries(REQUIRED_CAPS)) {
+    // Simulate an environment with NO caps granted: every money op must fail.
+    const denied = assertCapability(cap, {});
+    if (!denied.ok) capNeeded.push(`${op}:${cap}:denied-as-expected`);
+    else fail(`cap_${op}`, `${cap} unexpectedly granted`);
+  }
+  capNeeded.length === Object.keys(REQUIRED_CAPS).length
+    ? pass('capabilities_not_implicit', capNeeded.join('; '))
+    : fail('capabilities_not_implicit', capNeeded.join('; '));
+
+  // Explicit grant must pass (deterministic round-trip).
+  const grantedEnv = { CAP_WITHDRAW_CRYPTO: 'true' };
+  assertCapability(CAPABILITIES.WITHDRAW_CRYPTO, grantedEnv).ok
+    ? pass('capabilities_explicit_grant', CAPABILITIES.WITHDRAW_CRYPTO)
+    : fail('capabilities_explicit_grant', 'explicit grant rejected');
+
+  // C4f: configuration drift — no synthesized state may have re-entered src.
+  const drift = await scanConfigurationDrift();
+  drift.driftCount === 0
+    ? pass('config_drift_clean', drift.verdict)
+    : fail('config_drift_clean', JSON.stringify(drift.drift));
 
   const r = await proto.executeReplenishment({ verifiedReserveBalance: null });
   if (r.status === 'UNKNOWN' && r.debtCreated === false && r.assetsSeized === 0)

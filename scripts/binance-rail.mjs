@@ -17,6 +17,7 @@ import crypto from 'crypto';
 import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { assertCapability } from '../src/finance/capabilities.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -195,6 +196,17 @@ async function withdraw() {
 
   if (!confirm) {
     plan.note = 'Add --confirm to execute withdrawal.';
+    console.log(JSON.stringify(plan, null, 2));
+    return;
+  }
+
+  // I8: explicit capability grant required for actual money movement.
+  const cap = assertCapability('WITHDRAW_CRYPTO');
+  if (!cap.ok) {
+    plan.status = 'CAPABILITY_BLOCKED';
+    plan.error = cap.error;
+    plan.fundsMoved = false;
+    plan.note = 'Set the CAP_WITHDRAW_CRYPTO flag to the literal boolean true to authorize. Dry-run planning is always allowed.';
     console.log(JSON.stringify(plan, null, 2));
     return;
   }
