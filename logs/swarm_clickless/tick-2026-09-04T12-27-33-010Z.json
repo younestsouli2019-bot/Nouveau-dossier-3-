@@ -1,0 +1,76 @@
+{
+  "at": "2026-09-04T12:27:47.981Z",
+  "uid": "clickless-2026-09-04T12-27-33-010Z",
+  "elapsed_ms": 14970,
+  "plan_transition_mode": "unset",
+  "readonly": true,
+  "moved_money": false,
+  "phases": [
+    {
+      "name": "truth-invariant-audit",
+      "status": "ok",
+      "tail": " engines\n  ✓ INV-3: SSRF guard present in AxiosClient (guardUrl + assertSafeExternalUrl)\n  ✓ INV-4: reconciliation truth doc present\n  ✓ INV-5: truth doc explicitly marks unverified figures\n  ✓ INV-6: no timestamp/random idempotency keys in money engines\n  ✓ INV-7: no legacy api.wise.com host refs in Wise modules\n\n──────────────────────────────\nresult: 7 passed, 0 failed\nAll truth invariants hold."
+    },
+    {
+      "name": "url-guard-self-test",
+      "status": "ok",
+      "tail": "le.com: allowed\n  ✓ https api.transferwise.com: allowed\n  ✓ https api-m.paypal.com: allowed\n  ✓ IPv4 literal 8.8.8.8: allowed\n\nFull DNS-resolving (assertSafeExternalUrl):\n  ✓ DNS public host github.com: allowed\n  ✓ DNS host resolving to private (169.254.169.254 as name): blocked (//169.254.169.254/latest/meta-data))\n\n──────────────────────────────\nresult: 38 passed, 0 failed\nSSRF guard is healthy."
+    },
+    {
+      "name": "payout-reconcile",
+      "status": "ok",
+      "tail": "ledDate, processedDate, submittedAt, approvedBy, notes, resolutionNote, resolvedAt, autoApproved, autoApprovedAt, autoProcessed, autoProcessedAt, paymentProvider, providerBatchRef, proofHash, proofType, settlementIntegrityHash, createdAt, updatedAt, paypalBatchId\nPayoutItem total amount: 10851.23 count: 23\nPayoutBatch total amount: 10851.23 count: 6\nOwnerSettlement total amount: 13744.11 count: 27"
+    },
+    {
+      "name": "postgres-integrity",
+      "status": "ok",
+      "tail": "6-001) instead of real rail transaction IDs. deliveryConfirmed=true without external confirmation.\n[INFO] reconciliation: PaymentIntent registry: 16 intents (6224.55 USD in PENDING_REASONING, 0 SETTLED).\n[INFO] reconciliation: DB-of-record total: OwnerSettlement=$13744.11, PayoutBatch=$10851.23.\n\nWrote C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\out/postgres-integrity-audit.json — verdict: OK"
+    },
+    {
+      "name": "rail-health",
+      "status": "ok",
+      "tail": "   \"NONE live-authenticated outbound sender currently moves funds (PayPal OAuth client auth fail)\"\n  ],\n  \"blocker\": \"Outbound funds movement requires a live-authenticated sender rail. PayPal creds fail OAuth 401 invalid_client (live probe 2026-08-31). Supervised optimum route resolved to Banking Circle — Primary for the $6,224.55 pipeline; pending a live bank-send credential before funds move.\"\n}"
+    },
+    {
+      "name": "audit-remediate-proof",
+      "status": "ok",
+      "tail": "{\n  \"dry\": true,\n  \"wrote\": false,\n  \"verdict\": \"CLEAN\",\n  \"rowsAffected\": 0,\n  \"note\": \"DRY: no changes. Set AUTO_REMEDIATE=true to apply (read-only was requested).\"\n}"
+    },
+    {
+      "name": "rail-funding-monitor",
+      "status": "error",
+      "tail": "Command failed: node \"C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\scripts\\rail-funding-monitor.mjs\" "
+    },
+    {
+      "name": "procurement-watchdog",
+      "status": "ok",
+      "tail": "{\n  \"dry\": false,\n  \"shipped\": 0,\n  \"delivered\": 0,\n  \"gated\": 0,\n  \"note\": \"never fabricated tracking/delivered; trackingVerified only via real carrier delivered event.\"\n}"
+    },
+    {
+      "name": "settlement-worklist",
+      "status": "ok",
+      "tail": "{\n  \"ok\": true,\n  \"totalUnsettled\": 13744.110000000006,\n  \"settlements\": 27,\n  \"revenuePending\": 14824.75,\n  \"batchesProcessing\": 10851.23,\n  \"accounts\": 5\n}"
+    },
+    {
+      "name": "procurement-queue",
+      "status": "ok",
+      "tail": "{\n  \"ok\": true,\n  \"totalItems\": 175,\n  \"totalMAD\": 16286,\n  \"totalUsd\": \"1628.60\",\n  \"recipients\": [\n    \"M Bachir Tsouli\",\n    \"Mr Younes Tsouli\",\n    \"Mrs Hind Tsouli\"\n  ],\n  \"blocked\": 2,\n  \"readyToShip\": 0\n}"
+    },
+    {
+      "name": "po-execution-queue",
+      "status": "ok",
+      "tail": "{\n  \"ok\": true,\n  \"total\": 175,\n  \"shippedNoProof\": 98,\n  \"orderedNoTracking\": 75,\n  \"suppliers\": 47,\n  \"totalMAD\": 16286\n}"
+    },
+    {
+      "name": "payment-routing-table",
+      "status": "ok",
+      "tail": "{\n  \"ok\": true,\n  \"total\": 10,\n  \"available\": 4,\n  \"dead\": 6,\n  \"availableNames\": [\n    \"PayPal PPP2\",\n    \"PayPal NCP Link\",\n    \"Attijari Wafa Bank (operator mobile)\",\n    \"Alfa Gros COD\"\n  ],\n  \"verdict\": \"PARTIAL\"\n}"
+    },
+    {
+      "name": "po-fulfillment-orchestrator",
+      "status": "ok",
+      "tail": "{\n  \"ok\": true,\n  \"action\": \"outreach\",\n  \"suppliersNeedingAction\": 46,\n  \"topPriorities\": [\n    \"amazon_us (self_service, 5 items, 2845 MAD)\",\n    \"wholesale_supplier (whatsapp, 61 items, 2380 MAD)\",\n    \"dell (self_service, 2 items, 2097 MAD)\"\n  ],\n  \"note\": \"Messages generated. Operator sends via their own phone/app.\"\n}"
+    }
+  ],
+  "note": "READ-ONLY reconcile/guard/audit tick. No payouts, no card funding, no delivered flips without a real waybill. Delivered remains gated on a real carrier scan."
+}

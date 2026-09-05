@@ -1,0 +1,36 @@
+{
+  "at": "2026-09-03T10:20:09.116Z",
+  "uid": "clickless-2026-09-03T10-20-01-218Z",
+  "elapsed_ms": 7897,
+  "plan_transition_mode": "unset",
+  "readonly": true,
+  "moved_money": false,
+  "phases": [
+    {
+      "name": "truth-invariant-audit",
+      "status": "ok",
+      "tail": " engines\n  ✓ INV-3: SSRF guard present in AxiosClient (guardUrl + assertSafeExternalUrl)\n  ✓ INV-4: reconciliation truth doc present\n  ✓ INV-5: truth doc explicitly marks unverified figures\n  ✓ INV-6: no timestamp/random idempotency keys in money engines\n  ✓ INV-7: no legacy api.wise.com host refs in Wise modules\n\n──────────────────────────────\nresult: 7 passed, 0 failed\nAll truth invariants hold."
+    },
+    {
+      "name": "url-guard-self-test",
+      "status": "ok",
+      "tail": "le.com: allowed\n  ✓ https api.transferwise.com: allowed\n  ✓ https api-m.paypal.com: allowed\n  ✓ IPv4 literal 8.8.8.8: allowed\n\nFull DNS-resolving (assertSafeExternalUrl):\n  ✓ DNS public host github.com: allowed\n  ✓ DNS host resolving to private (169.254.169.254 as name): blocked (//169.254.169.254/latest/meta-data))\n\n──────────────────────────────\nresult: 38 passed, 0 failed\nSSRF guard is healthy."
+    },
+    {
+      "name": "payout-reconcile",
+      "status": "ok",
+      "tail": "ledDate, processedDate, submittedAt, approvedBy, notes, resolutionNote, resolvedAt, autoApproved, autoApprovedAt, autoProcessed, autoProcessedAt, paymentProvider, providerBatchRef, proofHash, proofType, settlementIntegrityHash, createdAt, updatedAt, paypalBatchId\nPayoutItem total amount: 10851.23 count: 23\nPayoutBatch total amount: 10851.23 count: 6\nOwnerSettlement total amount: 13744.11 count: 27"
+    },
+    {
+      "name": "postgres-integrity",
+      "status": "ok",
+      "tail": "receipt,manual_attestation,api_receipt). One is manual_attestation=$3,500 with no hash.\n[INFO] reconciliation: PaymentIntent registry: 16 intents (6224.55 USD in PENDING_REASONING, 0 SETTLED).\n[INFO] reconciliation: DB-of-record total: OwnerSettlement=$13744.11, PayoutBatch=$10851.23.\n\nWrote C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\out/postgres-integrity-audit.json — verdict: INTEGRITY_GAP"
+    },
+    {
+      "name": "rail-health",
+      "status": "ok",
+      "tail": "   \"NONE live-authenticated outbound sender currently moves funds (PayPal OAuth client auth fail)\"\n  ],\n  \"blocker\": \"Outbound funds movement requires a live-authenticated sender rail. PayPal creds fail OAuth 401 invalid_client (live probe 2026-08-31). Supervised optimum route resolved to Banking Circle — Primary for the $6,224.55 pipeline; pending a live bank-send credential before funds move.\"\n}"
+    }
+  ],
+  "note": "READ-ONLY reconcile/guard/audit tick. No payouts, no card funding, no delivered flips without a real waybill. Delivered remains gated on a real carrier scan."
+}
