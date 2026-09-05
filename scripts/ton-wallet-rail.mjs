@@ -9,7 +9,7 @@
  *   node scripts/ton-wallet-rail.mjs --action send --amount 0.5 --to UQDIrl...
  *
  * Supported wallets: v4R2 (most common). Falls back gracefully if key doesn't match.
- * Fail-closed: never sends without --confirm, never fabricates tx hashes.
+ * Fail-closed: never sends without --confirm AND an I8 CAP_SEND_CRYPTO capability grant; never fabricates tx hashes.
  */
 import 'dotenv/config';
 import { TonClient, WalletContractV4, internal, toNano, fromNano, beginCell } from '@ton/ton';
@@ -17,6 +17,7 @@ import { mnemonicToWalletKey } from '@ton/crypto';
 import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { assertCapability } from '../src/finance/capabilities.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -24,7 +25,6 @@ const OUT = resolve(ROOT, 'data', 'out');
 if (!existsSync(OUT)) mkdirSync(OUT, { recursive: true });
 
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? (process.argv[i + 1] ?? d) : d; };
-const flag = (n) => process.argv.includes(`--n`);
 
 // ── Config ───────────────────────────────────────────────────────────────
 const TONCENTER_API = 'https://toncenter.com/api/v2';
@@ -121,6 +121,19 @@ async function sendTon() {
 
     if (!process.argv.includes('--confirm')) {
       console.log('Add --confirm to send.');
+      return;
+    }
+
+    // I8: explicit capability grant required for actual money movement.
+    const cap = assertCapability('SEND_CRYPTO');
+    if (!cap.ok) {
+      console.log(JSON.stringify({
+        ok: false,
+        status: 'CAPABILITY_BLOCKED',
+        error: cap.error,
+        fundsMoved: false,
+        note: 'Set the CAP_SEND_CRYPTO flag to the literal boolean true to authorize. Dry-run planning is always allowed.',
+      }, null, 2));
       return;
     }
 
