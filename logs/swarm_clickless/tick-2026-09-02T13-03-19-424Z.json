@@ -1,0 +1,36 @@
+{
+  "at": "2026-09-02T13:03:24.857Z",
+  "uid": "clickless-2026-09-02T13-03-19-424Z",
+  "elapsed_ms": 5432,
+  "plan_transition_mode": "unset",
+  "readonly": true,
+  "moved_money": false,
+  "phases": [
+    {
+      "name": "truth-invariant-audit",
+      "status": "ok",
+      "tail": " engines\n  ✓ INV-3: SSRF guard present in AxiosClient (guardUrl + assertSafeExternalUrl)\n  ✓ INV-4: reconciliation truth doc present\n  ✓ INV-5: truth doc explicitly marks unverified figures\n  ✓ INV-6: no timestamp/random idempotency keys in money engines\n  ✓ INV-7: no legacy api.wise.com host refs in Wise modules\n\n──────────────────────────────\nresult: 7 passed, 0 failed\nAll truth invariants hold."
+    },
+    {
+      "name": "url-guard-self-test",
+      "status": "error",
+      "tail": "node:internal/modules/esm/loader:757:20)\r\n    at ModuleLoader.resolve (node:internal/modules/esm/loader:734:38)\r\n    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:317:38)\r\n    at #link (node:internal/modules/esm/module_job:208:49) {\r\n  code: 'ERR_MODULE_NOT_FOUND',\r\n  url: 'file:///C:/Users/Dell/Downloads/Nouveau%20dossier%20(3)/src/lib/url-guard'\r\n}\r\n\r\nNode.js v24.11.0\r\n"
+    },
+    {
+      "name": "payout-reconcile",
+      "status": "error",
+      "tail": "  severity: 'ERROR',\r\n  code: '42703',\r\n  detail: undefined,\r\n  hint: undefined,\r\n  position: '21',\r\n  internalPosition: undefined,\r\n  internalQuery: undefined,\r\n  where: undefined,\r\n  schema: undefined,\r\n  table: undefined,\r\n  column: undefined,\r\n  dataType: undefined,\r\n  constraint: undefined,\r\n  file: 'parse_relation.c',\r\n  line: '3854',\r\n  routine: 'errorMissingColumn'\r\n}\r\n\r\nNode.js v24.11.0\r\n"
+    },
+    {
+      "name": "postgres-integrity",
+      "status": "ok",
+      "tail": "receipt,manual_attestation,api_receipt). One is manual_attestation=$3,500 with no hash.\n[INFO] reconciliation: PaymentIntent registry: 16 intents (6224.55 USD in PENDING_REASONING, 0 SETTLED).\n[INFO] reconciliation: DB-of-record total: OwnerSettlement=$13744.11, PayoutBatch=$10851.23.\n\nWrote C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\out/postgres-integrity-audit.json — verdict: INTEGRITY_GAP"
+    },
+    {
+      "name": "rail-health",
+      "status": "ok",
+      "tail": "   \"NONE live-authenticated outbound sender currently moves funds (PayPal OAuth client auth fail)\"\n  ],\n  \"blocker\": \"Outbound funds movement requires a live-authenticated sender rail. PayPal creds fail OAuth 401 invalid_client (live probe 2026-08-31). Supervised optimum route resolved to Banking Circle — Primary for the $6,224.55 pipeline; pending a live bank-send credential before funds move.\"\n}"
+    }
+  ],
+  "note": "READ-ONLY reconcile/guard/audit tick. No payouts, no card funding, no delivered flips without a real waybill. Delivered remains gated on a real carrier scan."
+}

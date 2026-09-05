@@ -1,0 +1,10 @@
+{
+  "at": "2026-09-04T10:23:29.787Z",
+  "amount": 1,
+  "currency": "USD",
+  "recipient": "younestsouli2019@gmail.com",
+  "app": "PPP2",
+  "status": "REFUSED_ERROR",
+  "fundsMoved": false,
+  "error": "PayPal request failed (403) POST /v1/payments/payouts: {\"name\":\"AUTHORIZATION_ERROR\",\"message\":\"Authorization error occurred.\",\"debug_id\":\"24e19c70391c2\",\"information_link\":\"https://developer.paypal.com/docs/api/payments.payouts-batch/#errors\",\"links\":[]}"
+}
