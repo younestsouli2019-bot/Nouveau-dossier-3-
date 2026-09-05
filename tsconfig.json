@@ -38,6 +38,10 @@
   "exclude": [
     "node_modules",
     "swarm-ops-project",
-    "autopublisher-v3-*"
+    "autopublisher-v3-*",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "vitest.config.ts"
   ]
 }
