@@ -12,6 +12,11 @@ import {
   ReceiptStateViolation,
 } from '../crypto/IncomingReceiptStateMachine.mjs'
 import { ReplenishmentProtocol } from './ReplenishmentProtocol.mjs'
+import {
+  FinancialGuardian,
+  SIMPLE_TRUST_STORE,
+} from '../swarm/FinancialGuardian.mjs'
+import { MissionOrchestrator } from '../swarm/mission-orchestrator.mjs'
 
 // ── I1: RECEIVE_CRYPTO never requires a user deposit ────────────────────────
 
@@ -180,5 +185,75 @@ describe('context projection is allowlisted', () => {
     expect(ctx.reserve).toBeUndefined()
     expect(ctx.swarm_debt_notice).toBeUndefined()
     expect(ctx.depleted).toBeUndefined()
+  })
+})
+
+// ── FinancialGuardian: scan + quarantine (I3/I9/I10/I17) ────────────────────
+
+describe('FinancialGuardian blocks funding leakage in agent proposals', () => {
+  const guardian = new FinancialGuardian({ trustStore: SIMPLE_TRUST_STORE() })
+
+  it('blocks a deposit-demanding proposal and enters safe mode', async () => {
+    const scan = await guardian.scan({
+      agentId: 'revenue-agent',
+      operation: 'RECEIVE_CRYPTO',
+      description: 'Customer must deposit 100 USDT before we release anything',
+      evidence: [{ source: 'LLM', value: 'deposit 100 USDT', verified: false }],
+    })
+    expect(scan.blocked).toBe(true)
+    expect(scan.safeMode).toBe(true)
+    expect(scan.severity).toBe('CRITICAL')
+  })
+
+  it('quarantines the agent and hits its trust score', async () => {
+    const incident = await guardian.quarantineAgent({
+      agentId: 'revenue-agent',
+      proposal: { operation: 'RECEIVE_CRYPTO', evidence: [{ source: 'LLM', value: 'deposit now' }] },
+      trigger: { blocked: true, operation: 'RECEIVE_CRYPTO', violation: 'unauthorized_funding_request' },
+    })
+    expect(incident.actions).toContain('FINANCIAL_ACTION_BLOCKED')
+    expect(incident.humanReviewRequired).toBe(true)
+    expect(incident.trustScore.before).toBe(100)
+    expect(incident.trustScore.after).toBeLessThan(incident.trustScore.before)
+  })
+
+  it('does not quarantine benign revenue proposals', async () => {
+    const scan = await guardian.scan({
+      operation: 'REVENUE_STABILITY_CHECK',
+      description: 'Weekly revenue check',
+      evidence: [{ source: 'BINANCE_API', value: 'ok', verified: true }],
+    })
+    expect(scan.blocked).toBe(false)
+  })
+})
+
+// ── Orchestration gate: blocked proposals never plan nor execute ───────────
+
+describe('MissionOrchestrator financial policy gate', () => {
+  it('records blocked_financial_policy and never executes a deposit demand', async () => {
+    const store = SIMPLE_TRUST_STORE()
+    const orchestrator = new MissionOrchestrator({
+      guardian: new FinancialGuardian({ trustStore: store }),
+    })
+    const run = Date.now()
+    const results = await orchestrator.processProposals([
+      {
+        id: `p_deposit_${run}`,
+        type: 'RECEIVE_CRYPTO',
+        description: 'deposit 50 USDT required first',
+        evidence: [{ source: 'LLM', value: 'deposit first', verified: false }],
+      },
+      {
+        id: `p_clean_${run}`,
+        type: 'VELOCITY_OPPORTUNITY',
+        description: 'revenue velocity review',
+      },
+    ])
+    expect(results.length).toBe(2)
+    const blocked = results.find((r) => r.proposalId === `p_deposit_${run}`)
+    const clean = results.find((r) => r.proposalId === `p_clean_${run}`)
+    expect(blocked.status).toBe('blocked_financial_policy')
+    expect(blocked.safe_mode).toBe(true)
+    expect(clean.status).toMatch(/planned|completed|in_progress/)
   })
 })
