@@ -46,7 +46,8 @@
     "binance:networks": "node scripts/binance-rail.mjs --action networks",
     "binance:withdraw": "node scripts/binance-rail.mjs --action withdraw",
     "inbound:scout": "node scripts/inbound-scout.mjs",
-    "audit:all": "npm run typecheck && npm run audit:truth && npm run guard:selftest"
+    "audit:i8": "node scripts/verify-i8-gates.mjs",
+    "audit:all": "npm run typecheck && npm run audit:truth && npm run guard:selftest && npm run audit:i8"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.13",

@@ -190,12 +190,14 @@ async function withdraw() {
   if (amount < parseFloat(net.withdrawMin)) {
     plan.status = 'BELOW_MINIMUM';
     plan.error = `Amount ${amount} USDT < minimum ${net.withdrawMin} USDT`;
+    writeFileSync(resolve(OUT, `binance-plan-refused-${Date.now()}.json`), JSON.stringify(plan, null, 2));
     console.log(JSON.stringify(plan, null, 2));
     return;
   }
 
   if (!confirm) {
     plan.note = 'Add --confirm to execute withdrawal.';
+    writeFileSync(resolve(OUT, `binance-plan-dryrun-${Date.now()}.json`), JSON.stringify(plan, null, 2));
     console.log(JSON.stringify(plan, null, 2));
     return;
   }
@@ -207,6 +209,7 @@ async function withdraw() {
     plan.error = cap.error;
     plan.fundsMoved = false;
     plan.note = 'Set the CAP_WITHDRAW_CRYPTO flag to the literal boolean true to authorize. Dry-run planning is always allowed.';
+    writeFileSync(resolve(OUT, `binance-plan-refused-${Date.now()}.json`), JSON.stringify(plan, null, 2));
     console.log(JSON.stringify(plan, null, 2));
     return;
   }
