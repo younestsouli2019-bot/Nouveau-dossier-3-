@@ -50,7 +50,7 @@
     "audit:all": "npm run typecheck && npm run audit:truth && npm run guard:selftest && npm run audit:i8"
   },
   "dependencies": {
-    "@base44/sdk": "^0.8.13",
+    "@base44/sdk": "^0.8.46",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "@radix-ui/react-alert-dialog": "^1.1.23",
