@@ -1,6 +1,6 @@
 # 👋 WELCOME BACK, OWNER
 
-Swarm is alive. Silent. Rolling. Last digest update: **2026-09-06T11:57:49.006Z**
+Swarm is alive. Silent. Rolling. Last digest update: **2026-09-06T12:00:49.026Z**
 
 ## 📍 Swarm Status
 
@@ -13,8 +13,7 @@ Swarm is alive. Silent. Rolling. Last digest update: **2026-09-06T11:57:49.006Z*
 
 ## 🧪 Tick Results (this loop run)
 
-_0 tasks ran this tick (all in cooldown / holiday pause — only essentials proceed)._
-
+- **OWNER_COMEBACK_PING** (roi=50) → ok=true
 
 ## 🔐 Consensus State (weighted ballots, min 2 voters)
 

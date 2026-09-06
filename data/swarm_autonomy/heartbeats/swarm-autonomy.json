@@ -1,9 +1,9 @@
 {
   "daemon": "swarm-autonomy",
   "pid": 12284,
-  "at": 1788696054186,
-  "iso": "2026-09-06T12:00:54.186Z",
+  "at": 1788696294192,
+  "iso": "2026-09-06T12:04:54.192Z",
   "loadAvg": null,
   "memMB": 5,
-  "uptimeSec": 1085
+  "uptimeSec": 1325
 }

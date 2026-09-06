@@ -1,8 +1,8 @@
 {
   "api": "SWARM_AUTONOMY_V1",
   "pid": 12284,
-  "uptimeSec": 1184,
-  "ticks": 10,
+  "uptimeSec": 1350,
+  "ticks": 12,
   "recentTasks": [
     {
       "id": "OWNER_BACK_SOON_PING",
@@ -74,5 +74,5 @@
   ],
   "resurrectedDead": null,
   "resurrectedHB": null,
-  "at": 1788696153294
+  "at": 1788696318368
 }
