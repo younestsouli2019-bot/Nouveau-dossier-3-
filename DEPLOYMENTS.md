@@ -15,6 +15,20 @@ plus the Vercel supply-chain front-end.
 - **Legacy data review (pending):** the 5 frozen July PayoutBatch records were left untouched per instructions — notably `BATCH_RECOVERY_BANK_WIRE_178488017{7,81}_PAYPAL_BRIDGE_00{1..4}` at $37,313.25 ×4 in perpetual `processing`, which match the fabricated-data era cleaned up in 050646c. Recommend deleting or marking them superseded after owner confirmation.
 - z.ai/ZCode side unchanged: the ZCode workspace still needs the one-time z.ai login to sync the same payouts view into the ZCode front and to reconnect git credentials on `t1trn6kunnv1-d`.
 
+## Unfreeze sweep (2026-09-06, read-only external probes — WebFetch only, shell down)
+
+Autonomous unfreeze sweep result: **2 of 4 surfaces frozen, and both are z.ai-dashboard-gated (owner OAuth), not fixable from the repo.**
+
+| Surface | Status 2026-09-06 | Evidence |
+|---------|-------------------|----------|
+| AgentFlow AICC (`b1fx661hzse0-d.space-z.ai`) | ✅ LIVE / not frozen | Shell renders ("AgentFlow AI · Command Center", INITIALIZING + "Loading live data…" to anonymous fetch — expected); Base44 backend `agent-flow-ai-9855ea98.base44.app/api` serves the app shell + 28-route nav. Nothing to unfreeze. |
+| Vercel (`supply-chain-swarm.vercel.app`) | ✅ LIVE | `/api/healthz` → `{"ok":true,…,"version":"3.0.0","status":"healthy"}`. |
+| Supply Chain Main (`t1trn6kunnv1-d.space-z.ai`) | ⚠️ SERVING but rebuild STILL FROZEN (unchanged from 09-05) | `/` 200 with the full Operations Control Center UI, but `/api/healthz` → 404 → still the pre-2026-09-02 stale artifact. The workspace's `git pull origin main` credentials remain dead; dashboard-documented `/api/dashboard` responds 200. **Unfreeze = owner reconnects GitHub repo in the z.ai dashboard, then redeploy** (per 09-05 findings — the chat.z.ai/auth login session is still the gate). |
+| HIT Swarm (`x1he4604ap01-deploy.space-z.ai`) | ❌ STILL DOWN — 502 (unchanged since Sept 1) | Empty-body 502 from Alibaba FC gateway. **Unfreeze = Space-Z dashboard redeploy of instance `x1he4604ap01-d`** (no SPACEZ_TOKEN in-repo; dashboard action only). After it is up: Autopilot ON → Run Tick. |
+| Supabase secure-cloud mirror · git mirrors · doomsday-vault | ⛔ FROZEN — not autonomously actionable | Require live secrets (`SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY`/`MIRROR_SUPABASE_BUCKET`, `GITLAB_MIRROR_REPO`/`GITLAB_PAT`, `DOOMSDAY_ARCHIVE_PASSPHRASE`) that are intentionally not in-repo/env-shell, plus a working shell (this session: Git Bash fork failure active). Blocked at two independent layers. |
+
+Data-quality note on the stale Supply Chain Main build: its public `/api/dashboard` still shows the old pre-cleanup ledger narrative ($3,722.90 "revenue", HIT Marketplace $2,622.50, batches PB-2025-001/002 auto-approved by "Swarm Autopilot") with `batchedAt` (2025-07) PREDATING `createdAt` (2026-08-28) and all proof/integrity hashes `null` — the known UNVERIFIED/fabricated-era data. Nothing booked; treat that instance's numbers as stale fiction until the rebuild lands and the post-cleanup data is confirmed.
+
 ## Deploy-mechanism findings (2026-09-05 ~19:00, verified)
 
 ### t1trn6kunnv1-d (Supply Chain Main) — build is STALE, auto-rebuild BROKEN at platform layer

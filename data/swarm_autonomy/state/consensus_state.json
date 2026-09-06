@@ -1,0 +1,35 @@
+{
+  "at": 1788696049039,
+  "iso": "2026-09-06T12:00:49.039Z",
+  "holiday": {
+    "active": false,
+    "ok": true,
+    "proposalType": "HOLIDAY_NON_ESSENTIALS",
+    "label": "Pause non-essential swarm work up to 6h",
+    "windowHours": 6,
+    "ballotsCounted": 0,
+    "expiredBallots": 0,
+    "quorumPct": 0.67,
+    "requiresWeight": true,
+    "approvalPct": 0,
+    "approvalByVotes": 0,
+    "approvalByWeight": 0,
+    "yesWeighted": 0,
+    "noWeighted": 0,
+    "yesCount": 0,
+    "noCount": 0,
+    "minVotersRequired": 2,
+    "passes": false
+  },
+  "selfAuditPasses": false,
+  "deepAuditPasses": false,
+  "moneyOverridePasses": false,
+  "essentials": [
+    "SELF_AUDIT_HOURLY",
+    "DEEP_AUDIT_DAILY",
+    "SWARM_SAFETY_SCORE_RECOMPUTE",
+    "OWNER_BACK_SOON_PING",
+    "RECONCILE_BALANCE_DELTA",
+    "SETTLEMENT_LEDGER_UNBLOCK"
+  ]
+}
