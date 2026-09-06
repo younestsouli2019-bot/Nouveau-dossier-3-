@@ -4,6 +4,17 @@ This is the canonical registry of live swarm/base44 deployments. The actual reve
 machinery is deployed as Base44 apps (`*.base44.app`) fronted by `space-z.ai` public URLs,
 plus the Vercel supply-chain front-end.
 
+## Payout-view coordination — AgentFlow Base44 app ⇄ live command center (2026-09-06, verified)
+
+`FinancialDashboard.jsx` in the AgentFlow AI Base44 app (app id 6888ac155ebf84dd9855ea98, 25-page command center) was frozen: its PayoutBatch entity held 5 stale July-2026 records and PayoutItem was empty, while the live command center backend (b1fx661hzse0-d.space-z.ai) served fresh payout state (8 batches BATCH-2000..2007, 38 items, USD; 6 success / 1 draft / 1 denied-by-guardrail batches; 23 success / 11 approved / 4 failed items).
+
+**Architecture decision (backend functions are NOT enabled in the AgentFlow app, and cross-app entity writes are blocked from chat):** the payouts view now fetches live, client-side, directly from `https://b1fx661hzse0-d.space-z.ai/api/payouts` — CORS on that API reflects arbitrary origins (verified: `Access-Control-Allow-Origin` echoes the Base44 app origin, GET 200). Single source of truth, zero sync drift, no duplicated data.
+
+- Base44 app: 3 builder edits (2026-09-06) — payouts view added to FinancialDashboard.jsx, then entity-binding removed in favor of the live fetch with refresh/retry + fail-visible error state. App builds `ready`, no errors. Verify at the editor preview: https://app.base44.com/apps/6888ac155ebf84dd9855ea98/editor/preview
+- The app is unpublished (public view gated) — publishing is an owner decision, not done.
+- **Legacy data review (pending):** the 5 frozen July PayoutBatch records were left untouched per instructions — notably `BATCH_RECOVERY_BANK_WIRE_178488017{7,81}_PAYPAL_BRIDGE_00{1..4}` at $37,313.25 ×4 in perpetual `processing`, which match the fabricated-data era cleaned up in 050646c. Recommend deleting or marking them superseded after owner confirmation.
+- z.ai/ZCode side unchanged: the ZCode workspace still needs the one-time z.ai login to sync the same payouts view into the ZCode front and to reconnect git credentials on `t1trn6kunnv1-d`.
+
 ## Deploy-mechanism findings (2026-09-05 ~19:00, verified)
 
 ### t1trn6kunnv1-d (Supply Chain Main) — build is STALE, auto-rebuild BROKEN at platform layer
