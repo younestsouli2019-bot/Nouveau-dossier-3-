@@ -1,0 +1,78 @@
+{
+  "api": "SWARM_AUTONOMY_V1",
+  "pid": 12284,
+  "uptimeSec": 1184,
+  "ticks": 10,
+  "recentTasks": [
+    {
+      "id": "OWNER_BACK_SOON_PING",
+      "at": 1788695698352,
+      "result": {
+        "ok": true,
+        "msg": "ping written"
+      }
+    },
+    {
+      "id": "DEDUPE_QUARANTINE",
+      "at": 1788695578466,
+      "result": {
+        "ok": true,
+        "scanned": 0,
+        "dedupedDropped": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "id": "VOTE_SELF_AUDIT_NOW",
+      "at": 1788695458297,
+      "result": {
+        "proposalType": "SELF_AUDIT_NOW",
+        "ballots": 1,
+        "recentBallots": 1,
+        "yesWeighted": 1,
+        "noWeighted": 0,
+        "yesCount": 1,
+        "noCount": 0,
+        "quorumPct": 0.5,
+        "approvalPct": 1,
+        "passes": false
+      }
+    },
+    {
+      "id": "SWARM_SAFETY_SCORE_RECOMPUTE",
+      "at": 1788695338405,
+      "result": {
+        "ok": true,
+        "score": 100,
+        "at": 1788695338391,
+        "scoreRaw": 100,
+        "criticalCount": 0,
+        "highCount": 0,
+        "quarantined": 0,
+        "action": "NORMAL",
+        "auditFile": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\reports\\FINAL-AUDIT-MASTER-1788695222813.json",
+        "ownerForceOverride": {
+          "blockNewMoneyMoving": false,
+          "safetyScoreFloor": 100,
+          "overrideAt": "2026-08-20T00:35:00Z",
+          "ownerDirective": "FORCE caps and restrictions lifted; maintain inflow to pre-set owner accounts; platform limits apply and are ample."
+        },
+        "note": "Raw audit score reported for transparency; forced NORMAL + floored per OWNER directive 2026-08-20."
+      }
+    },
+    {
+      "id": "SELF_AUDIT_HOURLY",
+      "at": 1788695221277,
+      "result": {
+        "ok": true,
+        "exit": 0,
+        "tag": "SELF_AUDIT_HOURLY",
+        "script": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\scripts\\final-master-audit.mjs",
+        "out": "silent"
+      }
+    }
+  ],
+  "resurrectedDead": null,
+  "resurrectedHB": null,
+  "at": 1788696153294
+}
