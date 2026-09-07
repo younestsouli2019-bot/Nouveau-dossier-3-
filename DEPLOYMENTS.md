@@ -4,6 +4,25 @@ This is the canonical registry of live swarm/base44 deployments. The actual reve
 machinery is deployed as Base44 apps (`*.base44.app`) fronted by `space-z.ai` public URLs,
 plus the Vercel supply-chain front-end.
 
+## Settlement-gap P0 — durable payout state machine (2026-09-07, verified)
+
+Structural fix for the settlement gap (revenue → entitlement → payout instruction → external settlement → reconciliation had no durable owner between instruction and settlement). Implemented and pushed to `main` as `4ade092` + `81b416c`; CI: **Space-Z green, Secret Scan green** (Vercel-token + multi-platform failures remain known-benign).
+
+**New payout domain (money-movement-free by construction):**
+- `Payout` / `PayoutEvent` / `PayoutHold` Prisma models — immutable payout ledger: unique `idempotencyKey`, `provider`/`providerRequestId`/`providerTransactionId`, `reconciliationStatus` (`PENDING | EVIDENCE_PENDING | RECONCILIATION_REQUIRED | RECONCILED | QUARANTINED`), optimistic `version`. Additive — run `prisma db push`/migration at next deploy.
+- `src/payout/state-machine.ts` — closed transition table; `UNKNOWN` resolves ONLY via provider reconciliation into `COMPLETED`/`QUARANTINED` (no `UNKNOWN → SUBMITTING` edge exists — blind retry is structurally impossible); retries re-enter through full validation.
+- `src/payout/ledger.ts` — balances DERIVED from ledger entries (`available = credits − reservations − settled`); mutable `heldBalance`/`spendableBalance` buckets demoted from authoritative.
+- `src/payout/eligibility.ts` — every hold has `holdReason` + `nextReviewAt` + optional expiry; "held forever" impossible.
+- `src/treasury/watchdog.ts` + `src/recon/watchdog.ts` — diagnose-only watchdogs (stale holds, unreconciled payouts, UNKNOWN ops, evidence gaps, `MATCHED/MISSING_PROVIDER/MISSING_INTERNAL/AMOUNT_MISMATCH/CURRENCY_MISMATCH/DUPLICATE/EVIDENCE_PENDING`).
+- `src/emit-revenue-events.mjs` — `buildLiveProofBase` SWARM_LIVE default `true → false` (proofs must never overstate live mode).
+- `exports/recon/AUDIT_L2_REPORT.json` — machine-readable, sanitized audit (PayPal REST history gap 2026-08-26→28; `financial_execution_allowed=false`).
+- `docs/SETTLEMENT_STATE_MACHINE.md` — full architecture + P0/P1/P2 rollout. **No cron→releaseOwnerFunds loop exists.** P2 dispatch stays gated (SWARM_LIVE=false default, PPP2 approval+send, destination validation, bounded batches, manual approval fail-closed).
+
+**Security (P0) — payment artifacts OUT of Git (both repos are PUBLIC):**
+- `younestsouli2019-bot` repo: 10 `settlements/paypal/*` artifacts untracked + gitignored; private backup retained (owner-held).
+- `www-realworldcerts-com` mirror: 39 raw artifacts confirmed at HEAD (crypto withdrawal addresses, PayPal instructions with account-like recipient IDs, bank RIB in SNAPSHOT_PUBLIC). **Agent token is blocked by the org's OAuth App access restrictions — the cleanup commit (artifact removal + snapshot sanitization + gitignore) is prepared as a patch and needs an org-authorized push.** Applies to `master` of `www-realworldcerts-com/Nouveau-dossier-3-`.
+- **Remaining exposure — owner decision required:** Git HISTORY of both public repos still contains the artifacts. Options: (a) privatize the repos (instant, keeps history), (b) history rewrite via filter-repo + force-push (disruptive: breaks clones/z.ai pulls/mirror sync), (c) accept history exposure. Recommend (a) for the mirror if its public posture isn't deliberate.
+
 ## Payout-view coordination — AgentFlow Base44 app ⇄ live command center (2026-09-06, verified)
 
 `FinancialDashboard.jsx` in the AgentFlow AI Base44 app (app id 6888ac155ebf84dd9855ea98, 25-page command center) was frozen: its PayoutBatch entity held 5 stale July-2026 records and PayoutItem was empty, while the live command center backend (b1fx661hzse0-d.space-z.ai) served fresh payout state (8 batches BATCH-2000..2007, 38 items, USD; 6 success / 1 draft / 1 denied-by-guardrail batches; 23 success / 11 approved / 4 failed items).
