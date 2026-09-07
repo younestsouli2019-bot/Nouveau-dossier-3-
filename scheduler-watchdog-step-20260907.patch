@@ -1,0 +1,13 @@
+diff --git a/.github/workflows/autonomous-scheduler.yml b/.github/workflows/autonomous-scheduler.yml
+index 67f6c0d..d0ae7ff 100644
+--- a/.github/workflows/autonomous-scheduler.yml
++++ b/.github/workflows/autonomous-scheduler.yml
+@@ -159,6 +159,8 @@ jobs:
+           else
+             echo "VERCEL_PROJECT_URL not set — skipping health ping (non-fatal)"
+           fi
++      - name: Settlement watchdog tick (diagnose-only, P1)
++        run: npx tsx ./scripts/run-watchdogs.ts || echo "watchdog tick degraded (non-fatal)"
+       - name: Write real-world truth marker
+         run: node ./scripts/realworld-truth.mjs || echo "realworld-truth failed"
+       - name: Commit and push changes

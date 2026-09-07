@@ -208,7 +208,7 @@ async function tryTransition(
     patch: opts.patch,
     ledger: opts.ledger,
   });
-  if (!res.ok) return { ok: false, error: res.error };
+  if (res.ok === false) return { ok: false, error: res.error };
   payout.status = to;
   payout.version = res.newVersion;
   return { ok: true };
@@ -322,7 +322,7 @@ export async function advancePayout(
       // never double-submit (version CAS on READY -> SUBMITTING).
       const claim = await tryTransition(store, payout, 'SUBMITTING', 'system',
         'dispatch claim');
-      if (!claim.ok) return out('error', null, claim.error);
+      if (claim.ok === false) return out('error', null, claim.error);
 
       try {
         const result = await provider.submit({
