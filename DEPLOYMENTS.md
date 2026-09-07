@@ -4,6 +4,21 @@ This is the canonical registry of live swarm/base44 deployments. The actual reve
 machinery is deployed as Base44 apps (`*.base44.app`) fronted by `space-z.ai` public URLs,
 plus the Vercel supply-chain front-end.
 
+## 2026-09-07 — OWNER HANDS-FREE PAYOUT POLICY (supersedes the manual-approval contract)
+
+**Owner directive:** "owner hands-free policy applies" — the per-payout manual-approval gate is REMOVED. Payouts run end-to-end automatically through the event-driven state machine. Guardrails stay fail-closed.
+
+**Exactly ONE engine remains** (the earlier "driver coexistence contract" — autonomous tick + manual approval path — is superseded; `src/payout/dispatch.ts` + `src/payout/reconcile.ts` from commit cc3ad3d were RETIRED because their divergent settlement-booking key risked double-booked ledger lines):
+
+- `src/payout/pipeline.ts` + `POST /api/payouts/tick` (x-tick-secret gated, fail-closed without `PAYOUT_TICK_SECRET`) — drives CREATED→ELIGIBLE→RESERVED→VALIDATED→READY→SUBMITTING→SUBMITTED→PROCESSING→COMPLETED→RECONCILED, including dispatch from READY. Bounded per call (`PAYOUT_TICK_LIMIT`, default 50).
+- `scripts/payout-ops.ts` — thin ops window over the SAME engine: `status` / `tick [--limit N]` / `advance --id`. No divergent logic.
+
+Fail-closed guardrails (unchanged): SWARM_LIVE + per-rail gates (PayPal: `PAYPAL_PPP2_APPROVED` + `PAYPAL_PPP2_ENABLE_SEND` + credentials) required for any real send — otherwise RETRYABLE_FAILURE, provably nothing sent. Caps: per-payout max, rolling-24h settled-per-currency, daily failed-submit throttle. UNKNOWN never re-submits (provider reconciliation or quarantine only). Settlement booked only on provider evidence, idempotent key `payout:<id>:SETTLED`, same transaction as COMPLETED→RECONCILED.
+
+Commit: consolidation + retirement (Space-Z/SecretScan green, 115/115 tests, tsc clean).
+
+**To make it run hourly (owner actions):** set `PAYOUT_TICK_SECRET` (and optionally `PAYOUT_TICK_LIMIT`) in the deployment env, then schedule `POST /api/payouts/tick` hourly (GitHub Actions step — my token lacks `workflow` scope, owner applies — or z.ai cron). Until SWARM_LIVE + rail credentials are enabled, the tick runs the full machine but every submit fails closed: no money can move by automation.
+
 ## Settlement-gap P2 — payout execution + reconciliation live (2026-09-07, verified)
 
 Pushed to `main` as `cc3ad3d`; CI: **Space-Z green, Secret Scan green** (Vercel-token + multi-platform failures remain known-benign). 31/31 payout tests, tsc clean under repo `strict:false`.
