@@ -1,35 +1,38 @@
 /**
- * payout-ops — MANUAL payout lifecycle CLI (settlement-gap P2, 2026-09-07).
+ * payout-ops — payout lifecycle CLI over the SINGLE pipeline engine.
+ * Owner hands-free payout policy (2026-09-07): no per-payout manual approval;
+ * the event-driven state machine advances payouts through legal transitions
+ * only, inside the fail-closed guardrails:
  *
- * The single sanctioned way to drive a payout beyond RESERVED:
+ *   - SWARM_LIVE + per-rail gates (e.g. PayPal PPP2_APPROVED + PPP2_ENABLE_SEND
+ *     + credentials) decide whether anything REAL can be sent. Missing =>
+ *     LivePathUnavailableError => RETRYABLE_FAILURE (provably nothing sent).
+ *   - Caps: max per-payout, rolling-24h settled per currency, daily failed-
+ *     submit throttle. UNKNOWN NEVER re-submits (reconciliation/quarantine only).
  *
- *   1. prepare   RESERVED -> VALIDATED -> READY   (owner approval REQUIRED)
- *   2. dispatch  READY -> SUBMITTING -> SUBMITTED  (fail-closed live gate)
- *   3. reconcile SUBMITTED/PROCESSING/UNKNOWN/COMPLETED -> RECONCILED
- *               (provider truth only; books the settlement ledger line)
- *   4. status    read-only counts (ids/amounts stay out of stdout)
+ * Commands:
+ *   status            — counts by status (read-only)
+ *   tick [--limit N]  — one bounded pipeline pass (same as POST /api/payouts/tick)
+ *   advance --id ID   — advance ONE payout a single legal transition
  *
- * No daemon. No cron. No auto-approval. Every mutation names its actor and
- * lands as an immutable PayoutEvent. If DATABASE_URL is absent the tool
- * degrades to usage text without touching anything.
- *
- * Usage:
- *   npx tsx scripts/payout-ops.ts status
- *   npx tsx scripts/payout-ops.ts prepare   --id <payoutId> --by "<owner name>" --reason "<why>"
- *   npx tsx scripts/payout-ops.ts dispatch  --id <payoutId>
- *   npx tsx scripts/payout-ops.ts reconcile --id <payoutId>
- *   npx tsx scripts/payout-ops.ts reconcile --all
+ * The hourly automation is the deployed tick endpoint (POST /api/payouts/tick,
+ * x-tick-secret gated); this CLI is the manual ops window into the SAME engine.
  */
 
-import { preparePayout, dispatchPayout, type DispatchPrismaClient, type DispatchPayoutRow } from '../src/payout/dispatch';
-import { advancePayoutReconciliation, reconcileAllPayouts, type ReconcileDeps } from '../src/payout/reconcile';
+import { runPayoutTick, advancePayout, type PipelineConfig } from '../src/payout/pipeline';
+import { createPrismaPayoutStore } from '../src/payout/prisma-driver';
+import {
+  getProviderForDestination,
+  type DestinationType,
+  type PayoutProvider,
+} from '../src/payout/provider';
+import { LivePayPalPayoutProvider } from '../src/payout/adapters/paypal-live';
+import { createHash } from 'node:crypto';
 
 interface Args {
   command?: string;
   id?: string;
-  by?: string;
-  reason?: string;
-  all?: boolean;
+  limit?: number;
 }
 
 function parseArgs(argv: string[]): Args {
@@ -39,112 +42,135 @@ function parseArgs(argv: string[]): Args {
   while (rest.length) {
     const a = rest.shift();
     if (a === '--id') out.id = rest.shift();
-    else if (a === '--by') out.by = rest.shift();
-    else if (a === '--reason') out.reason = rest.shift();
-    else if (a === '--all') out.all = true;
+    else if (a === '--limit') out.limit = Number(rest.shift());
   }
   return out;
 }
 
-function usage(): string {
-  return __doc__.join('\n');
-}
-const __doc__ = [
-  'usage: npx tsx scripts/payout-ops.ts <status|prepare|dispatch|reconcile> [flags]',
-  '  status                              — counts by status (read-only)',
-  '  prepare --id ID --by NAME --reason R — RESERVED -> READY (manual approval)',
-  '  dispatch --id ID                    — READY -> SUBMITTED (fail-closed live gate)',
-  '  reconcile --id ID | --all           — advance toward RECONCILED on provider truth',
+const USAGE = [
+  'usage: npx tsx scripts/payout-ops.ts <status|tick|advance> [flags]',
+  '  status            — payout counts by status (read-only)',
+  '  tick [--limit N]  — one bounded pipeline pass (bounded, fail-closed rails)',
+  '  advance --id ID   — advance ONE payout a single legal transition',
 ];
+
+function envIsTrue(v: string | undefined): boolean {
+  return v === 'true' || v === '1';
+}
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  if (!args.command || !['status', 'prepare', 'dispatch', 'reconcile'].includes(args.command)) {
-    console.log(usage());
+  if (!args.command || !['status', 'tick', 'advance'].includes(args.command)) {
+    console.log(USAGE.join('\n'));
     process.exit(0);
   }
+  await run(args);
+}
+
+async function run(args: Args) {
   if (!process.env.DATABASE_URL) {
     console.log('DATABASE_URL not set — nothing to operate on (graceful skip).');
-    console.log(usage());
+    console.log(USAGE.join('\n'));
     process.exit(0);
   }
 
   const { PrismaClient } = (await import('@prisma/client')) as {
-    PrismaClient: new () => DispatchPrismaClient & {
-      revenueLedgerEntry: ReconcileDeps['ledger'];
-      $connect(): Promise<void>;
-      $disconnect(): Promise<void>;
-    };
+    PrismaClient: new () => any;
   };
   const prisma = new PrismaClient();
   await prisma.$connect();
 
   try {
     if (args.command === 'status') {
-      const rows: DispatchPayoutRow[] = await prisma.payout.findMany({});
+      const rows = await prisma.payout.findMany({});
       const byStatus: Record<string, number> = {};
       for (const r of rows) byStatus[r.status] = (byStatus[r.status] || 0) + 1;
       console.log('payouts by status:', JSON.stringify(byStatus));
-      const flagged = rows.filter((r) => r.reconciliationStatus === 'RECONCILIATION_REQUIRED').length;
-      console.log('reconciliation REQUIRED (UNKNOWN/unpollable):', flagged);
+      const flagged = rows.filter((r: any) => r.reconciliationStatus === 'RECONCILIATION_REQUIRED').length;
+      const evidence = rows.filter((r: any) => r.reconciliationStatus === 'EVIDENCE_PENDING').length;
+      console.log('reconciliation REQUIRED:', flagged, '| EVIDENCE_PENDING:', evidence);
       process.exit(0);
     }
 
-    if (args.command === 'prepare') {
-      if (!args.id || !args.by) {
-        console.log('prepare requires --id and --by (owner approval signature)');
-        process.exit(1);
-      }
-      const res = await preparePayout(args.id, {
-        approvedBy: args.by,
-        approvalReason: args.reason || 'manual approval via payout-ops',
-      }, { prisma });
-      if (res.ok === true) {
-        console.log(`OK: payout ${res.payoutId} is READY (v${res.version}) — dispatch when ready`);
-      } else {
-        console.log(`REFUSED: ${res.error}`);
-        process.exit(1);
-      }
+    const store = createPrismaPayoutStore(prisma);
+    const providers = buildProviders(prisma);
+    const config: PipelineConfig = { providers };
+
+    if (args.command === 'tick') {
+      const limit = Number.isFinite(args.limit) ? args.limit! : 50;
+      const report = await runPayoutTick(store, config, limit);
+      console.log('tick report:', JSON.stringify(report));
       process.exit(0);
     }
 
-    if (args.command === 'dispatch') {
-      if (!args.id) {
-        console.log('dispatch requires --id');
-        process.exit(1);
-      }
-      const res = await dispatchPayout(args.id, { prisma });
-      if (res.ok === true) {
-        console.log(`OK: SUBMITTED via provider request ${res.providerRequestId} — reconcile to confirm`);
-      } else {
-        console.log(`${res.status ? `[${res.status}] ` : ''}REFUSED: ${res.error}`);
-        process.exit(1);
-      }
-      process.exit(0);
+    // advance --id
+    if (!args.id) {
+      console.log('advance requires --id');
+      process.exit(1);
     }
-
-    if (args.command === 'reconcile') {
-      if (args.all) {
-        const summary = await reconcileAllPayouts({ prisma, ledger: prisma.revenueLedgerEntry });
-        console.log(`reconcile sweep: checked ${summary.checked}, advanced ${summary.advanced}, flagged ${summary.flagged}, errors ${summary.errors}`);
-        process.exit(0);
-      }
-      if (!args.id) {
-        console.log('reconcile requires --id or --all');
-        process.exit(1);
-      }
-      const res = await advancePayoutReconciliation(args.id, { prisma, ledger: prisma.revenueLedgerEntry });
-      if (res.ok === true) {
-        console.log(`OK: ${res.from} -> ${res.to} (${res.verdict})`);
-      } else {
-        console.log(`${res.flagged ? '[FLAGGED] ' : ''}${res.error}`);
-        process.exit(res.flagged ? 2 : 1);
-      }
-      process.exit(0);
-    }
+    const out = await advancePayout(store, config, args.id);
+    console.log('advance outcome:', JSON.stringify(out));
+    process.exit(0);
   } finally {
     await prisma.$disconnect();
   }
+}
+
+/** Same fail-closed provider wiring as the deployed tick endpoint. */
+function buildProviders(prisma: any): PipelineConfig['providers'] {
+  const live =
+    envIsTrue(process.env.SWARM_LIVE) &&
+    envIsTrue(process.env.PAYPAL_PPP2_APPROVED) &&
+    envIsTrue(process.env.PAYPAL_PPP2_ENABLE_SEND) &&
+    Boolean(process.env.PAYPAL_CLIENT_ID) &&
+    Boolean(process.env.PAYPAL_CLIENT_SECRET);
+  const config = {
+    live,
+    liveConfig: {
+      PAYPAL_CLIENT_ID: process.env.PAYPAL_CLIENT_ID,
+      PAYPAL_CLIENT_SECRET: process.env.PAYPAL_CLIENT_SECRET,
+      PAYPAL_PAYOUTS_API_BASE: process.env.PAYPAL_PAYOUTS_API_BASE ?? 'https://api-m.paypal.com',
+      BANK_RAIL_API_KEY: process.env.BANK_RAIL_API_KEY,
+      BANK_RAIL_ACCOUNT_ID: process.env.BANK_RAIL_ACCOUNT_ID,
+    },
+  };
+
+  async function resolvePayPalDestination(fingerprint: string): Promise<string> {
+    const accounts = await prisma.ownerAccount.findMany({
+      where: { isActive: true, paypalEmail: { not: null } },
+      select: { paypalEmail: true },
+    });
+    for (const a of accounts) {
+      const email: string | null = a.paypalEmail;
+      if (!email) continue;
+      if (createHash('sha256').update(email.trim().toLowerCase()).digest('hex') === fingerprint) {
+        return email;
+      }
+    }
+    throw new Error(`no active owner account matches destination fingerprint ${fingerprint}`);
+  }
+
+  const livePayPal = live
+    ? new LivePayPalPayoutProvider(config as never, {
+        apiBase: config.liveConfig.PAYPAL_PAYOUTS_API_BASE as string,
+        clientId: process.env.PAYPAL_CLIENT_ID as string,
+        clientSecret: process.env.PAYPAL_CLIENT_SECRET as string,
+        resolveDestination: resolvePayPalDestination,
+      })
+    : null;
+
+  return (destinationType: DestinationType): PayoutProvider | null => {
+    switch (destinationType) {
+      case 'paypal':
+        return livePayPal ?? getProviderForDestination('paypal', config as never);
+      case 'bank':
+        return getProviderForDestination('bank', config as never);
+      case 'crypto':
+        return getProviderForDestination('crypto', config as never);
+      default:
+        return null;
+    }
+  };
 }
 
 main().catch((err) => {
