@@ -155,7 +155,7 @@ export class PayPalPayoutProvider extends BasePayoutProvider {
     super('paypal', 'paypal', config);
   }
 
-  protected async submitLive(): Promise<ProviderSubmissionResult> {
+  protected async submitLive(_submission: ProviderSubmission): Promise<ProviderSubmissionResult> {
     this.assertLiveConfigured(['PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET', 'PAYPAL_PAYOUTS_API_BASE']);
     // P2: real POST to the payouts API with the Idempotency-Key header.
     throw new LivePathUnavailableError(
@@ -164,7 +164,7 @@ export class PayPalPayoutProvider extends BasePayoutProvider {
     );
   }
 
-  protected async fetchStatusLive(): Promise<ProviderStatusResult> {
+  protected async fetchStatusLive(_providerRequestId: string): Promise<ProviderStatusResult> {
     this.assertLiveConfigured(['PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET', 'PAYPAL_PAYOUTS_API_BASE']);
     throw new LivePathUnavailableError(this.name, 'live PayPal status polling lands with P2 dispatch');
   }
@@ -180,12 +180,12 @@ export class BankWirePayoutProvider extends BasePayoutProvider {
     super('bankwire', 'bank', config);
   }
 
-  protected async submitLive(): Promise<ProviderSubmissionResult> {
+  protected async submitLive(_submission: ProviderSubmission): Promise<ProviderSubmissionResult> {
     this.assertLiveConfigured(['BANK_RAIL_API_KEY', 'BANK_RAIL_ACCOUNT_ID']);
     throw new LivePathUnavailableError(this.name, 'live bank-wire wiring lands with P2 dispatch');
   }
 
-  protected async fetchStatusLive(): Promise<ProviderStatusResult> {
+  protected async fetchStatusLive(_providerRequestId: string): Promise<ProviderStatusResult> {
     this.assertLiveConfigured(['BANK_RAIL_API_KEY', 'BANK_RAIL_ACCOUNT_ID']);
     throw new LivePathUnavailableError(this.name, 'live bank-wire polling lands with P2 dispatch');
   }
@@ -200,12 +200,12 @@ export class CryptoPayoutProvider extends BasePayoutProvider {
     super('crypto', 'crypto', config);
   }
 
-  protected async submitLive(): Promise<ProviderSubmissionResult> {
+  protected async submitLive(_submission: ProviderSubmission): Promise<ProviderSubmissionResult> {
     this.assertLiveConfigured(['CRYPTO_SIGNING_POLICY', 'CRYPTO_HOT_WALLET_REF']);
     throw new LivePathUnavailableError(this.name, 'live crypto signing lands with P2 dispatch');
   }
 
-  protected async fetchStatusLive(): Promise<ProviderStatusResult> {
+  protected async fetchStatusLive(_providerRequestId: string): Promise<ProviderStatusResult> {
     this.assertLiveConfigured(['CRYPTO_SIGNING_POLICY', 'CRYPTO_HOT_WALLET_REF']);
     throw new LivePathUnavailableError(this.name, 'live crypto confirmation lands with P2 dispatch');
   }
