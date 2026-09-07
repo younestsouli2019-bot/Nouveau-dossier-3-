@@ -551,3 +551,23 @@ Nothing executed beyond RESERVED. Ever.
 **Ops:** point the hourly cycle at `POST /api/payouts/tick` with header
 `x-tick-secret: $PAYOUT_TICK_SECRET`. Nothing else is required; the tick is
 bounded (default 50 payouts/call) and idempotent.
+
+## 2026-09-07 — Driver coexistence contract (pipeline.ts + dispatch/reconcile)
+
+Two payout execution modules now exist side by side. Contract so there is
+never ambiguity about who drives what:
+
+- **`src/payout/pipeline.ts` + `POST /api/payouts/tick` — the autonomous hourly
+  engine** (owner-mandated hands-free settlement). Drives the full lifecycle
+  CREATED→…→RECONCILED including dispatch from READY. Live rails stay
+  fail-closed (SWARM_LIVE + PPP2 gates + credentials) and live PayPal is wired
+  via `adapters/paypal-live.ts` (Idempotency-Key deduped).
+- **`src/payout/dispatch.ts` + `src/payout/reconcile.ts` — the manual/approval
+  path** (owner-actor approval signature required before dispatch from READY).
+  Not wired to any endpoint; reserved for owner-approval flows.
+
+Double-execution is structurally impossible: both paths dispatch only from
+READY behind the same optimistic version CAS — one claim wins, the other
+refuses — and both dedupe on the payout idempotencyKey at the provider seam.
+The tick and the approval path may coexist; they never race into a second
+money movement.
