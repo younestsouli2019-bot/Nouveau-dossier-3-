@@ -1,0 +1,115 @@
+diff --git a/.github/workflows/autonomous-scheduler.yml b/.github/workflows/autonomous-scheduler.yml
+index 6ac6755..3389e39 100644
+--- a/.github/workflows/autonomous-scheduler.yml
++++ b/.github/workflows/autonomous-scheduler.yml
+@@ -146,6 +146,26 @@ jobs:
+         continue-on-error: true
+         run: |
+           node ./scripts/swarm-clickless-tick.mjs || echo "clickless tick exit≠0 (non-fatal)"
++      - name: Settlement watchdog (diagnose-only, no money movement)
++        continue-on-error: true
++        run: |
++          npx tsx ./scripts/run-watchdogs.ts || echo "watchdog tick exit≠0 (non-fatal)"
++      - name: Hands-free payout pipeline tick (fail-closed, state-machine-only)
++        continue-on-error: true
++        env:
++          PAYOUT_TICK_URL: ${{ secrets.PAYOUT_TICK_URL }}
++          PAYOUT_TICK_SECRET: ${{ secrets.PAYOUT_TICK_SECRET }}
++        run: |
++          TICK_URL="${PAYOUT_TICK_URL:-${VERCEL_PROJECT_URL:-}}"
++          if [ -z "$TICK_URL" ] || [ -z "${PAYOUT_TICK_SECRET:-}" ]; then
++            echo "PAYOUT_TICK_URL/PAYOUT_TICK_SECRET not configured — payout tick skipped (fail-closed, nothing moves)."
++            exit 0
++          fi
++          curl -sf --max-time 90 -X POST \
++            -H "x-tick-secret: ${PAYOUT_TICK_SECRET}" \
++            -H "Content-Type: application/json" \
++            "https://${TICK_URL#https://}/api/payouts/tick" \
++            && echo "payout tick OK" || echo "payout tick unreachable (non-fatal)"
+       - name: Health readiness ping (real route)
+         continue-on-error: true
+         run: |
+diff --git a/.github/workflows/devops-self-healing.yml b/.github/workflows/devops-self-healing.yml
+new file mode 100644
+index 0000000..b87f3a2
+--- /dev/null
++++ b/.github/workflows/devops-self-healing.yml
+@@ -0,0 +1,78 @@
++name: DevOps Self-Healing
++on:
++  workflow_dispatch:
++  schedule:
++    - cron: "0 * * * *"
++permissions:
++  contents: write
++  actions: read
++concurrency:
++  group: devops-self-healing
++  cancel-in-progress: false
++jobs:
++  scan-and-repair:
++    runs-on: ubuntu-latest
++    timeout-minutes: 10
++    steps:
++      - uses: actions/checkout@v5
++        with:
++          fetch-depth: 0
++          # PAT with repo+workflow scope so repair COMMITS of workflow files
++          # can push (GITHUB_TOKEN is refused for workflow-file updates).
++          # Falls back to github.token when the secret is absent — scan,
++          # triage, and alert still work; repair pushes will be rejected.
++          token: ${{ secrets.SELF_HEALING_TOKEN || secrets.GITHUB_PAT_WORKFLOW_SCOPE || github.token }}
++      - uses: actions/setup-node@v5
++        with:
++          node-version: "24"
++          cache: "npm"
++      - name: Install dependencies (with retries)
++        continue-on-error: true
++        run: |
++          set +euo pipefail
++          n=0
++          until [ $n -ge 3 ]
++          do
++            npm ci && RC=0 && break || RC=$?
++            n=$((n+1))
++            echo "::warning::npm ci rc=$RC — retry $n/3"
++            sleep 5
++          done
++          exit 0
++      - name: Static Engine — pre-flight workflow sanitization (blocking)
++        run: |
++          npx tsx ./scripts/devops-self-healing.ts sanitize --check .github/workflows
++      - name: Dynamic Engine — control-plane deadlock scan + repair + circuit breaker
++        id: heal
++        continue-on-error: true
++        env:
++          GH_TOKEN: ${{ github.token }}
++          REPOSITORY: ${{ github.repository }}
++          SELF_HEAL_ALERT_WEBHOOK: ${{ secrets.SELF_HEAL_ALERT_WEBHOOK }}
++          SELF_HEALING_TOKEN: ${{ secrets.SELF_HEALING_TOKEN || secrets.GITHUB_PAT_WORKFLOW_SCOPE }}
++        run: |
++          set +e
++          OUT=$(npx tsx ./scripts/devops-self-healing.ts heal 2>&1)
++          RC=$?
++          echo "$OUT"
++          echo "rc=$RC" >> "$GITHUB_OUTPUT"
++          exit 0
++      - name: Persist breaker state + commit repairs (if any)
++        run: |
++          git config user.name "github-actions[bot]"
++          git config user.email "github-actions[bot]@users.noreply.github.com"
++          if [ -f logs/devops-self-healing/state.json ]; then git add -A logs/devops-self-healing; fi
++          if git diff --cached --quiet && ! git diff --quiet; then
++            # workflow-file repairs are unstaged by design — stage them explicitly
++            git add -A .github/workflows
++          fi
++          if ! git diff --cached --quiet; then
++            git commit -m "self-healing: repair duplicate child concurrency deadlock hazard (engine-generated)"
++            git push origin HEAD:${{ github.ref_name }} || echo "push rejected — repairs remain staged for owner review"
++          else
++            echo "No repairs made this cycle."
++          fi
++      - name: Circuit-breaker escalation (engine-level malfunction)
++        if: steps.heal.outputs.rc == '1'
++        run: |
++          echo "::error::DevOps self-healing could not fully repair (rc=1). If breaker state shows >3 consecutive triggers, an engine-level malfunction is in progress — see logs/devops-self-healing/state.json and the emergency channel alert."
