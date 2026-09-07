@@ -24,7 +24,10 @@
 # Idempotent: if you already applied the v1 combined scheduler patch, this
 # script detects it and applies with `--3way` merge so only the new parts land.
 #
-# Optional repo Actions secret afterwards:
+# Optional repo Actions secrets afterwards:
+#   SELF_HEALING_TOKEN (or GITHUB_PAT_WORKFLOW_SCOPE) — PAT with repo+workflow
+#   scope so the hourly loop can PUSH workflow-file repairs autonomously.
+#   Without it: scan/triage/alert work, repair pushes are rejected by GitHub.
 #   SELF_HEAL_ALERT_WEBHOOK — emergency webhook (Slack/Discord/custom) that
 #   fires when the circuit breaker trips (engine-level malfunction alert).
 #
@@ -70,9 +73,13 @@ echo "  git add .github/workflows/"
 echo "  git commit -m 'ci(devops): self-healing v2 — static-engine deadlock repairs, scheduler steps, hourly self-healing loop'"
 echo "  git push origin main"
 echo ""
-echo "Optional: set repo Actions secret SELF_HEAL_ALERT_WEBHOOK (emergency"
-echo "channel for circuit-breaker trips). The self-healing workflow starts on"
-echo "its next hourly cron automatically."
+echo "Optional repo Actions secrets (self-healing wiring):"
+echo "  SELF_HEALING_TOKEN (or GITHUB_PAT_WORKFLOW_SCOPE) — PAT with"
+echo "    repo+workflow scope so the hourly loop can PUSH workflow-file"
+echo "    repairs autonomously (GitHub refuses GITHUB_TOKEN for workflow"
+echo "    file updates; without it: scan/triage/alert still work)."
+echo "  SELF_HEAL_ALERT_WEBHOOK — emergency channel for breaker trips."
+echo "The self-healing workflow starts on its next hourly cron automatically."
 echo ""
 echo "Install the local pre-commit guard (Static Engine at commit time):"
 echo "  git config core.hooksPath .githooks"
