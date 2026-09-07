@@ -586,3 +586,18 @@ READY behind the same optimistic version CAS — one claim wins, the other
 refuses — and both dedupe on the payout idempotencyKey at the provider seam.
 The tick and the approval path may coexist; they never race into a second
 money movement.
+
+## 2026-09-07 — REMOVED ungated duplicate crypto-withdraw workflow (main.yml, commit "xctut")
+
+The commit "xctut" added `.github/workflows/main.yml` — a live Binance USDT
+withdrawal trigger that duplicated `owner-crypto-withdraw.yml` while stripping
+EVERY safety gate: no CRYPTO_WITHDRAW_ENABLE fail-closed switch, no
+CRYPTO_ALLOWED_ADDRESSES allowlist, no audit-only mode, no amount validation,
+unmasked logs, and a 30-day PUBLIC artifact of withdrawal results on a public
+repository. This violates the settlement constitution (fail-closed, gated
+disbursement) and the secret-exfiltration mandate.
+
+The hardened `owner-crypto-withdraw.yml` already provides the same
+workflow_dispatch capability WITH all gates intact (allowlist, enable switch,
+audit-only, log masking). Anyone needing the withdraw button should use that
+one. If main.yml was intentional, re-land it WITH the gates — never without.
