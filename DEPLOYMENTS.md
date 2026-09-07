@@ -4,6 +4,20 @@ This is the canonical registry of live swarm/base44 deployments. The actual reve
 machinery is deployed as Base44 apps (`*.base44.app`) fronted by `space-z.ai` public URLs,
 plus the Vercel supply-chain front-end.
 
+## Settlement-gap P2 — payout execution + reconciliation live (2026-09-07, verified)
+
+Pushed to `main` as `cc3ad3d`; CI: **Space-Z green, Secret Scan green** (Vercel-token + multi-platform failures remain known-benign). 31/31 payout tests, tsc clean under repo `strict:false`.
+
+Payouts now run **beyond RESERVED to fully executed** — the gap where the P0/P1 state machine and provider seam existed but nothing drove `RESERVED -> ... -> RECONCILED` is closed:
+
+- `src/payout/dispatch.ts` — the ONLY READY→submission path. `preparePayout` (RESERVED→VALIDATED→READY) requires a named manual approver BEFORE any transition (fail-closed; holds/fingerprint/amount pre-flight). `dispatchPayout` (READY→SUBMITTING→SUBMITTED) records provider refs atomically (optimistic version + PayoutEvent in one transaction); live-gate miss = provably nothing sent → RETRYABLE_FAILURE; ambiguous outcome → UNKNOWN + RECONCILIATION_REQUIRED, never retried by construction; in-flight payouts are refused re-dispatch (idempotent).
+- `src/payout/reconcile.ts` — the ONLY SUBMITTED→RECONCILED path. Advances strictly on provider-reported truth: SUBMITTED→PROCESSING→COMPLETED, UNKNOWN resolves only to COMPLETED or QUARANTINED (never READY), unpollable payouts flagged for provider-side history pull. **Only reconciliation books settlement**: COMPLETED books the idempotent `PAYOUT_SETTLED` RevenueLedgerEntry (`payout-settled:<id>` key, crash-safe), then → RECONCILED.
+- `scripts/payout-ops.ts` — MANUAL lifecycle CLI: `status` / `prepare --id --by --reason` / `dispatch --id` / `reconcile --id|--all`. No daemon, no cron, no auto-approval. Graceful skip without DATABASE_URL.
+
+Owner runbook (per payout): `prepare` (your approval signature) → `dispatch` (fail-closed live gate; SWARM_LIVE stays off until you flip it) → `reconcile --all` (books provider truth). The state machine guarantees: exactly-once submission (idempotencyKey + READY-only dispatch), no blind retries (UNKNOWN never loops to READY), settlement only on provider evidence.
+
+**Still gated/P3:** live provider REST wiring (PayPal/Bank/Crypto submitLive/fetchStatusLive bodies — currently fail-closed stubs), provider-side history API pulls, prisma `db push` for Payout models at next deploy.
+
 ## External settlement audit response (2026-09-07) — cron chain removed, mirror cleanup v2
 
 An external audit of the PUBLIC MIRROR (www-realworldcerts-com, master) flagged five P0-stop behaviors. Verdict per repo:
