@@ -120,9 +120,6 @@ jobs:
     needs: guardrails
     runs-on: ubuntu-latest
     environment: payouts
-    concurrency:
-      group: owner-payout
-      cancel-in-progress: false
     env:
       SWARM_LIVE: "true"
       PAYPAL_MODE: "live"
