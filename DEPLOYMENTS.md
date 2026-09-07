@@ -689,3 +689,56 @@ alerts — but cannot push repairs; the static gate + owner-apply patch are the
 repair paths. The workflow `devops-self-healing.yml` should map the repair
 token secret as `SELF_HEALING_TOKEN: ${{ secrets.SELF_HEALING_TOKEN ||
 secrets.GITHUB_PAT_WORKFLOW_SCOPE }}`.
+
+## 2026-09-07 — PRODUCTION-COMPLETENESS LOCKDOWN (self-healing hardening)
+
+Per architecture review, the blueprint is hardened as follows:
+
+1. **Canonical engines.** TS implementation (`src/devops/*` + `npx tsx`
+   scripts, typed + 207-line test suite) is canonical and powers the committed
+   workflow. The dependency-free `.mjs` engines
+   (`lint-workflow-concurrency.mjs`, `devops-self-healing.mjs`) are the
+   emergency / pre-`npm ci` path (pre-commit hooks, manual repair, CI gate
+   without install).
+
+2. **Durable circuit breaker.** Breaker state persists in a pinned GitHub
+   issue ("SWARM SELF-HEALING — circuit breaker state", labels
+   `self-healing,state`), updated every cycle — survives runner death.
+   The old `out/self-healing/state.json` is only a local cache (`out/` is
+   gitignored; a runner-local file alone is not durable).
+
+3. **The repairman never repairs its own safety controls.**
+   `PROTECTED_FILES` (the healer workflow) is never auto-modified —
+   violations there escalate to an OWNER-APPROVAL issue instead.
+   A repair-safety assertion additionally aborts any repair whose diff
+   would remove anything other than `concurrency:`/`group:`/
+   `cancel-in-progress:` lines (SAFETY ABORT). Changes to permissions or
+   payment authorization are outside the repairman's vocabulary entirely.
+
+4. **Payment execution stays separate.** The healer restores pipes; it never
+   decides money is payable. Invariant I2 (below) enforces: healer run steps
+   must not reference payout/withdraw/disburse execution.
+
+5. **Post-repair invariant gate — `scripts/verify-swarm-invariants.mjs`:**
+   - I1: zero concurrency self-deadlocks repo-wide (the "same-name
+     concurrency groups = auto-fail" rule as a REPOSITORY-WIDE INVARIANT)
+   - I2: healer present, concurrency-safe, payment-free
+   - I3: payment gates intact (crypto WITHDRAW_ENABLE + allowlist + audit
+     path; PayPal guardrails + safe!=1; scheduler tick fail-closed on
+     PAYOUT_TICK_SECRET)
+   - I4: no payment-critical step carries `continue-on-error` (the
+     settlement watchdog is diagnose-only BY DESIGN and exempt)
+   - I5: Node engine floor pinned (package.json engines.node >= 20)
+   The apply script runs this gate automatically post-patch and aborts on
+   failure. Exit 0 = safe to proceed down the settlement sequence.
+
+6. **Bootstrap manifests.** `apply-owner-workflows-v2.sh` now emits
+   `bootstrap-before.json` / `bootstrap-after.json` per workflow:
+   workflow, concurrency_group, cancel_in_progress, deadlock_signature,
+   changed, sha256_before, sha256_after, static_gate — cryptographic
+   evidence the patch changed only the intended blocks.
+
+**Unlock sequence (gating order):** bootstrap → re-run static/dynamic tests
+→ resolve the control-plane 502 → audit-only settlement → reconcile provider
+state → first bounded live payout. No step may run before its predecessor
+holds.
