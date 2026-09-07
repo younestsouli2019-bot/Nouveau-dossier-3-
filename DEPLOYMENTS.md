@@ -504,3 +504,36 @@ The following items cannot be performed from the repository sandbox (they requir
 - **MMB / CMI card:** fund an Attijari Mobile Money wallet or use a CMI debit card in the owner's name; we will then route Bachir POs through it first (June-20 deadline orders).
 
 Once items 1 + 2 + 5 (at least one rail) are set, please notify me and I'll: trigger the deploy workflow, run the 4-step procurement pipeline (Bachir first), then push to settle-and-payout the first externally-proved HIT Swarm revenue to the 5 preset owner accounts.
+
+## 2026-09-07 — Payout pipeline driver live (P0/P1 close-out)
+
+**Problem closed:** the state machine, ledger, eligibility engine and provider
+seam existed but had NO driver — payouts reserved funds (RESERVED) and stalled.
+Nothing executed beyond RESERVED. Ever.
+
+**Landed:**
+- `src/payout/pipeline.ts` — the driver. Advances every drivable payout one
+  legal transition per tick: CREATED→ELIGIBLE (hold check) →RESERVED (ledger
+  reservation, derived-balance guard) →VALIDATED (fingerprint/idempotency/caps)
+  →READY →SUBMITTING (version-CAS claim) →SUBMITTED (provider submit) →
+  PROCESSING →COMPLETED (provider evidence ONLY) →RECONCILED (settled ledger
+  line). Failure branches stay honest: ambiguous submit → UNKNOWN (never
+  re-submitted; resolves only via provider reconciliation or quarantine),
+  fail-closed rail → RETRYABLE_FAILURE, submit throttle 3/day, daily settle cap.
+- `src/payout/adapters/paypal-live.ts` — real PayPal Payouts API wiring (P2,
+  owner-authorized). Idempotency-Key = payout idempotencyKey (replays return
+  the same batch — never double pay). Destination fingerprints resolve to raw
+  emails ONLY inside the OwnerAccount boundary.
+- `src/payout/prisma-driver.ts` — transactional store: version CAS + immutable
+  PayoutEvent + idempotent RevenueLedgerEntry in ONE transaction.
+- `POST /api/payouts/tick` — hourly entry point. Fail-closed: requires
+  `PAYOUT_TICK_SECRET` header; live rails additionally require
+  `SWARM_LIVE` + `PAYPAL_PPP2_APPROVED` + `PAYPAL_PPP2_ENABLE_SEND` + creds;
+  otherwise providers run dry-run (honest UNKNOWN — never fabricated evidence).
+- `src/payout/__tests__/pipeline.test.ts` — 28/28 green: full happy path,
+  UNKNOWN-never-retried, crash-leftover SUBMITTING, quarantine actors,
+  fail-closed submit, reservation integrity, version CAS.
+
+**Ops:** point the hourly cycle at `POST /api/payouts/tick` with header
+`x-tick-secret: $PAYOUT_TICK_SECRET`. Nothing else is required; the tick is
+bounded (default 50 payouts/call) and idempotent.
