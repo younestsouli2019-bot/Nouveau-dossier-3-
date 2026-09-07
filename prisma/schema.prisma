@@ -861,3 +861,70 @@ model FundBucket {
   configHash    String?
   updatedAt     DateTime @updatedAt
 }
+
+// ── Durable payout state machine (settlement-gap P0, 2026-09-07) ─────────────
+// Architecture rule: INSTRUCTION ≠ SUBMISSION ≠ ACCEPTANCE ≠ SETTLEMENT ≠
+// RECONCILIATION. Balances are DERIVED from ledger entries — heldBalance /
+// spendableBalance buckets are never authoritative. Status may only change
+// through src/payout/state-machine.ts (assertTransition). UNKNOWN payouts
+// must never be blindly retried — they resolve via provider reconciliation
+// into COMPLETED or QUARANTINED only.
+
+model Payout {
+  id                     String        @id @default(cuid())
+  ownerAccountId         String?       // reference into OwnerAccount; raw destinations never stored here
+  settlementId           String?
+  currency               String        @default("USD")
+  grossAmount            Float
+  feeAmount              Float         @default(0)
+  netAmount              Float
+  destinationType        String // paypal | bank | crypto | payoneer
+  destinationFingerprint String // sha256 of destination — never raw IBAN/email/account number
+  idempotencyKey         String        @unique
+  status                 String        @default("CREATED") // legal values: src/payout/state-machine.ts PAYOUT_STATUSES
+  provider               String?
+  providerRequestId      String?
+  providerTransactionId  String?
+  reconciliationStatus   String        @default("PENDING") // PENDING | EVIDENCE_PENDING | RECONCILIATION_REQUIRED | RECONCILED | QUARANTINED
+  failureCode            String?
+  failureReason          String?
+  version                Int           @default(1) // optimistic concurrency guard for transitions
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+  submittedAt            DateTime?
+  acceptedAt             DateTime?
+  completedAt            DateTime?
+  failedAt               DateTime?
+  events                 PayoutEvent[]
+  holds                  PayoutHold[]
+}
+
+// Immutable history — append-only. Never update or delete a PayoutEvent.
+model PayoutEvent {
+  id         String   @id @default(cuid())
+  payoutId    String
+  payout      Payout   @relation(fields: [payoutId], references: [id])
+  fromStatus  String?
+  toStatus    String
+  actor       String   @default("system") // system | watchdog | owner | provider
+  reason      String?
+  evidence    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([payoutId, createdAt])
+}
+
+// Eligibility engine (section 18): every held amount has a reason and a
+// next review time — "held forever" is structurally impossible.
+model PayoutHold {
+  id           String    @id @default(cuid())
+  payoutId     String
+  payout       Payout    @relation(fields: [payoutId], references: [id])
+  holdReason   String // legal values: src/payout/eligibility.ts HOLD_REASONS
+  createdAt    DateTime  @default(now())
+  nextReviewAt DateTime
+  expiresAt    DateTime?
+  releasedAt   DateTime?
+
+  @@index([nextReviewAt])
+}
