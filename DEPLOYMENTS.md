@@ -4,6 +4,17 @@ This is the canonical registry of live swarm/base44 deployments. The actual reve
 machinery is deployed as Base44 apps (`*.base44.app`) fronted by `space-z.ai` public URLs,
 plus the Vercel supply-chain front-end.
 
+## Settlement-gap P1 — PayoutProvider seam + watchdog tick (2026-09-07, verified)
+
+Pushed to `main` as `af181d0`; CI: **Space-Z green, Secret Scan green** (Vercel-token + multi-platform failures remain known-benign). 15 unit tests, tsc clean.
+
+- `src/payout/provider.ts` — the ONLY seam between payout execution and external rails (PayPal / bank-wire / crypto). Invariants enforced in code: fingerprint-only destinations (raw IBAN/email/account numbers never cross the seam), fail-closed live gate (`LivePathUnavailableError` unless SWARM_LIVE + complete config), deterministic idempotent dry-run, and dry-run `fetchStatus` returns `UNKNOWN` forever — a dry run can never masquerade as settlement evidence. Live REST wiring lands with the gated P2 dispatch (PPP2 approval + manual fail-closed approval).
+- `src/payout/prisma-sources.ts` — read-only Prisma adapter feeding the Treasury watchdog: unreconciled payouts (`SUBMITTED`/`PROCESSING`/`UNKNOWN`, not `RECONCILED`), active holds, owner ledger. Legacy ledger rows map conservatively (`DEBIT+SETTLED → PAYOUT_SETTLED`, `DEBIT+AUTHORIZED → PAYOUT_RESERVED`, else `ADJUSTMENT`); payout-domain writers stamp `metadata.ledgerType` explicitly. Illegal legacy hold reasons coerce to `HELD_POLICY_REVIEW`.
+- `scripts/run-watchdogs.ts` — the settlement watchdog tick. **Diagnose-only: zero mutations, zero money movement.** Graceful skip without `DATABASE_URL`. Counts-only stdout (public CI logs carry no ids/amounts); detailed findings go to `reports/watchdog/` (gitignored, never committed).
+- Scheduler wiring: the one-step addition to the `autonomous-tick` job is prepared as `scheduler-watchdog-step-20260907.patch` — the agent PAT lacks `workflow` scope so GitHub rejects pushes touching `.github/workflows/*` (same limitation as previous sessions; a regenerated PAT with workflow scope fixes it permanently). The tick can also be run manually: `npx tsx ./scripts/run-watchdogs.ts`.
+
+**P2 (next):** live provider REST wiring behind the gated dispatch, provider-side reconciliation pulls (PayPal history API), prisma `db push` for the Payout models at next deploy.
+
 ## Settlement-gap P0 — durable payout state machine (2026-09-07, verified)
 
 Structural fix for the settlement gap (revenue → entitlement → payout instruction → external settlement → reconciliation had no durable owner between instruction and settlement). Implemented and pushed to `main` as `4ade092` + `81b416c`; CI: **Space-Z green, Secret Scan green** (Vercel-token + multi-platform failures remain known-benign).
