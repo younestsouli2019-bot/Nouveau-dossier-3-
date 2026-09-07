@@ -1,0 +1,31 @@
+diff --git a/.github/workflows/autonomous-scheduler.yml b/.github/workflows/autonomous-scheduler.yml
+index 67f6c0d..785fbfa 100644
+--- a/.github/workflows/autonomous-scheduler.yml
++++ b/.github/workflows/autonomous-scheduler.yml
+@@ -149,6 +149,26 @@ jobs:
+         continue-on-error: true
+         run: |
+           node ./scripts/swarm-clickless-tick.mjs || echo "clickless tick exit≠0 (non-fatal)"
++      - name: Settlement watchdog (diagnose-only, no money movement)
++        continue-on-error: true
++        run: |
++          npx tsx ./scripts/run-watchdogs.ts || echo "watchdog tick exit≠0 (non-fatal)"
++      - name: Hands-free payout pipeline tick (fail-closed, state-machine-only)
++        continue-on-error: true
++        env:
++          PAYOUT_TICK_URL: ${{ secrets.PAYOUT_TICK_URL }}
++          PAYOUT_TICK_SECRET: ${{ secrets.PAYOUT_TICK_SECRET }}
++        run: |
++          TICK_URL="${PAYOUT_TICK_URL:-${VERCEL_PROJECT_URL:-}}"
++          if [ -z "$TICK_URL" ] || [ -z "${PAYOUT_TICK_SECRET:-}" ]; then
++            echo "PAYOUT_TICK_URL/PAYOUT_TICK_SECRET not configured — payout tick skipped (fail-closed, nothing moves)."
++            exit 0
++          fi
++          curl -sf --max-time 90 -X POST \
++            -H "x-tick-secret: ${PAYOUT_TICK_SECRET}" \
++            -H "Content-Type: application/json" \
++            "https://${TICK_URL#https://}/api/payouts/tick" \
++            && echo "payout tick OK" || echo "payout tick unreachable (non-fatal)"
+       - name: Health readiness ping (real route)
+         continue-on-error: true
+         run: |
