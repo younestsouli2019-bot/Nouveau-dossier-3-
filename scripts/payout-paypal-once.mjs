@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { PayPalGateway } from "../src/financial/gateways/PayPalGateway.mjs";
 import { spawnSync } from "node:child_process";
+import { assertCapability } from "../src/finance/capabilities.mjs";
 
 function parseArgs(argv) {
 	const args = {};
@@ -28,6 +29,7 @@ async function main() {
 	const currency = String(
 		args.currency || process.env.PAYPAL_ONCE_CURRENCY || "USD",
 	).toUpperCase();
+	const confirm = args.confirm === true || args.confirm === "true";
 
 	const live =
 		String(process.env.SWARM_LIVE ?? "false").toLowerCase() === "true";
@@ -64,6 +66,24 @@ async function main() {
 		);
 		return;
 	}
+	const ownerEmail = String(process.env.OWNER_PAYPAL_EMAIL || "").trim();
+	if (!ownerEmail || email.toLowerCase() !== ownerEmail.toLowerCase()) {
+		console.log(
+			JSON.stringify({
+				ok: false,
+				error: "destination_not_owner_account",
+				hint: "PayPal payouts only to OWNER_PAYPAL_EMAIL",
+			}),
+		);
+		return;
+	}
+	if (confirm) {
+		const cap = assertCapability("WITHDRAW_FIAT");
+		if (!cap.ok) {
+			console.log(JSON.stringify({ ok: false, error: cap.error, note: cap.note }));
+			return;
+		}
+	}
 	const gw = new PayPalGateway();
 	const outDir = path.resolve("settlements/paypal");
 	if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
@@ -72,11 +92,7 @@ async function main() {
 		`owner_paypal_payout_once_${Date.now()}.json`,
 	);
 
-	const allowSend =
-		String(process.env.PAYPAL_PPP2_APPROVED ?? "false").toLowerCase() ===
-			"true" &&
-		String(process.env.PAYPAL_PPP2_ENABLE_SEND ?? "false").toLowerCase() ===
-			"true";
+	const allowSend = confirm;
 
 	let result = null;
 	let batchId = null;
@@ -84,13 +100,19 @@ async function main() {
 	try {
 		if (!hasCreds) {
 			const instruction = gw.generateInstruction(amount, currency, email, note);
-			result = { fallback: "no_credentials", instruction };
+			result = { dryRun: !allowSend, fallback: "no_credentials", instruction };
 		} else if (!allowSend) {
 			const invoice = await gw.createInvoices([
 				{ amount, currency, destination: email },
 			]);
 			const instruction = gw.generateInstruction(amount, currency, email, note);
-			result = { fallback: "invoice", data: invoice, instruction };
+			result = {
+				dryRun: true,
+				fallback: "invoice",
+				data: invoice,
+				instruction,
+				hint: "Add --confirm and grant CAP_WITHDRAW_FIAT to execute payout",
+			};
 		} else {
 			const res = await gw.executePayout([
 				{ amount, currency, destination: email, reference: note },
@@ -117,7 +139,7 @@ async function main() {
 				{ amount, currency, destination: email },
 			]);
 			const instruction = gw.generateInstruction(amount, currency, email, note);
-			result = { fallback: "authorization_error", invoice, instruction };
+			result = { dryRun: !allowSend, fallback: "authorization_error", invoice, instruction };
 		} else {
 			console.log(JSON.stringify({ ok: false, error: msg }));
 			return;

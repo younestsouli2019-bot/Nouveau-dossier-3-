@@ -1,0 +1,10 @@
+{
+  "id": "DEDUPE_QUARANTINE_DIR",
+  "at": 1788702537193,
+  "result": {
+    "ok": true,
+    "scanned": 0,
+    "dropped": 0,
+    "remaining": 0
+  }
+}

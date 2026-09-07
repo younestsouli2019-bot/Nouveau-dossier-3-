@@ -1,0 +1,8 @@
+{
+  "taskId": "RECONCILE_BALANCE_DELTA",
+  "at": 1788702535386,
+  "result": {
+    "ok": false,
+    "reason": "no-csv"
+  }
+}

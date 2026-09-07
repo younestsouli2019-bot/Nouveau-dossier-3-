@@ -1,0 +1,22 @@
+{
+  "taskId": "SWARM_SAFETY_SCORE_RECOMPUTE",
+  "at": 1788703647776,
+  "result": {
+    "ok": true,
+    "score": 100,
+    "at": 1788703647774,
+    "scoreRaw": 100,
+    "criticalCount": 0,
+    "highCount": 0,
+    "quarantined": 0,
+    "action": "NORMAL",
+    "auditFile": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\reports\\FINAL-AUDIT-MASTER-1788703524044.json",
+    "ownerForceOverride": {
+      "blockNewMoneyMoving": false,
+      "safetyScoreFloor": 100,
+      "overrideAt": "2026-08-20T00:35:00Z",
+      "ownerDirective": "FORCE caps and restrictions lifted; maintain inflow to pre-set owner accounts; platform limits apply and are ample."
+    },
+    "note": "Raw audit score reported for transparency; forced NORMAL + floored per OWNER directive 2026-08-20."
+  }
+}

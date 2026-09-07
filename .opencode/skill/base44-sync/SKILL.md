@@ -12,7 +12,7 @@ Synchronize procurement data, financial records, and mission status with the Bas
 - App ID: 6888ac155ebf84dd9855ea98
 - API URL: https://api.base44.app/v1
 - SDK: @base44/sdk (installed locally)
-- Service Token: 5b4be0fada884ca28142a3279e9880f6
+- Service Token: from environment (`BASE44_SERVICE_TOKEN`), never committed
 
 ## Available Entities
 - Mission - Procurement missions and their status

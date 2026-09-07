@@ -1,0 +1,8 @@
+{
+  "id": "AUTO_RECOVER_BALANCE_DELTA_33K",
+  "at": 1788704342835,
+  "result": {
+    "ok": false,
+    "reason": "missing-files"
+  }
+}

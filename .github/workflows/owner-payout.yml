@@ -22,8 +22,15 @@ on:
         required: false
         default: Owner payout
 
+# 2026-09-06 HARDENING (external security review BLOCK 4 + point 17):
+#   - permissions minimized to contents: read (artifact upload needs no write)
+#   - execute job requires the 'payouts' GitHub environment (human approval;
+#     operator must add required reviewers: Settings → Environments → payouts)
+#   - automatic commit/push of settlement files REMOVED — results persist as
+#     workflow artifacts only; the ledger/repo is never mutated from a runner
+#   - Node 22 → 24 (repo standard ahead of GitHub's Node 20 removal)
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: owner-payout
@@ -46,7 +53,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version: "24"
       - name: Install
         run: npm ci || npm install --no-audit --no-fund --no-package-lock
       - name: Lock cannibal cycle-1786593501227 and dedup baseline
@@ -112,6 +119,7 @@ jobs:
   execute:
     needs: guardrails
     runs-on: ubuntu-latest
+    environment: payouts
     concurrency:
       group: owner-payout
       cancel-in-progress: false
@@ -122,8 +130,7 @@ jobs:
       PAYPAL_CLIENT_ID: ${{ secrets.PAYPAL_CLIENT_ID }}
       PAYPAL_CLIENT_SECRET: ${{ secrets.PAYPAL_CLIENT_SECRET }}
       OWNER_PAYPAL_EMAIL: ${{ inputs.email }}
-      PAYPAL_PPP2_APPROVED: "true"
-      PAYPAL_PPP2_ENABLE_SEND: "true"
+      CAP_WITHDRAW_FIAT: "true"
       SWARM_CYCLE_REF: "cycle-1786593501227"
     steps:
       - name: Fail if guardrails declared unsafe
@@ -136,7 +143,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version: "24"
       - name: Install
         run: npm ci || npm install --no-audit --no-fund --no-package-lock
       - name: Guardrails re-check (throttle + dedup)
@@ -148,21 +155,13 @@ jobs:
         id: payout
         run: |
           set -euo pipefail
-          node ./scripts/payout-paypal-once.mjs --amount "${{ inputs.amount }}" --currency "${{ inputs.currency }}" --email "${{ inputs.email }}" --note "${{ inputs.note }}" > out.json
+          node ./scripts/payout-paypal-once.mjs --confirm --amount "${{ inputs.amount }}" --currency "${{ inputs.currency }}" --email "${{ inputs.email }}" --note "${{ inputs.note }}" > out.json
           cat out.json
       - name: Persist artifact
         uses: actions/upload-artifact@v5
         with:
           name: owner-payout-${{ github.run_id }}
           path: out.json
-      - name: Commit settlement file if generated
-        run: |
-          if [[ -n "$(git status --porcelain)" ]]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add -A
-            git commit -m "owner payout executed via workflow dispatch (guarded, score=${{ needs.guardrails.outputs.score }})"
-            git push
-          else
-            echo "No settlement files to commit."
-          fi
+      # Auto commit/push of settlement files removed 2026-09-06 (review point
+      # 17 / BLOCK 4): the payout result lives in the workflow artifact above;
+      # nothing is written back to the repo from a runner.
