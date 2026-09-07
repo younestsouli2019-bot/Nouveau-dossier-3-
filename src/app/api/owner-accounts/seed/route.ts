@@ -33,6 +33,22 @@ const SEED_ACCOUNTS = [
     countryCode: 'LU',
     currency: 'USD',
   },
+  {
+    label: 'Moroccan Bank — RIB 594182',
+    accountType: 'bank_wire',
+    isActive: true,
+    isPrimary: false,
+    sortOrder: 6,
+    purposes: 'debt_repayment,wire',
+    accountHolder: 'Younes Tsouli',
+    accountNumber: '007810000448500030594182',
+    accountNumberLast: '182',
+    bankName: 'Attijariwafa Bank',
+    bankCode: '00781',
+    swiftCode: 'BCMAMAMC',
+    countryCode: 'MA',
+    currency: 'MAD',
+  },
 
   // === Crypto Wallet (1 real) ===
   {
