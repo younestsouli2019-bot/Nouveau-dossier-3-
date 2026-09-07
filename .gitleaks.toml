@@ -1,0 +1,18 @@
+# Gitleaks configuration — 2026-09-06 (external security review, point 20).
+# Extends the upstream default ruleset (AWS/GCP/Stripe/PayPal/private keys/
+# generic API keys, …). Only repo-specific additions and allowlists live here.
+title = "Nouveau-dossier-3 secret-scan config"
+
+[extend]
+# Use the default rules bundled with gitleaks; add repo-specific rules below.
+useDefault = true
+
+# Never scan throwaway keys minted at runtime by the I8 gate self-test —
+# they are generated in-memory, never printed, never persisted (verify-i8-gates).
+[allowlist]
+description = "Test fixtures and throwaway runtime keys"
+paths = [
+  '''(^|/)node_modules/''',
+  '''(^|/)\.venv/''',
+  '''package-lock\.json$''',
+]

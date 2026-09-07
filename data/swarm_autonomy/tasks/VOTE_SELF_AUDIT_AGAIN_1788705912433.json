@@ -1,0 +1,23 @@
+{
+  "id": "VOTE_SELF_AUDIT_AGAIN",
+  "at": 1788705912433,
+  "result": {
+    "ok": true,
+    "proposalType": "SELF_AUDIT_NOW",
+    "label": "Run full self-audit immediately",
+    "windowHours": 2,
+    "ballotsCounted": 1,
+    "expiredBallots": 0,
+    "quorumPct": 0.5,
+    "requiresWeight": false,
+    "approvalPct": 1,
+    "approvalByVotes": 1,
+    "approvalByWeight": 1,
+    "yesWeighted": 1,
+    "noWeighted": 0,
+    "yesCount": 1,
+    "noCount": 0,
+    "minVotersRequired": 2,
+    "passes": false
+  }
+}

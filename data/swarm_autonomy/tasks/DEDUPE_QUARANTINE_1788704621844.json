@@ -1,0 +1,10 @@
+{
+  "taskId": "DEDUPE_QUARANTINE",
+  "at": 1788704621844,
+  "result": {
+    "ok": true,
+    "scanned": 0,
+    "dedupedDropped": 0,
+    "remaining": 0
+  }
+}

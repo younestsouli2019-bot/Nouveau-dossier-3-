@@ -1,27 +1,106 @@
 {
-  "ticks": 12,
+  "ticks": 203,
   "tasksDone": [
     {
+      "id": "SELF_AUDIT_HOURLY",
+      "at": 1788708671305,
+      "result": {
+        "ok": true,
+        "exit": 0,
+        "tag": "SELF_AUDIT_HOURLY",
+        "script": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\scripts\\final-master-audit.mjs",
+        "out": "silent"
+      }
+    },
+    {
       "id": "OWNER_BACK_SOON_PING",
-      "at": 1788695698352,
+      "at": 1788708460854,
       "result": {
         "ok": true,
         "msg": "ping written"
       }
     },
     {
-      "id": "DEDUPE_QUARANTINE",
-      "at": 1788695578466,
+      "id": "OWNER_BACK_SOON_PING",
+      "at": 1788708325325,
       "result": {
         "ok": true,
-        "scanned": 0,
-        "dedupedDropped": 0,
-        "remaining": 0
+        "msg": "ping written"
+      }
+    },
+    {
+      "id": "OWNER_BACK_SOON_PING",
+      "at": 1788708308016,
+      "result": {
+        "ok": true,
+        "msg": "ping written"
+      }
+    },
+    {
+      "id": "SELF_AUDIT_HOURLY",
+      "at": 1788707623582,
+      "result": {
+        "ok": true,
+        "exit": 0,
+        "tag": "SELF_AUDIT_HOURLY",
+        "script": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\scripts\\final-master-audit.mjs",
+        "out": "silent"
+      }
+    },
+    {
+      "id": "OWNER_BACK_SOON_PING",
+      "at": 1788707500935,
+      "result": {
+        "ok": true,
+        "msg": "ping written"
+      }
+    },
+    {
+      "id": "SELF_AUDIT_HOURLY",
+      "at": 1788707384061,
+      "result": {
+        "ok": true,
+        "exit": 0,
+        "tag": "SELF_AUDIT_HOURLY",
+        "script": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\scripts\\final-master-audit.mjs",
+        "out": "silent"
+      }
+    },
+    {
+      "id": "OWNER_BACK_SOON_PING",
+      "at": 1788707365354,
+      "result": {
+        "ok": true,
+        "msg": "ping written"
+      }
+    },
+    {
+      "id": "OWNER_BACK_SOON_PING",
+      "at": 1788707348063,
+      "result": {
+        "ok": true,
+        "msg": "ping written"
       }
     },
     {
       "id": "VOTE_SELF_AUDIT_NOW",
-      "at": 1788695458297,
+      "at": 1788707260667,
+      "result": {
+        "proposalType": "SELF_AUDIT_NOW",
+        "ballots": 2,
+        "recentBallots": 2,
+        "yesWeighted": 2,
+        "noWeighted": 0,
+        "yesCount": 2,
+        "noCount": 0,
+        "quorumPct": 0.5,
+        "approvalPct": 1,
+        "passes": true
+      }
+    },
+    {
+      "id": "VOTE_SELF_AUDIT_NOW",
+      "at": 1788707245248,
       "result": {
         "proposalType": "SELF_AUDIT_NOW",
         "ballots": 1,
@@ -36,30 +115,8 @@
       }
     },
     {
-      "id": "SWARM_SAFETY_SCORE_RECOMPUTE",
-      "at": 1788695338405,
-      "result": {
-        "ok": true,
-        "score": 100,
-        "at": 1788695338391,
-        "scoreRaw": 100,
-        "criticalCount": 0,
-        "highCount": 0,
-        "quarantined": 0,
-        "action": "NORMAL",
-        "auditFile": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\reports\\FINAL-AUDIT-MASTER-1788695222813.json",
-        "ownerForceOverride": {
-          "blockNewMoneyMoving": false,
-          "safetyScoreFloor": 100,
-          "overrideAt": "2026-08-20T00:35:00Z",
-          "ownerDirective": "FORCE caps and restrictions lifted; maintain inflow to pre-set owner accounts; platform limits apply and are ample."
-        },
-        "note": "Raw audit score reported for transparency; forced NORMAL + floored per OWNER directive 2026-08-20."
-      }
-    },
-    {
       "id": "SELF_AUDIT_HOURLY",
-      "at": 1788695221277,
+      "at": 1788707128332,
       "result": {
         "ok": true,
         "exit": 0,
@@ -69,25 +126,183 @@
       }
     },
     {
+      "id": "SELF_AUDIT_HOURLY",
+      "at": 1788706886298,
+      "result": {
+        "ok": true,
+        "exit": 0,
+        "tag": "SELF_AUDIT_HOURLY",
+        "script": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\scripts\\final-master-audit.mjs",
+        "out": "silent"
+      }
+    },
+    {
+      "id": "OWNER_BACK_SOON_PING",
+      "at": 1788706657165,
+      "result": {
+        "ok": true,
+        "msg": "ping written"
+      }
+    },
+    {
+      "id": "OWNER_BACK_SOON_PING",
+      "at": 1788706379870,
+      "result": {
+        "ok": true,
+        "msg": "ping written"
+      }
+    },
+    {
+      "id": "VOTE_SELF_AUDIT_NOW",
+      "at": 1788706260876,
+      "result": {
+        "proposalType": "SELF_AUDIT_NOW",
+        "ballots": 3,
+        "recentBallots": 3,
+        "yesWeighted": 3,
+        "noWeighted": 0,
+        "yesCount": 3,
+        "noCount": 0,
+        "quorumPct": 0.5,
+        "approvalPct": 1,
+        "passes": true
+      }
+    },
+    {
+      "id": "SELF_AUDIT_HOURLY",
+      "at": 1788706141154,
+      "result": {
+        "ok": true,
+        "exit": 0,
+        "tag": "SELF_AUDIT_HOURLY",
+        "script": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\scripts\\final-master-audit.mjs",
+        "out": "silent"
+      }
+    },
+    {
+      "id": "OWNER_BACK_SOON_PING",
+      "at": 1788705918639,
+      "result": {
+        "ok": true,
+        "msg": "ping written"
+      }
+    },
+    {
+      "id": "OWNER_BACK_SOON_PING",
+      "at": 1788705694127,
+      "result": {
+        "ok": true,
+        "msg": "ping written"
+      }
+    },
+    {
+      "id": "SELF_AUDIT_HOURLY",
+      "at": 1788705303808,
+      "result": {
+        "ok": true,
+        "exit": 0,
+        "tag": "SELF_AUDIT_HOURLY",
+        "script": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\scripts\\final-master-audit.mjs",
+        "out": "silent"
+      }
+    },
+    {
+      "id": "OWNER_BACK_SOON_PING",
+      "at": 1788705191412,
+      "result": {
+        "ok": true,
+        "msg": "ping written"
+      }
+    },
+    {
+      "id": "OWNER_BACK_SOON_PING",
+      "at": 1788704967744,
+      "result": {
+        "ok": true,
+        "msg": "ping written"
+      }
+    },
+    {
+      "id": "OWNER_BACK_SOON_PING",
+      "at": 1788704503082,
+      "result": {
+        "ok": true,
+        "msg": "ping written"
+      }
+    },
+    {
+      "id": "DEDUPE_QUARANTINE",
+      "at": 1788704383296,
+      "result": {
+        "ok": true,
+        "scanned": 0,
+        "dedupedDropped": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "id": "VOTE_SELF_AUDIT_NOW",
+      "at": 1788704258985,
+      "result": {
+        "proposalType": "SELF_AUDIT_NOW",
+        "ballots": 1,
+        "recentBallots": 1,
+        "yesWeighted": 1,
+        "noWeighted": 0,
+        "yesCount": 1,
+        "noCount": 0,
+        "quorumPct": 0.5,
+        "approvalPct": 1,
+        "passes": false
+      }
+    },
+    {
+      "id": "OWNER_BACK_SOON_PING",
+      "at": 1788704226063,
+      "result": {
+        "ok": true,
+        "msg": "ping written"
+      }
+    },
+    {
       "id": "SETTLEMENT_LEDGER_UNBLOCK",
-      "at": 1788695100081,
+      "at": 1788704136816,
       "result": {
         "ok": false,
         "reason": "no-settlement-ledger"
       }
     },
     {
-      "id": "RECONCILE_BALANCE_DELTA",
-      "at": 1788694974100,
+      "id": "SELF_AUDIT_HOURLY",
+      "at": 1788704024626,
+      "result": {
+        "ok": true,
+        "exit": 0,
+        "tag": "SELF_AUDIT_HOURLY",
+        "script": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\scripts\\final-master-audit.mjs",
+        "out": "silent"
+      }
+    },
+    {
+      "id": "OWNER_BACK_SOON_PING",
+      "at": 1788704007027,
+      "result": {
+        "ok": true,
+        "msg": "ping written"
+      }
+    },
+    {
+      "id": "SETTLEMENT_LEDGER_UNBLOCK",
+      "at": 1788703895917,
       "result": {
         "ok": false,
-        "reason": "no-csv"
+        "reason": "no-settlement-ledger"
       }
     }
   ],
-  "lastTick": 1788696300273,
+  "lastTick": 1788709067522,
   "lastConsensusAudit": {
-    "at": 1788695222878,
+    "at": 1788708927730,
     "r": {
       "ok": true,
       "exit": 0,
@@ -95,5 +310,12 @@
       "script": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\scripts\\final-master-audit.mjs",
       "out": "silent"
     }
-  }
+  },
+  "lastResurrectedDead": [
+    {
+      "name": "swarm-improve-loop",
+      "ageMin": 9.948583333333334,
+      "alive": false
+    }
+  ]
 }

@@ -1,0 +1,44 @@
+{
+  "id": "SAFETY_SCORE_RECOMPUTE",
+  "at": 1788706821352,
+  "result": {
+    "at": 1788706821340,
+    "iso": "2026-09-06T15:00:21.340Z",
+    "score": 100,
+    "scoreRaw": 100,
+    "criticalCount": 0,
+    "highCount": 0,
+    "quarantined": 0,
+    "action": "NORMAL",
+    "auditUsed": "FINAL-AUDIT-MASTER-1788706821299.json",
+    "ownerForceOverride": {
+      "blockNewMoneyMoving": false,
+      "safetyScoreFloor": 100,
+      "allowInflow": [
+        {
+          "channel": "PAYPAL",
+          "identifier": "younestsouli2019@gmail.com"
+        },
+        {
+          "channel": "PAYONEER",
+          "identifier": "younestsouli2019@gmail.com"
+        },
+        {
+          "channel": "CRYPTO_BEP20",
+          "identifier": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7"
+        },
+        {
+          "channel": "CRYPTO_ERC20",
+          "identifier": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7"
+        },
+        {
+          "channel": "BANK_WIRE_LU",
+          "identifier": "LU774080000041265646 / BCIRLULL / 007810000448500030594182"
+        }
+      ],
+      "overrideAt": "2026-08-20T00:35:00Z",
+      "ownerDirective": "FORCE caps and restrictions lifted; maintain inflow to pre-set owner accounts; platform limits apply and are ample."
+    },
+    "note": "Raw audit score reported for transparency; action forced NORMAL + score floored per OWNER directive 2026-08-20."
+  }
+}

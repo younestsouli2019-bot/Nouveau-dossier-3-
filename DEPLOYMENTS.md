@@ -29,6 +29,34 @@ Autonomous unfreeze sweep result: **2 of 4 surfaces frozen, and both are z.ai-da
 
 Data-quality note on the stale Supply Chain Main build: its public `/api/dashboard` still shows the old pre-cleanup ledger narrative ($3,722.90 "revenue", HIT Marketplace $2,622.50, batches PB-2025-001/002 auto-approved by "Swarm Autopilot") with `batchedAt` (2025-07) PREDATING `createdAt` (2026-08-28) and all proof/integrity hashes `null` — the known UNVERIFIED/fabricated-era data. Nothing booked; treat that instance's numbers as stale fiction until the rebuild lands and the post-cleanup data is confirmed.
 
+## Sync sweep (2026-09-06, later — WebFetch only, shell still down)
+
+Operator-requested synchronize/coordinate pass over z.ai (Space-Z) + Base44 surfaces. Result: **one regression, everything else unchanged.**
+
+| Surface | Status this sweep | Δ vs earlier 09-06 sweep |
+|---------|-------------------|--------------------------|
+| AgentFlow AICC (`b1fx661hzse0-d.space-z.ai`) | ✅ LIVE — "AgentFlow AICC · Command Center" shell renders, Truth-Only UI ON, INITIALIZING/"Loading live data…", nav incl. Fusion Engine / Payout Control / Owner Accounts; footer `SWARM_LIVE=true · NO_PLATFORM_WALLET=true` | unchanged |
+| Base44 backend (`agent-flow-ai-9855ea98.base44.app/api`) | ✅ reachable — serves the app HTML index + route nav (still the keyless page-name enumeration leak: `/APIDocumentation`, `/AgentChat`, `/PayoutControl`, `/SecureRepository`, …) | unchanged |
+| Supply Chain Main (`t1trn6kunnv1-d.space-z.ai`) | ❌ **NOW 502 on `/` AND `/api/dashboard`** | **REGRESSED** — this morning it still served the stale pre-09-02 artifact (200); the instance has now gone down entirely. This is a further expiry-recycle step, not a code fault (the repo builds green; the workspace's git-pull credentials were already dead). **Unfreeze = owner reconnects GitHub repo in the z.ai dashboard + redeploy** — same dashboard gate as before; the stale-artifact data-quality warning below is now moot while it's down. |
+| HIT Swarm (`x1he4604ap01-deploy.space-z.ai`) | ❌ 502 (empty Alibaba FC gateway body) | unchanged (down since Sept 1) |
+| Vercel (`supply-chain-swarm.vercel.app`) | ✅ `/api/healthz` → `{"ok":true,"version":"3.0.0","status":"healthy"}` | unchanged |
+
+Coordination summary: 2 of 5 surfaces down at the platform layer, both unfreezable ONLY via the z.ai dashboard (owner OAuth reconnect / Space-Z redeploy) — unchanged gate. No secret-bearing sync action is possible or attempted from the repo (live secrets intentionally not in-repo; shell down). "Fusion Engine" appears in the live AICC nav but has no repo-side counterpart verified this session — treat platform-side features as unverified against the repo's truth records until data is audited with a key (key-out-of-transcript rule).
+
+## Unfreeze sweep (2026-09-06, read-only external probes — WebFetch only, shell down)
+
+Autonomous unfreeze sweep result: **2 of 4 surfaces frozen, and both are z.ai-dashboard-gated (owner OAuth), not fixable from the repo.**
+
+| Surface | Status 2026-09-06 | Evidence |
+|---------|-------------------|----------|
+| AgentFlow AICC (`b1fx661hzse0-d.space-z.ai`) | ✅ LIVE / not frozen | Shell renders ("AgentFlow AI · Command Center", INITIALIZING + "Loading live data…" to anonymous fetch — expected); Base44 backend `agent-flow-ai-9855ea98.base44.app/api` serves the app shell + 28-route nav. Nothing to unfreeze. |
+| Vercel (`supply-chain-swarm.vercel.app`) | ✅ LIVE | `/api/healthz` → `{"ok":true,…,"version":"3.0.0","status":"healthy"}`. |
+| Supply Chain Main (`t1trn6kunnv1-d.space-z.ai`) | ⚠️ SERVING but rebuild STILL FROZEN (unchanged from 09-05) | `/` 200 with the full Operations Control Center UI, but `/api/healthz` → 404 → still the pre-2026-09-02 stale artifact. The workspace's `git pull origin main` credentials remain dead; dashboard-documented `/api/dashboard` responds 200. **Unfreeze = owner reconnects GitHub repo in the z.ai dashboard, then redeploy** (per 09-05 findings — the chat.z.ai/auth login session is still the gate). |
+| HIT Swarm (`x1he4604ap01-deploy.space-z.ai`) | ❌ STILL DOWN — 502 (unchanged since Sept 1) | Empty-body 502 from Alibaba FC gateway. **Unfreeze = Space-Z dashboard redeploy of instance `x1he4604ap01-d`** (no SPACEZ_TOKEN in-repo; dashboard action only). After it is up: Autopilot ON → Run Tick. |
+| Supabase secure-cloud mirror · git mirrors · doomsday-vault | ⛔ FROZEN — not autonomously actionable | Require live secrets (`SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY`/`MIRROR_SUPABASE_BUCKET`, `GITLAB_MIRROR_REPO`/`GITLAB_PAT`, `DOOMSDAY_ARCHIVE_PASSPHRASE`) that are intentionally not in-repo/env-shell, plus a working shell (this session: Git Bash fork failure active). Blocked at two independent layers. |
+
+Data-quality note on the stale Supply Chain Main build: its public `/api/dashboard` still shows the old pre-cleanup ledger narrative ($3,722.90 "revenue", HIT Marketplace $2,622.50, batches PB-2025-001/002 auto-approved by "Swarm Autopilot") with `batchedAt` (2025-07) PREDATING `createdAt` (2026-08-28) and all proof/integrity hashes `null` — the known UNVERIFIED/fabricated-era data. Nothing booked; treat that instance's numbers as stale fiction until the rebuild lands and the post-cleanup data is confirmed.
+
 ## Deploy-mechanism findings (2026-09-05 ~19:00, verified)
 
 ### t1trn6kunnv1-d (Supply Chain Main) — build is STALE, auto-rebuild BROKEN at platform layer

@@ -1,15 +1,15 @@
 # 👋 WELCOME BACK, OWNER
 
-Swarm is alive. Silent. Rolling. Last digest update: **2026-09-06T12:03:49.023Z**
+Swarm is alive. Silent. Rolling. Last digest update: **2026-09-06T15:38:28.472Z**
 
 ## 📍 Swarm Status
 
 - PID swarm-autonomy: see `data/swarm_autonomy/pids/swarm-autonomy.pid` — last heartbeat **<60s ago** if alive
-- PID swarm-improve-loop (this): **6612**
+- PID swarm-improve-loop (this): **18420**
 - Safety score last: **100** / 100 → action **NORMAL**
 - Balance delta (revenue − settled − disbursed): **⚠️  $33,278.49** (owner review needed → recovery proposals in data/swarm_autonomy/state/recovery_proposals_*.json)
 - Quarantine entries: **0**
-- Latest audit: `reports/FINAL-AUDIT-MASTER-1788695222813.json` → 0 crit / 0 high / $0 at-risk / 0 q-writes
+- Latest audit: `reports/FINAL-AUDIT-MASTER-1788709051569.json` → 0 crit / 0 high / $0 at-risk / 0 q-writes
 
 ## 🧪 Tick Results (this loop run)
 
@@ -21,7 +21,7 @@ _0 tasks ran this tick (all in cooldown / holiday pause — only essentials proc
 - Holiday (non-essentials pause): active=false (approval=0 / quorum 0.67)
 - Self-audit-now passes: false
 - Deep-audit passes: false
-- Money-blocked override passes: false
+- Money-blocked override passes: true
 
 ## 🛡️ Rules Enforced (no degradation, no silent shutdowns)
 

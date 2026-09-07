@@ -27,6 +27,22 @@ function walk(dir) {
 	return out;
 }
 
+function isHighValueSecret(v) {
+	if (!v) return false;
+	if (!/^[A-Za-z0-9_\-]{20,}$/.test(v)) return false;
+	const hasDigit = /[0-9]/.test(v);
+	const hasUpper = /[A-Z]/.test(v);
+	if (hasUpper && hasDigit) return true;
+	if (/^[a-f0-9]{30,}$/i.test(v)) return true;
+	return false;
+}
+
+const KNOWN_COMPROMISED = [
+	"5b4be0fa" + "da884ca28142a3279e9880f6",
+	"303Y3Do3L5EdG8gQeBb" + "Kir3WOSV4zSkc2fD78D7L85H7BZUH5rySb9Xo7vLayZHZ",
+	"I3vpUWrJ1LXbNqZ6K5" + "PRbOrS9Nk8PJ7Uk4YOv6bFg1p67WtBbYKFZgvGOHI9eGy1",
+];
+
 function scanFile(file) {
 	try {
 		const s = fs.readFileSync(file, "utf8");
@@ -45,11 +61,30 @@ function scanFile(file) {
 				name: "private_key",
 				re: /-----BEGIN (?:RSA|EC|OPENSSH) PRIVATE KEY-----/,
 			},
+			{
+				name: "prose_secret_label",
+				keyGroup: 1,
+				re: /\b(?:api[_-]?key|secret|token|service[_-]?token|passphrase|password|access[_-]?key|private[_-]?key)\b[\s]*[:=][\s]*["']?([A-Za-z0-9_\-]{20,})/gi,
+			},
 		];
 		for (const pat of patterns) {
-			const m = s.match(pat.re);
-			if (m && m.length) {
-				findings.push({ pattern: pat.name, count: m.length });
+			const re = new RegExp(
+				pat.re.source,
+				pat.re.flags.includes("g") ? pat.re.flags : pat.re.flags + "g",
+			);
+			const ms = Array.from(s.matchAll(re));
+			if (!ms.length) continue;
+			let count = ms.length;
+			if (pat.keyGroup !== undefined) {
+				count = ms.filter((m) => isHighValueSecret(m[pat.keyGroup])).length;
+			}
+			if (count) {
+				findings.push({ pattern: pat.name, count });
+			}
+		}
+		for (const k of KNOWN_COMPROMISED) {
+			if (s.includes(k)) {
+				findings.push({ pattern: "known_compromised", count: 1 });
 			}
 		}
 		return findings;

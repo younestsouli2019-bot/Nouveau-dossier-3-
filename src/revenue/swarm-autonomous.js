@@ -16,13 +16,13 @@ if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
 // Payment methods - SWARM pays everything
 const PAYMENT_METHODS = {
   binance: {
-    apiKey: '3UPgbXT7qUPW9N28aMU73kz7XzMRkytWeCMrBUKtjyKz2vYCTQ4oikbNbdfLYDai',
-    secretKey: 'lLVoL5E6ucEQ3WRegA7pvRwCo6XVlIGBUFXnaH5M0HATVVz9LSTqRFGS7raCIRFs'
+    apiKey: process.env.BINANCE_API_KEY,
+    secretKey: process.env.BINANCE_API_SECRET
   },
   bitget: {
-    apiKey: 'bg_9b4337d8e33d7f6537584aef3a929520',
-    secretKey: '97e04c50342a31dfa497420bbe9acd08527e5929676ec261420f6584161c61d9',
-    passphrase: '0x67e694f7b4ce878d664c4b18e22c55'
+    apiKey: process.env.BITGET_API_KEY,
+    secretKey: process.env.BITGET_API_SECRET,
+    passphrase: process.env.BITGET_API_PASSPHRASE
   }
 };
 

@@ -1,0 +1,9 @@
+{
+  "type": "PAYPAL_PAYOUT",
+  "amount": 5,
+  "currency": "USD",
+  "recipient": "younestsouli2019@gmail.com",
+  "reason": "Settlement per invoice INV-2026-001",
+  "timestamp": "2026-09-06T16:41:21.314Z",
+  "status": "WAITING_MANUAL_EXECUTION"
+}
