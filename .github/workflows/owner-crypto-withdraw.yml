@@ -32,9 +32,6 @@ concurrency:
 jobs:
   withdraw:
     runs-on: ubuntu-latest
-    concurrency:
-      group: owner-crypto-withdraw
-      cancel-in-progress: false
     env:
       SWARM_LIVE: "true"
       CRYPTO_NETWORK: ${{ inputs.network }}

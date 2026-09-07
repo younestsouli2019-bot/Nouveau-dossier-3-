@@ -106,9 +106,6 @@ jobs:
     if: github.event_name != 'schedule' || github.event.schedule == '0 * * * *'
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    concurrency:
-      group: autonomous-scheduler
-      cancel-in-progress: false
     env:
       AUTOCOMMIT_ENABLE: ${{ vars.AUTOCOMMIT_ENABLE }}
       SWARM_CYCLE_REF: "cycle-1786593501227"
