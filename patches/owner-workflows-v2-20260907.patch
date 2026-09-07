@@ -64,7 +64,11 @@ index 0000000..2b300d9
 +      - uses: actions/checkout@v5
 +        with:
 +          fetch-depth: 0
-+      - uses: actions/setup-node@v5
++          # PAT with repo+workflow scope so repair COMMITS of workflow files
++          # can push (GITHUB_TOKEN is refused for workflow-file updates).
++          # Falls back to github.token when the secret is absent — scan,
++          # triage, and alert still work; repair pushes will be rejected.
++          token: ${{ secrets.SELF_HEALING_TOKEN || secrets.GITHUB_PAT_WORKFLOW_SCOPE || github.token }}
 +        with:
 +          node-version: "24"
 +          cache: "npm"
@@ -91,6 +95,7 @@ index 0000000..2b300d9
 +          GH_TOKEN: ${{ github.token }}
 +          REPOSITORY: ${{ github.repository }}
 +          SELF_HEAL_ALERT_WEBHOOK: ${{ secrets.SELF_HEAL_ALERT_WEBHOOK }}
++          SELF_HEALING_TOKEN: ${{ secrets.SELF_HEALING_TOKEN || secrets.GITHUB_PAT_WORKFLOW_SCOPE }}
 +        run: |
 +          set +e
 +          OUT=$(npx tsx ./scripts/devops-self-healing.ts heal 2>&1)
