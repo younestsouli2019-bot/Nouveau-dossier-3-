@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { analyzeWorkflow, fixWorkflow, parentConcurrencyGroup } from '../workflow-sanitize';
 import {
@@ -82,13 +82,15 @@ describe('static engine — pre-flight workflow sanitization', () => {
     expect(analyzeWorkflow('wf.yml', r.text)).toHaveLength(0);
   });
 
-  it('flags the LIVE autonomous-scheduler deadlock hazard (the real repo file)', () => {
-    const p = join(process.cwd(), '.github/workflows/autonomous-scheduler.yml');
-    const text = readFileSync(p, 'utf8');
-    const off = analyzeWorkflow(p, text);
-    expect(off.length).toBeGreaterThanOrEqual(1);
-    expect(off.map((o) => o.job)).toContain('autonomous-tick');
-    expect(off[0].parentGroup).toBe('autonomous-scheduler');
+  it('guards the LIVE production workflows (hazard fixed at 8b31eff — must stay clean)', () => {
+    const dir = join(process.cwd(), '.github/workflows');
+    for (const f of readdirSync(dir).filter((f) => f.endsWith('.yml'))) {
+      const text = readFileSync(join(dir, f), 'utf8');
+      const off = analyzeWorkflow(f, text);
+      if (off.length > 0) {
+        throw new Error(`${f}: regression! ${off.map((o) => o.job).join(', ')} duplicate child concurrency`);
+      }
+    }
   });
 
   it('repairWorkflowFile is a no-op on clean files and idempotent on dirty ones', () => {
