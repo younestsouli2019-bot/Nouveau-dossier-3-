@@ -4,6 +4,16 @@ This is the canonical registry of live swarm/base44 deployments. The actual reve
 machinery is deployed as Base44 apps (`*.base44.app`) fronted by `space-z.ai` public URLs,
 plus the Vercel supply-chain front-end.
 
+## External settlement audit response (2026-09-07) — cron chain removed, mirror cleanup v2
+
+An external audit of the PUBLIC MIRROR (www-realworldcerts-com, master) flagged five P0-stop behaviors. Verdict per repo:
+
+**This repo (younestsouli2019-bot, main): already compliant on 4 of 5.** The mirror's dangerous files (auto_settlement_daemon.js, real_settlement_backend.js, live_execution_flow.js) never existed here. The audit's "missing" items (payout state machine, UNKNOWN state, provider reconciliation-before-retry, idempotency, immutable ledger) were built here 2026-09-07 as P0/P1 (commits 4ade092 → 8bbdc15). What it DID catch: our dormant cron-approval chain — **removed in 8bbdc15**:
+- `scripts/scheduler.js` (hourly node-cron) + `scripts/approve-paypal.js` / `approve-crypto.js` / `approve-bankwire.js` — auto-approved ALL PENDING_APPROVAL revenue events via gateways and marked them PAID_OUT with no state machine, idempotency, reconciliation, or owner confirmation. Nothing referenced the chain (verified: no workflow/daemon/package.json/doc), it was dead code one SWARM_LIVE flip from becoming an ungated payout engine. Deleted per owner directive (reject cron-based auto-payouts).
+- Remaining executor scripts (owner-payout-paypal.mjs, payout-paypal-once.mjs, execute-crypto-withdraw.mjs, etc.) are MANUAL-dispatch only (owner-crypto-withdraw.yml / owner-payout.yml: `environment: payouts` human approval + I8 capability gates + safe==1 guardrails) — compliant with "manual approval required for all payouts".
+
+**Mirror (www-realworldcerts-com, master): carries the full dangerous lineage at HEAD.** Verified live on the public repo: all three engine files exist; `real_settlement_backend.js` contains a hard-coded owner PayPal email + EVM wallet address in source; `live_execution_flow.js` a hard-coded owner email; plus the previously-flagged 39 settlement artifacts and RIB in SNAPSHOT_PUBLIC. It also lacks all P0/P1 hardening (95-commit diverged history). **Cleanup packaged as `apply-mirror-cleanup-v2.sh`** (supersedes v1): applies the v1 artifact-removal commit, then deletes the three engine files with a full audit-trail commit message; flow verified end-to-end on a fresh clone (0 tracked settlement files, 0 engine files). Blocker unchanged: agent token blocked by org OAuth App access restrictions — run the one-shot script from an org-authorized account, or allowlist the app in org Third-Party Access settings. History rewrite/privatization still the owner decision.
+
 ## Settlement-gap P1 — PayoutProvider seam + watchdog tick (2026-09-07, verified)
 
 Pushed to `main` as `af181d0`; CI: **Space-Z green, Secret Scan green** (Vercel-token + multi-platform failures remain known-benign). 15 unit tests, tsc clean.
