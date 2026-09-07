@@ -43,3 +43,6 @@ workspace-*.tar
 # Payment artifacts live in private storage, never in Git (settlement-gap P0 2026-09-07)
 settlements/
 exports/recon/raw/
+
+# Sanitized, machine-readable audit summaries stay public (P0 2026-09-07)
+!exports/recon/AUDIT_L2_REPORT.json
