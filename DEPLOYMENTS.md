@@ -660,3 +660,32 @@ owner PayPal payout) silently since 2026-09-02 (commit 061faa3).
   scope, or branch protection. Repairs remain in the report + artifact.
 - Circuit breaker alert firing repeatedly → something keeps REINTRODUCING
   duplicate groups; audit commits touching `.github/workflows/`.
+
+### Reconciliation note (2026-09-07): two engine variants, one canonical bootstrap
+
+Two implementations of the blueprint landed on main within the same hour
+(custodian surfaces converging independently):
+
+- **Canonical (TS):** `src/devops/{workflow-sanitize,deadlock-heal}.ts` +
+  `scripts/devops-self-healing.ts` (run via `npx tsx`) — full test suite,
+  and the workflow shipped in the owner-apply patch invokes THIS engine.
+- **Standalone (zero-dep mjs):** `scripts/lint-workflow-concurrency.mjs` +
+  `scripts/devops-self-healing.mjs` — plain Node, no install/build step;
+  usable pre-`npm ci`, in pre-commit hooks, and as an emergency manual tool
+  (`node scripts/lint-workflow-concurrency.mjs --fix strip`).
+
+**Canonical bootstrap (ONE owner action):**
+`bash apply-owner-workflows-v2-20260907.sh` from the repo root on an
+authorized account — it lands A) the 3 deadlock repairs (autonomous-tick,
+withdraw, owner-payout execute), B) the scheduler settlement-watchdog +
+hands-free payout tick steps, C) `.github/workflows/devops-self-healing.yml`.
+
+**Known gap (both engines):** repair PUSHES of workflow files require a PAT
+with `repo`+`workflow` scope. `GITHUB_TOKEN` / `github.token` is rejected by
+GitHub for workflow-file updates ("refusing to allow a GitHub App to create
+or update workflow …"). Until a PAT secret exists (`SELF_HEALING_TOKEN` /
+`GITHUB_PAT_WORKFLOW_SCOPE`), the dynamic engine scans, triages, reports, and
+alerts — but cannot push repairs; the static gate + owner-apply patch are the
+repair paths. The workflow `devops-self-healing.yml` should map the repair
+token secret as `SELF_HEALING_TOKEN: ${{ secrets.SELF_HEALING_TOKEN ||
+secrets.GITHUB_PAT_WORKFLOW_SCOPE }}`.
