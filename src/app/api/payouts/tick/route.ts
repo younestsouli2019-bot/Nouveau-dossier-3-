@@ -13,7 +13,7 @@
  *  - Bounded: at most PAYOUT_TICK_LIMIT payouts per call (default 50).
  */
 
-import { PrismaClient } from '@prisma/client';
+import { db as prisma } from '@/lib/db';
 import { createHash } from 'node:crypto';
 import { createPrismaPayoutStore } from '../../../../payout/prisma-driver';
 import { runPayoutTick, type PipelineConfig } from '../../../../payout/pipeline';
@@ -24,7 +24,6 @@ import {
 } from '../../../../payout/provider';
 import { LivePayPalPayoutProvider } from '../../../../payout/adapters/paypal-live';
 
-const prisma = new PrismaClient();
 
 function envIsTrue(v: string | undefined): boolean {
   return v === 'true' || v === '1';

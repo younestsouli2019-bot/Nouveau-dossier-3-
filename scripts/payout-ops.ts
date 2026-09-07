@@ -74,10 +74,8 @@ async function run(args: Args) {
     process.exit(0);
   }
 
-  const { PrismaClient } = (await import('@prisma/client')) as {
-    PrismaClient: new () => any;
-  };
-  const prisma = new PrismaClient();
+  // Canonical adapter-backed singleton (Prisma 7 requires a driver adapter).
+  const { db: prisma } = await import('../src/lib/db');
   await prisma.$connect();
 
   try {
