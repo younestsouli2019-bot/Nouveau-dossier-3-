@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Static Engine: pre-flight workflow sanitization (Autonomous Self-Healing
+# Blueprint). Blocks commits that introduce child `concurrency:` groups
+# duplicating their workflow-level parent (logless-deadlock hazard).
+set -euo pipefail
+if [ ! -d .github/workflows ]; then exit 0; fi
+npx --no-install tsx scripts/devops-self-healing.ts sanitize --check .github/workflows
