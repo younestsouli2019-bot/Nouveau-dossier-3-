@@ -39,3 +39,7 @@ workspace-*.tar
 
 # transient hook/session tooling state (never commit)
 .mimosa/
+
+# Payment artifacts live in private storage, never in Git (settlement-gap P0 2026-09-07)
+settlements/
+exports/recon/raw/

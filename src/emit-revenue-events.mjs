@@ -422,7 +422,7 @@ function buildLiveProofBase(action) {
 	return {
 		at: new Date().toISOString(),
 		action: String(action),
-		SWARM_LIVE: envIsTrue(process.env.SWARM_LIVE, "true"),
+		SWARM_LIVE: envIsTrue(process.env.SWARM_LIVE, "false"), // proofs must never overstate live mode (P0 freeze 2026-09-07)
 		endpoints: {
 			paypalMode: String(process.env.PAYPAL_MODE ?? "live").toLowerCase(),
 			paypalApiBaseUrl: process.env.PAYPAL_API_BASE_URL
