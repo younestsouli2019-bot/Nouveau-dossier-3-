@@ -601,3 +601,62 @@ The hardened `owner-crypto-withdraw.yml` already provides the same
 workflow_dispatch capability WITH all gates intact (allowlist, enable switch,
 audit-only, log masking). Anyone needing the withdraw button should use that
 one. If main.yml was intentional, re-land it WITH the gates — never without.
+
+## 2026-09-07 — AUTONOMOUS SELF-HEALING BLUEPRINT (devops-self-healing)
+
+**Problem class:** workflow-level `concurrency:` groups mirrored by job-level
+`concurrency:` groups with the SAME name. GitHub holds the workflow-level lock
+for the run's entire lifetime, so the job can never acquire the same-named
+group and is auto-failed at run creation — no runner, 0 steps, no logs
+(`completed_at <= started_at`). Monitoring inside jobs sees nothing; this
+killed all three Actions money paths (autonomous-tick, owner crypto withdraw,
+owner PayPal payout) silently since 2026-09-02 (commit 061faa3).
+
+**The blueprint (all live on main):**
+
+1. **Static Engine — `scripts/lint-workflow-concurrency.mjs`**
+   IaC pre-flight gate. Dependency-free Node. Lint mode exits 1 on any
+   workflow-level/job-level concurrency name collision (blocking CI step in
+   `devops-self-healing.yml` → deadlocks cannot reach production).
+   `--fix strip` deletes the offending job-level block; `--fix suffix`
+   force-suffixes the group name instead.
+
+2. **Dynamic Engine — `scripts/devops-self-healing.mjs`**
+   Logless control-plane scraping via the Actions REST API. Deadlock
+   signature: `conclusion=failure` + `runner_id=null` + `steps=0` +
+   `completed_at <= started_at` (+ job logs 404). Maps signature events to
+   workflow files, confirms with the static engine, then the Active
+   Repairman strips the duplicate block and pushes a repair commit.
+   Also runs a proactive static sweep so rarely-dispatched workflows
+   (e.g. owner-payout) are repaired before their first dead run.
+
+3. **Circuit Breaker** — if repairs fire >3 consecutive hourly cycles,
+   the engine alerts: external webhook (`SELF_HEALING_ALERT_WEBHOOK`
+   secret) + GitHub issue labeled `self-healing,circuit-breaker`, and
+   latches until a clean cycle resets it.
+
+**Workflow:** `.github/workflows/devops-self-healing.yml`
+- hourly cron (Passive Scanner) + push trigger (Static Engine gate) + manual dispatch
+- `static-gate` and `heal` run INDEPENDENTLY — a red gate must never block
+  the repairman from fixing the very thing the gate complains about
+- the workflow itself is deadlock-free BY DESIGN (workflow-level group only)
+
+**Bootstrap (one-time, owner actions):**
+1. Commit `.github/workflows/devops-self-healing.yml` (a copy ships at
+   `docs/bootstrap/devops-self-healing.yml.txt` — paste it into
+   `.github/workflows/` via the GitHub UI, or move it once a
+   workflow-scoped PAT is available). GITHUB_TOKEN alone cannot push
+   workflow-file changes; that is a GitHub platform restriction.
+2. Set the repo secret `SELF_HEALING_TOKEN` = PAT with `repo` + `workflow`
+   scope (falls back to `GITHUB_PAT_WORKFLOW_SCOPE`). Without it the
+   scanner still scans + reports + alerts, but cannot push repairs.
+3. Optional: `SELF_HEALING_ALERT_WEBHOOK` for the emergency channel.
+
+**Runbook / failure modes:**
+- `signature seen but static engine finds no duplicate concurrency` →
+  either already fixed (benign, history still holds dead runs) or a
+  NOVEL pre-runner failure — manual review.
+- `REPAIR PUSH FAILED` → SELF_HEALING_TOKEN missing/lacking `workflow`
+  scope, or branch protection. Repairs remain in the report + artifact.
+- Circuit breaker alert firing repeatedly → something keeps REINTRODUCING
+  duplicate groups; audit commits touching `.github/workflows/`.
