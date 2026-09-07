@@ -1,0 +1,25 @@
+{
+  "incident": "paypal-rest-history-gap",
+  "generated_at": "2026-09-07T15:30:00.000Z",
+  "period": { "from": "2026-08-26", "to": "2026-08-28" },
+  "evidence_status": "incomplete",
+  "description": "PayPal did not retain the relevant REST/webhook bodies for the period, so automatic reconciliation cannot rely solely on PayPal webhook evidence for these dates.",
+  "affected_batches": [],
+  "affected_transactions": [],
+  "reconciliation_status": "required",
+  "financial_execution_allowed": false,
+  "policy": {
+    "unknown_never_retried": true,
+    "evidence_gap_means_quarantine_not_repayment": true,
+    "swarm_live_default": false,
+    "recovery_dry_run_default": true
+  },
+  "next_actions": [
+    "Obtain provider-side evidence (PayPal activity export / support confirmation) for the gap period",
+    "Reconcile EVIDENCE_PENDING payouts; promote to RECONCILED or QUARANTINED — never re-pay on missing evidence",
+    "Keep SWARM_LIVE=false until every EVIDENCE_PENDING payout is resolved",
+    "Operational payment artifacts moved out of Git (2026-09-07): private backup retained by owner"
+  ],
+  "sanitized": true,
+  "notes": "Machine-readable, sanitized summary for swarm consumption. Raw evidence lives in private storage, never in this repository."
+}
