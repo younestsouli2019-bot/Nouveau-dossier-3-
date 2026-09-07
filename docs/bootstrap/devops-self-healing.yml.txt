@@ -1,0 +1,73 @@
+# ============================================================================
+# DEVOPS SELF-HEALING — The Autonomous Self-Healing Blueprint
+# [GitHub Event / Cron] -> [Static Engine: Lint & Rewrite] -> [Dynamic Engine:
+# Log Scan] -> [Auto-PR / Repair]
+#
+# NOTE ON DESIGN: this workflow deliberately has NO job-level `concurrency:`
+# blocks (only a workflow-level group with a unique name) — introducing the
+# duplicate-group pattern here would self-deadlock the healer itself.
+# ============================================================================
+name: DevOps Self-Healing
+
+on:
+  schedule:
+    # Passive Scanner: hourly
+    - cron: "0 * * * *"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/**"
+      - "scripts/devops-self-healing.mjs"
+      - "scripts/lint-workflow-concurrency.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+# Workflow-level concurrency only — NEVER mirror this group at job level.
+concurrency:
+  group: devops-self-healing-wf
+  cancel-in-progress: false
+
+jobs:
+  # --------------------------------------------------------------------------
+  # STATIC ENGINE — blocking pre-flight gate. Any push that introduces a
+  # workflow-level/job-level concurrency group collision fails here, before
+  # the deadlock can reach production and silently kill the affected job.
+  # --------------------------------------------------------------------------
+  static-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Pre-flight concurrency sanitization (blocking)
+        run: node scripts/lint-workflow-concurrency.mjs
+
+  # --------------------------------------------------------------------------
+  # DYNAMIC ENGINE — logless control-plane scan + Active Repairman + Circuit
+  # Breaker. Runs independently of the gate (a red gate must never block the
+  # repairman from fixing the very thing the gate is complaining about).
+  # --------------------------------------------------------------------------
+  heal:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Logless deadlock scan + repair
+        run: node scripts/devops-self-healing.mjs
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SELF_HEALING_TOKEN: ${{ secrets.SELF_HEALING_TOKEN || secrets.GITHUB_PAT_WORKFLOW_SCOPE }}
+          SELF_HEALING_ALERT_WEBHOOK: ${{ secrets.SELF_HEALING_ALERT_WEBHOOK }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+      - name: Upload healing report
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: self-healing-report-${{ github.run_id }}
+          path: out/self-healing/
+          if-no-files-found: ignore
