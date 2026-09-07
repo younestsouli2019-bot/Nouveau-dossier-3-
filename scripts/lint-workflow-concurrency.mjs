@@ -178,6 +178,7 @@ if (invokedDirectly) {
   const files = listWorkflowFiles();
   let total = 0;
   const report = [];
+  const JSON_MODE = process.argv.includes("--json");
 
   for (const file of files) {
     const text = fs.readFileSync(file, "utf8");
@@ -199,6 +200,9 @@ if (invokedDirectly) {
     }
   }
 
+  if (JSON_MODE) {
+    console.log(JSON.stringify(report.map((r) => ({ file: r.file, deadlock_signature: r.violations.length > 0, violations: r.violations.map((v) => ({ job: v.job, group: v.jobGroup })) })), null, 2));
+  }
   if (!fixMode) {
     if (total > 0) {
       console.error(`\n${total} self-deadlocking job(s) found across ${report.length} workflow file(s).`);

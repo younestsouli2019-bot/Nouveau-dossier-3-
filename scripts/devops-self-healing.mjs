@@ -52,6 +52,13 @@ const ALERT_WEBHOOK = process.env.SELF_HEALING_ALERT_WEBHOOK || "";
 const STATE_FILE = path.join(process.cwd(), "out", "self-healing", "state.json");
 const SCAN_WINDOW_H = 24;
 const CIRCUIT_BREAKER_THRESHOLD = 3;
+// Files the repairman must NEVER auto-modify. The healer may not repair its
+// own safety controls: changes to the healer, breaker, permissions, or
+// payment authorization require OWNER approval (escalated via GitHub issue).
+const PROTECTED_FILES = [".github/workflows/devops-self-healing.yml"];
+// Durable breaker state: a pinned GitHub issue (survives runner death; the
+// out/ file is a local cache only — out/ is gitignored).
+const STATE_ISSUE_TITLE = "SWARM SELF-HEALING — circuit breaker state";
 
 if (!TOKEN) {
   console.error("FATAL: GITHUB_TOKEN not set (control-plane scan requires it).");
@@ -172,6 +179,44 @@ function saveState(state) {
   fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
 }
 
+/** Durable control-plane state: JSON in a pinned GitHub issue body. */
+async function findStateIssue() {
+  const issues = await gh("/issues?state=all&per_page=100");
+  for (const i of issues || []) if (i.title === STATE_ISSUE_TITLE) return i;
+  return null;
+}
+
+async function loadDurableState() {
+  try {
+    const issue = await findStateIssue();
+    if (issue && issue.body) {
+      const m = issue.body.match(/```json\n([\s\S]*?)\n```/);
+      if (m) return { ...JSON.parse(m[1]), _issue: issue };
+    }
+  } catch (err) {
+    console.error(`WARN: durable state read failed (${err.message}); using file cache`);
+  }
+  return null;
+}
+
+async function saveDurableState(state) {
+  const body = `Pinned circuit-breaker state — do not close. Updated each self-healing cycle.\n\n\`\`\`json\n${JSON.stringify(state, null, 2)}\n\`\`\`\n`;
+  try {
+    const existing = await findStateIssue();
+    if (existing) {
+      await gh(`/issues/${existing.number}`, { method: "PATCH", body: JSON.stringify({ body }) });
+      return;
+    }
+    await fetch(`${API_BASE}/issues`, {
+      method: "POST",
+      headers: { Authorization: `token ${TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "swarm-self-healing" },
+      body: JSON.stringify({ title: STATE_ISSUE_TITLE, labels: ["self-healing", "state"], body }),
+    });
+  } catch (err) {
+    console.error(`WARN: durable state write failed: ${err.message}`);
+  }
+}
+
 async function main() {
   console.log(
     `[self-healing] repo=${REPO} mode=${DRY_RUN ? "DRY-RUN" : "LIVE"} repairToken=${REPAIR_TOKEN ? "present" : "ABSENT (repairs reported but not pushed)"}`
@@ -221,6 +266,18 @@ async function main() {
       continue;
     }
 
+    // SAFETY: the repairman may only ever delete concurrency-block lines.
+    const removed = text.split("\n").filter((l) => !fixedText.split("\n").includes(l));
+    const illegal = removed.filter((l) => l.trim() !== "" && !/^\s*(#.*)?$/.test(l) && !/^\s*(concurrency:|group:|cancel-in-progress:)/.test(l));
+    if (illegal.length) {
+      report.notes.push(`SAFETY ABORT ${file}: repair would remove non-concurrency lines: ${JSON.stringify(illegal.slice(0, 3))}`);
+      continue;
+    }
+    if (PROTECTED_FILES.includes(file)) {
+      report.notes.push(`OWNER APPROVAL REQUIRED: ${file} carries a violation, but the repairman never modifies the healer or its own safety controls. Escalating instead.`);
+      report.repairs.push({ file, job: jobNames, action: "escalated for owner approval", pushed: false, reason: "protected file" });
+      continue;
+    }
     fs.writeFileSync(file, fixedText, "utf8");
     for (const f of fixed) console.log(`[self-healing] REPAIRED ${file} job '${f.job}': ${f.action}`);
 
@@ -272,6 +329,11 @@ async function main() {
       const { text: fixedText, fixed } = applyFix(text, "strip");
       if (!fixed.length) continue;
       const jobNames = fixed.map((x) => x.job).join(", ");
+      if (PROTECTED_FILES.includes(file)) {
+        report.notes.push(`OWNER APPROVAL REQUIRED (proactive sweep): ${file} carries a violation; healer never self-repairs. Escalating.`);
+        report.repairs.push({ file, job: fixed.map((x) => x.job).join(", "), action: "escalated for owner approval", pushed: false, reason: "protected file" });
+        continue;
+      }
       if (!DRY_RUN) {
         fs.writeFileSync(file, fixedText, "utf8");
         for (const x of fixed) console.log(`[self-healing] PROACTIVE REPAIR ${file} job '${x.job}': ${x.action}`);
@@ -299,8 +361,10 @@ async function main() {
   }
 
   // ---- Circuit breaker ----
-  const state = loadState();
-  const repairsThisCycle = report.repairs.length;
+  let state = loadState();
+  const durable = await loadDurableState();
+  if (durable) state = { ...durable, ...state, _issue: undefined, alertFired: durable.alertFired, consecutiveRepairs: durable.consecutiveRepairs ?? state.consecutiveRepairs };
+  const repairsThisCycle = report.repairs.filter((r) => r.action && r.action !== "escalated for owner approval").length;
   state.lastCycleAt = new Date().toISOString();
   state.consecutiveRepairs = repairsThisCycle > 0 ? (state.consecutiveRepairs || 0) + 1 : 0;
   if (state.consecutiveRepairs === 0) state.alertFired = false;
@@ -313,6 +377,7 @@ async function main() {
     report.circuitBreaker = `watching: ${state.consecutiveRepairs}/${CIRCUIT_BREAKER_THRESHOLD + 1} consecutive repair cycles`;
   }
   saveState(state);
+  if (!DRY_RUN) await saveDurableState(state);
 
   // Checkpoint the breaker state (non-workflow file — GITHUB_TOKEN may push it).
   if (!DRY_RUN) {

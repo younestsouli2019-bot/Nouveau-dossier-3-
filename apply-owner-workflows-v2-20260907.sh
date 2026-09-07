@@ -41,6 +41,9 @@ if [ ! -f "$PATCH" ]; then
   exit 1
 fi
 
+echo "==> Capturing bootstrap-before manifest (cryptographic pre-patch evidence)..."
+node scripts/bootstrap-manifest.mjs before
+
 echo "==> Pre-flight: current workflow hazards (the engine will fix them)..."
 npx tsx scripts/devops-self-healing.ts sanitize --check .github/workflows || true
 
@@ -58,6 +61,16 @@ fi
 echo "==> Post-flight: static engine must report CLEAN..."
 npx tsx scripts/devops-self-healing.ts sanitize --check .github/workflows
 echo "CLEAN ✓"
+
+echo "==> Writing bootstrap-after manifest (proof: only intended blocks changed)..."
+node scripts/bootstrap-manifest.mjs after
+echo "    evidence: bootstrap-before.json / bootstrap-after.json"
+
+echo "==> Post-repair invariant gate (all swarm invariants must hold)..."
+node scripts/verify-swarm-invariants.mjs && echo "INVARIANTS HOLD ✓" || {
+  echo "ERROR: invariant gate FAILED — do not enable payment automation." >&2
+  exit 1
+}
 
 echo "==> Verifying workflow YAML parses..."
 for f in .github/workflows/autonomous-scheduler.yml \
