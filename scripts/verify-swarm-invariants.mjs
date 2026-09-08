@@ -126,6 +126,26 @@ function main() {
     nodeFloor = pkg.engines && pkg.engines.node;
   } catch {}
   const floorMajor = nodeFloor ? parseInt((nodeFloor.match(/(\d+)/) || [])[1], 10) : 0;
+
+  // I6 — no simulated settlement success (Resilient-Architecture rule):
+  // a rail without live wiring must throw, never write SUCCESS_* artifacts.
+  const SIMULATED_SUCCESS_RX = /SUCCESS_(GASLESS|DEFI|RELAY|AMM)/;
+  const simulated = [];
+  const walk = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) { if (e.name !== "node_modules" && e.name !== ".git") walk(full); }
+      else if (/\.(ts|tsx|mjs|js)$/.test(e.name)) {
+        const t = fs.readFileSync(full, "utf8");
+        if (SIMULATED_SUCCESS_RX.test(t)) simulated.push(path.relative(process.cwd(), full));
+      }
+    }
+  };
+  for (const top of ["src", "scripts"]) if (fs.existsSync(top)) walk(top);
+
+  check("I6:no-simulated-settlement-success", simulated.length === 0,
+    simulated.length ? `SUCCESS_* settlement artifacts found: ${simulated.join(", ")}` : "no rail fabricates settlement success");
+
   check("I5:node-floor-20", floorMajor >= 20, `package.json engines.node = ${nodeFloor || "MISSING"} (expected floor major >= 20)`);
 
   // ---- verdict ----
