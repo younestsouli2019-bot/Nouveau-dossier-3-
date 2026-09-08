@@ -106,9 +106,25 @@ async function sendTon() {
     process.exit(1);
   }
 
+  // I8: explicit capability grant required for actual money movement.
+  const cap = assertCapability('SEND_CRYPTO');
+  if (!cap.ok) {
+    console.log(JSON.stringify({
+      ok: false,
+      status: 'CAPABILITY_BLOCKED',
+      error: cap.error,
+      fundsMoved: false,
+      note: 'Set the CAP_SEND_CRYPTO flag to the literal boolean true to authorize. Dry-run planning is always allowed.',
+    }, null, 2));
+    return;
+  }
+
   try {
     const key = await mnemonicToWalletKey(mnemonicWords);
-    const wallet = WalletContractV4.create({ publicKey: key.publicKey });
+    // WalletContractV4 requires an explicit workchain (0 = mainnet basic); omitting
+    // it makes the SDK compute walletId = 698983191 + undefined = NaN and throw
+    // "NaN cannot be converted to a BigInt" before any transfer can even be built.
+    const wallet = WalletContractV4.create({ workchain: 0, publicKey: key.publicKey });
     const address = wallet.address;
 
     console.log(JSON.stringify({
@@ -121,19 +137,6 @@ async function sendTon() {
 
     if (!process.argv.includes('--confirm')) {
       console.log('Add --confirm to send.');
-      return;
-    }
-
-    // I8: explicit capability grant required for actual money movement.
-    const cap = assertCapability('SEND_CRYPTO');
-    if (!cap.ok) {
-      console.log(JSON.stringify({
-        ok: false,
-        status: 'CAPABILITY_BLOCKED',
-        error: cap.error,
-        fundsMoved: false,
-        note: 'Set the CAP_SEND_CRYPTO flag to the literal boolean true to authorize. Dry-run planning is always allowed.',
-      }, null, 2));
       return;
     }
 
