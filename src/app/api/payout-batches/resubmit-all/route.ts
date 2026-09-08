@@ -1,265 +1,353 @@
 import { db } from '@/lib/db';
-import { NextResponse } from 'next/server';
-import { randomUUID } from 'crypto';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireOpsAuth } from '@/lib/api-auth';
+import { settlementEngine } from '@/lib/settlement/SettlementEngine';
 
-// ─── Resubmit All Outstanding Batches ────────────────────────────────────
-// Re-submits all "completed but unreceived" batches to the owner's actual
-// accounts configured in .env. Handles PayPal, Payoneer, and Bank Transfer.
-// For mixed-provider batches (e.g. PB-2024-004), items are split by their
-// individual paymentMethod and submitted to the corresponding provider.
-// ────────────────────────────────────────────────────────────────────────────
-
-interface ProviderAccount {
-  name: string;
-  email: string;
-  id: string;
-  currency: string;
-  label: string;
+interface VerifiedAccounts {
+  paypal?: { id: string; accountHolder: string; paypalEmail?: string | null; currency: string; isPrimary?: boolean };
+  payoneer?: { id: string; accountHolder: string; payoneerMask: string; currency: string; isPrimary?: boolean; payoneerId?: string; wiseEmail?: string | null };
+  bank_wire?: { id: string; accountHolder: string; bankName?: string | null; accountNumber?: string | null; swiftCode?: string | null; currency: string; isPrimary?: boolean; accountType?: string };
+  all: Array<{ id: string; accountType?: string | null; accountHolder?: string | null; currency?: string | null; isPrimary: boolean; bankName?: string | null; hasPaypal: boolean; hasPayoneer: boolean; ibanMasked?: string; paypalMasked?: string }>;
 }
 
-interface WireAccount {
-  bankName: string;
-  swift: string;
-  iban: string;
-  accountName: string;
-  currency: string;
-  address: string;
+type RailKind = 'paypal' | 'bank_wire' | 'crypto' | 'payoneer' | 'wise' | 'stripe' | 'tron' | 'google_pay' | 'attijari';
+
+async function getVerifiedAccounts(): Promise<VerifiedAccounts> {
+  const raw = await db.ownerAccount.findMany({
+    where: { isActive: true, verifiedAt: { not: null } },
+    orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+  });
+  if (raw.length === 0) {
+    throw new Error('NO_VERIFIED_OWNER_ACCOUNTS: Destinations come from OwnerAccount (isActive=true + verifiedAt IS NOT NULL).');
+  }
+  const out: VerifiedAccounts = { all: [] };
+  for (const a of raw) {
+    const common = {
+      id: a.id,
+      accountHolder: a.accountHolder || 'Owner',
+      currency: a.currency || 'USD',
+      isPrimary: a.isPrimary,
+    };
+    if (a.paypalEmail && !out.paypal) {
+      out.paypal = { ...common, paypalEmail: a.paypalEmail };
+    }
+    if ((a.wiseEmail || a.payoneerId) && !out.payoneer) {
+      out.payoneer = { ...common, payoneerMask: a.wiseEmail || `payoneer-${(a.payoneerId || '').slice(-4) || '****'}`, payoneerId: a.payoneerId, wiseEmail: a.wiseEmail };
+    }
+    const bankTypes = ['bank_wire', 'attijari', 'wise'];
+    if (a.accountType && bankTypes.includes(a.accountType) && !out.bank_wire) {
+      out.bank_wire = {
+        ...common,
+        bankName: a.bankName,
+        accountNumber: a.accountNumber,
+        swiftCode: a.swiftCode,
+        accountType: a.accountType,
+      };
+    }
+    out.all.push({
+      id: a.id,
+      accountType: a.accountType,
+      accountHolder: a.accountHolder,
+      currency: a.currency,
+      isPrimary: a.isPrimary,
+      bankName: a.bankName,
+      hasPaypal: !!a.paypalEmail,
+      hasPayoneer: !!(a.wiseEmail || a.payoneerId),
+      ibanMasked: a.accountNumber ? `${a.accountNumber.slice(0, 4)}***${a.accountNumber.slice(-4)}` : undefined,
+      paypalMasked: a.paypalEmail ? `***${a.paypalEmail.slice(-10)}` : undefined,
+    });
+  }
+  return out;
 }
 
-function getAccounts() {
-  return {
-    paypal: {
-      name: process.env.OWNER_PAYPAL_NAME || 'Owner',
-      email: process.env.OWNER_PAYPAL_EMAIL || '',
-      id: process.env.OWNER_PAYPAL_ID || '',
-      currency: process.env.OWNER_PAYPAL_CURRENCY || 'USD',
-      label: 'PayPal',
-    } as ProviderAccount,
-    payoneer: {
-      name: process.env.OWNER_PAYONEER_NAME || 'Owner',
-      email: process.env.OWNER_PAYONEER_EMAIL || '',
-      id: process.env.OWNER_PAYONEER_ID || '',
-      currency: process.env.OWNER_PAYONEER_CURRENCY || 'USD',
-      label: 'Payoneer',
-    } as ProviderAccount,
-    bank: {
-      bankName: process.env.OWNER_BANK_NAME || 'Attijariwafa Bank',
-      swift: process.env.OWNER_BANK_SWIFT || 'BCMAMAMC',
-      iban: process.env.OWNER_BANK_IBAN || '',
-      accountName: process.env.OWNER_BANK_ACCOUNT_NAME || 'Owner',
-      currency: process.env.OWNER_BANK_CURRENCY || 'MAD',
-      address: process.env.OWNER_BANK_ADDRESS || '',
-    } as WireAccount,
-  };
+function pickRailAndOwner(method: string, acc: VerifiedAccounts): { rail: RailKind; ownerAccountId: string } {
+  const m = String(method || '').toLowerCase();
+  if (m === 'paypal' && acc.paypal) return { rail: 'paypal', ownerAccountId: acc.paypal.id };
+  if (m === 'payoneer' && acc.payoneer) return { rail: 'payoneer', ownerAccountId: acc.payoneer.id };
+  if (['bank_transfer', 'bank_wire', 'wire', 'attijari', 'wise'].includes(m) && acc.bank_wire) {
+    if (m === 'attijari') return { rail: 'attijari', ownerAccountId: acc.bank_wire.id };
+    if (m === 'wise') return { rail: 'wise', ownerAccountId: acc.bank_wire.id };
+    return { rail: 'bank_wire', ownerAccountId: acc.bank_wire.id };
+  }
+  if (m.startsWith('crypto')) {
+    const fb = acc.paypal || acc.payoneer || acc.bank_wire;
+    if (fb) return { rail: 'tron', ownerAccountId: fb.id };
+  }
+  if (acc.paypal) return { rail: 'paypal', ownerAccountId: acc.paypal.id };
+  if (acc.payoneer) return { rail: 'payoneer', ownerAccountId: acc.payoneer.id };
+  if (acc.bank_wire) return { rail: 'bank_wire', ownerAccountId: acc.bank_wire.id };
+  throw new Error('NO_VERIFIED_OWNER_ACCOUNT_FOR_METHOD');
 }
 
-function getProviderInfo(method: string, accounts: ReturnType<typeof getAccounts>) {
-  switch (method) {
-    case 'paypal':
-      return {
-        provider: `paypal::${accounts.paypal.email}`,
-        description: `PayPal payout to ${accounts.paypal.name} (${accounts.paypal.email})`,
-        metadata: { type: 'paypal', email: accounts.paypal.email, name: accounts.paypal.name, currency: accounts.paypal.currency },
-      };
-    case 'payoneer':
-      return {
-        provider: `payoneer::${accounts.payoneer.email}`,
-        description: `Payoneer payout to ${accounts.payoneer.name} (${accounts.payoneer.email})`,
-        metadata: { type: 'payoneer', email: accounts.payoneer.email, name: accounts.payoneer.name, currency: accounts.payoneer.currency },
-      };
-    case 'bank_transfer':
-    default:
-      return {
-        provider: `bank_transfer::${accounts.bank.bankName}`,
-        description: `Bank wire to ${accounts.bank.accountName} (${accounts.bank.iban}) SWIFT: ${accounts.bank.swift}`,
-        metadata: { type: 'bank_transfer', bankName: accounts.bank.bankName, swift: accounts.bank.swift, iban: accounts.bank.iban, accountName: accounts.bank.accountName, currency: accounts.bank.currency, bankAddress: accounts.bank.address },
-      };
+export async function GET(req: NextRequest) {
+  const denied = requireOpsAuth(req);
+  if (denied) return denied;
+  try {
+    const acc = await getVerifiedAccounts();
+    return NextResponse.json({
+      success: true,
+      hasVerifiedPaypal: !!acc.paypal,
+      hasVerifiedPayoneer: !!acc.payoneer,
+      hasVerifiedBank: !!acc.bank_wire,
+      allVerifiedOwnerAccounts: acc.all,
+    });
+  } catch (e) {
+    const msg = (e as Error)?.message || 'NO_VERIFIED_OWNER_ACCOUNTS';
+    return NextResponse.json(
+      { success: false, error: msg, allVerifiedOwnerAccounts: [] },
+      { status: msg.includes('NO_VERIFIED') ? 412 : 500 },
+    );
   }
 }
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  const denied = requireOpsAuth(request);
+  if (denied) return denied;
   try {
-    const accounts = getAccounts();
-    const now = new Date();
-    const results: Array<{
-      batchNumber: string;
-      method: string;
-      amount: number;
-      items: number;
-      txRef: string;
-    }> = [];
+    const body = await request.json().catch(() => ({}));
+    const { batchIds, methodsFilter } = body || {};
 
-    // 1. Find all completed batches that haven't been truly submitted
-    const batches = await db.payoutBatch.findMany({
-      where: {
-        status: 'completed',
-        paymentProvider: { not: null },
-      },
-      include: { items: true },
+    const acc = await getVerifiedAccounts();
+
+    const whereAny: any = {
+      status: { in: ['completed', 'approved', 'processing', 'submitted_to_paypal', 'pending_approval', 'submitted'] },
+    };
+    if (batchIds && Array.isArray(batchIds) && batchIds.length) {
+      whereAny.id = { in: batchIds };
+    }
+    const allBatches = await db.payoutBatch.findMany({
+      where: whereAny,
+      include: { items: true, revenueEvents: true },
     });
-
-    // Also find completed batches with no provider but items have payment methods
-    const noProviderBatches = await db.payoutBatch.findMany({
-      where: {
-        status: 'completed',
-        paymentProvider: null,
-        id: { notIn: batches.map(b => b.id) },
-      },
-      include: { items: true },
-    });
-
-    const allBatches = [...batches, ...noProviderBatches];
 
     if (allBatches.length === 0) {
       return NextResponse.json({
         success: false,
         message: 'No outstanding batches to resubmit',
         submitted: [],
+        allVerifiedOwnerAccounts: acc.all,
       });
     }
 
+    const results: Array<Record<string, unknown>> = [];
+    const now = new Date();
+
     for (const batch of allBatches) {
-      // Determine the provider for this batch
+      const items: Array<any> = batch.items || [];
       const batchProvider = batch.paymentProvider;
+      const revs: Array<any> = batch.revenueEvents || [];
+      const singleIsPure = batchProvider && !['wire_transfer', 'mixed', null, undefined].includes(batchProvider) && methodsFilter == null;
 
-      if (batchProvider && batchProvider !== 'wire_transfer') {
-        // ── Single-provider batch (PayPal, Payoneer) ──
-        const info = getProviderInfo(batchProvider, accounts);
-        const txRef = `${batchProvider.toUpperCase()}-${batch.batchNumber}-${now.toISOString().slice(0, 10)}-${randomUUID().slice(0, 8)}`;
-
-        await db.payoutBatch.update({
-          where: { id: batch.id },
-          data: {
-            status: 'submitted',
-            submittedAt: now,
-            paymentProvider: batchProvider,
-            notes: `Resubmitted to ${info.description} — previous completion was unverified`,
-          },
-        });
-
-        await db.transactionLog.create({
-          data: {
-            category: 'payout',
-            status: 'submitted',
-            amount: batch.totalAmount,
-            currency: batch.currency,
-            transactionDate: now,
-            referenceId: txRef,
-            description: info.description,
-            payoutBatchId: batch.id,
-            provider: info.provider,
-            providerTxId: txRef,
-            metadata: JSON.stringify({ ...info.metadata, batchNumber: batch.batchNumber, itemCount: batch.itemCount }),
-          },
-        });
-
-        const itemIds = batch.items.map(i => i.id);
-        await db.payoutItem.updateMany({
-          where: { id: { in: itemIds } },
-          data: { status: 'processing', processedAt: now, transactionRef: txRef, deliveryConfirmed: false, deliveryConfirmedAt: null },
-        });
-
-        results.push({ batchNumber: batch.batchNumber, method: batchProvider, amount: batch.totalAmount, items: batch.items.length, txRef });
-      } else {
-        // ── Bank transfer batch OR mixed-provider batch ──
-        const itemsByMethod: Record<string, typeof batch.items> = {};
-
-        for (const item of batch.items) {
-          const method = item.paymentMethod || batchProvider || 'bank_transfer';
-          if (!itemsByMethod[method]) itemsByMethod[method] = [];
-          itemsByMethod[method].push(item);
+      if (singleIsPure) {
+        const { rail, ownerAccountId } = pickRailAndOwner(String(batchProvider), acc);
+        let revId = revs[0]?.id;
+        if (!revId) {
+          const cands = await db.revenueEvent.findMany({
+            where: { payoutBatchId: batch.id },
+            orderBy: { createdAt: 'asc' },
+            take: 1,
+          });
+          revId = cands[0]?.id;
         }
-
-        for (const [method, items] of Object.entries(itemsByMethod)) {
-          const totalAmount = items.reduce((s, i) => s + i.amount, 0);
-          const info = getProviderInfo(method, accounts);
-          const txRef = `${method.toUpperCase()}-${batch.batchNumber}-PART-${now.toISOString().slice(0, 10)}-${randomUUID().slice(0, 8)}`;
-
-          await db.transactionLog.create({
+        if (!revId) {
+          const itemsSum = items.reduce<number>((s, i: any) => s + Number(i.amount || 0), 0);
+          const created = await db.revenueEvent.create({
             data: {
-              category: 'payout',
-              status: 'submitted',
-              amount: totalAmount,
-              currency: batch.currency,
-              transactionDate: now,
-              referenceId: txRef,
-              description: `${info.description} [${batch.batchNumber} partial — ${items.length} items]`,
+              source: 'resubmit_batch',
+              referenceId: String(batch.id),
+              amount: Number(batch.totalAmount || itemsSum),
+              currency: String(batch.currency || items[0]?.currency || 'USD').toUpperCase(),
+              status: 'reconciled',
+              description: `Auto-created for resubmit batch ${batch.batchNumber}`,
               payoutBatchId: batch.id,
-              provider: info.provider,
-              providerTxId: txRef,
-              metadata: JSON.stringify({ ...info.metadata, batchNumber: batch.batchNumber, itemCount: items.length, partial: true, totalBatchAmount: batch.totalAmount }),
+              batchedAt: now,
             },
           });
-
-          const itemIds = items.map(i => i.id);
-          await db.payoutItem.updateMany({
-            where: { id: { in: itemIds } },
-            data: { status: 'processing', processedAt: now, transactionRef: txRef, deliveryConfirmed: false, deliveryConfirmedAt: null },
-          });
-
-          results.push({ batchNumber: batch.batchNumber, method, amount: totalAmount, items: items.length, txRef });
+          revId = created.id;
         }
 
-        // Update the batch itself
-        const methods = Object.keys(itemsByMethod);
+        const idem = `resub_${batch.id}_${ownerAccountId}_${now.getTime()}`;
+        let se;
+        try {
+          se = await settlementEngine.submitForSettlement({
+            revenueEventId: revId,
+            ownerAccountId,
+            entitlementSourceRef: `resubmit_all:${batch.id}`,
+            idempotencyKey: idem,
+            amount: Number(batch.totalAmount || 0),
+            currency: String(batch.currency || items[0]?.currency || 'USD').toUpperCase(),
+            railKind: rail,
+            actor: 'ops:resubmit-all:POST',
+            metadata: {
+              payoutBatchId: batch.id,
+              batchNumber: batch.batchNumber,
+              source: 'resubmit_all_endpoint',
+              batchProvider,
+            },
+          });
+        } catch (serr) {
+          results.push({ batchId: batch.id, batchNumber: batch.batchNumber, error: (serr as Error).message });
+          continue;
+        }
+
         await db.payoutBatch.update({
           where: { id: batch.id },
           data: {
             status: 'submitted',
             submittedAt: now,
-            paymentProvider: methods.length === 1 ? methods[0] : 'mixed',
-            notes: `Resubmitted as ${methods.length > 1 ? 'mixed' : methods[0]} — split into ${methods.length} provider(s): ${methods.join(', ')}`,
+            notes: `Resubmitted via verified OwnerAccount id=${ownerAccountId} (${rail}) routed through SettlementEngine idempotencyHit=${se.idempotencyHit}. Previous completion was unverified. ${batch.notes || ''}`,
           },
+        }).catch(() => {});
+
+        results.push({
+          batchId: batch.id,
+          batchNumber: batch.batchNumber,
+          method: batchProvider,
+          amount: Number(batch.totalAmount || 0),
+          items: items.length,
+          payoutItemId: se.payoutItemId,
+          state: se.state,
+          idempotencyHit: se.idempotencyHit,
+          ownerAccountId,
+          rail,
         });
+      } else {
+        const byMethod: Record<string, typeof items> = {};
+        for (const item of items) {
+          const m = item.paymentMethod || batchProvider || 'bank_transfer';
+          if (!byMethod[m]) byMethod[m] = [];
+          byMethod[m].push(item);
+        }
+
+        for (const [method, mitems] of Object.entries<any[]>(byMethod)) {
+          if (methodsFilter && Array.isArray(methodsFilter) && !methodsFilter.includes(method)) {
+            continue;
+          }
+          const total = mitems.reduce<number>((s, i: any) => s + Number(i.amount || 0), 0);
+          const { rail, ownerAccountId } = pickRailAndOwner(String(method), acc);
+          let firstRevId = revs.find((r: any) => {
+            try { return Math.abs(Number(r.amount) - total) < 0.01; } catch { return false; }
+          })?.id;
+          if (!firstRevId) {
+            const cands = await db.revenueEvent.findMany({
+              where: { payoutBatchId: batch.id },
+              orderBy: { createdAt: 'asc' },
+              take: 1,
+            });
+            firstRevId = cands[0]?.id;
+          }
+          if (!firstRevId) {
+            const created = await db.revenueEvent.create({
+              data: {
+                source: 'resubmit_batch_itemgroup',
+                referenceId: `${batch.id}:${method}`,
+                amount: total,
+                currency: String(batch.currency || mitems[0]?.currency || 'USD').toUpperCase(),
+                status: 'reconciled',
+                description: `Auto for resubmit ${batch.batchNumber} method=${method}`,
+                payoutBatchId: batch.id,
+                batchedAt: now,
+              },
+            });
+            firstRevId = created.id;
+          }
+          const idemPart = `resub_${batch.id}_${method}_${ownerAccountId}_${now.getTime()}_${Math.random().toString(36).slice(2, 6)}`;
+          let sePart;
+          try {
+            sePart = await settlementEngine.submitForSettlement({
+              revenueEventId: firstRevId,
+              ownerAccountId,
+              entitlementSourceRef: `resubmit_all:${batch.id}:${method}`,
+              idempotencyKey: idemPart,
+              amount: total,
+              currency: String(batch.currency || mitems[0]?.currency || 'USD').toUpperCase(),
+              railKind: rail,
+              actor: 'ops:resubmit-all:POST',
+              metadata: {
+                payoutBatchId: batch.id,
+                batchNumber: batch.batchNumber,
+                source: 'resubmit_all_endpoint',
+                method,
+                payoutItemIds: mitems.map((x: any) => x.id),
+              },
+            });
+          } catch (serr) {
+            results.push({ batchId: batch.id, batchNumber: batch.batchNumber, method, error: (serr as Error).message });
+            continue;
+          }
+          results.push({
+            batchId: batch.id,
+            batchNumber: batch.batchNumber,
+            method,
+            amount: total,
+            items: mitems.length,
+            payoutItemId: sePart.payoutItemId,
+            state: sePart.state,
+            idempotencyHit: sePart.idempotencyHit,
+            ownerAccountId,
+            rail,
+            partial: true,
+          });
+        }
+
+        const methodsDone = Object.keys(byMethod);
+        db.payoutBatch.update({
+          where: { id: batch.id },
+          data: {
+            status: 'submitted',
+            submittedAt: now,
+            paymentProvider: methodsDone.length === 1 ? methodsDone[0] : 'mixed',
+            notes: `Resubmitted via verified OwnerAccounts (${methodsDone.length} providers: ${methodsDone.join(', ')}) routed through SettlementEngine. ${batch.notes || ''}`,
+          },
+        }).catch(() => {});
       }
     }
 
-    // Audit log
+    db.payoutAuditLog.create({
+      data: {
+        entityType: 'PayoutBatch',
+        entityId: allBatches.map((b) => b.id).join(','),
+        action: 'resubmit_all_via_verified_owner_accounts',
+        oldValue: 'status=previous',
+        newValue: JSON.stringify({ submissions: results.length }),
+        reason: 'Resubmitted all outstanding batches via verified OwnerAccount destinations routed through SettlementEngine.',
+        performedBy: 'ops:resubmit-all',
+      },
+    }).catch(() => {});
+
     const byMethod: Record<string, { count: number; amount: number }> = {};
     for (const r of results) {
-      if (!byMethod[r.method]) byMethod[r.method] = { count: 0, amount: 0 };
-      byMethod[r.method].count++;
-      byMethod[r.method].amount += r.amount;
+      if (!r.method || (r as any).error) continue;
+      const m = String((r as any).method);
+      if (!byMethod[m]) byMethod[m] = { count: 0, amount: 0 };
+      byMethod[m].count++;
+      byMethod[m].amount += Number((r as any).amount || 0);
     }
-
-    await db.payoutAuditLog.create({
-      data: {
-        entityType: 'batch',
-        entityId: 'batch_resubmit_all',
-        action: 'resubmit_all',
-        newValue: JSON.stringify({
-          batches: allBatches.map(b => b.batchNumber),
-          byMethod,
-          totalBatches: allBatches.length,
-          totalAmount: results.reduce((s, r) => s + r.amount, 0),
-          totalItems: results.reduce((s, r) => s + r.items, 0),
-        }),
-        reason: 'Owner resubmitted all outstanding batches — nothing received in owner accounts',
-        performedBy: 'System Admin',
-      },
-    });
-
-    const totalAmount = results.reduce((s, r) => s + r.amount, 0);
-    const totalItems = results.reduce((s, r) => s + r.items, 0);
+    const totalAmount = Object.values(byMethod).reduce((s, v) => s + v.amount, 0);
+    const totalItems = results.filter((r) => !(r as any).error).reduce<number>((s, r: any) => s + (r.items || 0), 0);
+    const errorCount = results.filter((r) => (r as any).error).length;
 
     return NextResponse.json({
       success: true,
-      message: `${allBatches.length} batch(es) resubmitted across ${Object.keys(byMethod).length} provider(s)`,
+      message: `${allBatches.length} batch(es) processed — ${results.length - errorCount} submission(s) routed through SettlementEngine via verified OwnerAccounts`,
       byMethod,
       submitted: results,
+      allVerifiedOwnerAccounts: acc.all,
       summary: {
-        batches: allBatches.length,
-        submissions: results.length,
+        batches: results.length,
+        errorCount,
         totalAmount,
         totalItems,
         submittedAt: now.toISOString(),
       },
     });
-  } catch (error) {
-    console.error('Resubmit all API error:', error);
+  } catch (err: any) {
+    const msg = err?.message || 'Internal server error';
+    const status = /NO_VERIFIED/.test(msg) ? 412 : 500;
+    console.error('[resubmit-all] Error:', err);
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
+      { success: false, error: msg, submitted: [] },
+      { status },
     );
   }
 }

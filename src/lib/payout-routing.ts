@@ -209,8 +209,79 @@ export async function getRoutingRules() {
 }
 
 export async function getPlatformAccounts() {
-  // NOTE: platformSettlementAccount was a phantom model (never in schema.prisma).
-  // The nearest real concept is OwnerAccount (isActive, accountType). Callers
-  // should treat this as the active settlement-capable accounts list.
-  return prisma.ownerAccount.findMany({ where: { isActive: true }, orderBy: { sortOrder: 'asc' } });
+  return prisma.ownerAccount.findMany({ where: { isActive: true, verifiedAt: { not: null } }, orderBy: { sortOrder: 'asc' } });
+}
+
+interface RouteInputOwnerAccount {
+  id: string;
+  accountType: string;
+  isActive: boolean;
+  verifiedAt: Date | string | null;
+  countryCode?: string | null;
+  purposes?: unknown;
+}
+
+interface ResolveBestPayoutRouteInput {
+  amount: number;
+  currency: string;
+  ownerAccounts: RouteInputOwnerAccount[];
+  preferredRail?: string;
+}
+
+interface ResolveBestPayoutRouteResult {
+  ownerAccountId: string;
+  rail: string;
+  purpose?: string;
+  maxAmount?: number;
+}
+
+const RAIL_FOR_ACCOUNT_TYPE: Record<string, string> = {
+  paypal: 'paypal',
+  payoneer: 'payoneer',
+  wise: 'wise',
+  stripe: 'stripe',
+  attijari: 'attijari',
+  bank_wire: 'bank_wire',
+  bank: 'bank_wire',
+  sepa: 'bank_wire',
+  iban: 'bank_wire',
+  ach: 'bank_wire',
+  l2_crypto: 'crypto',
+  crypto: 'crypto',
+  tron: 'tron',
+  google_pay: 'google_pay',
+};
+
+function isUsableAccount(a: RouteInputOwnerAccount): boolean {
+  if (!a.isActive) return false;
+  if (a.verifiedAt === null || a.verifiedAt === undefined) return false;
+  const rail = RAIL_FOR_ACCOUNT_TYPE[(a.accountType || '').toLowerCase()];
+  if (!rail) return false;
+  return true;
+}
+
+export function resolveBestPayoutRoute(input: ResolveBestPayoutRouteInput): ResolveBestPayoutRouteResult | null {
+  const { ownerAccounts, preferredRail, currency } = input;
+  const candidates = ownerAccounts.filter(isUsableAccount);
+  if (candidates.length === 0) return null;
+
+  const normalize = (t: string) => RAIL_FOR_ACCOUNT_TYPE[(t || '').toLowerCase()];
+  const preferred = preferredRail ? preferredRail.toLowerCase() : null;
+
+  const scored = candidates.map((a) => {
+    const rail = normalize(a.accountType) || 'bank_wire';
+    let score = 100;
+    if (preferred && rail === preferred) score += 1000;
+    if ((a as unknown as { isPrimary?: boolean }).isPrimary) score += 50;
+    return { a, rail, score };
+  });
+  scored.sort((x, y) => y.score - x.score);
+  const top = scored[0];
+  void currency;
+  return {
+    ownerAccountId: top.a.id,
+    rail: top.rail,
+    purpose: 'owner_payout',
+    maxAmount: undefined,
+  };
 }

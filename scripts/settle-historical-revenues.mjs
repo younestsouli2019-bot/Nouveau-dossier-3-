@@ -79,18 +79,23 @@ class HistoricalRevenueProcessor {
 			"payoneer",
 			"historical",
 		);
+		const ownerEmail =
+			process.env.OWNER_PAYONEER_EMAIL ||
+			process.env.SETTLEMENT_REQUESTOR_EMAIL;
+		const ownerName =
+			process.env.OWNER_NAME || process.env.SETTLEMENT_REQUESTOR_NAME;
+		if (!ownerEmail || !ownerName) {
+			throw new Error(
+				"Owner destination not configured: OWNER_PAYONEER_EMAIL / OWNER_NAME " +
+					"(or SETTLEMENT_REQUESTOR_EMAIL / SETTLEMENT_REQUESTOR_NAME) must be set. " +
+					"No hardcoded fallback destinations are permitted.",
+			);
+		}
 		this.ownerConfig = {
-			recipient_email:
-				process.env.OWNER_PAYONEER_EMAIL ||
-				process.env.SETTLEMENT_REQUESTOR_EMAIL ||
-				"younestsouli2019@gmail.com", // Fallback to known owner
-			recipient_name:
-				process.env.OWNER_NAME ||
-				process.env.SETTLEMENT_REQUESTOR_NAME ||
-				"Younes Tsouli",
+			recipient_email: ownerEmail,
+			recipient_name: ownerName,
 			payer_name: process.env.BUSINESS_NAME || "RealWorldCerts",
-			payer_email:
-				process.env.BUSINESS_EMAIL || "supervisor@realworldcerts.com",
+			payer_email: process.env.BUSINESS_EMAIL || "supervisor@realworldcerts.com",
 			payer_company: process.env.BUSINESS_COMPANY || "RealWorldCerts",
 		};
 	}
@@ -258,20 +263,24 @@ class HistoricalRevenueProcessor {
 	}
 
 	async updateLedger(batchId, events) {
-		// Update the original revenue events with the payout_batch_id
-		// This marks them as settled in your ledger
+		// Update the original revenue events with the payout_batch_id.
+		// INSTRUCTION != SETTLEMENT: this records an instruction only.
 		const ledgerPath = path.join(process.cwd(), "data", "ledger_updates.json");
 
 		const updateRecord = {
 			timestamp: new Date().toISOString(),
 			batch_id: batchId,
-			action: "historical_settlement",
-			events_settled: events.map((e) => ({
+			action: "payout_instruction_generated",
+			// INSTRUCTION != SETTLEMENT: generating a Payoneer CSV/XLS merely
+			// prepares a batch for manual upload. Nothing is settled until the
+			// provider confirms execution and reconciliation completes.
+			events_instructed: events.map((e) => ({
 				event_id: e.event_id,
 				amount: e.amount,
 				currency: e.currency,
-				settled_at: new Date().toISOString(),
+				instruction_generated_at: new Date().toISOString(),
 			})),
+			settled: false,
 			constitutional_check: ConstitutionalGuard.validateRevenueSettlement(
 				events,
 				events.reduce((sum, e) => sum + parseFloat(e.amount), 0),
@@ -289,7 +298,9 @@ class HistoricalRevenueProcessor {
 		existingUpdates.push(updateRecord);
 		await fs.writeFile(ledgerPath, JSON.stringify(existingUpdates, null, 2));
 
-		console.log(`📝 Ledger updated with ${events.length} settled events`);
+		console.log(
+			`📝 Ledger updated: ${events.length} events queued as PAYOUT INSTRUCTIONS (not settled)`,
+		);
 		return updateRecord;
 	}
 }
@@ -415,16 +426,21 @@ async function settleHistoricalRevenues() {
 			results.push(result);
 		}
 
-		console.log("\n🎉 Historical Revenue Settlement Complete!");
+		console.log("\n🎉 Historical Revenue Instruction Generation Complete!");
 		console.log("=".repeat(50));
 		console.log(
-			`💰 Total Settled: $${results.reduce((acc, r) => acc + r.totalAmount, 0).toFixed(2)}`,
+			`💰 Total Instruction Amount: $${results.reduce((acc, r) => acc + r.totalAmount, 0).toFixed(2)}`,
 		);
 		console.log(`📦 Batches Generated: ${results.length}`);
 		console.log(`📁 Files in: ${processor.outputDir}`);
+		console.log(
+			"⚠️  These are PAYOUT INSTRUCTIONS only — nothing is settled until provider-confirmed + reconciled.",
+		);
 
 		return {
-			settled: true,
+			// Instructions were generated; settlement status is explicitly false.
+			settled: false,
+			instruction_generated: true,
 			batches: results,
 			total_amount: results.reduce((acc, r) => acc + r.totalAmount, 0),
 		};
@@ -445,7 +461,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
 
 	settleHistoricalRevenues()
 		.then((result) => {
-			if (result.settled) {
+			if (result.instruction_generated) {
 				process.exit(0);
 			} else {
 				console.error(`Failed: ${result.reason}`);

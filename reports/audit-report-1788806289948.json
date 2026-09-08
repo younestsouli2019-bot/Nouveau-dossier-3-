@@ -1,0 +1,64 @@
+{
+  "timestamp": "2026-09-07T18:38:09.936Z",
+  "summary": {
+    "totalAudited": 1,
+    "criticalFindings": 0,
+    "highFindings": 0,
+    "mediumFindings": 0,
+    "lowFindings": 0,
+    "totalSuspectAmount": 0,
+    "quarantinedCount": 0
+  },
+  "findings": [],
+  "quarantinedEntities": [],
+  "audits": {
+    "OwnerSettlements": {
+      "total": 0,
+      "fakeTxHashes": [],
+      "fakePaypalIds": [],
+      "fakeBankRefs": [],
+      "misrouted": []
+    },
+    "CryptoSettlements": {
+      "total": 0,
+      "misroutedFunds": [],
+      "fakeAddresses": [],
+      "fakeTxHashes": []
+    },
+    "PayoutBatches": {
+      "total": 0,
+      "fabricated": [],
+      "missingProviderRef": [],
+      "duplicatedBatches": []
+    },
+    "PayoutItems": {
+      "total": 0,
+      "fabricated": [],
+      "duplicated": [],
+      "missingDelivery": []
+    },
+    "RevenueEvents": {
+      "total": 0,
+      "fabricated": [],
+      "missingProof": [],
+      "zeroAmount": [],
+      "selfCreated": []
+    },
+    "OwnerPayments": {
+      "total": 0,
+      "fakeRouting": [],
+      "misrouted": [],
+      "suspiciousDestinations": []
+    },
+    "Procurement": {
+      "totalItems": 1,
+      "totalPOs": 0,
+      "totalShipments": 0,
+      "stateMachineViolations": [],
+      "fakeSuppliers": [],
+      "qtyMismatches": [],
+      "deliveredWithoutReceipt": [],
+      "missingDeliveryProof": []
+    }
+  }
+}

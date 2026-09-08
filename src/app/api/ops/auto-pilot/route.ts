@@ -1,8 +1,9 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
-import { getOwnerEmail, getOwnerDisplayName, getOwnerNameUpper, tryGetOwnerEmail, tryGetOwnerNameUpper } from '@/lib/owner-config';
+import { tryGetOwnerEmail, tryGetOwnerNameUpper } from '@/lib/owner-config';
 import { requireOpsAuth } from '@/lib/api-auth';
 import { isSyntheticOracleHash } from '@/lib/procurement/payment-gateway-router';
+import { settlementEngine } from '@/lib/settlement/SettlementEngine';
 
 // ─── AUTO-PILOT ENGINE (HONEST-INTENT) ─────────────────────────────────────
 // Hands-free pipeline support: report → queue → build intent → notify humans.
@@ -55,6 +56,44 @@ async function logRun(phase: Phase, status: string, itemsAffected: number, amoun
   await db.autoPilotRun.create({
     data: { trigger: 'api', phase, status, itemsAffected, amountAffected, details, durationMs },
   });
+}
+
+async function getVerifiedOwnerAccounts() {
+  const accounts = await db.ownerAccount.findMany({
+    where: { isActive: true, verifiedAt: { not: null } },
+    orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+  });
+  if (accounts.length === 0) {
+    throw new Error(
+      'NO_VERIFIED_OWNER_ACCOUNTS: Destinations come from OwnerAccount (isActive=true + verifiedAt IS NOT NULL). Seed via owner-accounts endpoint first.',
+    );
+  }
+  return accounts;
+}
+
+async function getPreferredVerifiedOwner(currency?: string) {
+  const all = await getVerifiedOwnerAccounts();
+  let match = currency
+    ? all.find((a) => a.currency?.toUpperCase() === currency.toUpperCase())
+    : null;
+  if (!match) match = all.find((a) => a.isPrimary) ?? all[0];
+  return match;
+}
+
+async function getOwnerIdentityFilters() {
+  const all = await getVerifiedOwnerAccounts();
+  const emails = new Set<string>();
+  const names = new Set<string>();
+  for (const a of all) {
+    if (a.paypalEmail) emails.add(a.paypalEmail.toLowerCase());
+    if (a.payoneerId) emails.add(String(a.payoneerId));
+    if (a.accountHolder) names.add(a.accountHolder.toUpperCase());
+  }
+  const fallbackEmail = tryGetOwnerEmail();
+  const fallbackName = tryGetOwnerNameUpper();
+  if (fallbackEmail) emails.add(fallbackEmail.toLowerCase());
+  if (fallbackName) names.add(fallbackName.toUpperCase());
+  return { emails, names };
 }
 
 /** A provider reference is REAL only if it exists and is not locally-minted. */
@@ -384,7 +423,7 @@ async function notifyRecipients() {
 
 // ── Phase 10: Batch unassigned revenue ───────────────────────────────────
 // Revenue Reconciliation: Find confirmed revenue events with no batch, assign them
-// All revenue belongs to the OWNER — items are created with OWNER_NAME/OWNER_EMAIL
+// All revenue goes to verified OwnerAccount via SettlementEngine.submitForSettlement
 async function batchUnassignedRevenue() {
   const start = Date.now();
   const unbatchedEvents = await db.revenueEvent.findMany({
@@ -396,39 +435,71 @@ async function batchUnassignedRevenue() {
     return 0;
   }
 
-  const OWNER_NAME = getOwnerDisplayName();
-  const OWNER_EMAIL = getOwnerEmail();
+  let verifiedOwner;
+  try {
+    verifiedOwner = await getPreferredVerifiedOwner();
+  } catch (e) {
+    const msg = (e as Error)?.message || 'NO_VERIFIED_OWNER_ACCOUNTS';
+    await logRun('batch_unassigned_revenue', 'error', 0, 0, msg, Date.now() - start);
+    return 0;
+  }
 
-  // Try to find an existing pending_approval batch to add to
+  const railKind: 'paypal' | 'bank_wire' | 'payoneer' | 'attijari' | 'wise' | 'crypto' | 'tron' |
+    'stripe' | 'google_pay' =
+    verifiedOwner.paypalEmail ? 'paypal' :
+    verifiedOwner.accountType === 'attijari' ? 'attijari' :
+    verifiedOwner.accountType === 'wise' ? 'wise' :
+    verifiedOwner.accountType === 'payoneer' ? 'payoneer' :
+    verifiedOwner.accountType === 'tron' || verifiedOwner.accountType?.includes('trc20') ? 'tron' :
+    verifiedOwner.accountType?.startsWith('crypto') ? 'crypto' : 'bank_wire';
+
+  // Try to find an existing pending_approval batch to add to (for UI/tracking only;
+  // durable lifecycle is owned by SettlementEngine/PayoutItem)
   let targetBatch: { id: string; batchNumber: string; itemCount: number; totalAmount: number } | null =
     await db.payoutBatch.findFirst({
       where: { status: 'pending_approval' },
     });
 
   const totalAmount = unbatchedEvents.reduce((s, e) => s + e.amount, 0);
+  const actor = 'auto-pilot:batchUnassignedRevenue';
 
   if (targetBatch) {
-    // Add to existing pending_approval batch
     const itemCount = targetBatch.itemCount + unbatchedEvents.length;
     const newTotal = targetBatch.totalAmount + totalAmount;
 
     for (const ev of unbatchedEvents) {
-      await db.payoutItem.create({
-        data: {
-          payoutBatchId: targetBatch.id,
-          batchNumber: targetBatch.batchNumber,
-          recipientName: OWNER_NAME,
-          recipientEmail: OWNER_EMAIL,
-          amount: ev.amount,
-          status: 'pending',
-        },
+      const idem = `ap_batch_${ev.id}_${targetBatch!.batchNumber}`;
+      let payoutItemId: string | null = null;
+      let idempotencyHit = false;
+      try {
+        const sr = await settlementEngine.submitForSettlement({
+          revenueEventId: ev.id,
+          ownerAccountId: verifiedOwner.id,
+          entitlementSourceRef: `auto_pilot:batch:${ev.id}`,
+          idempotencyKey: idem,
+          amount: Number(ev.amount),
+          currency: String(ev.currency || 'USD').toUpperCase(),
+          railKind,
+          actor,
+          metadata: { payoutBatchId: targetBatch!.id, batchNumber: targetBatch!.batchNumber, source: 'auto_pilot' },
+        });
+        payoutItemId = sr.payoutItemId;
+        idempotencyHit = sr.idempotencyHit;
+      } catch (se) {
+        console.error(`[auto-pilot] submitForSettlement failed ev=${ev.id}:`, (se as Error).message);
+        continue;
+      }
+      await db.payoutItem.update({
+        where: { id: payoutItemId },
+        data: { payoutBatchId: targetBatch!.id, batchNumber: targetBatch!.batchNumber },
       });
       await db.revenueEvent.update({
         where: { id: ev.id },
-        data: { payoutBatchId: targetBatch.id, batchedAt: new Date() },
+        data: { payoutBatchId: targetBatch!.id, batchedAt: new Date() },
       });
       await audit('RevenueEvent', ev.id, 'auto_batch_assign', 'payoutBatchId=null',
-        `payoutBatchId=${targetBatch.id}`, `Auto-Pilot: Revenue event added to existing batch ${targetBatch.batchNumber}`);
+        `payoutBatchId=${targetBatch!.id},payoutItemId=${payoutItemId},idempotencyHit=${idempotencyHit},ownerAccountId=${verifiedOwner.id}`,
+        `Auto-Pilot: Revenue event queued via SettlementEngine to batch ${targetBatch!.batchNumber}`);
     }
 
     await db.payoutBatch.update({
@@ -436,12 +507,11 @@ async function batchUnassignedRevenue() {
       data: { totalAmount: newTotal, itemCount },
     });
     await audit('PayoutBatch', targetBatch.id, 'auto_batch_add_items', `itemCount=${targetBatch.itemCount}`,
-      `itemCount=${itemCount}`, `Auto-Pilot: Added ${unbatchedEvents.length} revenue items to batch`, targetBatch.id);
+      `itemCount=${itemCount}`, `Auto-Pilot: Queued ${unbatchedEvents.length} revenue items via SettlementEngine`, targetBatch.id);
 
     await logRun('batch_unassigned_revenue', 'success', unbatchedEvents.length, totalAmount,
-      `Added ${unbatchedEvents.length} revenue events to existing batch ${targetBatch.batchNumber}`, Date.now() - start);
+      `Queued ${unbatchedEvents.length} revenue events via SettlementEngine into batch ${targetBatch.batchNumber} (ownerAccountId=${verifiedOwner.id})`, Date.now() - start);
   } else {
-    // Create a new batch
     const now = new Date();
     const batchNum = `PB-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const batchCount = await db.payoutBatch.count();
@@ -453,35 +523,51 @@ async function batchUnassignedRevenue() {
         totalAmount,
         status: 'pending_approval',
         itemCount: unbatchedEvents.length,
-        notes: `Auto-Pilot: Created for ${unbatchedEvents.length} unbatched revenue events`,
+        notes: `Auto-Pilot: Created for ${unbatchedEvents.length} unbatched revenue events (ownerAccountId=${verifiedOwner.id})`,
       },
     });
 
     for (const ev of unbatchedEvents) {
-      await db.payoutItem.create({
-        data: {
-          payoutBatchId: targetBatch.id,
-          batchNumber: targetBatch.batchNumber,
-          recipientName: OWNER_NAME,
-          recipientEmail: OWNER_EMAIL,
-          amount: ev.amount,
-          status: 'pending',
-        },
+      const idem = `ap_batch_${ev.id}_${batchNumber}`;
+      let payoutItemId: string | null = null;
+      let idempotencyHit = false;
+      try {
+        const sr = await settlementEngine.submitForSettlement({
+          revenueEventId: ev.id,
+          ownerAccountId: verifiedOwner.id,
+          entitlementSourceRef: `auto_pilot:batch:${ev.id}`,
+          idempotencyKey: idem,
+          amount: Number(ev.amount),
+          currency: String(ev.currency || 'USD').toUpperCase(),
+          railKind,
+          actor,
+          metadata: { payoutBatchId: targetBatch!.id, batchNumber, source: 'auto_pilot' },
+        });
+        payoutItemId = sr.payoutItemId;
+        idempotencyHit = sr.idempotencyHit;
+      } catch (se) {
+        console.error(`[auto-pilot] submitForSettlement failed ev=${ev.id}:`, (se as Error).message);
+        continue;
+      }
+      await db.payoutItem.update({
+        where: { id: payoutItemId },
+        data: { payoutBatchId: targetBatch!.id, batchNumber },
       });
       await db.revenueEvent.update({
         where: { id: ev.id },
-        data: { payoutBatchId: targetBatch.id, batchedAt: new Date() },
+        data: { payoutBatchId: targetBatch!.id, batchedAt: new Date() },
       });
       await audit('RevenueEvent', ev.id, 'auto_batch_assign', 'payoutBatchId=null',
-        `payoutBatchId=${targetBatch.id}`, `Auto-Pilot: Revenue event assigned to new batch ${batchNumber}`);
+        `payoutBatchId=${targetBatch!.id},payoutItemId=${payoutItemId},idempotencyHit=${idempotencyHit},ownerAccountId=${verifiedOwner.id}`,
+        `Auto-Pilot: Revenue event assigned via SettlementEngine to new batch ${batchNumber}`);
     }
 
     await audit('PayoutBatch', targetBatch.id, 'auto_batch_create', 'N/A',
-      `batchNumber=${batchNumber},itemCount=${unbatchedEvents.length}`,
-      `Auto-Pilot: New batch created for ${unbatchedEvents.length} unbatched revenue events`, targetBatch.id);
+      `batchNumber=${batchNumber},itemCount=${unbatchedEvents.length},ownerAccountId=${verifiedOwner.id}`,
+      `Auto-Pilot: New batch created; ${unbatchedEvents.length} revenue events queued via SettlementEngine`, targetBatch.id);
 
     await logRun('batch_unassigned_revenue', 'success', unbatchedEvents.length, totalAmount,
-      `Created new batch ${batchNumber} with ${unbatchedEvents.length} revenue events`, Date.now() - start);
+      `Created new batch ${batchNumber} with ${unbatchedEvents.length} revenue events queued via SettlementEngine (ownerAccountId=${verifiedOwner.id})`, Date.now() - start);
   }
 
   return unbatchedEvents.length;
@@ -717,22 +803,58 @@ async function resolveOrphanTransactions() {
 
     const candidateRef = txLog.providerTxId || txLog.referenceId;
     const transactionRef = isRealProviderRef(candidateRef) ? candidateRef : null;
+    const method: string = txLog.provider === 'paypal' ? 'paypal' : txLog.provider === 'payoneer' ? 'payoneer' : 'bank_transfer';
 
-    // Create the missing PayoutItem as PENDING (never completed, never deliveryConfirmed)
-    const newItem = await db.payoutItem.create({
-      data: {
-        payoutBatchId: targetBatch.id,
-        batchNumber: targetBatch.batchNumber,
-        recipientName: getOwnerDisplayName(),
-        recipientEmail: getOwnerEmail(),
-        amount: txLog.amount,
-        currency: txLog.currency,
-        status: 'pending',
-        paymentMethod: txLog.provider === 'paypal' ? 'paypal' : txLog.provider === 'payoneer' ? 'payoneer' : 'bank_transfer',
-        transactionRef,
-        ...(transactionRef ? {} : { failureReason: 'AUTO-PILOT DEFANG: resolve_orphan requires a REAL provider ref (txLog.providerTxId/reference was missing or locally-minted). Attach real provider proof before payout.' }),
-      },
-    });
+    let orphanOwner;
+    let payoutItemId: string | null = null;
+    try {
+      orphanOwner = await getPreferredVerifiedOwner(txLog.currency ?? 'USD');
+      const railKind: 'paypal' | 'bank_wire' | 'payoneer' | 'attijari' | 'wise' | 'crypto' | 'tron' |
+        'stripe' | 'google_pay' =
+        method === 'paypal' ? 'paypal' : method === 'payoneer' ? 'payoneer' : method === 'tron' ? 'tron' :
+        method.startsWith('crypto') ? 'crypto' : 'bank_wire';
+      const idem = `orphan_${txLog.id}_${targetBatch.batchNumber}`;
+      const se = await settlementEngine.submitForSettlement({
+        revenueEventId: undefined as any,
+        ownerAccountId: orphanOwner.id,
+        entitlementSourceRef: `auto_pilot:orphan:${txLog.id}`,
+        idempotencyKey: idem,
+        amount: Number(txLog.amount),
+        currency: String(txLog.currency || 'USD').toUpperCase(),
+        railKind,
+        actor: 'auto-pilot:resolveOrphanTransactions',
+        metadata: {
+          payoutBatchId: targetBatch.id,
+          batchNumber: targetBatch.batchNumber,
+          source: 'orphan_txlog',
+          txLogId: txLog.id,
+          proposedTransactionRef: transactionRef || undefined,
+        },
+      });
+      payoutItemId = se.payoutItemId;
+      const finalReason = transactionRef
+        ? null
+        : 'AUTO-PILOT DEFANG: resolve_orphan requires a REAL provider ref (txLog.providerTxId/reference was missing or locally-minted). Attach real provider proof before payout.';
+      await db.payoutItem.update({
+        where: { id: payoutItemId },
+        data: {
+          payoutBatchId: targetBatch.id,
+          batchNumber: targetBatch.batchNumber,
+          paymentMethod: method,
+          recipientName: orphanOwner.accountHolder || undefined,
+          recipientEmail: orphanOwner.paypalEmail || orphanOwner.wiseEmail || `payoneer-${(orphanOwner.payoneerId || '').slice(-4) || '****'}` || undefined,
+          transactionRef: transactionRef || undefined,
+          ...(finalReason ? { failureReason: finalReason } : {}),
+        },
+      });
+    } catch (se) {
+      console.error(`[auto-pilot] orphan create submitForSettlement failed tx=${txLog.id}:`, (se as Error).message);
+      if (!payoutItemId) continue;
+    }
+
+    const newItemId = payoutItemId!;
+    const newItem = await db.payoutItem.findUnique({ where: { id: newItemId } });
+    if (!newItem) continue;
 
     // Link the TransactionLog to the new PayoutItem
     await db.transactionLog.update({
@@ -766,7 +888,7 @@ async function resolveOrphanTransactions() {
 }
 
 // ── Phase 15: Recover Misplaced Settlements — REPORT-ONLY (ESCALATE) ────
-// Detects payouts sent to anyone other than the owner (from .env).
+// Detects payouts sent to anyone other than any verified OwnerAccount.
 // DEFANGED: money/proof must NEVER be auto-fixed — must ESCALATE. No items are
 // marked failed, no reversal TransactionLogs, no recovery batches/items, and no
 // RECOVERED-/REV- refs. Each misplaced settlement is audited for MANUAL recovery
@@ -776,8 +898,14 @@ async function recoverMisplacedSettlements() {
   let amountFixed = 0;
   let flagged = 0;
 
-  const OWNER_EMAIL = getOwnerEmail();
-  const OWNER_NAME = getOwnerNameUpper();
+  let ownerFilters;
+  try {
+    ownerFilters = await getOwnerIdentityFilters();
+  } catch (e) {
+    const msg = (e as Error)?.message || 'NO_VERIFIED_OWNER_ACCOUNTS';
+    await logRun('recover_misplaced_settlements', 'error', 0, 0, msg, Date.now() - start);
+    return 0;
+  }
 
   const completedItems = await db.payoutItem.findMany({
     where: { status: 'completed' },
@@ -791,21 +919,23 @@ async function recoverMisplacedSettlements() {
     const bn = (item.batchNumber || '').toUpperCase();
     if (bn.includes('RECOVERY') || bn.includes('ORPHAN') || bn.includes('RECONCILE') || bn.includes('CRYPTO-RECOVERY')) continue;
 
+    const itemEmail = (item.recipientEmail || '').toLowerCase();
+    const itemName = (item.recipientName || '').toUpperCase();
     const isOwner =
-      item.recipientEmail === OWNER_EMAIL ||
-      item.recipientName.toUpperCase().includes(OWNER_NAME);
+      (itemEmail && ownerFilters.emails.has(itemEmail)) ||
+      [...ownerFilters.names].some((pattern) => pattern && itemName.includes(pattern));
 
     if (isOwner) continue;
 
     // Found a misplaced settlement — ESCALATE for MANUAL recovery (report-only).
     await audit('PayoutItem', item.id, 'auto_recover_HELD', 'status=completed', 'status=completed',
-      `Defang: misplaced settlement $${item.amount.toFixed(2)} from ${item.recipientName} requires MANUAL recovery with real reversal evidence — auto-recovery removed (no failed-marking, no reversal logs, no recovery batches).`, item.payoutBatchId ?? undefined, item.id);
+      `Defang: misplaced settlement $${item.amount.toFixed(2)} to ${item.recipientName} (${item.recipientEmail}) requires MANUAL recovery with real reversal evidence. No verified OwnerAccount matched. Auto-recovery removed (no failed-marking, no reversal logs, no recovery batches).`, item.payoutBatchId ?? undefined, item.id);
     amountFixed += item.amount;
     flagged++;
   }
 
   await logRun('recover_misplaced_settlements', 'success', 0, amountFixed,
-    `DEFANGED: ${flagged} misplaced settlements ($${amountFixed.toFixed(2)}) require MANUAL recovery with real reversal evidence — auto-recovery removed`, Date.now() - start);
+    `DEFANGED: ${flagged} misplaced settlements ($${amountFixed.toFixed(2)}) require MANUAL recovery with real reversal evidence — auto-recovery removed (OwnerAccount-based filter, ${ownerFilters.emails.size} emails / ${ownerFilters.names.size} names)`, Date.now() - start);
   return 0;
 }
 
