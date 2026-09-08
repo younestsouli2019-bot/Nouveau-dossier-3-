@@ -7,15 +7,14 @@ const OUT = join(ROOT, ".vercel", "output", "static", "checkout");
 
 const STEPS = {
 	paypal: [
-		["Go to PayPal", "Open <a href=\"https://www.paypal.com\" rel=\"noopener\" target=\"_blank\">paypal.com</a> and log in to your account (or <em>Send</em> without an account), or use our payment link <a href=\"https://paypal.me/johnass22\" rel=\"noopener\" target=\"_blank\">paypal.me/johnass22</a>."],
-		["Send the payment", "Choose <strong>Send</strong>, enter the amount shown in your order summary, and send it to <strong>younestsouli2019@gmail.com</strong>."],
-		["Add your order reference", "In the note/memo field, paste the <strong>Order Reference</strong> shown below so we can match your payment to your course."],
-		["Confirm your order", "Email <strong>billing@realworldcerts.com</strong> once sent, or wait — we monitor incoming payments and will email your access link automatically."],
+		["Start your order", "From the secure checkout, choose <strong>PayPal</strong> and provide your email — we send you the exact payment details and your order reference by email."],
+		["Send the payment", "Send the amount from your order summary to the PayPal email we provide, and include your <strong>Order Reference</strong> in the note/memo field."],
+		["Confirm your order", "Email <strong>billing@realworldcerts.com</strong> once sent if your payment doesn't carry a note field."],
+		["We verify &amp; deliver", "We monitor incoming payments and email your course access link automatically once your order is matched."],
 	],
 	payoneer: [
-		["Open Payoneer", "Log in to your <a href=\"https://www.payoneer.com\" rel=\"noopener\" target=\"_blank\">Payoneer</a> account."],
-		["Start a payment request", "Ask us to send you a payment request by emailing <strong>billing@realworldcerts.com</strong> with your order reference, or use <strong>Request Payment</strong> to <strong>younestsouli2019@gmail.com</strong> for the amount in your order summary."],
-		["Add your order reference", "Include the <strong>Order Reference</strong> below in the payment details."],
+		["Request a payment request", "From the secure checkout, choose <strong>Payoneer</strong> and provide your email — we send you a payment request for the exact amount in your order summary."],
+		["Add your order reference", "Include the <strong>Order Reference</strong> from your payment email in the payment details."],
 		["We verify &amp; deliver", "Once the transfer arrives, we verify it against your order and email your course access within 24 hours."],
 	],
 	crypto: [
@@ -25,8 +24,8 @@ const STEPS = {
 		["We verify &amp; deliver", "Crypto confirmations take a few minutes. We verify the on-chain transaction and email your course access."],
 	],
 	bank: [
-		["Use the bank details below", "Pay to <strong>Banking Circle S.A.</strong> — IBAN <strong>LU774080000041265646</strong>, BIC <strong>BCIRLULL</strong>, beneficiary <strong>Younes Tsouli</strong>. Moroccan customers can transfer locally to RIB <strong>0078 1000 0448 5000 3059 4182</strong>."],
-		["Make the transfer", "Transfer the amount from your order summary, and put your <strong>Order Reference</strong> in the transfer description."],
+		["Request bank details", "From the secure checkout, choose <strong>Bank transfer</strong> and provide your email — we email you the bank details, the exact amount, and your unique <strong>Order Reference</strong>."],
+		["Make the transfer", "Transfer the amount from your payment email, and put your <strong>Order Reference</strong> in the transfer description."],
 		["Send us the receipt", "Email the transfer confirmation or screenshot to <strong>billing@realworldcerts.com</strong> with your order reference."],
 		["We verify &amp; deliver", "International transfers can take 1–5 business days. Once cleared, we email your course access."],
 	],
@@ -35,14 +34,14 @@ const STEPS = {
 const DETAILS = {
 	paypal: {
 		label: "Send payment to",
-		value: "younestsouli2019@gmail.com",
-		note: "PayPal account for RealWorldCerts.",
+		value: "Sent to your email after you start checkout",
+		note: "Your unique payment email and order reference are emailed to you.",
 		icon: "P",
 	},
 	payoneer: {
-		label: "Payoneer receive email",
-		value: "younestsouli2019@gmail.com",
-		note: "Payoneer receive email for RealWorldCerts.",
+		label: "Payoneer payment request",
+		value: "Requested via email",
+		note: "We send a Payoneer payment request to the email you provide.",
 		icon: "P",
 	},
 	crypto: {
@@ -53,9 +52,9 @@ const DETAILS = {
 		extra: true,
 	},
 	bank: {
-		label: "Bank account (SWIFT)",
-		value: "LU77 4080 0000 4126 5646",
-		note: "BIC: BCIRLULL · Banking Circle S.A. · Beneficiary: Younes Tsouli.<br>Moroccan customers: local transfer to RIB 0078 1000 0448 5000 3059 4182.",
+		label: "Bank transfer details",
+		value: "Sent to your email after you start checkout",
+		note: "Bank details and your unique order reference are emailed to you.",
 		icon: "🏦",
 	},
 };
@@ -70,6 +69,170 @@ const FAQ = [
 ];
 
 const METHOD_TITLES = { paypal: "PayPal", payoneer: "Payoneer", crypto: "Crypto (USDT)", bank: "Bank Transfer" };
+
+function startPage(apiBase) {
+	return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checkout · RealWorldCerts</title>
+<meta name="description" content="Complete your RealWorldCerts purchase securely. Pay by card (MAD via Attijari SimplePay), PayPal, USDT, or bank transfer. Lifetime access delivered by email.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' ${apiBase}; form-action 'self' https://payment.cmi.co.ma https://testpayment.cmi.co.ma ${apiBase}; base-uri 'none'; frame-ancestors 'none'">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+:root{--bg:#0b0c10;--panel:#0e1118;--panel2:#111827;--border:#1e2532;--text:#eaeef2;--muted:#9aa4b2;--accent:#3b82f6;--accent2:#22d3ee;--green:#34d399;--red:#f87171}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Ubuntu,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.55}
+a{color:var(--accent2);text-decoration:none}
+a:hover{text-decoration:underline}
+header{position:sticky;top:0;z-index:10;background:rgba(11,12,16,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+.header-in{max-width:1040px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-weight:700;font-size:18px;color:#fff;letter-spacing:.2px}
+.brand span{color:var(--accent2)}
+.back{color:var(--muted);font-size:14px}
+main{max-width:720px;margin:0 auto;padding:24px 20px 60px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:22px}
+.card h2{margin:0 0 16px;font-size:19px}
+.course{display:flex;gap:14px}
+.course img{width:168px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--border)}
+.course .t h3{margin:0 0 4px;font-size:15px;line-height:1.3}
+.course .t p{margin:0;color:var(--muted);font-size:13px}
+ul.what{margin:14px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+ul.what li{display:flex;gap:8px;font-size:14px;color:#cdd6e1}
+ul.what li::before{content:"✓";color:var(--green);font-weight:700}
+.price{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);margin-top:16px;padding-top:14px;font-size:14px;color:var(--muted)}
+.price .amt{font-size:22px;font-weight:700;color:#fff}
+label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:18px 0 6px}
+input[type=email]{width:100%;padding:12px 14px;border-radius:10px;border:1px solid #2a3344;background:#0a0d13;color:#fff;font:inherit;font-size:15px}
+input[type=email]:focus{outline:none;border-color:var(--accent)}
+.methods{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.method{border:1px solid #2a3344;background:var(--panel2);border-radius:10px;padding:12px;cursor:pointer;color:var(--text);text-align:left;font:inherit}
+.method.sel{border-color:var(--accent2);background:#16263a}
+.method strong{display:block;font-size:14px}
+.method span{font-size:12px;color:var(--muted)}
+.cta{margin-top:18px;width:100%;padding:13px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121a;font-weight:700;font-size:15px;cursor:pointer}
+.cta:disabled{opacity:.6;cursor:not-allowed}
+.msg{display:none;margin-top:12px;padding:10px 12px;border-radius:8px;font-size:13px}
+.msg.err{border:1px solid #7a3b3b;background:#1d1212;color:var(--red)}
+.msg.ok{border:1px solid #1e5c43;background:#0d1f17;color:var(--green)}
+.trust{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.trust span{font-size:12px;color:var(--muted);border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:var(--panel2)}
+.alt{margin-top:18px;font-size:13px;color:var(--muted)}
+.alt a{text-decoration:underline}
+footer{border-top:1px solid var(--border);padding:26px 20px;color:var(--muted);font-size:13px}
+.foot-in{max-width:1040px;margin:0 auto;display:flex;gap:18px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<header><div class="header-in"><a class="brand" href="/">RealWorld<span>Certs</span></a><a class="back" href="/catalog/index.html">← Back to catalog</a></div></header>
+<main>
+  <section class="card">
+    <h2>Secure checkout</h2>
+    <div class="course">
+      <img id="courseImg" src="/assets/courses/oscp-certification-exam.svg" alt="Course image">
+      <div class="t"><h3 id="courseTitle">Your selected course</h3><p id="courseMeta">Practice tests with detailed explanations</p></div>
+    </div>
+    <ul class="what">
+      <li>Full practice-test bank with explanations</li>
+      <li>Lifetime access from any device</li>
+      <li>Completion certificate (PDF)</li>
+      <li>Email support &amp; exam tips</li>
+    </ul>
+    <div class="price"><span>Course price</span><span class="amt" id="amount">Confirmed after you enter your email</span></div>
+
+    <label for="email">Email (for instant delivery)</label>
+    <input id="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+
+    <label>Payment method</label>
+    <div class="methods" id="methods">
+      <div class="method sel" data-method="cmi"><strong>Card (MAD)</strong><span>Attijari SimplePay, Visa/Mastercard</span></div>
+      <div class="method" data-method="paypal"><strong>PayPal</strong><span>PayPal balance or card</span></div>
+      <div class="method" data-method="crypto"><strong>USDT</strong><span>Crypto wallet (ERC-20 / BEP-20)</span></div>
+      <div class="method" data-method="bank"><strong>Bank transfer</strong><span>SWIFT or local RIB</span></div>
+    </div>
+
+    <button class="cta" id="pay">Continue to payment</button>
+    <p class="msg err" id="errMsg"></p>
+    <p class="msg ok" id="okMsg">Redirecting you to the secure payment page…</p>
+    <div class="trust"><span>✓ 256-bit encrypted checkout</span><span>✓ 7-day money-back guarantee</span><span>✓ No card stored on this site</span></div>
+  </section>
+
+  <p class="alt">Prefer a manual method? See instructions for <a href="./paypal.html">PayPal</a>, <a href="./crypto.html">USDT</a>, <a href="./bank.html">bank transfer</a> — these still use your order reference to match the payment. Questions? Email <a href="mailto:billing@realworldcerts.com">billing@realworldcerts.com</a>.</p>
+</main>
+<footer><div class="foot-in"><a href="/catalog/index.html">Course Catalog</a><a href="/cybersecurity.html">Cybersecurity</a><a href="/practice.html">Practice Tests</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/refund.html">Refund Policy</a><a href="/terms.html">Terms</a></div></footer>
+<script>
+(function(){
+  var q = new URLSearchParams(location.search);
+  var course = q.get("course");
+  var slug = q.get("slug");
+  var amount = q.get("amount");
+  var productId = q.get("product_id") || slug || "";
+  var emailEl = document.getElementById("email");
+  var errEl = document.getElementById("errMsg");
+  var okEl = document.getElementById("okMsg");
+  var payBtn = document.getElementById("pay");
+  if (slug) { var img = document.getElementById("courseImg"); img.src = "/assets/courses/" + encodeURIComponent(slug) + ".svg"; }
+  if (course) { document.getElementById("courseTitle").textContent = course; try { fetch("/data/catalog.json").then(function(r){return r.json()}).then(function(d){ var hit = (Array.isArray(d.items)?d.items:[]).find(function(i){return i.slug===slug}); if (hit){ document.getElementById("courseTitle").textContent = hit.title; if(hit.practiceTestCount) document.getElementById("courseMeta").textContent = hit.practiceTestCount + " practice questions with detailed explanations"; }}).catch(function(){}); } catch(e){} }
+  if (amount) document.getElementById("amount").textContent = "$" + amount;
+
+  var chosen = "cmi";
+  var methods = Array.prototype.slice.call(document.querySelectorAll(".method"));
+  methods.forEach(function(m){ m.addEventListener("click", function(){ chosen = m.getAttribute("data-method"); methods.forEach(function(x){ x.classList.toggle("sel", x===m); }); }); });
+
+  payBtn.addEventListener("click", function(){
+    errEl.style.display = "none";
+    okEl.style.display = "none";
+    var email = emailEl.value.trim();
+    if (!email || !/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) { showErr("Please enter a valid email — we deliver course access to it."); return; }
+    if (!productId) { showErr("We could not identify your course. Please go back to the course page and try again."); return; }
+    payBtn.disabled = true;
+    var body = { product_id: productId, method: chosen, email: email };
+    if (course) body.course = String(course).slice(0, 120);
+    if (slug) body.slug = slug;
+    fetch("${apiBase}/api/checkout/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }).then(function(res){ return res.json().then(function(d){ return { status: res.status, ok: res.ok, d: d }; }); })
+      .then(function(r){
+        okEl.style.display = "block";
+        if (r.ok && r.d.url) { window.location.href = r.d.url; return; }
+        if (r.ok && r.d.form_action && r.d.fields) {
+          var f = document.createElement("form");
+          f.method = "POST";
+          f.action = r.d.form_action;
+          f.style.display = "none";
+          Object.keys(r.d.fields).forEach(function(k){ var i = document.createElement("input"); i.type = "hidden"; i.name = k; i.value = String(r.d.fields[k]); f.appendChild(i); });
+          document.body.appendChild(f);
+          f.submit();
+          return;
+        }
+        var msg = r.d && r.d.error ? r.d.error : "Payment could not be started right now.";
+        if (r.d && r.d.setup) msg += " " + r.d.setup;
+        if (r.d && r.d.fallback) msg += " " + r.d.fallback;
+        showErr(msg);
+        payBtn.disabled = false;
+      })
+      .catch(function(){ showErr("We could not reach the payment service. Please try again or email billing@realworldcerts.com."); payBtn.disabled = false; });
+  });
+  function showErr(m){ errEl.textContent = m; errEl.style.display = "block"; }
+})();
+</script>
+</body>
+</html>
+`;
+}
+
+const API_BASE = process.env.RWC_API_BASE || "https://swarm-ops-project.vercel.app";
+
+mkdirSync(OUT, { recursive: true });
+for (const m of Object.keys(METHOD_TITLES)) {
+	writeFileSync(join(OUT, `${m}.html`), page(m), "utf8");
+	console.log(`checkout: wrote ${m}.html`);
+}
+writeFileSync(join(OUT, "start.html"), startPage(API_BASE), "utf8");
+console.log(`checkout: wrote start.html (apiBase=${API_BASE})`);
 
 function page(method) {
 	const steps = STEPS[method]
@@ -255,10 +418,4 @@ footer{border-top:1px solid var(--border);padding:26px 20px;color:var(--muted);f
 </body>
 </html>
 `;
-}
-
-mkdirSync(OUT, { recursive: true });
-for (const m of Object.keys(METHOD_TITLES)) {
-	writeFileSync(join(OUT, `${m}.html`), page(m), "utf8");
-	console.log(`checkout: wrote ${m}.html`);
 }

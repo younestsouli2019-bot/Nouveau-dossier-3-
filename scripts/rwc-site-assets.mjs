@@ -170,7 +170,7 @@ function wireCoursePage(html, slug) {
 function wireCheckoutLinks(html, slug, title) {
 	const q = `?course=${encodeURIComponent(title)}&slug=${slug}`;
 	return html.replace(
-		/href="\/checkout\/(paypal|payoneer|crypto|bank)\.html"/g,
+		/href="\/checkout\/(paypal|payoneer|crypto|bank|start)\.html"/g,
 		`href="/checkout/$1.html${q}"`,
 	);
 }
