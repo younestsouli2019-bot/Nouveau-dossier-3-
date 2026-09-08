@@ -1,8 +1,8 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
-import { getOwnerName, getOwnerEmail, getOwnerNameUpper, getOwnerDisplayName } from '@/lib/owner-config';
 import { requireOpsAuth } from '@/lib/api-auth';
 import { sha256 } from '@/lib/strict-enforcement/crypto-utils';
+import { settlementEngine, isSyntheticRef } from '@/lib/settlement/SettlementEngine';
 
 type ResolutionAction =
   | 'confirm_delivery'
@@ -55,6 +55,40 @@ async function audit(
       payoutItemId,
     },
   });
+}
+
+async function getVerifiedOwnerAccounts() {
+  const accounts = await db.ownerAccount.findMany({
+    where: { isActive: true, verifiedAt: { not: null } },
+    orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+  });
+  if (accounts.length === 0) {
+    throw new Error(
+      'NO_VERIFIED_OWNER_ACCOUNTS: Destinations come from OwnerAccount (isActive=true + verifiedAt IS NOT NULL). Seed via owner-accounts endpoint first.',
+    );
+  }
+  return accounts;
+}
+
+async function getPreferredVerifiedOwner(currency?: string) {
+  const all = await getVerifiedOwnerAccounts();
+  let match = currency
+    ? all.find((a) => a.currency?.toUpperCase() === currency.toUpperCase())
+    : null;
+  if (!match) match = all.find((a) => a.isPrimary) ?? all[0];
+  return match;
+}
+
+async function getOwnerIdentityFilters() {
+  const all = await getVerifiedOwnerAccounts();
+  const emails = new Set<string>();
+  const names = new Set<string>();
+  for (const a of all) {
+    if (a.paypalEmail) emails.add(a.paypalEmail.toLowerCase());
+    if (a.payoneerId) emails.add(String(a.payoneerId));
+    if (a.accountHolder) names.add(a.accountHolder.toUpperCase());
+  }
+  return { emails, names };
 }
 
 /**
@@ -583,10 +617,22 @@ async function batchRevenue(eventId: string) {
   const event = await db.revenueEvent.findUnique({ where: { id: eventId } });
   if (!event) return { ok: false, message: 'Revenue event not found' };
 
-  const OWNER_NAME = getOwnerDisplayName();
-  const OWNER_EMAIL = getOwnerEmail();
+  let verifiedOwner;
+  try {
+    verifiedOwner = await getPreferredVerifiedOwner(event.currency ?? 'USD');
+  } catch (e) {
+    return { ok: false, message: (e as Error)?.message || 'NO_VERIFIED_OWNER_ACCOUNTS' };
+  }
 
-  // Find or create a pending_approval batch
+  const railKind: 'paypal' | 'bank_wire' | 'payoneer' | 'attijari' | 'wise' | 'tron' |
+    'crypto' | 'stripe' | 'google_pay' =
+    verifiedOwner.paypalEmail ? 'paypal' :
+    verifiedOwner.accountType === 'attijari' ? 'attijari' :
+    verifiedOwner.accountType === 'wise' ? 'wise' :
+    verifiedOwner.accountType === 'payoneer' ? 'payoneer' :
+    verifiedOwner.accountType?.startsWith('crypto') ? 'tron' : 'bank_wire';
+
+  // Find or create a pending_approval batch (UI/tracking only; durable lifecycle in SettlementEngine)
   let targetBatch = await db.payoutBatch.findFirst({
     where: { status: 'pending_approval' },
     orderBy: { createdAt: 'desc' },
@@ -605,23 +651,33 @@ async function batchRevenue(eventId: string) {
     });
   }
 
+  const idem = `ops_resolve_${eventId}_${targetBatch.batchNumber}`;
+  let seResult;
+  try {
+    seResult = await settlementEngine.submitForSettlement({
+      revenueEventId: event.id,
+      ownerAccountId: verifiedOwner.id,
+      entitlementSourceRef: `ops_resolve:batch:${eventId}`,
+      idempotencyKey: idem,
+      amount: Number(event.amount),
+      currency: String(event.currency || 'USD').toUpperCase(),
+      railKind,
+      actor: 'ops-resolve:batchRevenue',
+      metadata: { payoutBatchId: targetBatch.id, batchNumber: targetBatch.batchNumber, source: 'ops_resolve' },
+    });
+  } catch (se) {
+    return { ok: false, message: `SettlementEngine submit failed: ${(se as Error).message}` };
+  }
+
   const prev = `status=${event.status},payoutBatchId=${event.payoutBatchId}`;
-  const updated = await db.revenueEvent.update({
+  await db.revenueEvent.update({
     where: { id: eventId },
     data: { batchedAt: new Date(), payoutBatchId: targetBatch.id, status: 'reconciled' },
   });
 
-  // Create payout item for the OWNER (not a fake payee)
-  await db.payoutItem.create({
-    data: {
-      payoutBatchId: targetBatch.id,
-      batchNumber: targetBatch.batchNumber,
-      recipientName: OWNER_NAME,
-      recipientEmail: OWNER_EMAIL,
-      amount: event.amount,
-      currency: event.currency,
-      status: 'pending',
-    },
+  await db.payoutItem.update({
+    where: { id: seResult.payoutItemId },
+    data: { payoutBatchId: targetBatch.id, batchNumber: targetBatch.batchNumber },
   });
 
   // Update batch total and count
@@ -633,8 +689,17 @@ async function batchRevenue(eventId: string) {
     },
   });
 
-  await audit('RevenueEvent', eventId, 'batch_revenue', prev, `status=reconciled,payoutBatchId=${targetBatch.id}`, `Auto-resolved: Revenue assigned to batch ${targetBatch.batchNumber}`);
-  return { ok: true, message: `Revenue $${event.amount.toFixed(2)} assigned to batch ${targetBatch.batchNumber}`, batchNumber: targetBatch.batchNumber };
+  await audit('RevenueEvent', eventId, 'batch_revenue', prev,
+    `status=reconciled,payoutBatchId=${targetBatch.id},payoutItemId=${seResult.payoutItemId},ownerAccountId=${verifiedOwner.id},idempotencyHit=${seResult.idempotencyHit}`,
+    `Auto-resolved: Revenue queued via SettlementEngine to batch ${targetBatch.batchNumber} (ownerAccountId=${verifiedOwner.id})`);
+  return {
+    ok: true,
+    message: `Revenue $${event.amount.toFixed(2)} queued via SettlementEngine (state=${seResult.state}, payoutItemId=${seResult.payoutItemId}, ownerAccountId=${verifiedOwner.id})`,
+    batchNumber: targetBatch.batchNumber,
+    payoutItemId: seResult.payoutItemId,
+    state: seResult.state,
+    ownerAccountId: verifiedOwner.id,
+  };
 }
 
 // ── NEW: Link orphan transaction ────────────────────────────────────────
@@ -754,9 +819,25 @@ async function flagPaymentMethod(itemId: string) {
 
 // ── NEW: Recover misplaced settlement ─────────────────────────────────
 async function recoverMisplaced(itemId: string) {
-  const OWNER_EMAIL = getOwnerEmail();
-  const OWNER_NAME = getOwnerDisplayName();
-  const OWNER_NAME_SHORT = getOwnerNameUpper();
+  let ownerFilters;
+  let verifiedOwner;
+  try {
+    ownerFilters = await getOwnerIdentityFilters();
+    verifiedOwner = await getPreferredVerifiedOwner();
+  } catch (e) {
+    return { ok: false, message: (e as Error)?.message || 'NO_VERIFIED_OWNER_ACCOUNTS' };
+  }
+  const OWNER_NAME = verifiedOwner.accountHolder || 'Owner';
+  const OWNER_EMAIL = verifiedOwner.paypalEmail || verifiedOwner.wiseEmail || `payoneer-${(verifiedOwner.payoneerId || '').slice(-4) || '****'}` || '';
+
+  const railKind: 'paypal' | 'bank_wire' | 'payoneer' | 'attijari' | 'wise' | 'tron' |
+    'crypto' | 'stripe' | 'google_pay' =
+    verifiedOwner.paypalEmail ? 'paypal' :
+    verifiedOwner.accountType === 'attijari' ? 'attijari' :
+    verifiedOwner.accountType === 'wise' ? 'wise' :
+    verifiedOwner.accountType === 'payoneer' ? 'payoneer' :
+    verifiedOwner.accountType?.startsWith('crypto') ? 'tron' : 'bank_wire';
+  const preferredMethod = railKind;
 
   const item = await db.payoutItem.findUnique({
     where: { id: itemId },
@@ -764,10 +845,12 @@ async function recoverMisplaced(itemId: string) {
   });
   if (!item) return { ok: false, message: 'Item not found' };
 
+  const itemEmail = (item.recipientEmail || '').toLowerCase();
+  const itemName = (item.recipientName || '').toUpperCase();
   const isOwner =
-    item.recipientEmail === OWNER_EMAIL ||
-    item.recipientName.toUpperCase().includes(OWNER_NAME_SHORT);
-  if (isOwner) return { ok: false, message: 'Item belongs to owner — not misplaced' };
+    (itemEmail && ownerFilters.emails.has(itemEmail)) ||
+    [...ownerFilters.names].some((pattern) => pattern && itemName.includes(pattern));
+  if (isOwner) return { ok: false, message: 'Item belongs to verified OwnerAccount — not misplaced' };
 
   const now = new Date();
   const prevName = item.recipientName;
@@ -777,7 +860,7 @@ async function recoverMisplaced(itemId: string) {
     where: { id: itemId },
     data: {
       status: 'failed',
-      failureReason: `MISPLACED: Sent to ${prevName} (${prevEmail}) instead of owner. Recovered by Ops.`,
+      failureReason: `MISPLACED: Sent to ${prevName} (${prevEmail}) instead of any verified OwnerAccount. Recovered by Ops.`,
       deliveryConfirmed: false,
       deliveryConfirmedAt: null,
       lastRetryAt: now,
@@ -793,19 +876,18 @@ async function recoverMisplaced(itemId: string) {
       currency: item.currency,
       transactionDate: now,
       referenceId: `REVERSAL-${item.transactionRef || item.id.slice(0, 8)}`,
-      description: `REVERSAL: Misplaced settlement from ${prevName} → owner`,
+      description: `REVERSAL: Misplaced settlement from ${prevName} → verified OwnerAccount (id=${verifiedOwner.id})`,
       payoutBatchId: item.payoutBatchId,
       payoutItemId: item.id,
       provider: item.payoutBatch?.paymentProvider || 'recovery',
       providerTxId: `REV-${Date.now().toString(36).toUpperCase()}`,
       errorCode: 'MISPLACED_SETTLEMENT',
-      errorMessage: `Wrong recipient: ${prevName} (${prevEmail})`,
+      errorMessage: `Wrong recipient: ${prevName} (${prevEmail}) — no verified OwnerAccount match`,
     },
   });
 
   const batchCount = await db.payoutBatch.count({ where: { batchNumber: { startsWith: 'PB-RECOVERY' } } });
   const batchNumber = `PB-RECOVERY-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(batchCount + 1).padStart(4, '0')}`;
-  const preferredMethod = process.env.OWNER_PAYMENT_METHOD || 'paypal';
   const hasRealRecoveryRef = !!(item.externalRef && !isSyntheticOrEmptyRef(item.externalRef));
 
   const recoveryBatchBase = {
@@ -816,12 +898,11 @@ async function recoverMisplaced(itemId: string) {
     scheduledDate: now,
     submittedAt: now,
     approvedBy: 'ops-auto-resolver',
-    notes: `Recovery: $${item.amount.toFixed(2)} from ${prevName} → ${OWNER_NAME}. ATTACH REAL RECOVERY RECEIPT: ${preferredMethod.toUpperCase()} transfer ID / Attijari WPS ref / MT103 UETR / reversal on-chain hash.`,
+    notes: `Recovery: $${item.amount.toFixed(2)} from ${prevName} → verified OwnerAccount id=${verifiedOwner.id} (${OWNER_NAME}). ATTACH REAL RECOVERY RECEIPT: ${preferredMethod.toUpperCase()} transfer ID / Attijari WPS ref / MT103 UETR / reversal on-chain hash.`,
     paymentProvider: preferredMethod,
     autoApproved: true,
     autoApprovedAt: now,
   };
-  const ownerItemTxRefBase = `RECOVERED-${item.transactionRef || Date.now().toString(36).toUpperCase()}`;
 
   let recoveryBatchFinalStatus = hasRealRecoveryRef ? 'completed' : 'processing';
   let recoveryBatchProcessed = hasRealRecoveryRef ? now : null;
@@ -840,43 +921,75 @@ async function recoverMisplaced(itemId: string) {
       autoProcessedAt: recoveryBatchProcessed,
       resolvedAt: recoveryBatchResolved,
       resolutionNote: hasRealRecoveryRef
-        ? `Recovered misplaced settlement with REAL proof. Was: ${prevName} (${prevEmail}). Proof externalRef=${item.externalRef}`
-        : `AWAITING MANUAL PROOF: Recovered misplaced settlement. Was: ${prevName} (${prevEmail}). REQUIRED: Attach REAL ${preferredMethod.toUpperCase()} recovery receipt (transfer ID / confirmation ref) to owner payout item below before marking completed.`,
+        ? `Recovered misplaced settlement with REAL proof. Was: ${prevName} (${prevEmail}). OwnerAccount id=${verifiedOwner.id}. Proof externalRef=${item.externalRef}`
+        : `AWAITING MANUAL PROOF: Recovered misplaced settlement. Was: ${prevName} (${prevEmail}). OwnerAccount id=${verifiedOwner.id}. REQUIRED: Attach REAL ${preferredMethod.toUpperCase()} recovery receipt (transfer ID / confirmation ref) before marking completed.`,
       providerBatchRef: hasRealRecoveryRef ? (item.externalRef as string) : null,
       proofHash: recoveryBatchProof,
     },
   });
 
+  // Route recovery payout item through SettlementEngine for durable lifecycle
+  const idem = `ops_recover_${itemId}_${batchNumber}`;
+  let seResult;
+  try {
+    seResult = await settlementEngine.submitForSettlement({
+      revenueEventId: undefined as any,
+      ownerAccountId: verifiedOwner.id,
+      entitlementSourceRef: `ops_resolve:recover:${itemId}`,
+      idempotencyKey: idem,
+      amount: Number(item.amount),
+      currency: String(item.currency || 'USD').toUpperCase(),
+      railKind,
+      actor: 'ops-resolve:recoverMisplaced',
+      metadata: {
+        payoutBatchId: recoveryBatch.id,
+        batchNumber,
+        source: 'misplaced_recovery',
+        originalItemId: itemId,
+        originalRecipient: `${prevName} <${prevEmail}>`,
+        hasRealRecoveryRef,
+        proposedExternalRef: item.externalRef || undefined,
+      },
+    });
+  } catch (se) {
+    return { ok: false, message: `SettlementEngine recovery submit failed: ${(se as Error).message}` };
+  }
+
+  // Apply buildPayoutItemWrite on top of what SE created (for proof/status/connector fields)
+  const seItem = await db.payoutItem.findUnique({ where: { id: seResult.payoutItemId } });
+  if (!seItem) return { ok: false, message: 'Internal: SettlementEngine returned missing payoutItemId' };
+
   const stubItemForBuild = {
-    id: 'recovery-stub',
-    status: 'pending',
-    transactionRef: ownerItemTxRefBase,
-    externalRef: item.externalRef || undefined,
+    id: seItem.id,
+    status: seItem.status,
+    transactionRef: seItem.transactionRef || undefined,
+    externalRef: hasRealRecoveryRef ? item.externalRef || undefined : undefined,
     amount: item.amount,
     currency: item.currency,
-    connectorStatus: undefined,
-    proofHash: undefined,
-    processedAt: undefined,
-    deliveryConfirmed: false,
-    deliveryConfirmedAt: undefined,
-    recipientNotifiedAt: undefined,
+    connectorStatus: (seItem as any).connectorStatus,
+    proofHash: (seItem as any).proofHash,
+    processedAt: (seItem as any).processedAt,
+    deliveryConfirmed: (seItem as any).deliveryConfirmed ?? false,
+    deliveryConfirmedAt: (seItem as any).deliveryConfirmedAt,
+    recipientNotifiedAt: (seItem as any).recipientNotifiedAt,
   } as Parameters<typeof buildPayoutItemWrite>[0];
 
   const write = buildPayoutItemWrite(stubItemForBuild, {
     preferredTransactionRef: item.externalRef as string | undefined,
-    syntheticFallback: ownerItemTxRefBase,
+    syntheticFallback: `RECOVERED-${item.transactionRef || Date.now().toString(36).toUpperCase()}`,
     connectorId: 'ops-recover-misplaced',
   });
 
-  const ownerItem = await db.payoutItem.create({
+  const failureReasonMerged = write.no_proof_reason ||
+    `MISPLACED RECOVERY HELD (OwnerAccount id=${verifiedOwner.id}): Attach REAL ${preferredMethod.toUpperCase()} receipt showing funds DID return. Without this, TRUTH guards + Postgres triggers will REJECT any completed write.`;
+
+  await db.payoutItem.update({
+    where: { id: seResult.payoutItemId },
     data: {
       payoutBatchId: recoveryBatch.id,
       batchNumber: recoveryBatch.batchNumber,
       recipientName: OWNER_NAME,
       recipientEmail: OWNER_EMAIL,
-      amount: item.amount,
-      currency: item.currency,
-      status: write.status,
       paymentMethod: preferredMethod,
       transactionRef: write.transactionRef,
       externalRef: write.externalRef,
@@ -887,7 +1000,8 @@ async function recoverMisplaced(itemId: string) {
       deliveryConfirmed: write.deliveryConfirmed,
       deliveryConfirmedAt: write.deliveryConfirmedAt,
       recipientNotifiedAt: write.recipientNotifiedAt,
-      failureReason: write.no_proof_reason || `MISPLACED RECOVERY HELD: Attach REAL ${preferredMethod.toUpperCase()} receipt showing funds DID return to owner — PayPal txn ID / Wise UETR / Attijari WPS confirmation / on-chain reversal hash. Without this, TRUTH guards + Postgres triggers will REJECT any completed write.`,
+      failureReason: failureReasonMerged,
+      ...(write.status && write.status !== seItem.status ? { status: write.status as any } : {}),
     },
   });
 
@@ -898,50 +1012,63 @@ async function recoverMisplaced(itemId: string) {
       amount: item.amount,
       currency: item.currency,
       transactionDate: now,
-      referenceId: ownerItem.transactionRef,
+      referenceId: write.transactionRef || `RECOVERY-${seResult.payoutItemId}`,
       description: write.status === 'completed'
-        ? `RECOVERED (WITH PROOF): $${item.amount.toFixed(2)} → ${OWNER_NAME}`
-        : `RECOVERY PENDING PROOF: $${item.amount.toFixed(2)} → ${OWNER_NAME}. Attach REAL ${preferredMethod.toUpperCase()} receipt.`,
+        ? `RECOVERED (WITH PROOF): $${item.amount.toFixed(2)} → verified OwnerAccount id=${verifiedOwner.id} (${OWNER_NAME})`
+        : `RECOVERY PENDING PROOF: $${item.amount.toFixed(2)} → verified OwnerAccount id=${verifiedOwner.id} (${OWNER_NAME}). Attach REAL ${preferredMethod.toUpperCase()} receipt.`,
       payoutBatchId: recoveryBatch.id,
-      payoutItemId: ownerItem.id,
+      payoutItemId: seResult.payoutItemId,
       provider: preferredMethod,
-      providerTxId: write.status === 'completed' ? (ownerItem.externalRef || ownerItem.transactionRef) : null,
+      providerTxId: write.status === 'completed' ? (write.externalRef || write.transactionRef) : null,
     },
   });
 
   await audit('PayoutItem', itemId, 'recover_misplaced',
     `recipient=${prevName}/${prevEmail}`,
-    `recipient=${OWNER_NAME}/${OWNER_EMAIL},status=failed,recoveryItem=${ownerItem.id},recoveryItemStatus=${write.status}`,
+    `ownerAccountId=${verifiedOwner.id},status=failed,recoveryItem=${seResult.payoutItemId},recoveryItemStatus=${write.status || seResult.state},idempotencyHit=${seResult.idempotencyHit}`,
     write.status === 'completed'
-      ? `Recovered misplaced $${item.amount.toFixed(2)} from ${prevName} → ${OWNER_NAME} with REAL proof receipt`
-      : `Recovery initiated for $${item.amount.toFixed(2)} from ${prevName} → ${OWNER_NAME}. HELD at ${write.status}: REQUIRED — attach REAL ${preferredMethod.toUpperCase()} recovery receipt before marking completed.`,
+      ? `Recovered misplaced $${item.amount.toFixed(2)} from ${prevName} → OwnerAccount id=${verifiedOwner.id} (${OWNER_NAME}) with REAL proof via SettlementEngine`
+      : `Recovery initiated for $${item.amount.toFixed(2)} from ${prevName} → OwnerAccount id=${verifiedOwner.id} (${OWNER_NAME}) via SettlementEngine. HELD at ${write.status || seResult.state}: REQUIRED — attach REAL ${preferredMethod.toUpperCase()} recovery receipt before marking completed.`,
     item.payoutBatchId, itemId);
 
   return {
     ok: true,
     message: write.status === 'completed'
-      ? `Recovered $${item.amount.toFixed(2)} from ${prevName} → ${OWNER_NAME} (REAL proof verified)`
-      : `Recovery pending for $${item.amount.toFixed(2)} from ${prevName} → ${OWNER_NAME}. HELD: MUST attach REAL ${preferredMethod.toUpperCase()} receipt before status→completed; TRUTH + SQL triggers forbid phantom completed writes.`,
+      ? `Recovered $${item.amount.toFixed(2)} from ${prevName} → OwnerAccount id=${verifiedOwner.id} (${OWNER_NAME}) via SettlementEngine (REAL proof verified)`
+      : `Recovery pending for $${item.amount.toFixed(2)} from ${prevName} → OwnerAccount id=${verifiedOwner.id} (${OWNER_NAME}) via SettlementEngine. HELD: MUST attach REAL ${preferredMethod.toUpperCase()} receipt before status→completed; TRUTH + SQL triggers forbid phantom completed writes.`,
     amount: item.amount,
     recoveryBatch: recoveryBatch.batchNumber,
     recoveryBatchStatus: recoveryBatchFinalStatus,
-    ownerItemStatus: write.status,
+    ownerItemStatus: write.status || seResult.state,
+    ownerItemId: seResult.payoutItemId,
+    ownerAccountId: verifiedOwner.id,
     needs_manual_receipt: write.status !== 'completed',
   };
 }
 
 // ── RECOVER CRYPTO MISPLACED ──────────────────────────────────────────
 async function recoverCryptoMisplaced(cryptoSettlementId: string) {
+  let verifiedOwner;
+  try {
+    verifiedOwner = await getPreferredVerifiedOwner('USD');
+  } catch (e) {
+    return { ok: false, message: (e as Error)?.message || 'NO_VERIFIED_OWNER_ACCOUNTS' };
+  }
+  const OWNER_NAME_RES = verifiedOwner.accountHolder || 'Owner';
+  const OWNER_EMAIL_RES = verifiedOwner.paypalEmail || verifiedOwner.wiseEmail || `payoneer-${(verifiedOwner.payoneerId || '').slice(-4) || '****'}` || '';
+
   const settlement = await db.cryptoSettlement.findUnique({ where: { id: cryptoSettlementId } });
   if (!settlement) return { ok: false, message: 'Crypto settlement not found' };
   if (!settlement.misplaced) return { ok: false, message: 'Settlement is not misplaced' };
   if (settlement.recovered) return { ok: false, message: 'Settlement already recovered' };
 
+  const railKind: 'tron' | 'crypto' =
+    /trc20|tron/i.test(settlement.network || '') ? 'tron' :
+    /bep20|bsc|binance/i.test(settlement.network || '') ? 'crypto' :
+    /sol|solana/i.test(settlement.network || '') ? 'crypto' : 'crypto';
+
   const TOKEN_PRICES: Record<string, number> = { ETH: 3500, WBTC: 65000, USDC: 1 };
   const usdValue = (TOKEN_PRICES[settlement.token] || 1) * Number(settlement.amount);
-
-  const OWNER_NAME_RES = getOwnerName();
-  const OWNER_EMAIL_RES = getOwnerEmail();
 
   const origTxHashReal = !!settlement.txHash && !isSyntheticOrEmptyRef(settlement.txHash);
   const origTxHashNote = origTxHashReal
@@ -978,7 +1105,7 @@ async function recoverCryptoMisplaced(cryptoSettlementId: string) {
         `CRYPTO RECOVERY: ${origTxHashNote} ` +
         `Recovery on-chain txn HASH REQUIRED before marking recovery complete. ` +
         `Current recoveredTxHash="${syntheticRecoveryHash}" is PLACEHOLDER — replace with REAL on-chain reversal/return tx hash, then set connectorStatus=live_onchain. ` +
-        `Without real on-chain recovery hash, owner payout item stays PENDING — phantom completed writes are BLOCKED by TRUTH-008 + Postgres row triggers.`,
+        `Without real on-chain recovery hash, owner payout item stays PENDING — phantom completed writes are BLOCKED by TRUTH-008 + Postgres row triggers. OwnerAccount id=${verifiedOwner.id}`,
     },
   });
 
@@ -993,25 +1120,54 @@ async function recoverCryptoMisplaced(cryptoSettlementId: string) {
         currency: 'USD',
         status: 'pending_approval',
         itemCount: 0,
-        notes: 'Auto-generated batch for crypto misplaced settlement recoveries. WARNING: Owner items in this batch require REAL on-chain RECOVERY txHash (return/reversal) BEFORE marking completed — TRUTH + SQL triggers will otherwise REJECT.',
+        notes: `Auto-generated batch for crypto misplaced settlement recoveries. OwnerAccount id=${verifiedOwner.id}. WARNING: Owner items require REAL on-chain RECOVERY txHash BEFORE marking completed — TRUTH + SQL triggers REJECT.`,
         paymentProvider: 'crypto_recovery',
       },
     });
   }
-  const ownerItem = await db.payoutItem.create({
+
+  // Route recovery owner item through SettlementEngine for durable lifecycle
+  const idem = `ops_crypto_recover_${cryptoSettlementId}_${recoveryBatchNum}_${Date.now()}`;
+  let seResult;
+  try {
+    seResult = await settlementEngine.submitForSettlement({
+      revenueEventId: undefined as any,
+      ownerAccountId: verifiedOwner.id,
+      entitlementSourceRef: `ops_resolve:crypto_recover:${cryptoSettlementId}`,
+      idempotencyKey: idem,
+      amount: Number(usdValue),
+      currency: 'USD',
+      railKind,
+      actor: 'ops-resolve:recoverCryptoMisplaced',
+      metadata: {
+        payoutBatchId: recoveryBatch.id,
+        batchNumber: recoveryBatchNum,
+        source: 'crypto_misplaced_recovery',
+        cryptoSettlementId,
+        token: settlement.token,
+        network: settlement.network,
+        originalTxHash: settlement.txHash || undefined,
+        originalTxHashReal: origTxHashReal,
+      },
+    });
+  } catch (se) {
+    return { ok: false, message: `SettlementEngine crypto recovery submit failed: ${(se as Error).message}` };
+  }
+
+  const failureReasonFinal = `CRYPTO MISPLACED RECOVERY HELD (OwnerAccount id=${verifiedOwner.id}): Original on-chain tx misplaced. REQUIRED before completed: (1) REAL on-chain REVERSAL / RETURN txHash (not TX-RECOVER-* placeholder) on ${settlement.network.toUpperCase()} — attach as externalRef + set connectorStatus=live_onchain; (2) proofHash=sha256(ownerItemId:realTxHash:amount:USD). TRUTH-007 (PayoutItem) + TRUTH-008 (CryptoSettlement) + Postgres triggers will REJECT ANY attempt to write status=completed without REAL on-chain proof. ${origTxHashNote}`;
+
+  await db.payoutItem.update({
+    where: { id: seResult.payoutItemId },
     data: {
       payoutBatchId: recoveryBatch.id,
       batchNumber: recoveryBatchNum,
       recipientName: OWNER_NAME_RES,
       recipientEmail: OWNER_EMAIL_RES,
-      amount: usdValue,
-      currency: 'USD',
-      status: 'pending',
       paymentMethod: `crypto_recovery_${settlement.network}`,
       transactionRef: txRef,
       connectorId: 'ops-crypto-misplaced-recovery',
       connectorStatus: 'not_configured',
-      failureReason: `CRYPTO MISPLACED RECOVERY HELD: Original on-chain tx misplaced. REQUIRED before completed: (1) REAL on-chain REVERSAL / RETURN txHash (not TX-RECOVER-* placeholder) on ${settlement.network.toUpperCase()} — attach as externalRef + set connectorStatus=live_onchain; (2) proofHash=sha256(ownerItemId:realTxHash:amount:USD). TRUTH-007 (PayoutItem) + TRUTH-008 (CryptoSettlement) + Postgres triggers will REJECT ANY attempt to write status=completed without REAL on-chain proof. ${origTxHashNote}`,
+      failureReason: failureReasonFinal,
     },
   });
   const batchItems = await db.payoutItem.findMany({ where: { batchNumber: recoveryBatchNum } });
@@ -1023,18 +1179,19 @@ async function recoverCryptoMisplaced(cryptoSettlementId: string) {
 
   await audit('CryptoSettlement', settlement.id, 'recover_crypto_misplaced',
     `recovered=false,status=${settlement.status}`,
-    `recovered=true,recoveryStatus=${hasRealRecoveryProof ? 'confirmed_onchain' : 'initiated_pending_proof'},ownerItem=${ownerItem.id},originalTxHashReal=${origTxHashReal}`,
-    `Recovery flagged for misplaced crypto ${settlement.amount} ${settlement.token} on ${settlement.network} ($${usdValue.toFixed(2)}) → ${OWNER_NAME_RES}. ${origTxHashNote} HELD until REAL on-chain recovery txHash attached — owner item pending, NO phantom completed write allowed.`);
+    `recovered=true,recoveryStatus=${hasRealRecoveryProof ? 'confirmed_onchain' : 'initiated_pending_proof'},ownerItem=${seResult.payoutItemId},originalTxHashReal=${origTxHashReal},ownerAccountId=${verifiedOwner.id},idempotencyHit=${seResult.idempotencyHit}`,
+    `Recovery flagged via SettlementEngine for misplaced crypto ${settlement.amount} ${settlement.token} on ${settlement.network} ($${usdValue.toFixed(2)}) → OwnerAccount id=${verifiedOwner.id} (${OWNER_NAME_RES}). ${origTxHashNote} HELD until REAL on-chain recovery txHash attached — NO phantom completed write allowed.`);
 
   return {
     ok: true,
-    message: `Recovery flagged for ${settlement.amount} ${settlement.token} on ${settlement.network} ($${usdValue.toFixed(2)}). HELD: Owner payout item status=pending; REQUIRED attach REAL on-chain REVERSAL/RETURN txHash before marking completed. Original txHash real=${origTxHashReal}.`,
+    message: `Recovery flagged via SettlementEngine for ${settlement.amount} ${settlement.token} on ${settlement.network} ($${usdValue.toFixed(2)}). OwnerAccount id=${verifiedOwner.id}. HELD: ownerItem=${seResult.payoutItemId} state=${seResult.state}; REQUIRED attach REAL on-chain REVERSAL/RETURN txHash before marking completed. Original txHash real=${origTxHashReal}.`,
     amount: settlement.amount,
     token: settlement.token,
     network: settlement.network,
     usdValue,
-    ownerItemId: ownerItem.id,
-    ownerItemStatus: 'pending',
+    ownerItemId: seResult.payoutItemId,
+    ownerItemStatus: seResult.state,
+    ownerAccountId: verifiedOwner.id,
     originalTxHashReal: origTxHashReal,
     needs_manual_receipt: true,
   };
@@ -1163,19 +1320,30 @@ async function resolveAll() {
   if (unnotified.length) results.push(`Sent ${unnotified.length} recipient notifications`);
 
   // 13. Recover misplaced settlements (NEW)
-  const OWNER_EMAIL_ALL = getOwnerEmail();
-  const OWNER_NAME_ALL = getOwnerNameUpper();
-  const allCompleted = await db.payoutItem.findMany({ where: { status: 'completed' } });
-  const misplacedItems = allCompleted.filter(
-    (i) => i.recipientEmail !== OWNER_EMAIL_ALL && !i.recipientName.toUpperCase().includes(OWNER_NAME_ALL),
-  );
-  let misplacedAmount = 0;
-  for (const item of misplacedItems) {
-    await recoverMisplaced(item.id);
-    totalResolved++;
-    misplacedAmount += item.amount;
+  let ownerFiltersAll;
+  try {
+    ownerFiltersAll = await getOwnerIdentityFilters();
+  } catch (e) {
+    results.push(`Skipped misplaced-settlement recovery: ${(e as Error)?.message || 'NO_VERIFIED_OWNER_ACCOUNTS'}`);
+    ownerFiltersAll = null;
   }
-  if (misplacedItems.length) results.push(`Recovered ${misplacedItems.length} misplaced settlements ($${misplacedAmount.toFixed(2)})`);
+  if (ownerFiltersAll) {
+    const allCompleted = await db.payoutItem.findMany({ where: { status: 'completed' } });
+    const misplacedItems = allCompleted.filter((i) => {
+      const e = (i.recipientEmail || '').toLowerCase();
+      const n = (i.recipientName || '').toUpperCase();
+      const emailMatches = e && ownerFiltersAll!.emails.has(e);
+      const nameMatches = [...ownerFiltersAll!.names].some((p) => p && n.includes(p));
+      return !emailMatches && !nameMatches;
+    });
+    let misplacedAmount = 0;
+    for (const item of misplacedItems) {
+      await recoverMisplaced(item.id);
+      totalResolved++;
+      misplacedAmount += item.amount;
+    }
+    if (misplacedItems.length) results.push(`Recovered ${misplacedItems.length} misplaced settlements ($${misplacedAmount.toFixed(2)}) — OwnerAccount filter (${ownerFiltersAll.emails.size} emails / ${ownerFiltersAll.names.size} names)`);
+  }
 
   // 14. Recover misplaced crypto settlements (NEW)
   const misplacedCrypto = await db.cryptoSettlement.findMany({

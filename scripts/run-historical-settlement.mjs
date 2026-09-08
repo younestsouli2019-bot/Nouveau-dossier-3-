@@ -36,8 +36,9 @@ async function main() {
 		try {
 			const result = await settleHistoricalRevenues();
 
-			if (result.settled) {
-				console.log("\n✅ Success! Files ready for Payoneer upload.");
+			if (result.instruction_generated) {
+				console.log("\n✅ Success! Payout instruction files ready for Payoneer upload.");
+				console.log("   NOT settled — completion requires provider confirmation + reconciliation.");
 			} else if (result.reason === "REQUIRES_HUMAN_APPROVAL") {
 				console.log("\n⚠️  Approval required (amount > $5000).");
 				console.log(`   Review files in: ${result.review_files.manifest}`);

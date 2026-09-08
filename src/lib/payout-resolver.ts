@@ -168,7 +168,7 @@ function envRoutes(reqCurrency: string): ResolvedRoute[] {
 /** Build routes from the DB OwnerAccount table (the myriad of pre-set accounts). */
 async function dbRoutes(reqCurrency: string): Promise<ResolvedRoute[]> {
   const accounts = await prisma.ownerAccount.findMany({
-    where: { isActive: true },
+    where: { isActive: true, verifiedAt: { not: null } },
     orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
   });
   const reqCur = reqCurrency.toUpperCase();

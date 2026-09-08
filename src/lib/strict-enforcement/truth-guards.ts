@@ -159,29 +159,34 @@ function auditMutation(params: {
         const providerBatchRef = (data as Record<string, unknown>).providerBatchRef
         const paypalBatchId = (data as Record<string, unknown>).paypalBatchId
         const proofHash = (data as Record<string, unknown>).proofHash
-        if (status === 'completed') {
+        const statusNorm = (status || '').toString().toUpperCase()
+        const isTerminalCompleted = status === 'completed' || statusNorm === 'SETTLED'
+        const isProcessingLike = status === 'submitted' || status === 'processing' ||
+          statusNorm === 'PROVIDER_SUBMITTED' || statusNorm === 'PROCESSING' || statusNorm === 'UNKNOWN' ||
+          statusNorm === 'PROVIDER_RECONCILED' || statusNorm === 'CONFIRMED'
+        if (isTerminalCompleted) {
           // TRUTH-004+ fail-closed: completed requires REAL provider ref AND proofHash
           if (isEmpty(providerBatchRef) && isEmpty(paypalBatchId)) {
             violations.push({
               rule: 'TRUTH-004', model, field: 'providerBatchRef/paypalBatchId',
-              message: 'PayoutBatch status=completed requires providerBatchRef (Payouts API) or paypalBatchId (PayPal Payouts batch ID).',
+              message: 'PayoutBatch status=SETTLED/completed requires providerBatchRef (Payouts API) or paypalBatchId (PayPal Payouts batch ID).',
               fatal: true,
             })
           } else if (!isEmpty(providerBatchRef) && isSyntheticRef(providerBatchRef)) {
             violations.push({
               rule: 'TRUTH-004-SYNTHETIC', model, field: 'providerBatchRef',
-              message: 'PayoutBatch status=completed requires a REAL provider batch ref, not a synthetic/fabricated one.',
+              message: 'PayoutBatch status=SETTLED/completed requires a REAL provider batch ref, not a synthetic/fabricated one.',
               fatal: true,
             })
           }
           if (isEmpty(proofHash)) {
             violations.push({
               rule: 'TRUTH-004-PROOF', model, field: 'proofHash',
-              message: 'PayoutBatch status=completed requires proofHash (sha256 of provider response + item list).',
+              message: 'PayoutBatch status=SETTLED/completed requires proofHash (sha256 of provider response + item list).',
               fatal: true,
             })
           }
-        } else if (status === 'submitted' || status === 'processing') {
+        } else if (isProcessingLike) {
           // non-fatal: processing/submitted should have proof eventually, but allowed in-flight
           if (isEmpty(providerBatchRef) && isEmpty(paypalBatchId)) {
             violations.push({
@@ -199,33 +204,49 @@ function auditMutation(params: {
         const externalRef = (data as Record<string, unknown>).externalRef
         const connectorStatus = (data as Record<string, unknown>).connectorStatus
         const proofHash = (data as Record<string, unknown>).proofHash
-        if (status === 'completed') {
+        const statusNorm = (status || '').toString().toUpperCase()
+        const isTerminalCompleted = status === 'completed' || statusNorm === 'SETTLED'
+        const isProcessingLike = status === 'processing' || status === 'submitted_to_paypal' ||
+          status === 'processing_awaiting_manual_receipt' ||
+          statusNorm === 'PROVIDER_SUBMITTED' || statusNorm === 'PROCESSING' || statusNorm === 'UNKNOWN' ||
+          statusNorm === 'PROVIDER_RECONCILED' || statusNorm === 'CONFIRMED'
+        if (isTerminalCompleted) {
           // fail-closed: completed needs (transactionRef XOR externalRef) that is REAL + (connectorStatus ∈ live/verified OR proofHash)
           const realRef = !isEmpty(externalRef) ? String(externalRef) : (!isEmpty(transactionRef) ? String(transactionRef) : '')
           if (isEmpty(realRef)) {
             violations.push({
               rule: 'TRUTH-007', model, field: 'transactionRef/externalRef',
-              message: 'PayoutItem status=completed requires transactionRef OR externalRef pointing to a real provider receipt.',
+              message: 'PayoutItem status=SETTLED/completed requires transactionRef OR externalRef pointing to a real provider receipt.',
               fatal: true,
             })
           } else if (isSyntheticRef(realRef)) {
             violations.push({
               rule: 'TRUTH-007-SYNTHETIC', model, field: 'transactionRef/externalRef',
-              message: `PayoutItem status=completed requires a REAL provider reference, not synthetic ("${String(realRef).slice(0,60)}"). Leave status=processing_awaiting_manual_receipt OR attach real txn ID / signed proofHash.`,
+              message: `PayoutItem status=SETTLED/completed requires a REAL provider reference, not synthetic ("${String(realRef).slice(0,60)}"). Leave status=PROCESSING/UNKNOWN OR attach real txn ID / signed proofHash.`,
               fatal: true,
             })
           }
           const connectorLive = typeof connectorStatus === 'string' &&
-            ['live','verified','manual_attested_finance','live_onchain','live_bank_api','live_paypal_api','live_stripe_api','live_wise_api']
+            ['live','verified','manual_attested_finance','live_onchain','live_bank_api','live_paypal_api','live_stripe_api','live_wise_api','PROVIDER_RECONCILED','CONFIRMED']
               .includes(connectorStatus.toLowerCase())
           if (!connectorLive && isEmpty(proofHash)) {
             violations.push({
               rule: 'TRUTH-007-PROOF', model, field: 'connectorStatus/proofHash',
-              message: 'PayoutItem status=completed requires connectorStatus ∈ live/verified/manual_attested_finance OR non-empty proofHash.',
+              message: 'PayoutItem status=SETTLED/completed requires connectorStatus ∈ live/verified/PROVIDER_RECONCILED/CONFIRMED OR non-empty proofHash (sha256 64 hex).',
               fatal: true,
             })
           }
-        } else if (status === 'processing' || status === 'submitted_to_paypal' || status === 'processing_awaiting_manual_receipt') {
+          if (!isEmpty(proofHash)) {
+            const s = String(proofHash).trim()
+            if (!/^[a-f0-9]{64}$/i.test(s)) {
+              violations.push({
+                rule: 'TRUTH-007-PROOF-FORMAT', model, field: 'proofHash',
+                message: `PayoutItem status=SETTLED proofHash must be 64 lowercase hex chars (sha256). Got length=${s.length} value="${s.slice(0,24)}…".`,
+                fatal: true,
+              })
+            }
+          }
+        } else if (isProcessingLike) {
           if (isEmpty(transactionRef) && isEmpty(externalRef)) {
             violations.push({
               rule: 'TRUTH-007-EVENTUAL', model, field: 'transactionRef/externalRef',

@@ -1,5 +1,5 @@
-/**
- * Payout tick endpoint — the hourly engine entry that drives payouts through
+﻿/**
+ * Payout tick endpoint ΓÇö the hourly engine entry that drives payouts through
  * the state machine past RESERVED toward RECONCILED. Settlement-gap P0/P1.
  *
  * POST /api/payouts/tick
@@ -97,7 +97,7 @@ export async function POST(req: Request) {
   const secret = process.env.PAYOUT_TICK_SECRET;
   if (!secret) {
     return Response.json(
-      { ok: false, error: 'PAYOUT_TICK_SECRET not configured — tick is fail-closed' },
+      { ok: false, error: 'PAYOUT_TICK_SECRET not configured ΓÇö tick is fail-closed' },
       { status: 503 }
     );
   }
