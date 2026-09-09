@@ -5,20 +5,20 @@
       "title": "Certified Blockchain Expert (CBE) preptest 2025",
       "status": "FAIL",
       "page_url": "https://www.realworldcerts.com/catalog/certified-blockchain-expert-cbe-preptest-2025.html",
-      "checked_at": "2026-09-09T01:46:57.002Z",
+      "checked_at": "2026-09-09T04:06:12.622Z",
       "checks": {
         "hero_image": {
           "kind": "hero_image",
           "required": 1,
-          "found": 0,
-          "status": "FAIL",
+          "found": 1,
+          "status": "PASS",
           "assetIds": []
         },
         "thumbnail": {
           "kind": "thumbnail",
           "required": 1,
-          "found": 0,
-          "status": "FAIL",
+          "found": 1,
+          "status": "PASS",
           "assetIds": []
         },
         "module_images": {
@@ -52,12 +52,8 @@
         "video_thumbnails": {
           "kind": "video_thumbnails",
           "required": 3,
-          "found": [
-            "/assets/courses/certified-blockchain-expert-cbe-preptest-2025.svg",
-            "/assets/courses/certified-blockchain-expert-cbe-preptest-2025-b.svg",
-            "/assets/courses/certified-blockchain-expert-cbe-preptest-2025-c.svg"
-          ],
-          "status": "FAIL",
+          "found": 3,
+          "status": "PASS",
           "assetIds": []
         },
         "cheat_sheet": {
@@ -74,20 +70,20 @@
       "title": "Financial Risk Manager Test Bank",
       "status": "FAIL",
       "page_url": "https://www.realworldcerts.com/catalog/financial-risk-manager-test-bank.html",
-      "checked_at": "2026-09-09T01:46:57.003Z",
+      "checked_at": "2026-09-09T04:06:12.623Z",
       "checks": {
         "hero_image": {
           "kind": "hero_image",
           "required": 1,
-          "found": 0,
-          "status": "FAIL",
+          "found": 1,
+          "status": "PASS",
           "assetIds": []
         },
         "thumbnail": {
           "kind": "thumbnail",
           "required": 1,
-          "found": 0,
-          "status": "FAIL",
+          "found": 1,
+          "status": "PASS",
           "assetIds": []
         },
         "module_images": {
@@ -121,12 +117,8 @@
         "video_thumbnails": {
           "kind": "video_thumbnails",
           "required": 3,
-          "found": [
-            "/assets/courses/financial-risk-manager-test-bank.svg",
-            "/assets/courses/financial-risk-manager-test-bank-b.svg",
-            "/assets/courses/financial-risk-manager-test-bank-c.svg"
-          ],
-          "status": "FAIL",
+          "found": 3,
+          "status": "PASS",
           "assetIds": []
         },
         "cheat_sheet": {
@@ -143,20 +135,20 @@
       "title": "SAP Certified Development Associate - ABAP with SAP Exam",
       "status": "FAIL",
       "page_url": "https://www.realworldcerts.com/catalog/sap-certified-development-associate-abap-with-sap-exam.html",
-      "checked_at": "2026-09-09T01:46:57.003Z",
+      "checked_at": "2026-09-09T04:06:12.623Z",
       "checks": {
         "hero_image": {
           "kind": "hero_image",
           "required": 1,
-          "found": 0,
-          "status": "FAIL",
+          "found": 1,
+          "status": "PASS",
           "assetIds": []
         },
         "thumbnail": {
           "kind": "thumbnail",
           "required": 1,
-          "found": 0,
-          "status": "FAIL",
+          "found": 1,
+          "status": "PASS",
           "assetIds": []
         },
         "module_images": {
@@ -190,12 +182,8 @@
         "video_thumbnails": {
           "kind": "video_thumbnails",
           "required": 3,
-          "found": [
-            "/assets/courses/sap-certified-development-associate-abap-with-sap-exam.svg",
-            "/assets/courses/sap-certified-development-associate-abap-with-sap-exam-b.svg",
-            "/assets/courses/sap-certified-development-associate-abap-with-sap-exam-c.svg"
-          ],
-          "status": "FAIL",
+          "found": 3,
+          "status": "PASS",
           "assetIds": []
         },
         "cheat_sheet": {
@@ -13634,5 +13622,5 @@
       "deficits": []
     }
   },
-  "updated_at": "2026-09-09T01:46:57.004Z"
+  "updated_at": "2026-09-09T04:06:12.624Z"
 }
