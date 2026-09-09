@@ -13931,11 +13931,11 @@
         {
           "id": "RWC-VIS-256-HERO",
           "kind": "HERO",
-          "url": "https://www.realworldcerts.com/media/RWC-VIS-256/RWC-VIS-256-HERO.webp",
+          "url": "https://cdn.jsdelivr.net/gh/younestsouli2019-bot/Nouveau-dossier-3-@release/rank/output/media/RWC-VIS-256/RWC-VIS-256-HERO.webp",
           "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\visual-intel-e2e\\RWC-VIS-256-HERO.webp",
           "mime": "image/webp",
           "size": 66556,
-          "http_verified": false,
+          "http_verified": true,
           "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing.",
           "visual_intel": {
             "status": "mismatch",
@@ -13948,16 +13948,17 @@
             "error": null
           },
           "public_source": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/3a34fdaf-5d6b-4b24-9f28-0128edf6b5b0.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T190905Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=54b18c7281ad70f04757106e4b3eb47990da4cf8ffb905f169dfe6aab1be21b8",
-          "deploy_pending_vercel": true
+          "deploy_pending_vercel": true,
+          "verified_at": "2026-09-09T21:10:57.002Z"
         },
         {
           "id": "RWC-VIS-256-THUMB",
           "kind": "THUMB",
-          "url": "https://www.realworldcerts.com/media/RWC-VIS-256/RWC-VIS-256-THUMB.webp",
+          "url": "https://cdn.jsdelivr.net/gh/younestsouli2019-bot/Nouveau-dossier-3-@release/rank/output/media/RWC-VIS-256/RWC-VIS-256-THUMB.webp",
           "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\visual-intel-e2e\\RWC-VIS-256-THUMB.webp",
           "mime": "image/webp",
           "size": 44984,
-          "http_verified": false,
+          "http_verified": true,
           "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing.",
           "visual_intel": {
             "status": "mismatch",
@@ -13970,16 +13971,17 @@
             "error": null
           },
           "public_source": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/428a356d-eb15-4644-bfac-6267c3fdd1cb.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T191030Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=28b332b7f680ff094f76e23cd73a88fd8c8190377ceec9f539b45cbb3f25fe63",
-          "deploy_pending_vercel": true
+          "deploy_pending_vercel": true,
+          "verified_at": "2026-09-09T21:10:57.653Z"
         },
         {
           "id": "RWC-VIS-256-MOD-01",
           "kind": "MOD",
-          "url": "https://www.realworldcerts.com/media/RWC-VIS-256/RWC-VIS-256-MOD-01.webp",
+          "url": "https://cdn.jsdelivr.net/gh/younestsouli2019-bot/Nouveau-dossier-3-@release/rank/output/media/RWC-VIS-256/RWC-VIS-256-MOD-01.webp",
           "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\visual-intel-e2e\\RWC-VIS-256-MOD-01.webp",
           "mime": "image/webp",
           "size": 78326,
-          "http_verified": false,
+          "http_verified": true,
           "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing.",
           "visual_intel": {
             "status": "verified",
@@ -13992,16 +13994,17 @@
             "error": null
           },
           "public_source": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/7f2154fc-55fa-4f10-be29-cf7f97db4d75.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T191107Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=db35a5eeed436ba39ead6f0b05f8c835779052f2fd25bad8b0f0fc437f40fa6a",
-          "deploy_pending_vercel": true
+          "deploy_pending_vercel": true,
+          "verified_at": "2026-09-09T21:10:59.301Z"
         },
         {
           "id": "RWC-VIS-256-DIAGRAM-01",
           "kind": "DIAGRAM",
-          "url": "https://www.realworldcerts.com/media/RWC-VIS-256/RWC-VIS-256-DIAGRAM-01.webp",
+          "url": "https://cdn.jsdelivr.net/gh/younestsouli2019-bot/Nouveau-dossier-3-@release/rank/output/media/RWC-VIS-256/RWC-VIS-256-DIAGRAM-01.webp",
           "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\visual-intel-e2e\\RWC-VIS-256-DIAGRAM-01.webp",
           "mime": "image/webp",
           "size": 92476,
-          "http_verified": false,
+          "http_verified": true,
           "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing.",
           "visual_intel": {
             "status": "mismatch",
@@ -14014,16 +14017,17 @@
             "error": null
           },
           "public_source": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/fedb4782-e9dc-46b2-9729-ed9fb9e76aba.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T191225Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=6d52cd0e87606f19638bc4ab4d96486edb79aa18704eace51ef9de6f672b254c",
-          "deploy_pending_vercel": true
+          "deploy_pending_vercel": true,
+          "verified_at": "2026-09-09T21:10:59.866Z"
         },
         {
           "id": "RWC-VIS-256-CHEAT",
           "kind": "CHEAT",
-          "url": "https://www.realworldcerts.com/media/RWC-VIS-256/RWC-VIS-256-CHEAT.webp",
+          "url": "https://cdn.jsdelivr.net/gh/younestsouli2019-bot/Nouveau-dossier-3-@release/rank/output/media/RWC-VIS-256/RWC-VIS-256-CHEAT.webp",
           "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\visual-intel-e2e\\RWC-VIS-256-CHEAT.webp",
           "mime": "image/webp",
           "size": 63712,
-          "http_verified": false,
+          "http_verified": true,
           "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing.",
           "visual_intel": {
             "status": "mismatch",
@@ -14036,37 +14040,40 @@
             "error": null
           },
           "public_source": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/1ac1c64a-cd60-417b-82f0-120f5fcc2e96.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T191301Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=cb7f5e659e88393e468c0541213e627f4f8f7e69a24f3b0312b44e4329aa3481",
-          "deploy_pending_vercel": true
+          "deploy_pending_vercel": true,
+          "verified_at": "2026-09-09T21:11:00.349Z"
         },
         {
           "id": "RWC-VIS-256-TRAILER",
           "kind": "TRAILER",
-          "url": "https://www.realworldcerts.com/media/RWC-VIS-256/RWC-VIS-256-TRAILER.mp4",
+          "url": "https://cdn.jsdelivr.net/gh/younestsouli2019-bot/Nouveau-dossier-3-@release/rank/output/media/RWC-VIS-256/RWC-VIS-256-TRAILER.mp4",
           "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\visual-intel-e2e\\RWC-VIS-256-TRAILER.mp4",
           "mime": "video/mp4",
           "size": 814710,
-          "http_verified": false,
+          "http_verified": true,
           "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing.",
           "visual_intel": null,
           "public_source": null,
-          "deploy_pending_vercel": true
+          "deploy_pending_vercel": true,
+          "verified_at": "2026-09-09T21:11:01.803Z"
         },
         {
           "id": "RWC-VIS-256-LESSON-01",
           "kind": "LESSON",
-          "url": "https://www.realworldcerts.com/media/RWC-VIS-256/RWC-VIS-256-LESSON-01.mp4",
+          "url": "https://cdn.jsdelivr.net/gh/younestsouli2019-bot/Nouveau-dossier-3-@release/rank/output/media/RWC-VIS-256/RWC-VIS-256-LESSON-01.mp4",
           "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\visual-intel-e2e\\RWC-VIS-256-SSON-01.mp4",
           "mime": "video/mp4",
           "size": 939864,
-          "http_verified": false,
+          "http_verified": true,
           "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing.",
           "visual_intel": null,
           "public_source": null,
-          "deploy_pending_vercel": true
+          "deploy_pending_vercel": true,
+          "verified_at": "2026-09-09T21:11:02.677Z"
         }
       ],
       "deficits": [],
-      "updated_at": "2026-09-09T20:31:24.910Z"
+      "updated_at": "2026-09-09T21:24:54.162Z"
     }
   },
   "updated_at": "2026-09-09T04:06:12.624Z"
