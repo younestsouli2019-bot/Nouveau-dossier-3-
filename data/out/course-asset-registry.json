@@ -3,68 +3,120 @@
   "assets": {
     "certified-blockchain-expert-cbe-preptest-2025": {
       "title": "Certified Blockchain Expert (CBE) preptest 2025",
-      "status": "FAIL",
-      "page_url": "https://www.realworldcerts.com/catalog/certified-blockchain-expert-cbe-preptest-2025.html",
-      "checked_at": "2026-09-09T04:06:12.622Z",
-      "checks": {
-        "hero_image": {
-          "kind": "hero_image",
-          "required": 1,
-          "found": 1,
-          "status": "PASS",
-          "assetIds": []
+      "category": "Blockchain",
+      "status": "PARTIAL",
+      "checked_at": "2026-09-09T05:26:44.808Z",
+      "assets": [
+        {
+          "id": "RWC-CER-068-HERO",
+          "kind": "HERO",
+          "url": null,
+          "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\certified-blockchain-expert-cbe-preptest-2025\\RWC-CER-068-HERO.webp",
+          "mime": "image/webp",
+          "size": 69706,
+          "http_verified": false,
+          "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing."
         },
-        "thumbnail": {
-          "kind": "thumbnail",
-          "required": 1,
-          "found": 1,
-          "status": "PASS",
-          "assetIds": []
+        {
+          "id": "RWC-CER-068-THUMB",
+          "kind": "THUMB",
+          "url": null,
+          "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\certified-blockchain-expert-cbe-preptest-2025\\RWC-CER-068-THUMB.webp",
+          "mime": "image/webp",
+          "size": 49290,
+          "http_verified": false,
+          "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing."
         },
-        "module_images": {
-          "kind": "module_images",
-          "required": 3,
-          "found": 1,
-          "status": "FAIL",
-          "assetIds": []
+        {
+          "id": "RWC-CER-068-MOD-01",
+          "kind": "MOD",
+          "url": null,
+          "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\certified-blockchain-expert-cbe-preptest-2025\\RWC-CER-068-MOD-01.webp",
+          "mime": "image/webp",
+          "size": 91344,
+          "http_verified": false,
+          "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing."
         },
-        "diagrams": {
-          "kind": "diagrams",
-          "required": 2,
-          "found": 0,
-          "status": "FAIL",
-          "assetIds": []
+        {
+          "id": "RWC-CER-068-MOD-02",
+          "kind": "MOD",
+          "url": null,
+          "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\certified-blockchain-expert-cbe-preptest-2025\\RWC-CER-068-MOD-02.webp",
+          "mime": "image/webp",
+          "size": 66088,
+          "http_verified": false,
+          "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing."
         },
-        "trailer_video": {
-          "kind": "trailer_video",
-          "required": 1,
-          "found": 0,
-          "status": "FAIL",
-          "assetIds": []
+        {
+          "id": "RWC-CER-068-MOD-03",
+          "kind": "MOD",
+          "url": null,
+          "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\certified-blockchain-expert-cbe-preptest-2025\\RWC-CER-068-MOD-03.webp",
+          "mime": "image/webp",
+          "size": 67434,
+          "http_verified": false,
+          "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing."
         },
-        "lesson_videos": {
-          "kind": "lesson_videos",
-          "required": 3,
-          "found": 0,
-          "status": "FAIL",
-          "assetIds": []
+        {
+          "id": "RWC-CER-068-DIAGRAM-01",
+          "kind": "DIAGRAM",
+          "url": null,
+          "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\certified-blockchain-expert-cbe-preptest-2025\\RWC-CER-068-DIAGRAM-01.webp",
+          "mime": "image/webp",
+          "size": 83790,
+          "http_verified": false,
+          "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing."
         },
-        "video_thumbnails": {
-          "kind": "video_thumbnails",
-          "required": 3,
-          "found": 3,
-          "status": "PASS",
-          "assetIds": []
+        {
+          "id": "RWC-CER-068-DIAGRAM-02",
+          "kind": "DIAGRAM",
+          "url": null,
+          "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\certified-blockchain-expert-cbe-preptest-2025\\RWC-CER-068-DIAGRAM-02.webp",
+          "mime": "image/webp",
+          "size": 101824,
+          "http_verified": false,
+          "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing."
         },
-        "cheat_sheet": {
-          "kind": "cheat_sheet",
-          "required": 1,
-          "found": 0,
-          "status": "FAIL",
-          "assetIds": []
+        {
+          "id": "RWC-CER-068-CHEAT",
+          "kind": "CHEAT",
+          "url": null,
+          "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\certified-blockchain-expert-cbe-preptest-2025\\RWC-CER-068-CHEAT.webp",
+          "mime": "image/webp",
+          "size": 106588,
+          "http_verified": false,
+          "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing."
+        },
+        {
+          "id": "RWC-CER-068-TRAILER",
+          "kind": "TRAILER",
+          "url": null,
+          "local": null,
+          "broken": "video_not_configured"
+        },
+        {
+          "id": "RWC-CER-068-LESSON-01",
+          "kind": "LESSON",
+          "url": null,
+          "local": null,
+          "broken": "video_not_configured"
+        },
+        {
+          "id": "RWC-CER-068-LESSON-02",
+          "kind": "LESSON",
+          "url": null,
+          "local": null,
+          "broken": "video_not_configured"
+        },
+        {
+          "id": "RWC-CER-068-LESSON-03",
+          "kind": "LESSON",
+          "url": null,
+          "local": null,
+          "broken": "video_not_configured"
         }
-      },
-      "asset_urls": {}
+      ],
+      "deficits": []
     },
     "financial-risk-manager-test-bank": {
       "title": "Financial Risk Manager Test Bank",
@@ -13617,6 +13669,255 @@
           "url": null,
           "local": null,
           "broken": "video_not_configured"
+        }
+      ],
+      "deficits": []
+    },
+    "visual-intel-smoke-test": {
+      "title": "Cybersecurity",
+      "category": "Cybersecurity",
+      "status": "PARTIAL",
+      "checked_at": "2026-09-09T13:33:48.360Z",
+      "assets": [
+        {
+          "id": "RWC-VIS-448-HERO",
+          "kind": "HERO",
+          "url": null,
+          "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\visual-intel-smoke-test\\RWC-VIS-448-HERO.webp",
+          "mime": "image/webp",
+          "size": 54664,
+          "http_verified": false,
+          "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing.",
+          "visual_intel": {
+            "status": "verified",
+            "caption": "two computer screens displaying a website on the right and on the left a cell phone is propped in the middle",
+            "nsfw_advisory": false,
+            "relevance": 0,
+            "expected_subject": "Cybersecurity Cybersecurity HERO",
+            "source_url": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/9ca8a34f-f7dd-43f6-815c-38541dadc5ef.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T132503Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=6bc37912631a49685bff03a6ba9430e3c762de907c25172b6603f5f96573ae2b",
+            "checked_at": "2026-09-09T13:25:03.475Z",
+            "error": null,
+            "judge": {
+              "depicts": true,
+              "confidence": 0.85,
+              "reason": "Computer screens and a cell phone are standard visual components used to represent digital technology and interfaces, which plausibly fit a cybersecurity course hero banner.",
+              "model": "google/gemini-3.5-flash"
+            }
+          },
+          "public_source": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/9ca8a34f-f7dd-43f6-815c-38541dadc5ef.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T132503Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=6bc37912631a49685bff03a6ba9430e3c762de907c25172b6603f5f96573ae2b"
+        },
+        {
+          "id": "RWC-VIS-448-THUMB",
+          "kind": "THUMB",
+          "url": null,
+          "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\visual-intel-smoke-test\\RWC-VIS-448-THUMB.webp",
+          "mime": "image/webp",
+          "size": 42588,
+          "http_verified": false,
+          "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing.",
+          "visual_intel": {
+            "status": "verified",
+            "caption": "the padlock icon in blue and purple with an open keyhole on it's sides",
+            "nsfw_advisory": false,
+            "relevance": 0,
+            "expected_subject": "Cybersecurity Cybersecurity THUMB",
+            "source_url": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/6299628d-7053-45d1-9539-0da7d94bceb1.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T132546Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=c6a64bedc5b06c35899be0119afa355da9be59bd7f67005e50af3844b603b2cd",
+            "checked_at": "2026-09-09T13:25:46.287Z",
+            "error": null,
+            "judge": {
+              "depicts": true,
+              "confidence": 0.95,
+              "reason": "A padlock icon is a standard and highly appropriate visual representation for a cybersecurity-themed course thumbnail.",
+              "model": "google/gemini-3.5-flash"
+            }
+          },
+          "public_source": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/6299628d-7053-45d1-9539-0da7d94bceb1.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T132546Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=c6a64bedc5b06c35899be0119afa355da9be59bd7f67005e50af3844b603b2cd"
+        },
+        {
+          "id": "RWC-VIS-448-MOD-01",
+          "kind": "MOD",
+          "url": null,
+          "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\visual-intel-smoke-test\\RWC-VIS-448-MOD-01.webp",
+          "mime": "image/webp",
+          "size": 69798,
+          "http_verified": false,
+          "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing.",
+          "visual_intel": {
+            "status": "verified",
+            "caption": "a round with different icons and symbols on it, and an image of a shield",
+            "nsfw_advisory": false,
+            "relevance": 0,
+            "expected_subject": "Cybersecurity Cybersecurity MOD",
+            "source_url": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/9e184a92-efcb-4850-855d-f4e1140bcfb4.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T132739Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=e11d97cfd84d0bb14139475f6b211eda084439ebed3602a856e36e24f28dc36d",
+            "checked_at": "2026-09-09T13:27:39.662Z",
+            "error": null,
+            "judge": {
+              "depicts": true,
+              "confidence": 0.9,
+              "reason": "The shield is a universal symbol for cybersecurity, and the mention of icons and symbols on a round object aligns well with common cybersecurity graphics and badges.",
+              "model": "google/gemini-3.5-flash"
+            }
+          },
+          "public_source": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/9e184a92-efcb-4850-855d-f4e1140bcfb4.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T132739Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=e11d97cfd84d0bb14139475f6b211eda084439ebed3602a856e36e24f28dc36d"
+        },
+        {
+          "id": "RWC-VIS-448-MOD-02",
+          "kind": "MOD",
+          "url": null,
+          "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\visual-intel-smoke-test\\RWC-VIS-448-MOD-02.webp",
+          "mime": "image/webp",
+          "size": 72650,
+          "http_verified": false,
+          "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing.",
+          "visual_intel": {
+            "status": "verified",
+            "caption": "several computers are arranged around each other on the dark background with orange squares around them",
+            "nsfw_advisory": false,
+            "relevance": 0,
+            "expected_subject": "Cybersecurity Cybersecurity MOD",
+            "source_url": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/9f8c8352-f201-4ac4-9c12-d25ca3bfaa9c.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T132948Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=e063615628cdc1b9f5b75edac07f71ddf86b1d5e071a503f942d6501f31fa2c4",
+            "checked_at": "2026-09-09T13:29:48.605Z",
+            "error": null,
+            "judge": {
+              "depicts": true,
+              "confidence": 0.85,
+              "reason": "The description of several computers arranged on a dark background with highlighted orange squares is a common abstract visual representation of networks and cybersecurity themes.",
+              "model": "google/gemini-3.5-flash"
+            }
+          },
+          "public_source": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/9f8c8352-f201-4ac4-9c12-d25ca3bfaa9c.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T132948Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=e063615628cdc1b9f5b75edac07f71ddf86b1d5e071a503f942d6501f31fa2c4"
+        },
+        {
+          "id": "RWC-VIS-448-MOD-03",
+          "kind": "MOD",
+          "url": null,
+          "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\visual-intel-smoke-test\\RWC-VIS-448-MOD-03.webp",
+          "mime": "image/webp",
+          "size": 84104,
+          "http_verified": false,
+          "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing.",
+          "visual_intel": {
+            "status": "verified",
+            "caption": "different devices connected to one another, including a blue icon and two white buttons on the top",
+            "nsfw_advisory": false,
+            "relevance": 0,
+            "expected_subject": "Cybersecurity Cybersecurity MOD",
+            "source_url": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/1dd858db-215b-4054-9f9c-716d1aaef339.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T133041Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=8a11ab513ec18990ee3caac4d722eadfc9889fa9e422854acde84231e6f34e8b",
+            "checked_at": "2026-09-09T13:30:41.418Z",
+            "error": null,
+            "judge": {
+              "depicts": true,
+              "confidence": 0.8,
+              "reason": "Connected devices are a standard visual representation for networks and cybersecurity concepts.",
+              "model": "google/gemini-3.5-flash"
+            }
+          },
+          "public_source": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/1dd858db-215b-4054-9f9c-716d1aaef339.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T133041Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=8a11ab513ec18990ee3caac4d722eadfc9889fa9e422854acde84231e6f34e8b"
+        },
+        {
+          "id": "RWC-VIS-448-DIAGRAM-01",
+          "kind": "DIAGRAM",
+          "url": null,
+          "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\visual-intel-smoke-test\\RWC-VIS-448-DIAGRAM-01.webp",
+          "mime": "image/webp",
+          "size": 96174,
+          "http_verified": false,
+          "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing.",
+          "visual_intel": {
+            "status": "verified",
+            "caption": "the smartphone and laptop are connected together with electronic devices and data icons such as cloud computing",
+            "nsfw_advisory": false,
+            "relevance": 0,
+            "expected_subject": "Cybersecurity Cybersecurity DIAGRAM",
+            "source_url": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/b983d1e8-424b-432e-9c59-122fddd6b76a.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T133136Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=a6e85ad4d6987652067ee83ce1cbabbd89f498e640a2b123ebfc60739cc189c2",
+            "checked_at": "2026-09-09T13:31:36.733Z",
+            "error": null,
+            "judge": {
+              "depicts": true,
+              "confidence": 0.85,
+              "reason": "The caption describes a diagram of connected devices and data icons, which is a highly plausible representation of a network or cybersecurity diagram.",
+              "model": "google/gemini-3.5-flash"
+            }
+          },
+          "public_source": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/b983d1e8-424b-432e-9c59-122fddd6b76a.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T133136Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=a6e85ad4d6987652067ee83ce1cbabbd89f498e640a2b123ebfc60739cc189c2"
+        },
+        {
+          "id": "RWC-VIS-448-DIAGRAM-02",
+          "kind": "DIAGRAM",
+          "url": null,
+          "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\visual-intel-smoke-test\\RWC-VIS-448-DIAGRAM-02.webp",
+          "mime": "image/webp",
+          "size": 87578,
+          "http_verified": false,
+          "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing.",
+          "visual_intel": {
+            "status": "mismatch",
+            "caption": "a white and black object on some cubes and blocks with a hexagon with some square objects",
+            "nsfw_advisory": false,
+            "relevance": 0,
+            "expected_subject": "Cybersecurity Cybersecurity DIAGRAM",
+            "source_url": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/f8d32b28-9d91-4733-bb73-6750387d8b1f.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T133225Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=d84118f4c31a3857c64a577ecd564b2ea30f6564944aa4bf0bab14e797c62c70",
+            "checked_at": "2026-09-09T13:32:25.115Z",
+            "error": null
+          },
+          "public_source": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/f8d32b28-9d91-4733-bb73-6750387d8b1f.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T133225Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=d84118f4c31a3857c64a577ecd564b2ea30f6564944aa4bf0bab14e797c62c70"
+        },
+        {
+          "id": "RWC-VIS-448-CHEAT",
+          "kind": "CHEAT",
+          "url": null,
+          "local": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\data\\generated\\visual-intel-smoke-test\\RWC-VIS-448-CHEAT.webp",
+          "mime": "image/webp",
+          "size": 92586,
+          "http_verified": false,
+          "broken": "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing.",
+          "visual_intel": {
+            "status": "mismatch",
+            "caption": "there are squares and blocks with lines on them in the middle of this photograph, there is a person riding a bicycle",
+            "nsfw_advisory": false,
+            "relevance": 0,
+            "expected_subject": "Cybersecurity Cybersecurity CHEAT",
+            "source_url": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/ee3e9596-4cd3-4cfa-b910-958561bdf875.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T133336Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=6cc0f46c076eff2aa8caedab62ada0b7ace3a6ca913c1113df70f0da2b4d847a",
+            "checked_at": "2026-09-09T13:33:36.694Z",
+            "error": null
+          },
+          "public_source": "https://a223539ccf6caa2d76459c9727d276e6.r2.cloudflarestorage.com/stable-horde/ee3e9596-4cd3-4cfa-b910-958561bdf875.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=246782cc9101762ba914350d8058cd83%2F20260909%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260909T133336Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=6cc0f46c076eff2aa8caedab62ada0b7ace3a6ca913c1113df70f0da2b4d847a"
+        },
+        {
+          "id": "RWC-VIS-448-TRAILER",
+          "kind": "TRAILER",
+          "url": null,
+          "local": null,
+          "broken": "video_not_configured",
+          "visual_intel": null,
+          "public_source": null
+        },
+        {
+          "id": "RWC-VIS-448-LESSON-01",
+          "kind": "LESSON",
+          "url": null,
+          "local": null,
+          "broken": "video_not_configured",
+          "visual_intel": null,
+          "public_source": null
+        },
+        {
+          "id": "RWC-VIS-448-LESSON-02",
+          "kind": "LESSON",
+          "url": null,
+          "local": null,
+          "broken": "video_not_configured",
+          "visual_intel": null,
+          "public_source": null
+        },
+        {
+          "id": "RWC-VIS-448-LESSON-03",
+          "kind": "LESSON",
+          "url": null,
+          "local": null,
+          "broken": "video_not_configured",
+          "visual_intel": null,
+          "public_source": null
         }
       ],
       "deficits": []
