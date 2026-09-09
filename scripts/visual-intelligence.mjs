@@ -34,19 +34,34 @@ const DEFAULT_TIMEOUT_MS = (parseInt(process.env.VISUAL_INTEL_TIMEOUT_MS, 10) ||
  */
 export async function interrogateImageUrl(sourceUrl, { forms = ["caption", "nsfw"], timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
 	const HDR = HDR_BASE();
-	const submit = await fetch(`${API}/interrogate/async`, {
-		method: "POST",
-		headers: HDR,
-		body: JSON.stringify({
-			forms: forms.map((name) => ({ name })),
-			source_image: sourceUrl,
-			slow_workers: true,
-		}),
-		signal: AbortSignal.timeout(30000),
-	});
-	if (!submit.ok) throw new Error(`interrogate submit ${submit.status}: ${(await submit.text()).slice(0, 160)}`);
-	const job = await submit.json();
-	if (!job.id) throw new Error(`interrogate rejected: ${JSON.stringify(job).slice(0, 160)}`);
+	// Retry submit against transient Horde outages.
+	const attempts = parseInt(process.env.AIHORDE_RETRIES || "2", 10);
+	let job = null;
+	let lastSubmitErr = null;
+	for (let attempt = 1; attempt <= attempts; attempt++) {
+		if (attempt > 1) await new Promise((r) => setTimeout(r, 15000 * attempt));
+		try {
+			const submit = await fetch(`${API}/interrogate/async`, {
+				method: "POST",
+				headers: HDR,
+				body: JSON.stringify({
+					forms: forms.map((name) => ({ name })),
+					source_image: sourceUrl,
+					slow_workers: true,
+				}),
+				signal: AbortSignal.timeout(30000),
+			});
+			if (!submit.ok) throw new Error(`interrogate submit ${submit.status}: ${(await submit.text()).slice(0, 160)}`);
+			const j = await submit.json();
+			if (!j.id) throw new Error(`interrogate rejected: ${JSON.stringify(j).slice(0, 160)}`);
+			job = j;
+			break;
+		} catch (e) {
+			lastSubmitErr = e;
+			if (attempt < attempts) console.warn(`[interrogate] attempt ${attempt} failed: ${e.message}`);
+		}
+	}
+	if (!job) throw lastSubmitErr;
 
 	const started = Date.now();
 	while (true) {
