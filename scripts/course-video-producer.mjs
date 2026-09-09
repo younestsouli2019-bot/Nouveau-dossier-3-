@@ -248,7 +248,7 @@ async function generateImageOpenAICompatible(provider, { prompt, outPath, width,
  * exist; otherwise throw "video_not_configured"), or "ffmpeg" (require
  * synthesis). Controlled by RWC_VIDEO_MODE env.
  */
-async function buildVideos(course, assets, lessonCount) {
+async function buildVideos(course, assets, lessonCount, codeOverride) {
 	const mode = process.env.RWC_VIDEO_MODE || "auto";
 	const synth = await import("./video-synthesis.mjs").catch(() => { throw new Error(NO_KEY_REASONS.video); });
 	// resolve ffmpeg up-front so we fail fast with a clear message
@@ -259,7 +259,7 @@ async function buildVideos(course, assets, lessonCount) {
 
 	const kindOrder = ["HERO", "THUMB", "MOD", "DIAGRAM", "CHEAT"];
 	const ordered = imgs.sort((a, b) => kindOrder.indexOf(a.kind) - kindOrder.indexOf(b.kind));
-	const code = course.code;
+	const code = codeOverride || course.code || courseCode(course.slug);
 	const slug = course.slug;
 
 	const dir = path.join(ASSETS_LOCAL, slug);
@@ -310,6 +310,7 @@ function register(course, assets) {
 			size: a.size,
 			http_verified: a.http_verified,
 			broken: a.broken || null,
+			publish_error: a.publish_error || null,
 			visual_intel: a.visual_intel || null,
 			public_source: a.public_source || null,
 		})),
@@ -384,7 +385,7 @@ export async function produceCourse(course, args) {
 	// video (fail-closed local synthesis from REAL images; never fabricated)
 	let videoErr = null;
 	if (process.env.RWC_VIDEO_MODE !== "off") {
-		try { await buildVideos(course, assets, lessonCount); } catch (e) { videoErr = e.message; }
+		try { await buildVideos(course, assets, lessonCount, code); } catch (e) { videoErr = e.message; }
 	} else {
 		videoErr = NO_KEY_REASONS.video;
 	}
@@ -396,14 +397,16 @@ export async function produceCourse(course, args) {
 			const pub = storagePublish(a.local, a.assetId);
 			a.url = pub.url;
 		} catch (e) {
-			a.broken = e.message;
+			// host/publish failure is a distinct concern from synthesis
+			// failure: keep `broken` for synthesis, record publish separately.
+			a.publish_error = e.message;
 		}
 	}
 
 	const deficits = [];
 	const byKind = {};
 	for (const a of assets) { byKind[a.kind] = byKind[a.kind] || []; byKind[a.kind].push(a); }
-	// video deficit: iff synthesis attempted but failed/off
+	// video deficit: synthesis attempt failed/off only
 	const trailerGen = (byKind["TRAILER"] || []).find((a) => a.generated);
 	const trailerBroken = (byKind["TRAILER"] || []).some((a) => a.broken);
 	if (videoErr && !trailerGen) deficits.push("trailer_video");
@@ -417,6 +420,9 @@ export async function produceCourse(course, args) {
 	if (thumBroken) deficits.push("thumbnail");
 	const modsBroken = (byKind["MOD"] || []).filter((a) => a.broken);
 	if (modsBroken.length) deficits.push(`module_images_${modsBroken.length}of${moduleCount}`);
+	// public host missing: assets are real but not HTTP-verifiable yet
+	const publishBlocked = assets.filter((a) => a.publish_error).length;
+	if (publishBlocked) deficits.push(`storage_host_${publishBlocked}of${assets.length}`);
 
 	const ok = deficits.length === 0;
 	register(course, assets);
