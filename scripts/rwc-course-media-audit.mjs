@@ -110,8 +110,8 @@ async function auditCourse(item, opts) {
 	const svgSet = imgSrcs.filter(isSvg);
 	const imgSeen = new Set();
 	for (const s of imgSrcs) isSameUnique(s, imgSeen);
-	const uniqueImages = [...imgSeen];
-	const duplicateImages = imgSrcs.length - uniqueImages.length;
+	const uniqueImages = imgSeen.size;
+	const duplicateImages = imgSrcs.length - uniqueImages;
 
 	report.image_count = imgSrcs.length;
 	report.unique_images = uniqueImages.length;
