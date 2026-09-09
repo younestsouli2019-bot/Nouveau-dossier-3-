@@ -90,6 +90,16 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: "24"
+      - name: Install (media audit deps)
+        run: |
+          set -euo pipefail
+          n=0
+          until [ $n -ge 3 ]; do
+            npm ci --no-audit --no-fund --omit=dev 2>/dev/null && break
+            n=$((n+1))
+            echo "Install retry ($n)..."
+            sleep 5
+          done
       - name: Run course media contract audit (live site)
         run: |
           set -euo pipefail
