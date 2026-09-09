@@ -137,6 +137,22 @@ async function generateImageHorde(provider, { prompt, outPath, width, height }) 
 	// Horde workers cap SDXL at 1024 on the long edge; clamp to stay servable.
 	const w = Math.min(Math.round(width / 64) * 64, 1024);
 	const h = Math.min(Math.round(height / 64) * 64, 1024);
+	// Retry the submit+download against transient Horde outages (they occur).
+	const attempts = parseInt(process.env.AIHORDE_RETRIES || "3", 10);
+	let lastErr = null;
+	for (let attempt = 1; attempt <= attempts; attempt++) {
+		if (attempt > 1) await new Promise((r) => setTimeout(r, 20000 * attempt));
+		try {
+			return await hordeSubmitOnce(HDR, { prompt, w, h, outPath, model: provider.model });
+		} catch (e) {
+			lastErr = e;
+			if (attempt < attempts) console.warn(`[horde] attempt ${attempt} failed: ${e.message}`);
+		}
+	}
+	throw lastErr;
+}
+
+async function hordeSubmitOnce(HDR, { prompt, w, h, outPath, model }) {
 	const submit = await fetch("https://aihorde.net/api/v2/generate/async", {
 		method: "POST",
 		headers: HDR,
@@ -152,7 +168,7 @@ async function generateImageHorde(provider, { prompt, outPath, width, height }) 
 			},
 			nsfw: false,
 			censor_nsfw: true,
-			models: [provider.model],
+			models: [model],
 			r2: true,
 		}),
 		signal: AbortSignal.timeout(30000),
@@ -187,6 +203,8 @@ async function generateImageHorde(provider, { prompt, outPath, width, height }) 
 	fs.writeFileSync(out, buf);
 	return { path: out, publicUrl: gen.img, censored: gen.censored || false };
 }
+
+// ---- end hordeSubmitOnce ----
 
 async function generateImageOpenAICompatible(provider, { prompt, outPath, width, height }) {
 	const headers = {
