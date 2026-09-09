@@ -83,5 +83,39 @@
     "lesson_required": 3,
     "assets_ok": 0,
     "assets_total": 12
+  },
+  {
+    "slug": "visual-intel-e2e",
+    "course_id": "RWC-VIS-256",
+    "category": "Network",
+    "ok": false,
+    "deficits": [
+      "trailer_video",
+      "lesson_videos_1of1",
+      "hero_image",
+      "thumbnail",
+      "module_images_1of1"
+    ],
+    "assets_required": 1,
+    "lesson_required": 1,
+    "assets_ok": 0,
+    "assets_total": 5
+  },
+  {
+    "slug": "visual-intel-e2e",
+    "course_id": "RWC-VIS-256",
+    "category": "Network",
+    "ok": false,
+    "deficits": [
+      "trailer_video",
+      "lesson_videos_1of1",
+      "hero_image",
+      "thumbnail",
+      "module_images_1of1"
+    ],
+    "assets_required": 1,
+    "lesson_required": 1,
+    "assets_ok": 0,
+    "assets_total": 7
   }
 ]
