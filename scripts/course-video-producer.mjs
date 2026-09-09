@@ -8,6 +8,7 @@ import {
 	PLACEHOLDER_PATTERNS,
 	MIME_OK,
 } from "./course-media-contract.mjs";
+import { verifyImageAsset } from "./visual-intelligence.mjs";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_DIR = path.join(ROOT, "data", "out");
@@ -115,7 +116,9 @@ function resolveImageProvider() {
 function generateImage({ prompt, outPath, width = 1024, height = 768 }) {
 	const provider = resolveImageProvider();
 	if (provider.provider === "aihorde") return generateImageHorde(provider, { prompt, outPath, width, height });
-	return generateImageOpenAICompatible(provider, { prompt, outPath, width, height });
+	// openai-compatible providers give no stable public URL in all cases;
+	// verification (if any) must run after the asset is hosted.
+	return generateImageOpenAICompatible(provider, { prompt, outPath, width, height }).then((p) => ({ path: p, publicUrl: null, censored: false }));
 }
 
 /**
@@ -173,15 +176,16 @@ async function generateImageHorde(provider, { prompt, outPath, width, height }) 
 	const stRes = await fetch(`https://aihorde.net/api/v2/generate/status/${job.id}`, { headers: HDR, signal: AbortSignal.timeout(20000) });
 	if (!stRes.ok) throw new Error(`AI Horde status ${stRes.status}`);
 	const st = await stRes.json();
-	const gen = st.generations?.[0];
+	const gen = await st.generations?.[0];
 	if (!gen?.img) throw new Error(`AI Horde returned no image (generations=${st.generations?.length})`);
 	const imgRes = await fetch(gen.img, { signal: AbortSignal.timeout(60000) });
 	if (!imgRes.ok) throw new Error(`AI Horde image download ${imgRes.status}`);
 	const buf = Buffer.from(await imgRes.arrayBuffer());
 	if (buf.length < 1024) throw new Error(`AI Horde image suspiciously small (${buf.length} bytes)`);
 	fs.mkdirSync(path.dirname(outPath), { recursive: true });
-	fs.writeFileSync(outPath.endsWith(".png") ? outPath.replace(/\.png$/, ".webp") : outPath, buf);
-	return outPath.endsWith(".png") ? outPath.replace(/\.png$/, ".webp") : outPath;
+	const out = outPath.endsWith(".png") ? outPath.replace(/\.png$/, ".webp") : outPath;
+	fs.writeFileSync(out, buf);
+	return { path: out, publicUrl: gen.img, censored: gen.censored || false };
 }
 
 async function generateImageOpenAICompatible(provider, { prompt, outPath, width, height }) {
@@ -217,8 +221,47 @@ async function generateImageOpenAICompatible(provider, { prompt, outPath, width,
 	return outPath;
 }
 
-function buildVideos(course) {
-	throw new Error(NO_KEY_REASONS.video);
+/**
+ * Synthesize course videos LOCALLY from the real generated images.
+ * Fail-closed: requires ffmpeg + real source files, else throws and
+ * the asset stays broken. No placeholders, no fabricated URLs.
+ *
+ * videoMode: "auto" (synthesize when ffmpeg is available and images
+ * exist; otherwise throw "video_not_configured"), or "ffmpeg" (require
+ * synthesis). Controlled by RWC_VIDEO_MODE env.
+ */
+async function buildVideos(course, assets) {
+	const mode = process.env.RWC_VIDEO_MODE || "auto";
+	const synth = await import("./video-synthesis.mjs").catch(() => { throw new Error(NO_KEY_REASONS.video); });
+	// resolve ffmpeg up-front so we fail fast with a clear message
+	synth.resolveFfmpeg();
+
+	const imgs = assets.filter((a) => a.generated && a.local && !a.broken && ["HERO", "THUMB", "MOD", "DIAGRAM", "CHEAT"].includes(a.kind));
+	if (!imgs.length) throw new Error("no generated images available to synthesize videos from");
+
+	const kindOrder = ["HERO", "THUMB", "MOD", "DIAGRAM", "CHEAT"];
+	const ordered = imgs.sort((a, b) => kindOrder.indexOf(a.kind) - kindOrder.indexOf(b.kind));
+	const code = course.code;
+	const slug = course.slug;
+
+	const dir = path.join(ASSETS_LOCAL, slug);
+	const trailerPath = path.join(dir, `${code}-TRAILER.mp4`);
+	const r = await synth.renderSlideshow({ imagePaths: ordered.map((a) => a.local), outPath: trailerPath, perImageMs: 2600, transitionMs: 500 });
+	assets.push({ assetId: `${code}-TRAILER`, kind: "TRAILER", kindLabel: "TRAILER", url: null, local: r.path, mime: "video/mp4", size: r.size, generated: true, http_verified: false, visual_intel: null, public_source: null });
+
+	// lessons: rotate through images in slices
+	const lessonCount = 3;
+	const per = Math.max(2, Math.ceil(ordered.length / lessonCount));
+	for (let i = 1; i <= lessonCount; i++) {
+		const sub = ordered.slice((i - 1) * per, i * per);
+		const lessonPath = path.join(dir, `${code}-LESSON-${String(i).padStart(2, "0")}.mp4`);
+		try {
+			const lr = await synth.renderSlideshow({ imagePaths: sub.map((a) => a.local), outPath: lessonPath, perImageMs: 3000, transitionMs: 600 });
+			assets.push({ assetId: `${code}-LESSON-${String(i).padStart(2, "0")}`, kind: "LESSON", kindLabel: "LESSON", url: null, local: lr.path, mime: "video/mp4", size: lr.size, generated: true, http_verified: false, visual_intel: null, public_source: null });
+		} catch (e) {
+			assets.push({ assetId: `${code}-LESSON-${String(i).padStart(2, "0")}`, kind: "LESSON", kindLabel: "LESSON", url: null, local: null, generated: false, broken: e.message });
+		}
+	}
 }
 
 function storagePublish(file, assetId) {
@@ -251,6 +294,8 @@ function register(course, assets) {
 			size: a.size,
 			http_verified: a.http_verified,
 			broken: a.broken || null,
+			visual_intel: a.visual_intel || null,
+			public_source: a.public_source || null,
 		})),
 		deficits: [],
 	};
@@ -282,9 +327,22 @@ export async function produceCourse(course, args) {
 		const local = path.join(ASSETS_LOCAL, rel);
 		try {
 			const written = await generateImage({ prompt, outPath: local, width: dims?.w, height: dims?.h });
-			const stat = fs.statSync(written);
-			const realExt = path.extname(written) || "." + ext;
-			assets.push({ assetId, kind, kindLabel: kind, url: null, local: written, mime: MIME_OK[realExt]?.[0] || "image/png", size: stat.size, generated: true, http_verified: false });
+			const stat = fs.statSync(written.path);
+			const realExt = path.extname(written.path) || "." + ext;
+			// Visual intelligence: interrogate the fresh public R2 URL to confirm
+			// the image depicts what the prompt asked for. Advisory, fail-open.
+			let visual = { status: "skipped", reason: "no public URL available for interrogation" };
+			if (written.publicUrl) {
+				// Compare the caption against core subject keywords (title + category),
+				// not the full verbose prompt: CLIP captions are short and concrete.
+				visual = await verifyImageAsset({ sourceUrl: written.publicUrl, expectedSubject: `${course.title} ${category} ${kind}` });
+			}
+			assets.push({
+				assetId, kind, kindLabel: kind, url: null, local: written.path,
+				mime: MIME_OK[realExt]?.[0] || "image/png", size: stat.size, generated: true, http_verified: false,
+				visual_intel: visual,
+				public_source: written.publicUrl || null,
+			});
 		} catch (e) {
 			assets.push({ assetId, kind, kindLabel: kind, url: null, local: null, generated: false, broken: e.message });
 		}
@@ -306,12 +364,13 @@ export async function produceCourse(course, args) {
 	}
 	await gen("CHEAT", null, p.CHEAT({ title: course.title }), "png", { w: 1240, h: 1754 });
 
-	// video (fail-closed)
+	// video (fail-closed local synthesis from REAL images; never fabricated)
 	let videoErr = null;
-	try { buildVideos(course); } catch (e) { videoErr = e.message; }
-	await gen("TRAILER", null, "", "mp4");
-	const lessonCount = (args["lessons"] && parseInt(args["lessons"], 10)) || 3;
-	for (let i = 1; i <= lessonCount; i++) await gen("LESSON", i, "", "mp4");
+	if (process.env.RWC_VIDEO_MODE !== "off") {
+		try { await buildVideos(course, assets); } catch (e) { videoErr = e.message; }
+	} else {
+		videoErr = NO_KEY_REASONS.video;
+	}
 
 	// ---- storage publish + register ----
 	for (const a of assets) {
