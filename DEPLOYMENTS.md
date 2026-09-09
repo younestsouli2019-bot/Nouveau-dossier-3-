@@ -319,7 +319,7 @@ From `scripts/course-video-producer.mjs`:
 |---------|-------------|---------|
 | `IMAGE_GEN_API_KEY` | https://api.together.xyz/ (or any FLUX.1-schnell provider) | Hero/thumb/module/diagram/cheat image generation (FLUX.1-schnell default, 4 steps) |
 | `VIDEO_GEN_API_KEY` **or** `REPLICATE_API_TOKEN` **or** `GOOGLE_AI_STUDIO_KEY` | Replicate / Google AI Studio / Runway | Course trailer & lesson videos. FAIL-CLOSED: `buildVideos()` throws explicitly if missing (no placeholder fabrication). |
-| `ASSET_BASE_URL` **or** `ASSET_UPLOAD_URL` | R2 / S3 / Supabase Storage / Vercel Blob / CDN | Public host so the generated media URLs return HTTP 200. `storagePublish()` fail-closed if empty. |
+| `ASSET_BASE_URL` **or** `ASSET_UPLOAD_URL` | R2 / S3 / Supabase Storage / Vercel Blob / CDN — or static: `ASSET_BASE_URL=https://www.realworldcerts.com` + `ASSET_STATIC_DIR=rank/output` (default) | Public host so the generated media URLs return HTTP 200. `storagePublish()` fail-closed if empty. Mode A (static): copies real bytes into `rank/output/media/{CODE}/` — the `release`-branch push deploys `rank/output` to the `realworldcerts` Vercel project. Mode B (upload): PUTs real bytes to `ASSET_UPLOAD_URL` (bearer token via `ASSET_UPLOAD_TOKEN`), takes public URL from server (`Location` or `{url|path}`), never fabricates. |
 
 ### Scripts
 | Script | Purpose |
