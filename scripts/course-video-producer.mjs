@@ -280,15 +280,68 @@ async function buildVideos(course, assets, lessonCount, codeOverride) {
 	}
 }
 
-function storagePublish(file, assetId) {
-	const base = process.env.ASSET_BASE_URL;
-	if (!base) {
-		// try to use a configured upload endpoint
-		const up = process.env.ASSET_UPLOAD_URL;
-		if (!up) throw new Error(NO_KEY_REASONS.storage);
-		return { url: `${up}/${file}`, local: file, uploaded: false };
+function mimeFor(file) {
+	const ext = path.extname(file).toLowerCase();
+	const ok = MIME_OK[ext];
+	return (ok && ok.length ? ok[0] : "") || (file.endsWith(".mp4") ? "video/mp4" : "application/octet-stream");
+}
+
+async function httpVerify(url) {
+	if (process.env.ASSET_VERIFY === "0") return false;
+	try {
+		const res = await fetch(url, { method: "HEAD", redirect: "follow", signal: AbortSignal.timeout(8000) });
+		return res.ok || res.status === 405;
+	} catch {
+		// unreachable from THIS network != asset not hosted; the CI media audit
+		// re-verifies from GitHub's network. Fail open.
+		return false;
 	}
-	return { url: `${base}/${assetId}`, local: file, uploaded: false };
+}
+
+/**
+ * Publish a real local asset to a public host. Two supported modes, else fail-closed:
+ *   Mode A (static): ASSET_BASE_URL + ASSET_STATIC_DIR (default "rank/output/media").
+ *     Copies the actual bytes into the deploy tree that the `release` branch push
+ *     ships to Vercel (realworldcerts), so the public URL resolves from the live
+ *     origin host.
+ *   Mode B (upload): ASSET_UPLOAD_URL (+ optional ASSET_UPLOAD_TOKEN bearer).
+ *     PUTs the real bytes to an HTTP(S) endpoint and takes the public URL from the
+ *     server (Location header, or {url|path} JSON) — never fabricates one.
+ * Never returns a URL unless the file was actually staged/uploaded.
+ */
+export async function storagePublish(file, assetId, code) {
+	const base = process.env.ASSET_BASE_URL;
+	if (base) {
+		const staticDir = process.env.ASSET_STATIC_DIR || path.join("rank", "output");
+		const rel = path.posix.join("media", code || assetId, path.basename(file).split(path.sep).pop());
+		const dest = path.isAbsolute(staticDir) ? path.join(staticDir, ...rel.split("/")) : path.join(ROOT, staticDir, ...rel.split("/"));
+		fs.mkdirSync(path.dirname(dest), { recursive: true });
+		fs.copyFileSync(file, dest);
+		const url = `${base.replace(/\/+$/, "")}/${rel}`;
+		return { url, local: dest, uploaded: true, http_verified: await httpVerify(url) };
+	}
+	const up = process.env.ASSET_UPLOAD_URL;
+	if (up) {
+		const token = process.env.ASSET_UPLOAD_TOKEN;
+		const buf = fs.readFileSync(file);
+		const res = await fetch(up, {
+			method: "PUT",
+			headers: {
+				"Content-Type": mimeFor(file),
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+				"x-asset-id": `${code || "asset"}-${assetId}`,
+			},
+			body: buf,
+			signal: AbortSignal.timeout(60000),
+		});
+		if (!res.ok) throw new Error(`ASSET_UPLOAD_URL PUT ${res.status}: ${(await res.text()).slice(0, 140)}`);
+		const loc = res.headers.get("location");
+		if (loc) return { url: new URL(loc, up).toString(), local: file, uploaded: true };
+		const jt = await res.json().catch(() => null);
+		if (jt?.url || jt?.path) return { url: new URL(jt.url || jt.path, up).toString(), local: file, uploaded: true };
+		throw new Error("ASSET_UPLOAD_URL returned 2xx but no public URL (need Location header or {url|path} body)");
+	}
+	throw new Error(NO_KEY_REASONS.storage);
 }
 
 function register(course, assets) {
@@ -394,8 +447,9 @@ export async function produceCourse(course, args) {
 	for (const a of assets) {
 		if (!a.local) continue;
 		try {
-			const pub = storagePublish(a.local, a.assetId);
+			const pub = await storagePublish(a.local, a.assetId, code);
 			a.url = pub.url;
+			if (pub.http_verified) a.http_verified = true;
 		} catch (e) {
 			// host/publish failure is a distinct concern from synthesis
 			// failure: keep `broken` for synthesis, record publish separately.
