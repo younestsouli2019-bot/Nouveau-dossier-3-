@@ -230,7 +230,7 @@ async function generateImageOpenAICompatible(provider, { prompt, outPath, width,
  * exist; otherwise throw "video_not_configured"), or "ffmpeg" (require
  * synthesis). Controlled by RWC_VIDEO_MODE env.
  */
-async function buildVideos(course, assets) {
+async function buildVideos(course, assets, lessonCount) {
 	const mode = process.env.RWC_VIDEO_MODE || "auto";
 	const synth = await import("./video-synthesis.mjs").catch(() => { throw new Error(NO_KEY_REASONS.video); });
 	// resolve ffmpeg up-front so we fail fast with a clear message
@@ -250,10 +250,8 @@ async function buildVideos(course, assets) {
 	assets.push({ assetId: `${code}-TRAILER`, kind: "TRAILER", kindLabel: "TRAILER", url: null, local: r.path, mime: "video/mp4", size: r.size, generated: true, http_verified: false, visual_intel: null, public_source: null });
 
 	// lessons: rotate through images in slices
-	const lessonCount = 3;
-	const per = Math.max(2, Math.ceil(ordered.length / lessonCount));
 	for (let i = 1; i <= lessonCount; i++) {
-		const sub = ordered.slice((i - 1) * per, i * per);
+		const sub = ordered.slice(Math.max(0, (i - 1) * Math.ceil(ordered.length / lessonCount)), Math.min(ordered.length, i * Math.ceil(ordered.length / lessonCount)));
 		const lessonPath = path.join(dir, `${code}-LESSON-${String(i).padStart(2, "0")}.mp4`);
 		try {
 			const lr = await synth.renderSlideshow({ imagePaths: sub.map((a) => a.local), outPath: lessonPath, perImageMs: 3000, transitionMs: 600 });
@@ -355,6 +353,7 @@ export async function produceCourse(course, args) {
 	await gen("THUMB", null, p.THUMB({ title: course.title, category }), "png", { w: 1024, h: 1024 });
 
 	const moduleCount = (args["modules"] && parseInt(args["modules"], 10)) || 3;
+	const lessonCount = (args["lessons"] && parseInt(args["lessons"], 10)) || 3;
 	for (let i = 1; i <= moduleCount; i++) {
 		await gen("MOD", i, p.MOD({ title: course.title, module: `Module ${i}` }), "png", { w: 1024, h: 768 });
 	}
@@ -367,7 +366,7 @@ export async function produceCourse(course, args) {
 	// video (fail-closed local synthesis from REAL images; never fabricated)
 	let videoErr = null;
 	if (process.env.RWC_VIDEO_MODE !== "off") {
-		try { await buildVideos(course, assets); } catch (e) { videoErr = e.message; }
+		try { await buildVideos(course, assets, lessonCount); } catch (e) { videoErr = e.message; }
 	} else {
 		videoErr = NO_KEY_REASONS.video;
 	}
@@ -386,9 +385,13 @@ export async function produceCourse(course, args) {
 	const deficits = [];
 	const byKind = {};
 	for (const a of assets) { byKind[a.kind] = byKind[a.kind] || []; byKind[a.kind].push(a); }
-	// video always deficit unless produced
-	if ((byKind["TRAILER"] || []).some((a) => a.broken)) deficits.push("trailer_video");
+	// video deficit: iff synthesis attempted but failed/off
+	const trailerGen = (byKind["TRAILER"] || []).find((a) => a.generated);
+	const trailerBroken = (byKind["TRAILER"] || []).some((a) => a.broken);
+	if (videoErr && !trailerGen) deficits.push("trailer_video");
+	else if (trailerBroken) deficits.push("trailer_video");
 	const lessonBroken = (byKind["LESSON"] || []).filter((a) => a.broken).length;
+	if (videoErr && !(byKind["LESSON"] || []).some((a) => a.generated)) deficits.push(`lesson_videos_${lessonCount}of${lessonCount}`);
 	if (lessonBroken) deficits.push(`lesson_videos_${lessonBroken}of${lessonCount}`);
 	const heroBroken = (byKind["HERO"] || []).some((a) => a.broken);
 	const thumBroken = (byKind["THUMB"] || []).some((a) => a.broken);
