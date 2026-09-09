@@ -63,7 +63,7 @@ const KIND_PROMPT = {
 };
 
 const NO_KEY_REASONS = {
-	image: "IMAGE_GEN_API_KEY is not set. Generate cannot proceed without a real image provider key.",
+	image: "No image provider available. Set IMAGE_GEN_API_KEY, or set AIHORDE_ENABLED=1 to use the keyless AI Horde (https://aihorde.net) anonymous worker pool.",
 	video: "No video provider key (VIDEO_GEN_API_KEY / REPLICATE_API_TOKEN / GOOGLE_AI_STUDIO_KEY) is set. Trailer/lesson video production is FAIL-CLOSED; refusing to fabricate placeholder videos.",
 	storage: "No public asset host configured (ASSET_BASE_URL empty AND no upload endpoint). Generated asset would not be HTTP-200 verifiable; refusing to fake publishing.",
 };
@@ -76,14 +76,25 @@ function requireImageKey() {
 
 /**
  * Resolve the image provider from whichever real key is present.
- * Together (IMAGE_GEN_API_KEY) is preferred; OpenRouter is a free-tier
- * fallback (openrouter/flux-schnell) when only OPENROUTER_API_KEY exists.
- * Still fail-closed: no key → no images.
+ * AI Horde (AIHORDE_ENABLED=1) is an explicit opt-in to the verified
+ * keyless anonymous pool and takes precedence. Together
+ * (IMAGE_GEN_API_KEY) is next; OpenRouter last (its image endpoint
+ * 402s without purchased credits).
+ * Still fail-closed: no provider -> no images.
  */
 function resolveImageProvider() {
+	if (process.env.AIHORDE_ENABLED === "1") {
+		return {
+			provider: "aihorde",
+			apiKey: process.env.AIHORDE_API_KEY || "0000000000",
+			apiUrl: "https://aihorde.net/api/v2/generate/async",
+			model: process.env.AIHORDE_MODEL || "AlbedoBase XL (SDXL)",
+		};
+	}
 	const togetherKey = process.env.IMAGE_GEN_API_KEY;
 	if (togetherKey) {
 		return {
+			provider: "together",
 			apiKey: togetherKey,
 			apiUrl: process.env.IMAGE_GEN_API_URL || "https://api.together.xyz/v1/images/generations",
 			model: process.env.IMAGE_GEN_MODEL || "black-forest-labs/FLUX.1-schnell",
@@ -92,16 +103,88 @@ function resolveImageProvider() {
 	const openRouterKey = process.env.OPENROUTER_API_KEY;
 	if (openRouterKey) {
 		return {
+			provider: "openrouter",
 			apiKey: openRouterKey,
 			apiUrl: "https://openrouter.ai/api/v1/images/generations",
-			model: process.env.IMAGE_GEN_MODEL || "openrouter/flux-schnell",
+			model: process.env.IMAGE_GEN_MODEL || "google/gemini-2.5-flash-image",
 		};
 	}
 	throw new Error(NO_KEY_REASONS.image);
 }
 
-async function generateImage({ prompt, outPath, width = 1024, height = 768 }) {
+function generateImage({ prompt, outPath, width = 1024, height = 768 }) {
 	const provider = resolveImageProvider();
+	if (provider.provider === "aihorde") return generateImageHorde(provider, { prompt, outPath, width, height });
+	return generateImageOpenAICompatible(provider, { prompt, outPath, width, height });
+}
+
+/**
+ * AI Horde (https://aihorde.net) — verified keyless anonymous image
+ * generation on the crowd-sourced GPU pool. Anonymous requests are
+ * served at low priority; budget generous wall-clock per image.
+ * Real bytes are downloaded and written, or the asset is marked
+ * broken — nothing is fabricated.
+ */
+async function generateImageHorde(provider, { prompt, outPath, width, height }) {
+	const HDR = {
+		apikey: provider.apiKey,
+		"Content-Type": "application/json",
+		"Client-Agent": process.env.AIHORDE_CLIENT_AGENT || "rwc-course-media:1.0:email",
+	};
+	// Horde workers cap SDXL at 1024 on the long edge; clamp to stay servable.
+	const w = Math.min(Math.round(width / 64) * 64, 1024);
+	const h = Math.min(Math.round(height / 64) * 64, 1024);
+	const submit = await fetch("https://aihorde.net/api/v2/generate/async", {
+		method: "POST",
+		headers: HDR,
+		body: JSON.stringify({
+			prompt,
+			params: {
+				sampler_name: "k_euler_a",
+				cfg_scale: 7,
+				width: w,
+				height: h,
+				steps: 25,
+				n: 1,
+			},
+			nsfw: false,
+			censor_nsfw: true,
+			models: [provider.model],
+			r2: true,
+		}),
+		signal: AbortSignal.timeout(30000),
+	});
+	if (!submit.ok) throw new Error(`AI Horde submit ${submit.status}: ${(await submit.text()).slice(0, 160)}`);
+	const job = await submit.json();
+	if (!job.id) throw new Error(`AI Horde submit rejected: ${JSON.stringify(job).slice(0, 160)}`);
+
+	const deadlineMs = (parseInt(process.env.AIHORDE_TIMEOUT_MS, 10) || 10) * 60 * 1000;
+	const started = Date.now();
+	let done = false;
+	while (!done) {
+		if (Date.now() - started > deadlineMs) throw new Error(`AI Horde job ${job.id} timed out after ${Math.round(deadlineMs / 60000)}min`);
+		await new Promise((r) => setTimeout(r, 5000));
+		const chkRes = await fetch(`https://aihorde.net/api/v2/generate/check/${job.id}`, { headers: HDR, signal: AbortSignal.timeout(20000) });
+		if (!chkRes.ok) throw new Error(`AI Horde check ${chkRes.status}`);
+		const chk = await chkRes.json();
+		if (chk.faulted) throw new Error(`AI Horde job ${job.id} faulted`);
+		done = Boolean(chk.done);
+	}
+	const stRes = await fetch(`https://aihorde.net/api/v2/generate/status/${job.id}`, { headers: HDR, signal: AbortSignal.timeout(20000) });
+	if (!stRes.ok) throw new Error(`AI Horde status ${stRes.status}`);
+	const st = await stRes.json();
+	const gen = st.generations?.[0];
+	if (!gen?.img) throw new Error(`AI Horde returned no image (generations=${st.generations?.length})`);
+	const imgRes = await fetch(gen.img, { signal: AbortSignal.timeout(60000) });
+	if (!imgRes.ok) throw new Error(`AI Horde image download ${imgRes.status}`);
+	const buf = Buffer.from(await imgRes.arrayBuffer());
+	if (buf.length < 1024) throw new Error(`AI Horde image suspiciously small (${buf.length} bytes)`);
+	fs.mkdirSync(path.dirname(outPath), { recursive: true });
+	fs.writeFileSync(outPath.endsWith(".png") ? outPath.replace(/\.png$/, ".webp") : outPath, buf);
+	return outPath.endsWith(".png") ? outPath.replace(/\.png$/, ".webp") : outPath;
+}
+
+async function generateImageOpenAICompatible(provider, { prompt, outPath, width, height }) {
 	const headers = {
 		Authorization: `Bearer ${provider.apiKey}`,
 		"Content-Type": "application/json",
@@ -198,9 +281,10 @@ export async function produceCourse(course, args) {
 		const rel = `${slug}/${assetId}.${ext}`;
 		const local = path.join(ASSETS_LOCAL, rel);
 		try {
-			await generateImage({ prompt, outPath: local, width: dims?.w, height: dims?.h });
-			const stat = fs.statSync(local);
-			assets.push({ assetId, kind, kindLabel: kind, url: null, local, mime: MIME_OK["." + ext]?.[0] || "image/png", size: stat.size, generated: true, http_verified: false });
+			const written = await generateImage({ prompt, outPath: local, width: dims?.w, height: dims?.h });
+			const stat = fs.statSync(written);
+			const realExt = path.extname(written) || "." + ext;
+			assets.push({ assetId, kind, kindLabel: kind, url: null, local: written, mime: MIME_OK[realExt]?.[0] || "image/png", size: stat.size, generated: true, http_verified: false });
 		} catch (e) {
 			assets.push({ assetId, kind, kindLabel: kind, url: null, local: null, generated: false, broken: e.message });
 		}
