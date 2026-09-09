@@ -1,0 +1,70 @@
+# Repo integrity gate (owner-handsfree-fix-kit v3).
+# Preventive CI: fails on stale action pins (@v4 and older) and dangling gitlinks
+# at PR/push time. Secrets are NOT re-scanned here: the dedicated gitleaks gate
+# (.github/workflows/secret-scan.yml) is the authoritative, precision secret scan
+# and never prints values. Read-only — needs no repo write access.
+name: Guard Repo Integrity
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Scan deprecated GitHub action pins (@v4 and older)
+        run: |
+          set -euo pipefail
+          # Only GitHub-hosted actions/*@v<5 are deprecated (checkout, setup-node,
+          # upload-artifact). Third-party action pins (e.g. gitleaks-action@v2)
+          # are versioned by upstream and ignored.
+          found=0
+          while IFS= read -r f; do
+            [[ -z "$f" || ! -f "$f" ]] && continue
+            if grep -nE 'uses:[[:space:]]*actions/[a-z0-9._-]+@v([0-3]|4)([^0-9]|$)' "$f"; then
+              found=1
+            fi
+          done < <(git ls-files '*.yml' '*.yaml')
+          if (( found )); then
+            echo "::error::Deprecated actions/@v<5 pins found (bump to @v5)"
+            exit 1
+          fi
+          echo "All GitHub action pins are @v5 or higher."
+
+      - name: Scan dangling gitlinks
+        run: |
+          set -euo pipefail
+          found=0
+          if [[ -f .gitmodules ]]; then
+            echo ".gitmodules present ($(grep -cE '^\s*path\s*=' .gitmodules) entries, urls redacted)"
+          else
+            echo "No .gitmodules file."
+          fi
+          git ls-files -s | awk '$1==160000 {print $4}' > /tmp/gitlinks.txt || true
+          if [[ ! -s /tmp/gitlinks.txt ]]; then
+            echo "No gitlink (submodule) entries."
+          else
+            while IFS= read -r sub; do
+              [[ -z "$sub" ]] && continue
+              if ! grep -qE "^[[:space:]]*path[[:space:]]*=[[:space:]]*$sub[[:space:]]*$" .gitmodules 2>/dev/null; then
+                echo "::error::dangling gitlink (no .gitmodules URL): $sub"
+                found=1
+              fi
+            done < /tmp/gitlinks.txt
+          fi
+          if (( found )); then
+            echo "::error::dangling gitlink(s) found — remove them or add the .gitmodules URL"
+            exit 1
+          fi
+          echo "No dangling gitlinks."
