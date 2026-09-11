@@ -369,15 +369,22 @@ describe('T9 — CSV/export never triggers SETTLED without reconcile proof', () 
 });
 
 describe('T10 — TERMINAL states cannot transition (valid transitions matrix fail-closed)', () => {
-  it('SETTLED, REJECTED, CANCELLED, QUARANTINED, EXPIRED each have VALID_TRANSITIONS.size === 0', () => {
+  it('SETTLED, REJECTED, CANCELLED, EXPIRED each have VALID_TRANSITIONS.size === 0', () => {
     for (const term of [
       SettlementState.SETTLED,
       SettlementState.REJECTED,
       SettlementState.CANCELLED,
-      SettlementState.QUARANTINED,
       SettlementState.EXPIRED,
     ]) {
       expect(VALID_TRANSITIONS[term].size).toBe(0);
     }
+  });
+
+  // T10b — QUARANTINED is deliberately NOT terminal (no-held-forever doctrine):
+  // it has exactly two sanctioned escape routes and nothing else.
+  it('QUARANTINED has exactly the two sanctioned escape routes', () => {
+    expect(VALID_TRANSITIONS[SettlementState.QUARANTINED]).toEqual(
+      new Set([SettlementState.PROVIDER_RECONCILED, SettlementState.REJECTED])
+    );
   });
 });
