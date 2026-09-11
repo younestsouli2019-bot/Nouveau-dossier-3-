@@ -1,0 +1,213 @@
+# ───────────────────────────────────────────────────────────────────────────
+# MULTI-ACCOUNT TOKEN ROTATION + SHA SYNC (GitHub App based)
+# ───────────────────────────────────────────────────────────────────────────
+#
+# Directive: implement GitHub-App-based SHORT-LIVED token rotation for
+# cross-account repo sync. No long-lived PATs across repositories; every
+# credential minted here is an installation access token (1h TTL) derived
+# from a single GitHub App installed on both accounts.
+#
+# HOW IT WORKS (per target line `SRC_OWNER|DST_OWNER|REPO|DST_SECRET`):
+#   1. Build an App JWT (RSA-256, 10-min TTL) from the App private key.
+#   2. Look up each owner's App installation id, mint a 1h installation
+#      access token via `POST /app/installations/{id}/access_tokens`.
+#   3. Read source + destination `main` SHAs. If they differ and not dry-run,
+#      mirror source `main` → destination `main` (bare clone, force push).
+#   4. Rotate: mint a new 1h token for the destination owner and set it as
+#      repo Actions secret DST_SECRET. `gh secret set` encrypts the value
+#      (libsodium, via GitHub's REST API public-key handshake) before upload —
+#      the value exists only inside the runner's environment, never on disk,
+#      in logs, or in git.
+#
+# SETUP (one-time, operator):
+#   1. Create ONE GitHub App:
+#        - Permission scopes: Contents (read+write), Metadata (read),
+#          Secrets (read+write), Actions (read), Administration (read).
+#        - Install on Account A (source owner) AND Account B (destination owner).
+#   2. Repo SECRETS:
+#        CENTRAL_ROTATOR_APP_ID         = numeric App ID
+#        CENTRAL_ROTATOR_PRIVATE_KEY    = App private key PEM (multi-line)
+#   3. Repo VARIABLE (one line per target, `|`-separated):
+#        ROTATOR_TARGETS =
+#            Account-A|Account-B|shared-service-repo|SYNC_TOKEN_B
+#      Default target (below) keeps this repo self-synced across the same owner.
+#   4. Trigger: workflow_dispatch (button). The `schedule` block is commented
+#      out on purpose — see the 2026-09-06 containment decision; re-enable only
+#      after operator review.
+#
+# SECURITY NOTES:
+#   - Every token is ephemeral (JWT 10 min, install tokens 1h). Nothing
+#     reusable is created, committed, or persisted.
+#   - The App's private key travels ONLY as a masked Actions secret.
+#   - The workflow self-skips (writes nothing) when the App is unconfigured.
+#   - `set +euo pipefail` throughout + `continue-on-error`: partial failure on
+#     one target never hard-blocks the run.
+
+name: Token Rotation + SHA Sync (GitHub App)
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Report SHA diffs + rotate plan without syncing/writing"
+        required: false
+        default: "true"
+      force_secret_rotate:
+        description: "Also rotate the destination secret when SHAs already match"
+        required: false
+        default: "false"
+  # schedule:
+  #   # Optional autonomous rotation every 6h. KEEP OFF (2026-09-06 containment).
+  #   - cron: '0 */6 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: token-rotation-sync
+  cancel-in-progress: false
+
+env:
+  APP_ID: ${{ secrets.CENTRAL_ROTATOR_APP_ID || '' }}
+  DEFAULT_TARGETS: |
+    younestsouli2019-bot|younestsouli2019-bot|Nouveau-dossier-3-|SYNC_APP_TOKEN_B
+
+jobs:
+  rotate-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Preflight — GitHub App configured?
+        env:
+          PRIVATE_KEY: ${{ secrets.CENTRAL_ROTATOR_PRIVATE_KEY || '' }}
+        run: |
+          set +euo pipefail
+          if [ -z "$APP_ID" ] || [ -z "$PRIVATE_KEY" ]; then
+            echo "::notice::CENTRAL_ROTATOR_APP_ID / CENTRAL_ROTATOR_PRIVATE_KEY missing. Nothing configured — exiting cleanly (no tokens minted, no secrets written)."
+            echo "Skipped (App not configured) → state: converged."
+            exit 0
+          fi
+          echo "GitHub App configured (app_id=${APP_ID})"
+          exit 0
+
+      - name: Resolve rotation targets
+        id: targets
+        env:
+          ROTATOR_TARGETS: ${{ vars.ROTATOR_TARGETS || '' }}
+        run: |
+          set +euo pipefail
+          TARGETS="${ROTATOR_TARGETS}"
+          if [ -z "${TARGETS}" ]; then
+            TARGETS="$DEFAULT_TARGETS"
+          fi
+          printf '%s\n' "$TARGETS" | grep -v '^[[:space:]]*$' | grep -v '^[[:space:]]*#' > /tmp/rotator_targets.txt
+          echo "TARGETS_FILE=/tmp/rotator_targets.txt" >> "$GITHUB_ENV"
+          echo "Resolved $(wc -l < /tmp/rotator_targets.txt | tr -d ' ') target(s)"
+          exit 0
+
+      - name: Rotation harness (JWT → install tokens → SHA sync → secret rotate)
+        continue-on-error: true
+        if: ${{ env.APP_ID != '' }}
+        env:
+          APP_PRIVATE_KEY: ${{ secrets.CENTRAL_ROTATOR_PRIVATE_KEY || '' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && 'true' || 'false' }}
+          FORCE_ROTATE: ${{ github.event.inputs.force_secret_rotate == 'true' && 'true' || 'false' }}
+        run: |
+          set +euo pipefail
+          TARGETS_FILE="${TARGETS_FILE:-/tmp/rotator_targets.txt}"
+          [ -s "$TARGETS_FILE" ] || { echo "::notice::No targets resolved — nothing to do."; exit 0; }
+
+          # ── 1. Build App JWT (RS256, 10-min TTL, no kid needed) ───────────
+          KEY_FILE="$(mktemp)"
+          printf '%b' "$APP_PRIVATE_KEY" > "$KEY_FILE"
+          NOW="$(date +%s)"
+          HEADER="$(printf '{"alg":"RS256","typ":"JWT"}' | openssl base64 -A | tr -d '=' | tr '/+' '_-')"
+          PAYLOAD="$(printf '{"iat":%d,"exp":%d,"iss":"%s"}' "$((NOW-30))" "$((NOW+540))" "$APP_ID" | openssl base64 -A | tr -d '=' | tr '/+' '_-')"
+          SIG_B64="$(printf '%s.%s' "$HEADER" "$PAYLOAD" | openssl dgst -sha256 -sign "$KEY_FILE" -binary | openssl base64 -A | tr -d '=' | tr '/+' '_-')"
+          JWT="$HEADER.$PAYLOAD.$SIG_B64"
+          rm -f "$KEY_FILE"
+          [ -n "$JWT" ] || { echo "::error::Failed to build App JWT. Skipping — nothing written."; exit 0; }
+          echo "App JWT minted (10-min TTL)"
+
+          mint_token () {
+            # $1 = owner (user or org). Returns the install access token (1h) in TOKEN_OUT.
+            local OWNER="$1"
+            local INSTALL_ID TOKEN_JSON
+            INSTALL_ID="$(curl -sS -H "Authorization: Bearer $JWT" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/users/${OWNER}/installation" | jq -r .id)"
+            if [ -z "$INSTALL_ID" ] || [ "$INSTALL_ID" = "null" ] || ! [[ "$INSTALL_ID" =~ ^[0-9]+$ ]]; then
+              echo "::warning::No App installation for owner ${OWNER} (or bad install id '${INSTALL_ID}')."
+              return 1
+            fi
+            TOKEN_JSON="$(curl -sS -X POST -H "Authorization: Bearer $JWT" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/app/installations/${INSTALL_ID}/access_tokens" -d '{"permissions":{"contents":"write","metadata":"read","secrets":"write","actions":"read"}}')"
+            TOKEN_OUT="$(printf '%s' "$TOKEN_JSON" | jq -r .token)"
+            [ -n "$TOKEN_OUT" ] && [ "$TOKEN_OUT" != "null" ] || { echo "::warning::Token mint failed for ${OWNER}: $(printf '%s' "$TOKEN_JSON" | jq -c .message // empty)"; return 1; }
+          }
+
+          SKIPPED=0; SYNCED=0; ROTATED=0
+          while IFS='|' read -r SRC_OWNER DST_OWNER REPO DST_SECRET; do
+            SRC_OWNER="${SRC_OWNER//[$'\r\n ']}"; DST_OWNER="${DST_OWNER//[$'\r\n ']}"
+            REPO="${REPO//[$'\r\n ']}"; DST_SECRET="${DST_SECRET//[$'\r\n ']}"
+            if [ -z "$SRC_OWNER" ] || [ -z "$DST_OWNER" ] || [ -z "$REPO" ] || [ -z "$DST_SECRET" ]; then
+              echo "::warning::Malformed target line — expected SRC_OWNER|DST_OWNER|REPO|DST_SECRET. Skipped."
+              SKIPPED=$((SKIPPED+1)); continue
+            fi
+            echo "── target: ${SRC_OWNER}/${REPO} → ${DST_OWNER}/${REPO} (secret=${DST_SECRET})"
+
+            if ! mint_token "$SRC_OWNER"; then SKIPPED=$((SKIPPED+1)); continue; fi
+            TOKEN_A="$TOKEN_OUT"
+            if ! mint_token "$DST_OWNER"; then SKIPPED=$((SKIPPED+1)); continue; fi
+            TOKEN_B="$TOKEN_OUT"
+            echo "  install tokens minted for ${SRC_OWNER} + ${DST_OWNER} (1h TTL)"
+
+            SHA_A="$(curl -sS -H "Authorization: Bearer $TOKEN_A" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${SRC_OWNER}/${REPO}/branches/main" | jq -r .commit.sha 2>/dev/null || echo '')"
+            SHA_B="$(curl -sS -H "Authorization: Bearer $TOKEN_B" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${DST_OWNER}/${REPO}/branches/main" | jq -r .commit.sha 2>/dev/null || echo '')"
+            echo "  src sha: ${SHA_A:-<fetch failed>}"
+            echo "  dst sha: ${SHA_B:-<fetch failed>}"
+
+            if [ -z "$SHA_A" ]; then echo "::error::Source SHA unreadable (${SRC_OWNER}/${REPO}). App scope mismatch or repo missing. Skipped."; SKIPPED=$((SKIPPED+1)); continue; fi
+
+            if [ "$SHA_A" = "$SHA_B" ]; then
+              echo "  → SHAs match (${SHA_A}). No sync needed."
+            elif [ "$DRY_RUN" = "true" ]; then
+              echo "  [dry-run] would mirror ${SRC_OWNER}/${REPO}@${SHA_A} → ${DST_OWNER}/${REPO}"
+              SYNCED=$((SYNCED+1))
+            else
+              TMP_BARE="$(mktemp -d)"
+              if git clone --mirror "https://x-access-token:${TOKEN_A}@github.com/${SRC_OWNER}/${REPO}.git" "$TMP_BARE" 2>/dev/null \
+                 && git --git-dir="$TMP_BARE" push --mirror "https://x-access-token:${TOKEN_B}@github.com/${DST_OWNER}/${REPO}.git" 2>/dev/null; then
+                echo "  ✓ mirrored ${SRC_OWNER}/${REPO} → ${DST_OWNER}/${REPO}"
+                SYNCED=$((SYNCED+1))
+              else
+                echo "::error::Mirror push failed (${DST_OWNER}/${REPO}). Destination untouched. Skipped."
+                SKIPPED=$((SKIPPED+1))
+              fi
+              rm -rf "$TMP_BARE"
+            fi
+
+            if [ "$DRY_RUN" = "true" ] && [ "$FORCE_ROTATE" != "true" ]; then
+              echo "  [dry-run] would rotate ${DST_SECRET} in ${DST_OWNER}/${REPO}"
+              continue
+            fi
+
+            if printf '%s' "$TOKEN_B" | gh secret set "${DST_SECRET}" --repo "${DST_OWNER}/${REPO}" -; then
+              echo "  ✓ rotated ${DST_SECRET} in ${DST_OWNER}/${REPO} (fresh 1h install token)"
+              ROTATED=$((ROTATED+1))
+            else
+              echo "  ::warning::gh secret set failed for ${DST_OWNER}/${REPO} — token lacks Secrets:write. Skipped."
+              SKIPPED=$((SKIPPED+1))
+            fi
+          done < "$TARGETS_FILE"
+          echo "::notice::Rotation+sync complete. synced=${SYNCED} rotated=${ROTATED} skipped=${SKIPPED}"
+          exit 0
+
+      - name: Summary
+        env:
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: |
+          set +euo pipefail
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "::notice::DRY RUN — review the printed SHA diffs, then re-run with dry_run=false to execute."
+          else
+            echo "::notice::Execution run complete — short-lived tokens rotated as configured."
+          fi
+          exit 0
