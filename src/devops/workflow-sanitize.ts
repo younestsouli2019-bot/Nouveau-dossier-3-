@@ -33,8 +33,12 @@ interface ParsedLine {
   raw: string;
 }
 
+function splitLines(text: string): string[] {
+  return text.split(/\r\n|\r|\n/);
+}
+
 function parse(text: string): ParsedLine[] {
-  return text.split('\n').map((raw, i) => {
+  return splitLines(text).map((raw, i) => {
     const m = raw.match(/^(\s*)(.*)$/);
     void i;
     return { indent: m[1].replace(/\t/g, '  ').length, text: m[2].trim(), raw };
@@ -154,7 +158,7 @@ export function fixWorkflow(text: string): { text: string; fixed: WorkflowOffens
   const offenses = analyzeWorkflow('inline', text);
   if (offenses.length === 0) return { text, fixed: [] };
 
-  const lines = text.split('\n');
+  const lines = splitLines(text);
   // Remove from the HIGHEST line number downward so indices stay valid.
   const sorted = [...offenses].sort((a, b) => b.line - a.line);
   for (const o of sorted) {
