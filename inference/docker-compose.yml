@@ -28,21 +28,22 @@
 
 services:
   glm-engine:
-    image: vllm/vllm-openai:latest
+    image: vllm/vllm-openai:v0.24.0
     container_name: swarm-glm-engine
     restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
       # Model id consumed by the router. Override with GLM_MODEL if you host a
-      # different checkpoint (e.g. a 70B AWQ/FP8 variant you quantized).
+      # different checkpoint. NOTE: zai-org/GLM-5.3-Flash is a 320B-A18B MoE —
+      # quantized (AWQ/FP8) or distilled variants are needed for <80GB VRAM.
       HF_HUB_ENABLE_HF_TRANSFER: "1"
-      GLM_LOCAL_API_KEY: "${GLM_LOCAL_API_KEY:?set GLM_LOCAL_API_KEY in .env}"
+      GLM_LOCAL_API_KEY: "${GLM_LOCAL_API_KEY:?set GLM_LOCAL_API_KEY in inference/.env}"
     volumes:
       - swarm-hf-cache:/root/.cache/huggingface
     command:
       - --model
-      - "${GLM_MODEL:-zai-org/glm-5.3-flash-128b}"
+      - "${GLM_MODEL:-zai-org/GLM-5.3-Flash}"
       - --served-model-name
       - "glm-5.3-flash"
       - --host
@@ -51,7 +52,7 @@ services:
       - "8000"
       - --max-model-len
       - "131072"
-      - --api-key-auth
+      - --api-key
       - "${GLM_LOCAL_API_KEY}"
       - --gpu-memory-utilization
       - "0.90"
