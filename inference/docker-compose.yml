@@ -1,0 +1,100 @@
+# Khwarizmian Swarm — Self-hosted inference stack (Phase-4)
+#
+# Runs the swarm's own GLM-5.3-Flash engine so calls routed to
+# `local-glm-5.3-flash` (see src/lib/dynamic-router.ts) are served at zero
+# per-token cost with no third-party rate limits.
+#
+# REQUIREMENTS:
+#   - A host with an NVIDIA GPU (vLLM) or the engine of your choice.
+#     Consumer GPUs can run small checkpoints; 70B/128B variants need >=24GB VRAM.
+#   - Docker + the NVIDIA container toolkit
+#     (Windows: WSL2 with CUDA; see https://docs.nvidia.com/datacenter/cloud-native/).
+#   - GLM_LOCAL_BASE_URL must point at where this engine is reachable from the
+#     swarm runtime. The default assumes a 1:1 docker-compose network.
+#
+# ENGINES (pick one by uncommenting):
+#   vLLM   — best latency, easiest. served at /v1 (OpenAI-compatible).
+#   SGLang — lower host VRAM footprint for long contexts.
+#   OpenClaw / llama.cpp (GGUF) — for CPU-only or small-GPU fallback.
+#
+# USAGE:
+#   docker compose up -d            # starts vLLM engine
+#   docker compose ps               # wait for "running (healthy)"
+#   pwsh scripts/glm-local-health.mjs # (or: node scripts/glm-local-health.mjs)
+#   Then set in the swarm's .env:
+#       GLM_LOCAL_BASE_URL=http://localhost:8000/v1
+#       GLM_LOCAL_API_KEY=<shared-secret-at-least-16-chars>
+#   dynamic-router.ts auto-prefers this model once GLM_LOCAL_BASE_URL is set.
+
+services:
+  glm-engine:
+    image: vllm/vllm-openai:latest
+    container_name: swarm-glm-engine
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Model id consumed by the router. Override with GLM_MODEL if you host a
+      # different checkpoint (e.g. a 70B AWQ/FP8 variant you quantized).
+      HF_HUB_ENABLE_HF_TRANSFER: "1"
+      GLM_LOCAL_API_KEY: "${GLM_LOCAL_API_KEY:?set GLM_LOCAL_API_KEY in .env}"
+    volumes:
+      - swarm-hf-cache:/root/.cache/huggingface
+    command:
+      - --model
+      - "${GLM_MODEL:-zai-org/glm-5.3-flash-128b}"
+      - --served-model-name
+      - "glm-5.3-flash"
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --max-model-len
+      - "131072"
+      - --api-key-auth
+      - "${GLM_LOCAL_API_KEY}"
+      - --gpu-memory-utilization
+      - "0.90"
+      - --max-num-seqs
+      - "16"
+      - --enable-prefix-caching
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 300s
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - swarm-inference
+
+  # Optional lightweight OpenAI-compatible gateway in front of vLLM. Routes the
+  # swarm's chat completions to the engine while exposing /v1/chat/completions,
+  # giving you a stable base URL whether the engine restarts or moves hosts.
+  # Enable by uncommenting and setting INFERENCE_GATEWAY_URL accordingly.
+  # inference-gateway:
+  #   image: ghcr.io/khwarizmian/inference-gateway:latest
+  #   restart: unless-stopped
+  #   environment:
+  #     GLM_ENGINE_URL: http://glm-engine:8000
+  #     GATEWAY_API_KEY: "${GLM_LOCAL_API_KEY}"
+  #   depends_on:
+  #     glm-engine:
+  #       condition: service_healthy
+  #   ports:
+  #     - "8001:8080"
+  #   networks:
+  #     - swarm-inference
+
+volumes:
+  swarm-hf-cache:
+
+networks:
+  swarm-inference:
+    driver: bridge
