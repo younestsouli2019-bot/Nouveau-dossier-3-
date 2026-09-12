@@ -591,10 +591,25 @@ class Store:
             raise EditError(f"campi sconosciuti {sorted(bad)}; ammessi: {sorted(allowed)}")
         if "fit" in values and values["fit"] not in ("contain", "cover", "stretch", "none"):
             raise EditError("fit deve essere contain | cover | stretch | none")
+        for k in ("start", "duration", "in_"):
+            if values.get(k) is not None and float(values[k]) < 0:
+                raise EditError(f"{k} non puo' essere negativo")
+        if values.get("duration") is not None and float(values["duration"]) <= 0:
+            raise EditError("la durata deve essere > 0")
         self._touch()
         for k, v in values.items():
             if v is not None:
-                setattr(clip, k, v)
+                setattr(clip, k, float(v) if k in ("start", "duration", "in_") else v)
+        # Il pannello proprieta' scrive qui durata e attacco: oltre la fine del
+        # file il render mostrerebbe nero, quindi si tiene entro la sorgente
+        # come fa trim_clip.
+        media = self.project.media_by_id(clip.media) if clip.media else None
+        if media and media.duration > 0 and clip.type == "media":
+            if clip.in_ >= media.duration:
+                clip.in_ = max(0.0, media.duration - 1.0 / 60)
+            max_dur = (media.duration - clip.in_) / max(abs(clip.speed), 1e-6)
+            if clip.duration > max_dur + 1e-3:
+                clip.duration = max(1.0 / 60, max_dur)
         track.clips.sort(key=lambda x: x.start)
         self._done()
         return clip

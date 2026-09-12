@@ -81,6 +81,11 @@ class Session:
         # conversazione con l'assistente: contiene i blocchi tool_use/tool_result,
         # che i turni successivi devono rimandare intatti
         self.chat: list[dict] = []
+        # Numero di modifiche al progetto viste da questo processo. Viaggia in
+        # ogni risposta e in ogni evento "project": il browser applica solo lo
+        # stato piu' nuovo che conosce, cosi' una risposta arrivata in ritardo
+        # non riporta la timeline indietro di un passo.
+        self.seq = 0
 
     def need(self) -> Store:
         if self.store is None:
@@ -89,10 +94,19 @@ class Session:
 
     def publish(self, event: dict) -> None:
         """Notifica i client connessi (chiamabile anche da thread di lavoro)."""
+        if event.get("type") == "project":
+            self.seq += 1
+            event = {**event, "seq": self.seq}
         if self.loop is None:
             return
         for q in list(self.listeners):
             self.loop.call_soon_threadsafe(q.put_nowait, event)
+
+    def state_of_project(self) -> dict:
+        """Progetto, percorso e revisione: quello che la UI applica a ogni cambio."""
+        return {"project": self.store.summary("full") if self.store else None,
+                "path": self.store.path if self.store else None,
+                "revision": self.revision(), "seq": self.seq}
 
     def revision(self) -> str:
         """Impronta del progetto: invalida le cache di anteprima quando cambia."""
@@ -100,6 +114,45 @@ class Session:
             return "0"
         blob = json.dumps(self.store.project.to_dict(), sort_keys=True).encode()
         return hashlib.sha1(blob).hexdigest()[:16]
+
+
+# --------------------------------------------------------------------------
+# progetti recenti
+# --------------------------------------------------------------------------
+
+RECENTI_MAX = 12
+
+
+def _file_recenti() -> Path:
+    return proxy.cache_dir() / "recenti.json"
+
+
+def recenti() -> list[dict]:
+    """Ultimi progetti aperti o creati, dal piu' recente; quelli spariti no."""
+    try:
+        voci = json.loads(_file_recenti().read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    out = []
+    for v in voci:
+        p = Path(str(v.get("path", "")))
+        if p.is_file():
+            out.append({"path": str(p), "name": v.get("name") or p.stem,
+                        "quando": v.get("quando", 0)})
+    return out[:RECENTI_MAX]
+
+
+def ricorda_recente(store: Store) -> None:
+    """Segna il progetto fra i recenti: e' quello che la schermata iniziale propone."""
+    if not store.path:
+        return
+    voci = [v for v in recenti() if v["path"] != store.path]
+    voci.insert(0, {"path": store.path, "name": store.project.name, "quando": time.time()})
+    try:
+        _file_recenti().write_text(json.dumps(voci[:RECENTI_MAX], ensure_ascii=False, indent=1),
+                                   encoding="utf-8")
+    except OSError:
+        pass   # non poter ricordare non e' un motivo per non aprire
 
 
 S = Session()
@@ -125,9 +178,11 @@ class OpenBody(BaseModel):
 def state() -> dict:
     info = hw.detect()
     return {
-        "project": S.store.summary("full") if S.store else None,
-        "path": S.store.path if S.store else None,
-        "revision": S.revision(),
+        **S.state_of_project(),
+        # cartella proposta dai dialoghi "nuovo progetto" ed "esporta": chi apre
+        # l'editor per la prima volta non deve inventarsi un percorso
+        "home": _cartella_video(),
+        "recenti": recenti(),
         "effects": fx.describe(),
         "transitions": list(TRANSITIONS),
         "library": presets.describe(),
@@ -138,18 +193,52 @@ def state() -> dict:
     }
 
 
+def _cartella_video() -> str:
+    """Dove proporre i nuovi progetti: la cartella Video dell'utente se c'e'."""
+    home = Path.home()
+    for nome in ("Videos", "Video", "Movies", "Filmati"):
+        if (home / nome).is_dir():
+            return str(home / nome)
+    return str(home)
+
+
+@app.get("/api/project")
+def project_state() -> dict:
+    """Solo il progetto: e' quello che la UI richiede a ogni evento "project".
+
+    Piu' leggero di /api/state, che porta anche cataloghi e rilevamento
+    hardware, roba che non cambia mentre si monta.
+    """
+    return S.state_of_project()
+
+
 @app.post("/api/project/create")
 def project_create(body: CreateBody) -> dict:
-    S.store = Store.create(name=body.name, preset=body.preset, path=body.path)
+    try:
+        S.store = Store.create(name=body.name, preset=body.preset, path=body.path)
+    except (EditError, OSError) as exc:
+        raise HTTPException(400, str(exc)) from exc
+    S.chat.clear()
+    ricorda_recente(S.store)
     S.publish({"type": "project"})
-    return {"path": S.store.path, "project": S.store.summary("full")}
+    return {**S.state_of_project(), "recenti": recenti()}
 
 
 @app.post("/api/project/open")
 def project_open(body: OpenBody) -> dict:
-    S.store = Store.open(body.path)
+    try:
+        S.store = Store.open(body.path)
+    except (EditError, OSError, ValueError) as exc:
+        raise HTTPException(400, str(exc)) from exc
+    S.chat.clear()
+    ricorda_recente(S.store)
     S.publish({"type": "project"})
-    return {"path": S.store.path, "project": S.store.summary("full")}
+    return {**S.state_of_project(), "recenti": recenti()}
+
+
+@app.get("/api/recenti")
+def lista_recenti() -> list[dict]:
+    return recenti()
 
 
 @app.post("/api/op/{name}")
@@ -168,8 +257,7 @@ def op(name: str, body: dict | None = None) -> dict:
         raise HTTPException(400, str(exc)) from exc
 
     S.publish({"type": "project"})
-    return {"result": _plain(result), "project": store.summary("full"),
-            "revision": S.revision()}
+    return {"result": _plain(result), **S.state_of_project()}
 
 
 def _plain(value: Any) -> Any:
@@ -288,8 +376,7 @@ async def upload(files: list[UploadFile] = File(...), folder: str = Form("")) ->
             for m in media:
                 store.set_media(m.id, folder=folder)
     S.publish({"type": "project"})
-    return {"importati": [m.id for m in media], "project": store.summary("full"),
-            "revision": S.revision()}
+    return {"importati": [m.id for m in media], **S.state_of_project()}
 
 
 @app.get("/api/file")
@@ -628,8 +715,7 @@ def preset_apply(body: PresetBody) -> dict:
     except (EditError, ValueError, KeyError) as exc:
         raise HTTPException(400, str(exc)) from exc
     S.publish({"type": "project"})
-    return {"applicato": p["name"], "effetti": len(p["effects"]),
-            "project": store.summary("full"), "revision": S.revision()}
+    return {"applicato": p["name"], "effetti": len(p["effects"]), **S.state_of_project()}
 
 
 # --------------------------------------------------------------------------
@@ -686,8 +772,7 @@ def chat(body: ChatBody) -> StreamingResponse:
         except Exception as exc:
             yield send({"type": "error", "message": str(exc)})
         # il progetto e' cambiato: la UI ricarica lo stato completo
-        yield send({"type": "end", "project": store.summary("full"),
-                    "revision": S.revision()})
+        yield send({"type": "end", **S.state_of_project()})
 
     return StreamingResponse(events(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache",
@@ -706,7 +791,7 @@ async def ws(sock: WebSocket) -> None:
     queue: asyncio.Queue = asyncio.Queue()
     S.listeners.add(queue)
     try:
-        await sock.send_json({"type": "hello", "revision": S.revision()})
+        await sock.send_json({"type": "hello", "revision": S.revision(), "seq": S.seq})
         while True:
             event = await queue.get()
             await sock.send_json(event)

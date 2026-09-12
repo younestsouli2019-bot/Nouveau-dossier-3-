@@ -239,10 +239,17 @@ export default function Timeline({
                   {renaming === track.id ? (
                     <input
                       className="rename" autoFocus defaultValue={track.name || track.id}
-                      onBlur={(e) => { set({ name: e.target.value.trim() }); setRenaming(null) }}
+                      onBlur={(e) => {
+                        // Esc segna il campo come annullato: il blur che segue
+                        // allo smontaggio non deve salvare il nome a meta'
+                        if (e.target.dataset.annulla) return
+                        const nome = e.target.value.trim()
+                        if (nome && nome !== (track.name || track.id)) set({ name: nome })
+                        setRenaming(null)
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') e.currentTarget.blur()
-                        if (e.key === 'Escape') setRenaming(null)
+                        if (e.key === 'Escape') { e.currentTarget.dataset.annulla = '1'; setRenaming(null) }
                       }} />
                   ) : (
                     <span className="tname" title="Doppio clic per rinominare"

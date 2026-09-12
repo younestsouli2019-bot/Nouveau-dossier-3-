@@ -27,6 +27,9 @@ async function req(url, options) {
 
 export const api = {
   state: () => req('/api/state'),
+  // solo progetto, percorso e revisione: si chiede a ogni evento "project"
+  project: () => req('/api/project'),
+  recenti: () => req('/api/recenti'),
 
   createProject: (path, name, preset) =>
     req('/api/project/create', {

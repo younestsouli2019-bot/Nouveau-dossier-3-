@@ -25,6 +25,31 @@ def anyio_backend():
     return "asyncio"
 
 
+@pytest.fixture(scope="session", autouse=True)
+def _cache_isolata(tmp_path_factory):
+    """I test non devono sporcare ~/.vedit di chi li lancia.
+
+    Progetti recenti, proxy e anteprime finiscono in una cartella temporanea.
+    Il rilevamento degli encoder si copia da quello vero se c'e': rifarlo
+    costa qualche secondo e non e' quello che si sta verificando.
+    """
+    import os
+    import shutil
+
+    d = tmp_path_factory.mktemp("vedit-cache")
+    vera = Path(os.environ.get("VEDIT_CACHE") or (Path.home() / ".vedit"))
+    for nome in ("hw.json", "hwprobe.mp4"):
+        if (vera / nome).is_file():
+            shutil.copy(vera / nome, d / nome)
+    prima = os.environ.get("VEDIT_CACHE")
+    os.environ["VEDIT_CACHE"] = str(d)
+    yield
+    if prima is None:
+        os.environ.pop("VEDIT_CACHE", None)
+    else:
+        os.environ["VEDIT_CACHE"] = prima
+
+
 @pytest.fixture(scope="session")
 def assets(tmp_path_factory) -> dict:
     """Sorgenti sintetiche: niente file esterni, il test gira ovunque."""

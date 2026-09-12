@@ -29,10 +29,12 @@ export default function Preview({
   const [approssimato, setApprossimato] = useState(false)
   const duration = project?.duration || 0
 
-  // il progetto e' cambiato mentre si riproduce: ci si ferma e si riparte a mano
-  // (il segmento in onda e' stato renderizzato dalla versione precedente)
+  // il progetto e' cambiato mentre si riproduce in modalita' fedele: ci si
+  // ferma e si riparte a mano, perche' il segmento in onda e' stato
+  // renderizzato dalla versione precedente. In diretta invece il browser
+  // compone dal progetto corrente: la modifica si vede senza fermarsi.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (playing) setPlaying(false) }, [revision])
+  useEffect(() => { if (playing && !diretta) setPlaying(false) }, [revision])
 
   // avvio riproduzione: prepara il segmento a partire dalla testina
   useEffect(() => {

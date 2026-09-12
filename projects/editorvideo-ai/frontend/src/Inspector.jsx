@@ -173,9 +173,11 @@ function TransitionPanel({ clip, transitions, project, call }) {
           onChange={(v) => apply(active, v)} /></Row>
       )}
       <div className="hint">
-        {next
+        {next && Math.abs(next.start - clip.end) < 1e-3
           ? 'la clip successiva viene accostata e sovrapposta della durata scelta'
-          : 'nessuna clip dopo: la transizione scoprira\' lo sfondo'}
+          : next
+            ? 'c\'e\' un buco prima della clip dopo: la transizione scopre lo sfondo. Attaccale per incrociarle.'
+            : 'nessuna clip dopo: la transizione scoprira\' lo sfondo'}
       </div>
     </div>
   )

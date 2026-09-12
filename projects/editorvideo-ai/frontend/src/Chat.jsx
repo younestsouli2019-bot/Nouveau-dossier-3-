@@ -32,8 +32,9 @@ export default function Chat({ available, onProject, setError }) {
         <div className="group hint">
           Chat non disponibile.<br /><br />
           {available?.motivo || 'nessuna credenziale Anthropic trovata.'}
-          <br /><br />
-          Imposta <b>ANTHROPIC_API_KEY</b> nell'ambiente e riavvia <code>vedit ui</code>.
+          {!/ANTHROPIC_API_KEY/.test(available?.motivo || '') && (
+            <><br /><br />Imposta <b>ANTHROPIC_API_KEY</b> nell'ambiente e riavvia <code>vedit ui</code>.</>
+          )}
         </div>
       </div>
     )
@@ -74,7 +75,7 @@ export default function Chat({ available, onProject, setError }) {
         } else if (ev.type === 'error') {
           patch((m) => ({ ...m, error: ev.message }))
         } else if (ev.type === 'end') {
-          onProject(ev.project, ev.revision)
+          onProject(ev)
         }
       }, ctrl.signal)
     } catch (e) {

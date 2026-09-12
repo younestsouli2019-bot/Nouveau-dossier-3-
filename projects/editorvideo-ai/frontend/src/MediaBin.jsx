@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import Icon from './Icons.jsx'
 import useMediaAssets from './mediaAssets.js'
 import { fmt } from './util.js'
@@ -99,6 +99,20 @@ export default function MediaBin({ project, run, setError, onOpenSource, onImpor
     })
   })
 
+  // Un clic apre il monitor sorgente, due accodano in timeline. Il browser
+  // manda anche il clic singolo prima del doppio: senza questa attesa il doppio
+  // clic accodava la clip *e* portava sul monitor sorgente, e chi voleva solo
+  // mettere il file in timeline si ritrovava in un'altra scheda.
+  const clicSingolo = useRef(null)
+  const apri = (m) => {
+    clearTimeout(clicSingolo.current)
+    clicSingolo.current = setTimeout(() => onOpenSource(m), 220)
+  }
+  const accoda = (m) => {
+    clearTimeout(clicSingolo.current)
+    run('add_clip', { media_id: m.id }).catch((e) => setError(e.message))
+  }
+
   const Item = ({ m }) => {
     const strip = assets.strip(m)
     const peaks = m.kind === 'audio' ? assets.peaks(m) : null
@@ -106,11 +120,12 @@ export default function MediaBin({ project, run, setError, onOpenSource, onImpor
     <div
       className="media" draggable
       onDragStart={(e) => {
+        clearTimeout(clicSingolo.current)
         e.dataTransfer.setData('text/media', m.id)
         e.dataTransfer.effectAllowed = 'copyMove'
       }}
-      onClick={() => onOpenSource(m)}
-      onDoubleClick={() => run('add_clip', { media_id: m.id }).catch((e) => setError(e.message))}
+      onClick={() => apri(m)}
+      onDoubleClick={() => accoda(m)}
       title="clic: apri nel monitor · doppio clic: accoda in timeline · trascina: timeline o cartella"
     >
       {/* finche' l'anteprima non e' arrivata resta l'icona: il riquadro ha

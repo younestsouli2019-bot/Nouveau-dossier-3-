@@ -12,6 +12,12 @@ const test = (name, fn) => {
   catch (e) { console.log('FAIL ' + name + ': ' + e.message); process.exitCode = 1 }
 }
 
+test('isKf torna sempre un booleano (uno 0 in JSX si stampa)', () => {
+  assert.equal(isKf(0), false)
+  assert.equal(isKf(null), false)
+  assert.equal(isKf({ kf: [] }), true)
+})
+
 test('keyframe interpolati come nel backend', () => {
   const v = { kf: [{ t: 0, v: 0 }, { t: 2, v: 10 }] }
   assert.equal(isKf(v), true)

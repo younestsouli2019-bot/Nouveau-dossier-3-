@@ -243,3 +243,55 @@ def test_ordine_effetti_via_api(client, tmp_path, assets):
 
     client.post("/api/op/undo", json={})
     assert ordine() == ["denoise", "sharpen"]
+
+
+def test_stato_progetto_e_sequenza(client, tmp_path, assets):
+    """Ogni risposta porta revisione e numero di modifica: la UI applica solo lo stato piu' nuovo."""
+    r = _create(client, tmp_path)
+    assert r["revision"] != "0" and r["seq"] >= 1 and r["path"].endswith("p.json")
+
+    # /api/project e' quello che la UI chiede a ogni evento "project"
+    p = client.get("/api/project").json()
+    assert p["revision"] == r["revision"] and p["seq"] == r["seq"]
+
+    mid = client.post("/api/op/import_media", json={"paths": [assets["red"]]}).json()
+    assert mid["seq"] > r["seq"]
+    dopo = client.post("/api/op/add_clip", json={"media_id": mid["result"][0]["id"]}).json()
+    assert dopo["seq"] > mid["seq"] and dopo["revision"] != mid["revision"]
+    assert client.get("/api/project").json()["seq"] == dopo["seq"]
+
+    # aprire un altro progetto cambia la revisione: le anteprime in cache non valgono piu'
+    r2 = client.post("/api/project/create", json={"path": str(tmp_path / "q.json")}).json()
+    assert r2["revision"] != dopo["revision"]
+
+
+def test_progetti_recenti(client, tmp_path):
+    _create(client, tmp_path)
+    client.post("/api/project/create", json={"path": str(tmp_path / "secondo.json"), "name": "due"})
+    rec = client.get("/api/recenti").json()
+    assert [r["name"] for r in rec][:2] == ["due", "untitled"]
+    assert rec[0]["path"].endswith("secondo.json")
+    assert client.get("/api/state").json()["recenti"][0]["name"] == "due"
+
+    # un progetto sparito dal disco non viene proposto
+    (tmp_path / "secondo.json").unlink()
+    assert all(not r["path"].endswith("secondo.json") for r in client.get("/api/recenti").json())
+
+    # riaprire un progetto lo rimette in cima
+    r = client.post("/api/project/open", json={"path": str(tmp_path / "p.json")})
+    assert r.status_code == 200 and r.json()["recenti"][0]["path"].endswith("p.json")
+    assert client.post("/api/project/open", json={"path": str(tmp_path / "manca.json")}).status_code == 400
+
+
+def test_set_clip_resta_dentro_la_sorgente(client, tmp_path, assets):
+    """Dal pannello proprieta' si scrive la durata a mano: oltre il file si vedrebbe nero."""
+    _create(client, tmp_path)
+    mid = client.post("/api/op/import_media", json={"paths": [assets["red"]]}).json()["result"][0]["id"]
+    cid = client.post("/api/op/add_clip", json={"media_id": mid, "duration": 2.0}).json()["result"]["id"]
+
+    r = client.post("/api/op/set_clip", json={"clip_id": cid, "duration": 100.0}).json()
+    assert r["result"]["duration"] == pytest.approx(5.0, abs=0.05)
+    r = client.post("/api/op/set_clip", json={"clip_id": cid, "in_": 4.0}).json()
+    assert r["result"]["in"] == pytest.approx(4.0) and r["result"]["duration"] == pytest.approx(1.0, abs=0.05)
+    assert client.post("/api/op/set_clip", json={"clip_id": cid, "duration": -1}).status_code == 400
+    assert client.post("/api/op/set_clip", json={"clip_id": cid, "start": -3}).status_code == 400

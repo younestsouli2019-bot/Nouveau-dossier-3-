@@ -678,3 +678,31 @@ input[type=range]::-moz-range-thumb {
   background: color-mix(in srgb, var(--accent) 45%, transparent);
   box-shadow: 0 0 0 1px var(--accent);
 }
+
+/* ------------------------------------------------------ schermata iniziale */
+.benvenuto { display: grid; place-items: center; }
+.benvenuto-box {
+  width: min(460px, 90%); display: flex; flex-direction: column; gap: 14px;
+  padding: 26px 28px; border: 1px solid var(--line); border-radius: var(--r-lg);
+  background: var(--panel);
+}
+.benvenuto-titolo { font-size: 20px; font-weight: 700; letter-spacing: .12em; color: var(--text); }
+.benvenuto-azioni { display: flex; gap: 8px; }
+.benvenuto-azioni button { height: 30px; padding: 0 14px; font-size: 12px; }
+.benvenuto-recenti { display: flex; flex-direction: column; gap: 2px; }
+.benvenuto-recenti .recente {
+  justify-content: flex-start; gap: 8px; height: 26px; width: 100%; text-align: left;
+}
+.benvenuto-recenti .recente .nome { color: var(--text); }
+.benvenuto-recenti .recente .hint {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1;
+}
+
+/* percorso scrivibile in cima al dialogo file */
+input.percorso {
+  width: 100%; height: var(--h-ctl); margin-bottom: 8px; color: var(--dim);
+  font-size: 11px;
+}
+.browser .item.recente .hint {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55%;
+}

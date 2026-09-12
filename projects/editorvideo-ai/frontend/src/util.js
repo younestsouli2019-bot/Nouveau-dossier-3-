@@ -7,7 +7,7 @@ export const fmt = (s) => {
   return `${neg ? '-' : ''}${m}:${sec.toFixed(1).padStart(4, '0')}`
 }
 
-export const isKf = (v) => v && typeof v === 'object' && Array.isArray(v.kf)
+export const isKf = (v) => !!(v && typeof v === 'object' && Array.isArray(v.kf))
 
 // Valore del parametro al tempo t (stessa interpolazione del backend, per la UI).
 export function sampleKf(value, t) {

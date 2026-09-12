@@ -59,29 +59,57 @@ export default function App() {
     bin: 250, inspector: 320, timeline: 300, trackH: 72, ...loadSizes(),
   }))
   const playheadRef = useRef(0)
+  // numero dell'ultima modifica applicata: una risposta arrivata in ritardo
+  // (piu' vecchia di quello che si vede gia') non deve riportare indietro la timeline
+  const seqRef = useRef(0)
 
   useEffect(() => {
     localStorage.setItem('vedit.layout', JSON.stringify(sizes))
   }, [sizes])
 
+  /**
+   * Applica uno stato del progetto arrivato dal server: risposta a un'operazione,
+   * evento del websocket, fine di un turno con l'assistente. E' l'unico punto
+   * in cui progetto, percorso e revisione cambiano, cosi' non possono andare
+   * fuori passo tra loro.
+   */
+  const applyState = useCallback((r) => {
+    if (!r) return
+    if (typeof r.seq === 'number') {
+      if (r.seq < seqRef.current) return
+      seqRef.current = r.seq
+    }
+    setProject(r.project)
+    if ('path' in r) setPath(r.path)
+    if (r.revision) setRevision(r.revision)
+  }, [])
+
   // ---- stato iniziale ed eventi dal server --------------------------------
   useEffect(() => {
-    api.state().then((s) => {
-      setSys(s)
-      setProject(s.project)
-      setPath(s.path)
-      setRevision(s.revision)
-    }).catch((e) => setError(e.message))
+    api.state().then((s) => { setSys(s); applyState(s) }).catch((e) => setError(e.message))
 
+    // Il progetto cambia anche senza un clic qui dentro: l'assistente, un
+    // agente via MCP (open_ui), un'altra finestra. Il server avvisa e la UI
+    // ricarica lo stato: senza questo la timeline restava ferma a guardare.
+    let ricarica = null
+    const aggiorna = () => {
+      if (ricarica) return
+      ricarica = api.project().then((r) => { ricarica = null; applyState(r) })
+        .catch(() => { ricarica = null })
+    }
     return connectEvents((ev) => {
       if (ev.type === 'render') setJob(ev.job)
       if (ev.type === 'proxies') {
         // anche in caso di errore: altrimenti l'avviso "genero i proxy" resta li' per sempre
         setBusy(null)
         if (ev.state === 'error') setError(`proxy non riusciti: ${ev.error}`)
+        else aggiorna()   // i media adesso hanno il proxy: le anteprime lo usano
       }
+      // l'evento porta solo il numero: se e' piu' nuovo di quello che si vede,
+      // si chiede lo stato. Le proprie operazioni arrivano gia' con la risposta.
+      if ((ev.type === 'project' || ev.type === 'hello') && ev.seq > seqRef.current) aggiorna()
     })
-  }, [])
+  }, [applyState])
 
   useEffect(() => {
     if (!error) return
@@ -103,10 +131,9 @@ export default function App() {
   // ---- operazioni ----------------------------------------------------------
   const run = useCallback(async (op, args) => {
     const res = await api.op(op, args)
-    setProject(res.project)
-    setRevision(res.revision)
+    applyState(res)
     return res.result
-  }, [])
+  }, [applyState])
 
   const seek = useCallback((t, fromPlayer = false) => {
     const dur = project?.duration || 0
@@ -119,10 +146,9 @@ export default function App() {
   const selectedClip = project && selected ? findClip(project, selected) : null
 
   // ---- libreria -------------------------------------------------------------
-  const applyState = (r) => { setProject(r.project); setRevision(r.revision) }
-
   const applyPreset = useCallback((presetId, clipId) =>
-    api.applyPreset(presetId, clipId).then(applyState).catch((e) => setError(e.message)), [])
+    api.applyPreset(presetId, clipId).then(applyState).catch((e) => setError(e.message)),
+  [applyState])
 
   /**
    * Una transizione ha bisogno di sovrapposizione: se la clip dopo e' attaccata
@@ -154,12 +180,20 @@ export default function App() {
     if (!fileList) { setDialog('import'); return }
     const files = [...fileList].filter((f) => MEDIA_EXT.test(f.name))
     if (!files.length) { setError('nessun file multimediale riconosciuto'); return }
+    if (!project) {
+      // trascinare dei file e' il primo gesto naturale: senza progetto se ne
+      // crea uno nella cartella proposta, col nome del primo file
+      if (!sys?.home) { setError('crea prima un progetto'); return }
+      const sep = sys.home.includes('\\') ? '\\' : '/'
+      const nome = files[0].name.replace(/\.[^.]+$/, '') || 'progetto'
+      try {
+        progettoAperto(await api.createProject(`${sys.home}${sep}${nome}.json`, nome, '1080p'))
+      } catch (e) { setError(e.message); return }
+    }
     const mb = files.reduce((s, f) => s + f.size, 0) / 1e6
     setUploading(`${files.length} file, ${mb.toFixed(0)} MB`)
     try {
-      const res = await api.upload(files, folder)
-      setProject(res.project)
-      setRevision(res.revision)
+      applyState(await api.upload(files, folder))
     } catch (e) { setError(e.message) } finally { setUploading(null) }
   }
 
@@ -188,15 +222,45 @@ export default function App() {
       if (e.ctrlKey && e.key.toLowerCase() === 'y') {
         e.preventDefault(); run('redo').catch((err) => setError(err.message)); return
       }
+      if (e.ctrlKey && e.key.toLowerCase() === 's') {
+        e.preventDefault()
+        if (project) run('save', {}).then(() => flash('progetto salvato')).catch((err) => setError(err.message))
+        return
+      }
       const fn = act[e.key]
       if (fn) { e.preventDefault(); fn() }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [project, selected, run, seek])
+  }, [project, selected, run, seek, flash])
 
   const startRender = (body) =>
     api.render(body).then(setJob).catch((e) => setError(e.message))
+
+  // L'export dura minuti e nel frattempo si chiude la finestra e si continua
+  // a lavorare: quando finisce lo si deve sapere anche senza riaprirla.
+  const jobVisto = useRef(null)
+  useEffect(() => {
+    if (!job || job.state === 'running' || jobVisto.current === job.id) return
+    jobVisto.current = job.id
+    if (dialog === 'render') return
+    if (job.state === 'done') flash(`esportato: ${job.output}`, 6000)
+    else if (job.state === 'error') setError(`export fallito: ${job.error}`)
+  }, [job, dialog, flash])
+
+  /** Progetto appena creato o aperto: stato nuovo, testina e selezione a zero. */
+  const progettoAperto = useCallback((r) => {
+    applyState(r)
+    setSelected(null)
+    setPlayhead(0)
+    playheadRef.current = 0
+    setSource(null)
+    setTab('program')
+    if (r.recenti) setSys((s) => (s ? { ...s, recenti: r.recenti } : s))
+  }, [applyState])
+
+  const openProject = useCallback((p) =>
+    api.openProject(p).then(progettoAperto).catch((e) => setError(e.message)), [progettoAperto])
 
   return (
     <div
@@ -290,7 +354,14 @@ export default function App() {
             <span className="spacer" />
           </div>
 
-          {tab === 'source' && source ? (
+          {!sys ? (
+            <div className="preview"><div className="empty">
+              <Icon name="attesa" className="spin" /> collegamento al server…
+            </div></div>
+          ) : !project ? (
+            <Benvenuto recenti={sys.recenti} onNew={() => setDialog('new')}
+              onOpen={() => setDialog('open')} onRecent={openProject} />
+          ) : tab === 'source' && source ? (
             <SourceMonitor media={source} tracks={project?.tracks || []} run={run}
               setError={setError} playhead={playhead}
               onClose={() => { setSource(null); setTab('program') }} />
@@ -376,32 +447,30 @@ export default function App() {
                 playhead={playhead} run={run} setError={setError} setBusy={setBusy}
                 onProva={setProvaFx} />
             ) : (
-              <Chat available={sys?.chat} setError={setError}
-                onProject={(p, r) => { setProject(p); setRevision(r) }} />
+              <Chat available={sys?.chat} setError={setError} onProject={applyState} />
             )}
           </div>
         </div>
       </div>
 
       {dialog === 'new' && (
-        <NewProject presets={sys?.presets || ['1080p']} onClose={() => setDialog(null)}
+        <NewProject presets={sys?.presets || ['1080p']} home={sys?.home}
+          onClose={() => setDialog(null)}
           onCreate={(p, name, preset) => api.createProject(p, name, preset)
-            .then((r) => { setProject(r.project); setPath(r.path); setSelected(null) })
-            .catch((e) => setError(e.message))} />
+            .then(progettoAperto).catch((e) => setError(e.message))} />
       )}
       {dialog === 'open' && (
         <FileBrowser title="Apri progetto" multiple={false} onClose={() => setDialog(null)}
+          memoria="progetti" recenti={sys?.recenti}
           filter={(n) => n.toLowerCase().endsWith('.json')}
-          onPick={([p]) => api.openProject(p)
-            .then((r) => { setProject(r.project); setPath(r.path); setSelected(null); setPlayhead(0) })
-            .catch((e) => setError(e.message))} />
+          onPick={([p]) => openProject(p)} />
       )}
       {dialog === 'import' && (
-        <FileBrowser title="Importa file" onClose={() => setDialog(null)}
+        <FileBrowser title="Importa file" onClose={() => setDialog(null)} memoria="media"
           filter={(n) => MEDIA_EXT.test(n)} onPick={importPaths} />
       )}
       {dialog === 'render' && (
-        <RenderDialog project={project} job={job} onStart={startRender}
+        <RenderDialog project={project} path={path} job={job} onStart={startRender}
           onClose={() => setDialog(null)} />
       )}
 
@@ -421,6 +490,40 @@ export default function App() {
           </button>
         </div>
       )}
+    </div>
+  )
+}
+
+/**
+ * Prima schermata: senza progetto l'editor era un monitor nero con i comandi
+ * spenti e nessuna indicazione su da dove partire. Qui ci sono le due cose che
+ * si possono fare, e i progetti aperti di recente a un clic.
+ */
+function Benvenuto({ recenti, onNew, onOpen, onRecent }) {
+  return (
+    <div className="preview benvenuto">
+      <div className="benvenuto-box">
+        <div className="benvenuto-titolo">VEDIT</div>
+        <div className="hint">Editor video. Crea un progetto o riaprine uno: i video restano dove sono.</div>
+        <div className="benvenuto-azioni">
+          <button className="primary" onClick={onNew}><Icon name="nuovo" />nuovo progetto</button>
+          <button onClick={onOpen}><Icon name="apri" />apri…</button>
+        </div>
+        {recenti?.length > 0 && (
+          <div className="benvenuto-recenti">
+            <div className="hint">recenti</div>
+            {recenti.slice(0, 6).map((r) => (
+              <button key={r.path} className="ghost recente" title={r.path}
+                onClick={() => onRecent(r.path)}>
+                <Icon name="apri" size={14} />
+                <span className="nome">{r.name}</span>
+                <span className="hint">{r.path}</span>
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="hint">Oppure trascina qui dei file video: il progetto si crea da solo.</div>
+      </div>
     </div>
   )
 }
