@@ -452,19 +452,23 @@ For **any** model ID matching `glm-5.3` (case-insensitive, including `zhipuai/gl
 Self-hosted inference is wired end-to-end; it just needs a GPU host:
 ```
 ENGINE:   vLLM ≥ 0.6.0  OR  SGLang ≥ 0.4.0  OR  OpenClaw
-MODEL:    THUDM/glm-5.3-flash (GGUF / AWQ / FP8, 70B or 128B)
+MODEL:    zai-org/GLM-5.3-Flash  (HF id; 320B-A18B MoE default — quantized
+          AWQ/FP8/distilled variants for <80GB VRAM; overridable via GLM_MODEL)
 DOCKER:   inference/docker-compose.yml  → npm run inference:up
 PROBE:    npm run inference:health      → scripts/glm-local-health.mjs
 ENVS:     GLM_LOCAL_BASE_URL=http://localhost:8000/v1
-          GLM_LOCAL_API_KEY=<any-shared-secret≥16chars>
+          GLM_LOCAL_API_KEY=<any-shared-secret≥16chars>  (inference/.env for compose)
 ```
 Behavior (since 2026-09-12):
 - `src/lib/dynamic-router.ts` adds `local-glm-5.3-flash` as a **zero-cost free-tier entry at the front of `MODEL_CATALOG`**, gated on `GLM_LOCAL_BASE_URL` being set — the router now *prefers* the local engine over all third-party models (`selectBestModel` cost-sort picks `$0` first).
+- `swarm-ops-project/src/lib/free-models.ts` `getDefaultModel()` mirrors this: prefers `local-glm-5.3-flash` first when the engine env is set.
 - `src/lib/token-optimizer.ts` prices `local-glm-5.3-flash` at `$0` (input + output) so budget caps never skip it.
 - `scripts/glm-local-health.mjs` verifies engine reachability + a real chat round-trip + that the router selects the local model first; exits non-zero on any failure.
 - Once envs are set, every call to a `glm-5.3` model ID transparently routes to the local engine via `callOpenRouter` — no caller code changes required.
 
 Without `GLM_LOCAL_BASE_URL`, the local entry is **invisible** to the catalog and routing is unchanged (previous behavior).
+> vLLM auth uses `--api-key` (not `--api-key-auth`), and pin `vllm/vllm-openai` to a
+> specific tag (compose defaults to `v0.24.0`).
 
 ---
 
