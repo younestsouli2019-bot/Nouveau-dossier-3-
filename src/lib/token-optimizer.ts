@@ -9,6 +9,7 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY ?? '';
 const CHARS_PER_TOKEN_ESTIMATE = 4;
 
 const MODEL_CONTEXT_WINDOWS: Record<string, number> = {
+  'local-glm-5.3-flash': 131072,
   'openai/gpt-4o': 128000,
   'openai/gpt-4o-mini': 128000,
   'openai/gpt-4-turbo': 128000,
@@ -22,6 +23,7 @@ const MODEL_CONTEXT_WINDOWS: Record<string, number> = {
 };
 
 const MODEL_PRICING: Record<string, { input: number; output: number }> = {
+  'local-glm-5.3-flash': { input: 0, output: 0 },
   'openai/gpt-4o': { input: 2.50, output: 10.00 },
   'openai/gpt-4o-mini': { input: 0.15, output: 0.60 },
   'openai/gpt-4-turbo': { input: 10.00, output: 30.00 },

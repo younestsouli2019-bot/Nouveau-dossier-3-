@@ -48,6 +48,9 @@
     "inbound:scout": "node scripts/inbound-scout.mjs",
     "audit:i8": "node scripts/verify-i8-gates.mjs",
     "audit:selfheal": "node scripts/self-healing-check.mjs",
+    "inference:up": "docker compose -f inference/docker-compose.yml up -d",
+    "inference:down": "docker compose -f inference/docker-compose.yml down",
+    "inference:health": "node --import tsx scripts/glm-local-health.mjs",
     "audit:all": "npm run typecheck && npm run audit:truth && npm run guard:selftest && npm run audit:i8"
   },
   "dependencies": {

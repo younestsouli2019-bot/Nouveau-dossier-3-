@@ -53,7 +53,16 @@ export type RouterResponse = {
 //   process.env.GLM_LOCAL_BASE_URL is set (see callOpenRouter below).
 // ──────────────────────────────────────────────────────────────────────────
 
+const GLM_LOCAL_AVAILABLE = Boolean(process.env.GLM_LOCAL_BASE_URL);
+
 const MODEL_CATALOG: ModelConfig[] = [
+  // ─── Phase-4 self-hosted local engine (first choice when live) ────────────
+  // vLLM / SGLang / OpenClaw serving GLM-5.3-Flash. Cost 0, no rate limits.
+  // Activated when GLM_LOCAL_BASE_URL is set (GLM_LOCAL_BASE_URL in .env);
+  // callOpenRouter routes this id to the local engine automatically.
+  ...(GLM_LOCAL_AVAILABLE
+    ? [{ id: 'local-glm-5.3-flash', name: 'GLM-5.3-Flash (self-hosted)', tier: 'free' as ModelTier, contextWindow: 131072, maxOutput: 16384, inputCostPer1M: 0, outputCostPer1M: 0, supportsTools: true, supportsStreaming: true, latencyMs: 400, reliability: 0.99 }]
+    : []),
   { id: 'meta-llama/llama-3.1-8b-instruct', name: 'Llama 3.1 8B', tier: 'free', contextWindow: 131072, maxOutput: 4096, inputCostPer1M: 0.05, outputCostPer1M: 0.10, supportsTools: false, supportsStreaming: true, latencyMs: 800, reliability: 0.85 },
   { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', tier: 'budget', contextWindow: 128000, maxOutput: 16384, inputCostPer1M: 0.15, outputCostPer1M: 0.60, supportsTools: true, supportsStreaming: true, latencyMs: 600, reliability: 0.97 },
   { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash', tier: 'budget', contextWindow: 1048576, maxOutput: 8192, inputCostPer1M: 0.10, outputCostPer1M: 0.40, supportsTools: true, supportsStreaming: true, latencyMs: 500, reliability: 0.95 },
