@@ -35,6 +35,8 @@
     "proc:queue": "node scripts/procurement-payment-queue.mjs",
     "settlement:worklist": "node scripts/settlement-worklist.mjs",
     "po:execution": "node scripts/po-execution-queue.mjs",
+    "revenue:seed": "node --import tsx scripts/seed-revenue.mjs",
+    "revenue:reconcile": "node --import tsx scripts/reconcile-revenue-ledger.mjs",
     "rail:table": "node scripts/payment-routing-table.mjs",
     "po:orchestrator": "node scripts/po-fulfillment-orchestrator.mjs",
     "wallet:balance": "node scripts/evm-wallet-rail.mjs --action balance",
