@@ -4,6 +4,18 @@ This is the canonical registry of live swarm/base44 deployments. The actual reve
 machinery is deployed as Base44 apps (`*.base44.app`) fronted by `space-z.ai` public URLs,
 plus the Vercel supply-chain front-end.
 
+## Deploy-status monitoring route (ported 2026-09-14, commit `6f759a2a09`)
+
+`GET /api/deploy/status` now lives in this repo (`src/app/api/deploy/status/route.ts`). It
+probes every surface below live and returns per-URL `diagnosis` + `next_actions` (capturing
+`x-fc-error-type` / `x-fc-request-id` + the HTML `<title>` to distinguish Space-Z's "Failed"
+deploy page from the Z.ai expiry-recycle 502 signature), DB counters via `safeCount` (-1 when
+a Prisma model is undefined on an older build), a `self_healing` canonical-file check, and a
+rolled-up `summary`. Verified against the live fleet on port day: `t1trn6kunnv1-d` = stale
+build (404 healthz), `x1he4604ap01` = platform deploy failure (500 `<title>Failed</title>`),
+Vercel = healthy (200). **The route is only reachable after the NEXT dashboard redeploy** —
+it is not present on the currently-frozen instances.
+
 ## 2026-09-07 — OWNER HANDS-FREE PAYOUT POLICY (supersedes the manual-approval contract)
 
 **Owner directive:** "owner hands-free policy applies" — the per-payout manual-approval gate is REMOVED. Payouts run end-to-end automatically through the event-driven state machine. Guardrails stay fail-closed.
