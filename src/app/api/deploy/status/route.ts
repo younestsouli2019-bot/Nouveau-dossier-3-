@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { execFile } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { promisify } from 'node:util';
+
+const execFileAsync = promisify(execFile);
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -136,17 +140,74 @@ const CANONICAL_FILES = [
   'src/app/api/deploy/status/route.ts',
 ];
 
+function existsRel(root: string, f: string): boolean {
+  try {
+    return fs.existsSync(path.join(root, f));
+  } catch {
+    return false;
+  }
+}
+
+function checkBuildArtifacts(): Record<string, boolean> {
+  const root = process.cwd();
+  return {
+    standalone_build: existsRel(root, '.next/standalone'),
+    prisma_client_bundled:
+      existsRel(root, 'node_modules/@prisma/client') && existsRel(root, 'node_modules/.prisma/client'),
+    next_node_modules_removed: !existsRel(root, '.next/server/node_modules'),
+    tarball:
+      existsRel(root, 'out.tar.gz') ||
+      existsRel(root, 'deploy-fix.bundle') ||
+      existsRel(root, 'download/deploy-fix.bundle'),
+    manifest: existsRel(root, '.next/BUILD_ID'),
+  };
+}
+
 function checkSelfHealing(): { file: string; present: boolean }[] {
   const root = process.cwd();
-  return CANONICAL_FILES.map((f) => {
-    let present = false;
+  return CANONICAL_FILES.map((f) => ({ file: f, present: existsRel(root, f) }));
+}
+
+async function gitSync() {
+  const run = async (args: string[]): Promise<string | null> => {
     try {
-      present = fs.existsSync(path.join(/*turbopackIgnore: true*/ root, f));
+      const { stdout } = await execFileAsync('git', args, { timeout: 10000 });
+      return stdout.trim() || null;
     } catch {
-      present = false;
+      return null;
     }
-    return { file: f, present };
-  });
+  };
+  const localHead = await run(['rev-parse', '--short', 'HEAD']);
+  const localBranch = await run(['rev-parse', '--abbrev-ref', 'HEAD']);
+  const upstream = await run(['rev-parse', '--abbrev-ref', '@{upstream}']);
+  let originHead: string | null = null;
+  let ahead = 0;
+  let behind = 0;
+  let dirty = 0;
+  if (upstream) {
+    const remoteName = upstream.split('/')[0];
+    originHead = await run(['rev-parse', '--short', `${remoteName}/main`]);
+    const lr = await run(['rev-list', '--left-right', '--count', `HEAD...${upstream}`]);
+    if (lr) {
+      const [a, b] = lr.split(/\s+/).map(Number);
+      ahead = a || 0;
+      behind = b || 0;
+    }
+  }
+  const dirtyOut = await run(['status', '--porcelain']);
+  if (dirtyOut) dirty = dirtyOut.split(/\r?\n/).filter((l) => l.trim().length > 0).length;
+
+  const clean = dirty === 0 && behind === 0 && (!localHead || !originHead || localHead === originHead);
+  return {
+    local_branch: localBranch,
+    upstream: upstream || null,
+    local_head: localHead,
+    origin_head: originHead,
+    ahead,
+    behind,
+    dirty_files: dirty,
+    status: clean ? 'synced' : 'diverged',
+  };
 }
 
 async function safeCount(modelName: string): Promise<number> {
@@ -161,7 +222,11 @@ async function safeCount(modelName: string): Promise<number> {
 }
 
 export async function GET() {
-  const probed = await Promise.all(TARGETS.map(async (t) => ({ target: t, result: await probe(t) })));
+  const [probed, build, git] = await Promise.all([
+    Promise.all(TARGETS.map(async (t) => ({ target: t, result: await probe(t) }))),
+    Promise.resolve(checkBuildArtifacts()),
+    gitSync(),
+  ]);
 
   const urls = probed.map(({ target, result }) => {
     const { diagnosis, perUrlActions } = diagnose(target, result);
@@ -186,7 +251,8 @@ export async function GET() {
   const down = urls.filter((u) => !u.ok);
   const healthy = urls.filter((u) => u.ok);
 
-  const nextActions = [...new Set(down.flatMap((u) => u.next_actions))];
+  const perUrlActions = down.flatMap((u) => u.next_actions);
+  const nextActions = [...new Set(perUrlActions)];
 
   const dbCounts = {
     revenue_event_count: await safeCount('revenueEvent'),
@@ -202,16 +268,27 @@ export async function GET() {
     shipment_count: await safeCount('shipment'),
     purchase_order_count: await safeCount('purchaseOrder'),
   };
+  const dbUnavailable = dbCounts.owner_account_count === -1 && dbCounts.ledger_account_count === -1;
+  const dbStatus = { counts: dbCounts, error: dbUnavailable };
 
   const selfHealing = checkSelfHealing();
-  const missingSelfHealing = selfHealing.filter((s) => !s.present).length;
+  const selfHealingMissing = selfHealing.filter((s) => !s.present);
+  const selfHealingWired = selfHealingMissing.length === 0;
+
+  const gitOk = git.status === 'synced';
+
+  const buildArtifactsIncomplete =
+    !build.standalone_build || !build.manifest || !build.prisma_client_bundled;
+
+  const overallFailing = down.length > 0 || dbUnavailable || buildArtifactsIncomplete || !gitOk;
 
   const summary = {
-    total: urls.length,
-    up: healthy.length,
-    down: down.length,
-    ok: down.length === 0,
-    degraded: missingSelfHealing > 0,
+    instances_up: healthy.length,
+    instances_down: down.length,
+    build_artifacts_incomplete: buildArtifactsIncomplete,
+    git_synced: gitOk,
+    database_ok: !dbUnavailable,
+    ok: !overallFailing,
   };
 
   return NextResponse.json({
@@ -226,11 +303,12 @@ export async function GET() {
       version: VERSION,
       status: 'healthy',
     },
-    summary,
-    urls,
+    surfaces: { urls, summary },
+    build_artifacts: build,
+    git_sync: git,
+    db: dbStatus,
+    self_healing: { wired: selfHealingWired, items: selfHealing },
     next_actions: nextActions,
-    db: dbCounts,
-    self_healing: selfHealing,
-    so: 'deploy/status enhanced — ported from Space-Z container route',
+    so: 'deploy/status enhanced v2 — ported from Space-Z container route + richer diagnostics',
   });
 }
