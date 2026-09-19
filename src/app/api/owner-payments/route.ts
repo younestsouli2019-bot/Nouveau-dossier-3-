@@ -1,5 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { createHash } from 'node:crypto'
+import {
+  releaseOwnerFunds,
+  getOwnerAccountForBucket,
+  needsManualRail,
+  type BucketCode,
+} from '@/lib/treasury/release-engine'
+
+const MA_RIB_24 = /^00781\d{19}$/
+
+function configLabelToBucket(label: string): BucketCode | undefined {
+  switch (label) {
+    case 'Salary':
+      return 'salary_bucket'
+    case 'Debts':
+      return 'debt_repayment'
+    case 'Emergency':
+      return 'sovereign_reserves'
+    case 'Infrastructure':
+    case 'Operational Costs':
+      return 'runtime_operations'
+    default:
+      return undefined
+  }
+}
 
 const SALARY_RIB = '007810000448500030594182'
 const SALARY_BANK = 'Attijariwafa Bank'
@@ -297,6 +322,8 @@ export async function POST(request: NextRequest) {
     await ensureConfigs()
 
     const created: unknown[] = []
+    const releases: Array<{ ok: boolean; code?: string; railUsed?: string; status?: string; reason?: string }> = []
+
     for (const item of items) {
       if (!item.configLabel || item.amount === undefined) continue
 
@@ -304,26 +331,107 @@ export async function POST(request: NextRequest) {
         where: { label: item.configLabel },
       })
 
-      created.push(
-        await db.ownerPayment.create({
-          data: {
-            configId: config?.id || null,
-            configLabel: item.configLabel,
+      const currency = (item.currency || 'USD').toUpperCase()
+      const ribNumber: string | undefined = item.ribNumber || config?.ribNumber || undefined
+      const bucketCode = configLabelToBucket(item.configLabel)
+
+      const fingerprintSource =
+        (ribNumber && ribNumber.length >= 8 ? ribNumber : undefined) ||
+        item.destinationLabel ||
+        (config?.id as string | undefined) ||
+        item.configLabel
+      const destinationFingerprint = createHash('sha256')
+        .update(String(fingerprintSource).trim().toLowerCase())
+        .digest('hex')
+
+      const isMARail =
+        Boolean(ribNumber && MA_RIB_24.test(ribNumber)) ||
+        currency === 'MAD' ||
+        (item.countryCode as string | undefined)?.toUpperCase() === 'MA'
+
+      let paymentStatus = item.status || 'pending'
+      let releaseResult: typeof releases[number] | null = null
+
+      if (isMARail) {
+        try {
+          const ownerAccount = await getOwnerAccountForBucket(
+            bucketCode,
+            currency,
+            item.ownerAccountId as string | undefined,
+          )
+          const manual =
+            needsManualRail(
+              { countryCode: ownerAccount.countryCode, accountNumber: ownerAccount.accountNumber },
+              currency,
+            ) || true
+          void manual
+          const release = await releaseOwnerFunds({
+            ownerAccountId: ownerAccount.id,
             amount: Number(item.amount),
-            currency: item.currency || 'USD',
-            sourceTxRef: item.sourceTxRef || null,
-            status: item.status || 'pending',
-            destinationType: item.destinationType || 'external_bank',
-            destinationLabel: item.destinationLabel || null,
-            ribNumber: item.ribNumber || config?.ribNumber || null,
-            failureReason: item.failureReason || null,
-            recovered: item.recovered || false,
-          },
-        })
-      )
+            currency,
+            reference: (item.sourceTxRef as string | undefined) || undefined,
+            bucketCode,
+          })
+          releaseResult = {
+            ok: release.ok,
+            railUsed: release.railUsed,
+            status: release.status,
+            reason: release.reason,
+          }
+          if (release.status === 'PENDING_MANUAL_TRANSFER') {
+            paymentStatus = 'processing'
+          } else if (release.status === 'COMPLETED' && release.ok) {
+            paymentStatus = 'completed'
+          } else if (!release.ok && paymentStatus === 'pending') {
+            paymentStatus = 'pending'
+          }
+          releases.push(releaseResult)
+        } catch (err) {
+          releases.push({
+            ok: false,
+            status: 'ROUTE_FALLBACK',
+            reason: err instanceof Error ? err.message : String(err),
+          })
+        }
+      }
+
+      const row = await db.ownerPayment.create({
+        data: {
+          configId: config?.id || null,
+          configLabel: item.configLabel,
+          amount: Number(item.amount),
+          currency,
+          sourceTxRef: item.sourceTxRef || null,
+          status: paymentStatus,
+          destinationType: item.destinationType || 'external_bank',
+          destinationLabel:
+            item.destinationLabel ||
+            (ribNumber
+              ? `RIB ...${ribNumber.slice(-6)}`
+              : config?.ribLabel || null),
+          ribNumber: ribNumber || null,
+          failureReason: item.failureReason || (releaseResult && !releaseResult.ok ? (releaseResult.reason as string | null) : null),
+          recovered: item.recovered || false,
+        },
+      })
+
+      if (!isMARail) {
+        releases.push({ ok: true, status: 'STANDARD_CREATED', railUsed: undefined })
+      }
+
+      created.push({
+        ...row,
+        destinationFingerprint,
+        release: releaseResult,
+      })
     }
 
-    return NextResponse.json({ success: true, created, count: created.length })
+    return NextResponse.json({
+      success: true,
+      created,
+      count: created.length,
+      releases,
+    })
   } catch (error) {
     console.error('[POST /api/owner-payments] Error:', error)
     return NextResponse.json({ success: false, error: 'Failed to create owner payment(s)' }, { status: 500 })

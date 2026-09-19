@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Payout tick endpoint ΓÇö the hourly engine entry that drives payouts through
  * the state machine past RESERVED toward RECONCILED. Settlement-gap P0/P1.
  *
@@ -48,7 +48,15 @@ async function resolvePayPalDestination(fingerprint: string): Promise<string> {
   throw new Error(`no active owner account matches destination fingerprint ${fingerprint}`);
 }
 
-function buildProviderConfig() {
+/**
+ * Three INDEPENDENT live gates:
+ *   - PayPal live: SWARM_LIVE + PPP2 approved + enabled + PayPal credentials (Payouts PPP2 program required)
+ *   - Bank wire live: SWARM_LIVE + BANK_RAIL_API_KEY + BANK_RAIL_ACCOUNT_ID (Wise/SEPA/Bank Circle rails)
+ *   - Crypto live : SWARM_LIVE + CRYPTO_SIGNING_POLICY + CRYPTO_HOT_WALLET_REF (hot-wallet signing policy)
+ * Before this fix, all 3 were tied to PayPal PPP2 flags — making bank/crypto live impossible
+ * until PayPal PPP2 was approved. The per-type split makes each rail standalone.
+ */
+function buildPayPalLiveConfig() {
   const live =
     envIsTrue(process.env.SWARM_LIVE) &&
     envIsTrue(process.env.PAYPAL_PPP2_APPROVED) &&
@@ -61,17 +69,45 @@ function buildProviderConfig() {
       PAYPAL_CLIENT_ID: process.env.PAYPAL_CLIENT_ID,
       PAYPAL_CLIENT_SECRET: process.env.PAYPAL_CLIENT_SECRET,
       PAYPAL_PAYOUTS_API_BASE: process.env.PAYPAL_PAYOUTS_API_BASE ?? 'https://api-m.paypal.com',
+    },
+  };
+}
+
+function buildBankLiveConfig() {
+  const live =
+    envIsTrue(process.env.SWARM_LIVE) &&
+    Boolean(process.env.BANK_RAIL_API_KEY) &&
+    Boolean(process.env.BANK_RAIL_ACCOUNT_ID);
+  return {
+    live,
+    liveConfig: {
       BANK_RAIL_API_KEY: process.env.BANK_RAIL_API_KEY,
       BANK_RAIL_ACCOUNT_ID: process.env.BANK_RAIL_ACCOUNT_ID,
     },
   };
 }
 
+function buildCryptoLiveConfig() {
+  const live =
+    envIsTrue(process.env.SWARM_LIVE) &&
+    Boolean(process.env.CRYPTO_SIGNING_POLICY) &&
+    Boolean(process.env.CRYPTO_HOT_WALLET_REF);
+  return {
+    live,
+    liveConfig: {
+      CRYPTO_SIGNING_POLICY: process.env.CRYPTO_SIGNING_POLICY,
+      CRYPTO_HOT_WALLET_REF: process.env.CRYPTO_HOT_WALLET_REF,
+    },
+  };
+}
+
 function buildProviders(): PipelineConfig['providers'] {
-  const config = buildProviderConfig();
-  const apiBase = config.liveConfig.PAYPAL_PAYOUTS_API_BASE!;
-  const livePayPal = config.live
-    ? new LivePayPalPayoutProvider(config, {
+  const paypalCfg = buildPayPalLiveConfig();
+  const bankCfg = buildBankLiveConfig();
+  const cryptoCfg = buildCryptoLiveConfig();
+  const apiBase = paypalCfg.liveConfig.PAYPAL_PAYOUTS_API_BASE!;
+  const livePayPal = paypalCfg.live
+    ? new LivePayPalPayoutProvider({ live: paypalCfg.live, liveConfig: paypalCfg.liveConfig }, {
         apiBase,
         clientId: process.env.PAYPAL_CLIENT_ID!,
         clientSecret: process.env.PAYPAL_CLIENT_SECRET!,
@@ -82,11 +118,11 @@ function buildProviders(): PipelineConfig['providers'] {
   return (destinationType: DestinationType): PayoutProvider | null => {
     switch (destinationType) {
       case 'paypal':
-        return livePayPal ?? getProviderForDestination('paypal', config);
+        return livePayPal ?? getProviderForDestination('paypal', paypalCfg);
       case 'bank':
-        return getProviderForDestination('bank', config);
+        return getProviderForDestination('bank', bankCfg);
       case 'crypto':
-        return getProviderForDestination('crypto', config);
+        return getProviderForDestination('crypto', cryptoCfg);
       default:
         return null;
     }
