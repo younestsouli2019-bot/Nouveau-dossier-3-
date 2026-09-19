@@ -1,38 +1,140 @@
 // Treasury bucket state machine.
-// The owner's architecture splits NET settlement value across four buckets:
-//   SOVEREIGN_RESERVES      — long-term capital reserves / contingency fund
-//   PROCUREMENT_BUFFER      — funds reserved to pay owner-directed purchase orders
-//   RUNTIME_OPERATIONS      — swarm infrastructure allocation (owner-allowed %)
-//   SALARY_BUCKET           — owner salary bucket
-// Percentages are read from the DisbursementPolicy (env-driven) and ALWAYS sum
-// to 100. The split is computed on NET (post platform-fee + chargeback reserve),
-// so buckets never cannibalise fees or reserves.
+// Owner profile fixed split (Attijariwafa RIB 372 Debt, Salary, Sovereign, Runtime):
+//   SOVEREIGN_RESERVES  30% — long-term capital reserves / contingency fund
+//   RUNTIME_OPERATIONS  20% — swarm infrastructure + 50% sub-budget for
+//                             procurement_buffer (10% of NET, procurement spend never
+//                             dips into sovereign/debt/salary buckets)
+//   SALARY_BUCKET       10% — owner salary (Attijari owner payout rails)
+//   DEBT_REPAYMENT      40% — Attijariwafa RIB 372 debt repayment (per user profile)
+// Sum = 100.0 EXACTLY enforced. Any non-100 split → BUCKET_SUM_MISMATCH fail-closed.
+// Percentages are read from the DisbursementPolicy and ALWAYS sum to 100. The
+// split is computed on NET (post platform-fee + chargeback reserve) so buckets
+// never cannibalise fees or reserves.
 
 import { prisma } from '../db';
 import { sha256 } from '../strict-enforcement/crypto-utils';
 
-export const BUCKET_CODES = [
+export const TOP_LEVEL_BUCKET_CODES = [
   'sovereign_reserves',
-  'procurement_buffer',
   'runtime_operations',
   'salary_bucket',
+  'debt_repayment',
 ] as const;
 
-export type BucketCode = (typeof BUCKET_CODES)[number];
+export const ALL_BUCKET_CODES = [
+  ...TOP_LEVEL_BUCKET_CODES,
+  'procurement_buffer',
+] as const;
 
-export const BUCKET_DEFAULT_PCT: Record<BucketCode, number> = {
+export const BUCKET_CODES = ALL_BUCKET_CODES;
+
+export type BucketCode = (typeof BUCKET_CODES)[number];
+export type TopLevelBucketCode = (typeof TOP_LEVEL_BUCKET_CODES)[number];
+
+export const BUCKET_DEFAULT_PCT: Record<TopLevelBucketCode, number> = {
   sovereign_reserves: 30,
-  procurement_buffer: 10,
   runtime_operations: 20,
-  salary_bucket: 40,
+  salary_bucket: 10,
+  debt_repayment: 40,
 };
 
 export const BUCKET_LABELS: Record<BucketCode, string> = {
   sovereign_reserves: 'Sovereign Reserves',
-  procurement_buffer: 'Owner Procurement Buffer',
-  runtime_operations: 'Runtime Operations',
-  salary_bucket: 'Owner Salary Bucket',
+  procurement_buffer: 'Owner Procurement Buffer (sub-allocated 50% of Runtime)',
+  runtime_operations: 'Runtime Operations (procurement 50% sub-budget)',
+  salary_bucket: 'Owner Salary Bucket (10%)',
+  debt_repayment: 'Attijariwafa RIB 372 Debt Repayment (40%)',
 };
+
+export interface DisbursementPolicy {
+  bucketPct: Record<TopLevelBucketCode, number>;
+  configHash: string;
+  profileVersion: string;
+  procurementSubBudgetPctOfRuntime: 50;
+  profile: {
+    salaryDestination: string;
+    debtDestination: string;
+    preferLocalSuppliersCountry: 'MA';
+  };
+}
+
+export const OWNER_PROFILE_V1 = 'owner_profile_v1_202608';
+
+function assertPolicySum(pct: Record<TopLevelBucketCode, number>): void {
+  const total = TOP_LEVEL_BUCKET_CODES.reduce((s, c) => s + (pct[c] ?? 0), 0);
+  if (Math.abs(total - 100) > 0.001) {
+    throw new Error(
+      `BUCKET_SUM_MISMATCH: DisbursementPolicy bucketPct sum ${total.toFixed(4)} != 100 exactly. ` +
+        `Required split: sovereign_reserves=30, runtime_operations=20, salary_bucket=10, debt_repayment=40. ` +
+        `Actual: ${JSON.stringify(pct)}. Operation KILLED — silent drift into any bucket is forbidden.`,
+    );
+  }
+}
+
+export function getDisbursementPolicy(): DisbursementPolicy {
+  const pct = { ...BUCKET_DEFAULT_PCT } as Record<TopLevelBucketCode, number>;
+  assertPolicySum(pct);
+  const cfg: DisbursementPolicy = {
+    bucketPct: pct,
+    configHash: sha256(JSON.stringify({ pct, v: OWNER_PROFILE_V1 })),
+    profileVersion: OWNER_PROFILE_V1,
+    procurementSubBudgetPctOfRuntime: 50,
+    profile: {
+      salaryDestination: 'Owner salary bucket → Attijari payroll rail',
+      debtDestination: 'Attijariwafa RIB 372 — Debt repayment (40% rail)',
+      preferLocalSuppliersCountry: 'MA',
+    },
+  };
+  return cfg;
+}
+
+export function computeDisbursementPolicy(pct: Partial<Record<TopLevelBucketCode, number>>): DisbursementPolicy {
+  const merged = { ...BUCKET_DEFAULT_PCT, ...pct } as Record<TopLevelBucketCode, number>;
+  assertPolicySum(merged);
+  const cfg: DisbursementPolicy = {
+    bucketPct: merged,
+    configHash: sha256(JSON.stringify({ pct: merged, v: OWNER_PROFILE_V1 })),
+    profileVersion: OWNER_PROFILE_V1,
+    procurementSubBudgetPctOfRuntime: 50,
+    profile: getDisbursementPolicy().profile,
+  };
+  return cfg;
+}
+
+export interface ProcurementSpendAuthorisation {
+  spendableAmount: number;
+  procurementBufferBalance: number;
+  runtimeBalance: number;
+  runtimeSubBudgetAvailable: number;
+  policyConfigHash: string;
+  currency: 'USD';
+  details: string;
+}
+
+export async function getProcurementSpendAuthorisation(): Promise<ProcurementSpendAuthorisation> {
+  const policy = getDisbursementPolicy();
+  const [procBuf, runtime] = await Promise.all([
+    prisma.fundBucket.findUnique({ where: { code: 'procurement_buffer' } }).catch(() => null),
+    prisma.fundBucket.findUnique({ where: { code: 'runtime_operations' } }).catch(() => null),
+  ]);
+  const procurementBufferBalance = procBuf ? Math.max(0, procBuf.allocated - procBuf.released) : 0;
+  const runtimeBalance = runtime ? Math.max(0, runtime.allocated - runtime.released) : 0;
+  const runtimeSubBudgetAvailable =
+    (runtimeBalance * policy.procurementSubBudgetPctOfRuntime) / 100;
+  const spendableAmount = Math.max(0, Math.round((procurementBufferBalance + runtimeSubBudgetAvailable) * 100) / 100);
+  return {
+    spendableAmount,
+    procurementBufferBalance,
+    runtimeBalance,
+    runtimeSubBudgetAvailable,
+    policyConfigHash: policy.configHash,
+    currency: 'USD',
+    details:
+      `Procurement spend authorised = procurement_buffer.balance (${procurementBufferBalance}) ` +
+      `+ (runtime_operations.balance × 50% sub-budget) (${runtimeSubBudgetAvailable.toFixed(2)}) ` +
+      `≤ total ${spendableAmount.toFixed(2)} USD. NEVER drawn from sovereign_reserves, salary_bucket, or debt_repayment.`,
+  };
+}
 
 export interface BucketSplit {
   code: BucketCode;
@@ -59,22 +161,36 @@ function round2(n: number): number {
  * Percentages may come from env (policy.bucketPct) or caller override; if the
  * units do not sum to 100 the remainder is added to salary_bucket (never lost).
  */
-export function computeBucketSplit(net: number, pct: Record<BucketCode, number>, overrides?: Partial<Record<BucketCode, number>>): BucketSplit[] {
-  const resolvedPct = { ...pct, ...overrides } as Record<BucketCode, number>;
-  const total = BUCKET_CODES.reduce((s, c) => s + (resolvedPct[c] ?? 0), 0);
-  const splits: BucketSplit[] = BUCKET_CODES.map((code) => {
+export function computeBucketSplit(net: number, pct: Partial<Record<BucketCode, number>>, overrides?: Partial<Record<BucketCode, number>>): BucketSplit[] {
+  const resolvedPct: Record<BucketCode, number> = {
+    sovereign_reserves: 0,
+    runtime_operations: 0,
+    salary_bucket: 0,
+    debt_repayment: 0,
+    procurement_buffer: 0,
+    ...pct,
+    ...overrides,
+  } as Record<BucketCode, number>;
+  const topSum = TOP_LEVEL_BUCKET_CODES.reduce((s, c) => s + ((resolvedPct as unknown as Record<TopLevelBucketCode, number>)[c] ?? 0), 0);
+  if (Math.abs(topSum - 100) > 0.001) {
+    throw new Error(
+      `BUCKET_SUM_MISMATCH: computeBucketSplit top-level pct sum ${topSum.toFixed(4)} != 100. ` +
+        `Silent drift into salary_bucket is forbidden — correct pct values before calling.`,
+    );
+  }
+  const splits: BucketSplit[] = (Object.keys(resolvedPct) as BucketCode[]).map((code) => {
     const p = resolvedPct[code] ?? 0;
     const amount = round2((net * p) / 100);
     return { code, label: BUCKET_LABELS[code], pct: p, amount };
   });
 
-  // Reconcile rounding drift + any % mismatch into salary_bucket.
   const assigned = round2(splits.reduce((s, x) => s + x.amount, 0));
   const drift = round2(net - assigned);
-  const salary = splits.find((s) => s.code === 'salary_bucket');
-  if (salary) {
-    salary.amount = round2(salary.amount + drift);
-    salary.pct = total === 100 ? salary.pct : round2((salary.amount / Math.max(0.000001, net)) * 100);
+  if (Math.abs(drift) > 0) {
+    const debt = splits.find((s) => s.code === 'debt_repayment');
+    if (debt) {
+      debt.amount = round2(debt.amount + drift);
+    }
   }
   return splits;
 }
