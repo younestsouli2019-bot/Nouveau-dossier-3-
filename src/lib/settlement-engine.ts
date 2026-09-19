@@ -116,6 +116,7 @@ export function computeSplitBreakdown(grossAmount: number, policy: DisbursementP
     procurement_buffer: policy.bucketPct.procurementBuffer,
     runtime_operations: policy.bucketPct.runtimeOperations,
     salary_bucket: policy.bucketPct.salary,
+    debt_repayment: policy.bucketPct.debtRepayment,
   };
   const buckets = computeBucketSplit(netToOwner, bucketPct);
 

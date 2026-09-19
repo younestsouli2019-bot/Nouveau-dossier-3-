@@ -350,24 +350,26 @@ export async function confirmRelease(externalRef: string) {
     },
   });
   // Append-only audit ledger entry
+  const bucketCodeFromMeta = (() => {
+    try {
+      const md = pending.metadata ? JSON.parse(pending.metadata) : null;
+      return md?.bucketCode || null;
+    } catch { return null; }
+  })();
   await prisma.auditLedger.create({
     data: {
       entityType: 'owner_release',
       entityId: owner.id,
       action: 'released_spendable_manual_confirm',
-      proofHash: externalRef,
+      proofHash,
       dataSource: 'manual_attested_finance',
       performedBy: 'release-engine:confirmRelease',
       metadata: JSON.stringify({
         amount,
+        currency: pending.currency,
         externalRef,
         settlementId: settled.id,
-        bucketCode: (() => {
-          try {
-            const md = pending.metadata ? JSON.parse(pending.metadata) : null;
-            return md?.bucketCode || null;
-          } catch { return null; }
-        })(),
+        bucketCode: bucketCodeFromMeta,
       }),
     },
   });

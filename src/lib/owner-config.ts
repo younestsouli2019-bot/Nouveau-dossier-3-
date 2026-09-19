@@ -200,13 +200,17 @@ export interface DisbursementPolicy {
   readonly fraudWindowHoldHours: number
   readonly chargebackReservePct: number
   // Treasury bucket percentages applied to NET settlement value.
-  // MUST sum to 100. Env: OWNER_BUCKET_SOVEREIGN_PCT / OWNER_BUCKET_PROCUREMENT_PCT
-  //       / OWNER_BUCKET_RUNTIME_PCT / OWNER_BUCKET_SALARY_PCT
+  // Top 4 buckets sum EXACTLY 100: sovereign(30)+runtime(20)+salary(10)+debt(40)=100.
+  // procurement_buffer is NOT a top-level split %; it is authorised via:
+  //   procurement_buffer.balance + 50% × runtime_operations.balance (≈10% net equiv)
+  // Env: OWNER_BUCKET_SOVEREIGN_PCT / OWNER_BUCKET_RUNTIME_PCT
+  //      / OWNER_BUCKET_SALARY_PCT / OWNER_BUCKET_DEBT_REPAYMENT_PCT
   readonly bucketPct: {
     sovereignReserves: number
     procurementBuffer: number
     runtimeOperations: number
     salary: number
+    debtRepayment: number
   }
 }
 
@@ -269,17 +273,22 @@ export function getDisbursementPolicy(): DisbursementPolicy {
   const chargebackReservePct = Math.max(0, Math.min(100, parseInt(tryEnv('OWNER_CHARGEBACK_RESERVE_PCT') || '5', 10) || 0))
   const buck = (name: string, def: number) =>
     Math.max(0, Math.min(100, parseInt(tryEnv(name) || String(def), 10) || def))
+  // Canonical 4-bucket split sums to exactly 100:
+  //   sovereign_reserves=30, runtime_operations=20, salary_bucket=10, debt_repayment=40
+  // procurement_buffer default 0 (NOT a top-level split %; auth via runtime 50% sub-budget)
   const bucketPct = {
     sovereignReserves: buck('OWNER_BUCKET_SOVEREIGN_PCT', 30),
-    procurementBuffer: buck('OWNER_BUCKET_PROCUREMENT_PCT', 10),
+    procurementBuffer: buck('OWNER_BUCKET_PROCUREMENT_PCT', 0),
     runtimeOperations: buck('OWNER_BUCKET_RUNTIME_PCT', 20),
-    salary: buck('OWNER_BUCKET_SALARY_PCT', 40),
+    salary: buck('OWNER_BUCKET_SALARY_PCT', 10),
+    debtRepayment: buck('OWNER_BUCKET_DEBT_REPAYMENT_PCT', 40),
   }
   // Never deploy a policy that routes more than 100% of value: fail-closed.
   const bucketTotal = Object.values(bucketPct).reduce((a, b) => a + b, 0)
   if (bucketTotal !== 100) {
     throw new Error(
       `OWNER_BUCKET_* percentages must sum to 100 (got ${bucketTotal}). ` +
+        'Canonical: sovereign=30, runtime=20, salary=10, debt=40, procurement=0 (sub-budget formula). ' +
         'Refusing to start disbursements with an unbounded treasury split.',
     )
   }
