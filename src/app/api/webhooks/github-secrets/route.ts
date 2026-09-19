@@ -47,6 +47,19 @@ const KNOWN_SECRET_CONNECTORS: Record<string, string> = {
   PAYPAL_CLIENT_ID: 'paypal',
   PAYPAL_CLIENT_SECRET: 'paypal',
   PAYPAL_WEBHOOK_ID: 'paypal',
+  SWARM_LIVE: 'paypal',
+  PAYPAL_PPP2_APPROVED: 'paypal',
+  PAYPAL_PPP2_ENABLE_SEND: 'paypal',
+  BANK_RAIL_API_KEY: 'bank',
+  BANK_RAIL_ACCOUNT_ID: 'bank',
+  SWARM_LIVE_BANK: 'bank',
+  CRYPTO_SIGNING_POLICY: 'crypto',
+  CRYPTO_HOT_WALLET_REF: 'crypto',
+  SWARM_LIVE_CRYPTO: 'crypto',
+  PAYOUT_TICK_SECRET: 'tick_ops',
+  OPS_API_SECRET: 'tick_ops',
+  CRON_SECRET: 'tick_ops',
+  SWARM_LIVE_OPS: 'tick_ops',
 };
 
 function verifyHMAC(payload: string, signature: string): boolean {
