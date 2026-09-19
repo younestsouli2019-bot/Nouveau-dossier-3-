@@ -199,10 +199,75 @@ export async function initiatePayment(params: {
   currency: string;
   reference: string;
   remittanceInformation?: string;
-}): Promise<PSD2PaymentInitiation> {
+}): Promise<PSD2PaymentInitiation & { ok: boolean; code: string; error?: string }> {
+  if (!LIVE_BANK_API) {
+    return {
+      ok: false,
+      code: 'LIVE_BANK_API_NOT_CONFIGURED',
+      error: 'LIVE_BANK_API missing; PSD2 rail offline. Set ATTIJARI_PSD2_BASE_URL + LIVE_BANK_API.',
+      paymentId: '',
+      status: 'offline',
+      transactionStatus: '',
+    };
+  }
+  if (!params.creditorIban) {
+    return { ok: false, code: 'CREDITOR_IBAN_MISSING', error: 'creditorIban required', paymentId: '', status: 'rejected', transactionStatus: '' };
+  }
+  const amtNum = parseFloat(params.amount);
+  if (!amtNum || amtNum <= 0) {
+    return { ok: false, code: 'AMOUNT_INVALID', error: `amount must be positive, got ${params.amount}`, paymentId: '', status: 'rejected', transactionStatus: '' };
+  }
+
+  const ibanU = params.creditorIban.trim().toUpperCase().replace(/\s+/g, '');
+  const curU = params.currency.trim().toUpperCase();
+
+  //
+  // PSD2 rail = Attijariwafa Bank EUROPE portal. Covers EU/EEA SEPA countries only.
+  // Moroccan domestic MAD RIBs (IBAN MA..) are NOT reachable via this API.
+  // FAIL-CLOSED if MAxx IBAN or MAD/Moroccan currency used — operator must go
+  // through MAD manual-confirm rail or CIB domestic scraper reconcile.
+  //
+  const SEPA_IBAN_PREFIXES = [
+    'AD','AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU',
+    'IS','IE','IT','LV','LI','LT','LU','MT','MC','NL','NO','PL','PT','RO',
+    'SM','SK','SI','ES','SE','CH','GB','VA','GI','GG','JE','IM','FO','GL',
+  ];
+  const prefix = ibanU.slice(0, 2);
+  const isMAD = ibanU.startsWith('MA') || curU === 'MAD';
+  if (isMAD) {
+    return {
+      ok: false,
+      code: 'MAURITANIAN_MAD_NOT_ON_PSD2_RAIL',
+      error: `PSD2 covers EU/EEA SEPA only. Got IBAN prefix=${prefix} currency=${curU}. Use MAD manual-confirm rail (Attijari operator app) for domestic RIBs.`,
+      paymentId: '',
+      status: 'rejected',
+      transactionStatus: '',
+    };
+  }
+  if (!SEPA_IBAN_PREFIXES.includes(prefix)) {
+    return {
+      ok: false,
+      code: 'NON_SEPA_IBAN',
+      error: `IBAN prefix ${prefix} not in EU/EEA SEPA list (Attijari PSD2 = EU portal only). Use appropriate rail.`,
+      paymentId: '',
+      status: 'rejected',
+      transactionStatus: '',
+    };
+  }
+  if (curU !== 'EUR') {
+    return {
+      ok: false,
+      code: 'CURRENCY_NOT_EUR',
+      error: `PSD2 SEPA credit transfer requires currency=EUR, got ${curU}.`,
+      paymentId: '',
+      status: 'rejected',
+      transactionStatus: '',
+    };
+  }
+
   const body = {
-    instructedAmount: { amount: params.amount, currency: params.currency },
-    creditorAccount: { iban: params.creditorIban },
+    instructedAmount: { amount: String(amtNum.toFixed(2)), currency: curU },
+    creditorAccount: { iban: ibanU },
     creditorName: params.creditorName,
     reference: params.reference,
     remittanceInformationUnstructured: params.remittanceInformation || params.reference,
@@ -210,9 +275,15 @@ export async function initiatePayment(params: {
 
   const resp = await psd2Request('POST', '/api/psd2/v1/payments/sepa-credit-transfers', body);
   const d = resp.data as Record<string, unknown>;
+  const paymentId = (d.paymentId || d.payment_id || d.taskId || '') as string;
+  const status = (d.status || (resp.status >= 200 && resp.status < 300 ? 'pending' : 'rejected')) as string;
+  const ok = !!paymentId && (resp.status >= 200 && resp.status < 300);
   return {
-    paymentId: (d.paymentId || d.payment_id || d.taskId || '') as string,
-    status: (d.status || 'pending') as string,
+    ok,
+    code: ok ? 'PAYMENT_INITIATED' : (d.error as string) || (d.message as string) || `PSD2_HTTP_${resp.status}`,
+    error: ok ? undefined : (d.error || d.message || `HTTP ${resp.status}`) as string,
+    paymentId,
+    status,
     transactionStatus: (d.transactionStatus || '') as string,
     cmbpPaymentId: d.cmbpPaymentId as string | undefined,
     links: d._links as Record<string, string> | undefined,
@@ -278,5 +349,31 @@ export function isAllowedOrigin(origin: string | null): boolean {
   if (!origin) return false;
   return ALLOWED_ORIGINS.some(o => origin.startsWith(o));
 }
+
+export const BASE44_APPS: Readonly<Record<string, {
+  appId: string;
+  label: string;
+  purpose: string;
+  url: string;
+  envKey?: string;
+  defaultRole?: string;
+}>> = {
+  DEFAULT_LIVE_CHAT: {
+    appId: '689afeabf1db9c30efe0bd7e',
+    label: 'Swarm Live Chat (default)',
+    purpose: 'Default autonomous daemon / live chat app id used when BASE44_APP_ID not set. DEFAULT_BASE44_APP_ID override.',
+    url: 'https://app.base44.com/apps/689afeabf1db9c30efe0bd7e/',
+    envKey: 'DEFAULT_BASE44_APP_ID',
+    defaultRole: 'chat-orchestrator',
+  },
+  FINANCIAL_DASHBOARD: {
+    appId: '6888ac155ebf84dd9855ea98',
+    label: 'FinancialDashboard.jsx / AgentFlow AI Command Center',
+    purpose: 'Payout batches, PayoutItems, 25-page command center builder (owner / ops view). Fetches live backend b1fx661hzse0.space-z.ai for payouts state. Frozen stale July 2026 records replaced with live fetch.',
+    url: 'https://app.base44.com/apps/6888ac155ebf84dd9855ea98',
+    envKey: 'BASE44_APP_ID',
+    defaultRole: 'ops-dashboard',
+  },
+};
 
 export { ALLOWED_ORIGINS, PSD2_BASE_URL };

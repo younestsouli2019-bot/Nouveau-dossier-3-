@@ -141,10 +141,15 @@ ${ndd.join('\n')}
 // Feeds each statement file to the FAIL-CLOSED harness (camt053-reconcile.ts),
 // converting CSV downloads to Camt.053 first. Never writes to the ledger except
 // via exact-match auto-settle inside the harness.
+//
+// Returns a structured summary { ok: boolean, total, reconciled, failed, files[] }
+// so callers (webhook / route handler / Base44 dashboard) can consume the result
+// without parsing stdout.
 function reconcileFiles(saved) {
   const { spawnSync } = require('node:child_process');
   console.log('\n[cib-scraper] reconciling each statement via the fail-closed harness...');
   let ok = 0, fail = 0;
+  const files = [];
   for (const s of saved.slice()) {
     let file = s;
     const ext = path.extname(file).toLowerCase();
@@ -166,9 +171,35 @@ function reconcileFiles(saved) {
     ], { encoding: 'utf8', shell: false, maxBuffer: 64 * 1024 * 1024 });
     process.stdout.write(res.stdout || '');
     process.stderr.write(res.stderr || '');
+    const matchSettled = /(?:settled|auto-settle|reconciled):\s*(\d+)/i.exec(res.stdout || '') || [];
     if (res.status === 0) ok++; else { fail++; console.error(`[cib-scraper] reconcile exited ${res.status} for ${file}`); }
+    files.push({
+      sourceFile: s,
+      reconciledFile: file,
+      exitCode: res.status,
+      ok: res.status === 0,
+      settled: parseInt(matchSettled[1] || '0', 10) || 0,
+    });
   }
   console.log(`\n[cib-scraper] reconcile done: ${ok} ok, ${fail} failed.`);
+  const summary = {
+    ok: fail === 0,
+    at: new Date().toISOString(),
+    engine: 'cib-scraper/reconcileFiles',
+    total: saved.length,
+    reconciled: ok,
+    failed: fail,
+    files,
+  };
+  try {
+    fs.mkdirSync(OUT, { recursive: true });
+    const outPath = path.join(OUT, 'cib-reconcile-summary.json');
+    fs.writeFileSync(outPath, JSON.stringify(summary, null, 2));
+    console.log(`[cib-scraper] summary -> ${outPath}`);
+  } catch (e) {
+    console.warn('[cib-scraper] summary write skipped:', e.message);
+  }
+  return summary;
 }
 
 // ----- Download mode --------------------------------------------------------
