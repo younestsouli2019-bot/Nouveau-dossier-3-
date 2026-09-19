@@ -45,10 +45,12 @@ export async function getAccessToken(forceRefresh = false): Promise<string> {
     throw new Error('Missing ATTIJARI_CLIENT_ID or ATTIJARI_CLIENT_SECRET env vars');
   }
 
-  const hasCerts = fs.existsSync(creds.qWacCertPath) && fs.existsSync(creds.qWacKeyPath);
+  const certPath = process.env.ATTIJARI_QWAC_CERT || path.join(/*turbopackIgnore: true*/ process.cwd(), 'certs', 'qwac.pem');
+  const keyPath  = process.env.ATTIJARI_QWAC_KEY  || path.join(/*turbopackIgnore: true*/ process.cwd(), 'certs', 'qwac-key.pem');
+  const hasCerts = fs.existsSync(certPath) && fs.existsSync(keyPath);
 
   if (hasCerts) {
-    return getTokenWithMTLS(creds);
+    return getTokenWithMTLS({ ...creds, qWacCertPath: certPath, qWacKeyPath: keyPath });
   }
 
   return getTokenWithoutMTLS(creds);

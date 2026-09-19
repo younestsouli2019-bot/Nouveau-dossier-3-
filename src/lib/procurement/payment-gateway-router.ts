@@ -20,9 +20,11 @@
  *   - If 3-point fraud guard ANY FLAG → payout release FAILS with clear code + reason,
  *     never silently releases.
  *   - If trackingVerified=false or (COD && dispute window not elapsed) → HOLD.
+ *   - If 3-way-match report.status != PASS → INCOMPLETE_THREE_WAY_MATCH HOLD.
  */
 
 import { verifyTrackingPayload } from '@/lib/procurement/tracking-fraud-guard'
+import { runThreeWayMatch } from './three-way-match'
 
 export type GatewayName =
   | 'PayZone'
@@ -172,8 +174,8 @@ export function firstAvailableGateway(envOverride?: Record<string, string | unde
  * Prevents sellers providing a real but mismatched tracking number.
  *
  *   1. Destination city  — must match the Moroccan hub/city on the PO.
- *   2. Weight anomaly    — prevents sending empty envelopes for heavy goods.
- *   3. Timeline check    — stops recycled/old tracking numbers (shipment
+ * 2. Weight anomaly    — prevents sending empty envelopes for heavy goods.
+ * 3. Timeline check    — stops recycled/old tracking numbers (shipment
  *                          timestamp before PO placement = IMPOSSIBLE).
  * ====================================================================== */
 
@@ -272,8 +274,9 @@ export function verifyTrackingPayloadAgainstPO(
 /* ======================================================================
  * PAYOUT RELEASE GATE — the unified decision gate
  *
- * Combines:
- *   • 3-point fraud guard above
+ * Combines (in strict evaluation order):
+ *   • THREE-WAY MATCH REPORT PASS (PO ↔ Receipt ↔ Invoice)
+ *   • 3-point fraud guard
  *   • trackingVerified=true  (real public-carrier event, not synthetic)
  *   • COD dispute window      (24h default post actualDelivery for Amana
  *                             Contre Remboursement OR receiptConfirmed
@@ -302,6 +305,7 @@ export interface ReceiptEvidence {
 }
 
 export type PayoutHoldReason =
+  | 'INCOMPLETE_THREE_WAY_MATCH'
   | 'HOLD_TRACKING_NOT_VERIFIED'
   | 'HOLD_COD_DISPUTE_WINDOW_NOT_ELAPSED'
   | 'HOLD_3POINT_FRAUD_GUARD_FAILED'
@@ -313,12 +317,15 @@ export type PayoutHoldReason =
 
 export interface PayoutReleaseGateResult {
   release: boolean
+  release_allowed?: boolean
   releaseAt?: Date
   holdReasons: PayoutHoldReason[]
   holdDescriptions: string[]
   paymentMethodAdvice: string
   disputeWindowMs: number
   remainingMs?: number
+  threeWayStatus?: 'PASS' | 'FAIL' | string
+  reason?: string
 }
 
 export function isAmanaCOD(carrierName?: string): boolean {
@@ -344,14 +351,14 @@ export interface PayoutReleaseGateOpts {
 
 const DEFAULT_COD_WINDOW_MS = 24 * 60 * 60 * 1000 // 24 hours
 
-export function payoutReleaseGate(
+export async function payoutReleaseGate(
   shipment: ShipmentEvidence,
   receipt: ReceiptEvidence,
   scraped: ScrapedTrackingPayload | null,
   po: PurchaseOrderReference | null,
   envOverride?: Record<string, string | undefined>,
   opts: PayoutReleaseGateOpts = {},
-): PayoutReleaseGateResult {
+): Promise<PayoutReleaseGateResult> {
   const holdReasons: PayoutHoldReason[] = []
   const holdDescriptions: string[] = []
 
@@ -359,6 +366,40 @@ export function payoutReleaseGate(
   const disputeWindowMs = opts.codDisputeWindowMs ?? (cod ? DEFAULT_COD_WINDOW_MS : 0)
 
   const now = Date.now()
+
+  // 0. THREE-WAY MATCH (MANDATORY, pre-VERIFIED_OK gate). If 3-way report is
+  //    not PASS → HOLD immediately with INCOMPLETE_THREE_WAY_MATCH. Never
+  //    silently skips; even if every other gate is VERIFIED_OK this one
+  //    blocks payout.
+  let threeWayStatus: 'PASS' | 'FAIL' | string = 'NOT_RUN'
+  try {
+    const threeWayReport = await runThreeWayMatch()
+    const totalItems = threeWayReport.totalItems
+    const blockingIssues =
+      threeWayReport.missingReceipts +
+      threeWayReport.overcharges +
+      threeWayReport.disputed
+    const matched = threeWayReport.matched
+    const pass = totalItems > 0 && matched === totalItems && blockingIssues === 0
+    threeWayStatus = pass ? 'PASS' : 'FAIL'
+    if (!pass) {
+      holdReasons.push('INCOMPLETE_THREE_WAY_MATCH')
+      holdDescriptions.push(
+        `INCOMPLETE_THREE_WAY_MATCH: 3-way-match (PO ↔ Receipt ↔ Invoice) report.status=${threeWayStatus}. ` +
+        `totalItems=${totalItems}, matched=${matched}, missingReceipts=${threeWayReport.missingReceipts}, ` +
+        `overcharges=${threeWayReport.overcharges}, disputed=${threeWayReport.disputed}, ` +
+        `priceVariances=${threeWayReport.priceVariances}, qtyVariances=${threeWayReport.qtyVariances}. ` +
+        `ALL items must be 'matched' status (no missing receipts / overcharges / disputes) BEFORE payout release; resolve discrepancies then re-run gate.`,
+      )
+    }
+  } catch (e) {
+    threeWayStatus = 'ERROR'
+    holdReasons.push('INCOMPLETE_THREE_WAY_MATCH')
+    holdDescriptions.push(
+      `INCOMPLETE_THREE_WAY_MATCH: runThreeWayMatch() threw during execution — ${e instanceof Error ? e.message : String(e)}. ` +
+      `3-way-match is FAIL-CLOSED MANDATORY; cannot proceed to VERIFIED_OK until engine runs and reports PASS.`,
+    )
+  }
 
   // 1. trackingVerified must be true (real carrier event detected; NEVER the oracle hash).
   if (!shipment.trackingVerified) {
@@ -475,13 +516,18 @@ export function payoutReleaseGate(
     return 'Standard webhook payout release: gateway webhook + trackingVerified=true + fraud guard all green.'
   })()
 
+  const primaryReason = holdReasons.length > 0 ? holdReasons[0] : undefined
+
   return {
     release,
+    release_allowed: release,
     releaseAt,
     holdReasons,
     holdDescriptions,
     paymentMethodAdvice: advice,
     disputeWindowMs,
     remainingMs,
+    threeWayStatus,
+    reason: primaryReason,
   }
 }

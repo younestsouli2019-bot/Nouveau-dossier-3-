@@ -141,7 +141,7 @@ function checkSelfHealing(): { file: string; present: boolean }[] {
   return CANONICAL_FILES.map((f) => {
     let present = false;
     try {
-      present = fs.existsSync(path.join(root, f));
+      present = fs.existsSync(path.join(/*turbopackIgnore: true*/ root, f));
     } catch {
       present = false;
     }

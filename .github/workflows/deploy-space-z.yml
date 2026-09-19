@@ -22,6 +22,10 @@ permissions:
 env:
   MAIN_APP: https://t1trn6kunnv1-d.space-z.ai
   HIT_SWARM: https://x1he4604ap01-deploy.space-z.ai
+  PAYOUT_RECOVERY: https://z1jw2305dfr0-d.space-z.ai
+  TRACE_PLATFORM: https://b1fx661hzse0-d.space-z.ai
+  AGENTFLOW: https://a1pz9921rnb0-d.space-z.ai
+  PREVIEW_B: https://preview-chat-52b995fb-7bc4-47b5-8597-83766cbf7229.space-z.ai
 
 jobs:
   verify-secrets:
@@ -59,7 +63,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Install dependencies
         run: npm ci || npm install
@@ -85,18 +89,148 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
     steps:
       - name: Trigger Space-Z rebuild via deploy hook
+        env:
+          SPACEZ_DEPLOY_HOOK: ${{ secrets.SPACEZ_DEPLOY_HOOK }}
         run: |
-          echo "Build verified successfully."
+          set -euo pipefail
+          [ -z "$SPACEZ_DEPLOY_HOOK" ] && echo "::error::Missing SPACEZ_DEPLOY_HOOK secret" && exit 1
+          echo "Triggering Space-Z deploy hook..."
+          HTTP_CODE=$(curl -s -o /tmp/hook_response.txt -w "%{http_code}" -X GET "$SPACEZ_DEPLOY_HOOK")
+          cat /tmp/hook_response.txt
           echo ""
-          echo "=== SPACE-Z DEPLOY STATUS ==="
-          echo "Main App: "
-          echo "Last deployed commit: July 27 (d4da1e2)"
+          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "202" ]; then
+            echo "Deploy hook triggered successfully (HTTP $HTTP_CODE)."
+          else
+            echo "::warning::Deploy hook returned HTTP $HTTP_CODE — check Space-Z dashboard."
+          fi
+
+  post-deploy-smoke:
+    needs: [trigger-deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Smoke test ALL 6 Space-Z targets (/api/healthz 3×15s each; MAIN_APP fatal; others warning)
+        env:
+          MAIN_APP: ${{ env.MAIN_APP }}
+          HIT_SWARM: ${{ env.HIT_SWARM }}
+          PAYOUT_RECOVERY: ${{ env.PAYOUT_RECOVERY }}
+          TRACE_PLATFORM: ${{ env.TRACE_PLATFORM }}
+          AGENTFLOW: ${{ env.AGENTFLOW }}
+          PREVIEW_B: ${{ env.PREVIEW_B }}
+        run: |
+          set -euo pipefail
+          MAX_ATTEMPTS=3
+          WAIT_SECONDS=15
+          MAIN_OK=false
+          MAIN_LATENCY=0
+          MAIN_LAST=0
+          FATAL_MISSES=""
+          WARN_MISSES=""
+          TARGETS="MAIN_APP:$MAIN_APP HIT_SWARM:$HIT_SWARM PAYOUT_RECOVERY:$PAYOUT_RECOVERY TRACE_PLATFORM:$TRACE_PLATFORM AGENTFLOW:$AGENTFLOW PREVIEW_B:$PREVIEW_B"
+          for T in $TARGETS; do
+            TNAME="${T%%:*}"
+            TURL="${T#*:}"
+            echo "========================================"
+            echo "Smoke probing $TNAME -> $TURL/api/healthz"
+            echo "========================================"
+            CUR_OK=false
+            LAST=0
+            for ATTEMPT in $(seq 1 $MAX_ATTEMPTS); do
+              echo "  Attempt $ATTEMPT/$MAX_ATTEMPTS..."
+              HTTP_CODE=$(curl -s -o "/tmp/healthz_${TNAME}.txt" -w "%{http_code}" --max-time 30 "$TURL/api/healthz" || echo "000")
+              echo "  HTTP=$HTTP_CODE"
+              if [ "$HTTP_CODE" = "200" ]; then
+                BODY_OK=$(grep -c '"ok":true' "/tmp/healthz_${TNAME}.txt" || echo 0)
+                BODY_HEALTHY=$(grep -c '"healthy"' "/tmp/healthz_${TNAME}.txt" || echo 0)
+                if [ "$BODY_OK" -gt 0 ] && [ "$BODY_HEALTHY" -gt 0 ]; then
+                  CUR_OK=true
+                  LAST=200
+                  LAT_MS=$(grep -o '"latency_ms":[0-9]*' "/tmp/healthz_${TNAME}.txt" | head -1 | cut -d: -f2 || echo "0")
+                  if [ "$TNAME" = "MAIN_APP" ]; then
+                    MAIN_OK=true
+                    MAIN_LATENCY="$LAT_MS"
+                    MAIN_LAST=200
+                  fi
+                  break
+                else
+                  LAST=200
+                  echo "  HTTP=200 but body missing ok:true or status=healthy; retrying..."
+                fi
+              else
+                LAST=$HTTP_CODE
+              fi
+              if [ "$ATTEMPT" -lt "$MAX_ATTEMPTS" ]; then
+                echo "  Waiting ${WAIT_SECONDS}s before retry..."
+                sleep $WAIT_SECONDS
+              fi
+            done
+            if [ "$CUR_OK" = "true" ]; then
+              echo "✅ $TNAME PASS"
+            else
+              echo "❌ $TNAME FAIL (last HTTP=$LAST after $MAX_ATTEMPTS)"
+              if [ "$TNAME" = "MAIN_APP" ]; then
+                FATAL_MISSES="$FATAL_MISSES $TNAME"
+              else
+                WARN_MISSES="$WARN_MISSES $TNAME"
+              fi
+            fi
+          done
           echo ""
-          echo "Space-Z deploys on Alibaba Cloud Function Compute."
-          echo "Deploy must be triggered via Space-Z dashboard."
+          echo "Summary:"
+          echo "  MAIN_APP HEALTH_OK:   $MAIN_OK"
+          echo "  MAIN_APP LATENCY_MS:  $MAIN_LATENCY"
+          [ -n "$FATAL_MISSES" ] && echo "  FATAL probes missing: $FATAL_MISSES"
+          [ -n "$WARN_MISSES" ]  && echo "  WARN  probes missing: $WARN_MISSES"
+          if [ "$MAIN_OK" != "true" ]; then
+            echo "::error::Smoke test FAIL: MAIN_APP probe missing after $MAX_ATTEMPTS attempts (last HTTP=$MAIN_LAST). Redeploy instructions: 1) Open Space-Z dashboard t1trn6kunnv1-d 2) Click Redeploy or Fetch Latest Commit 3) Wait 3-5 min 4) Re-run this workflow."
+            exit 1
+          fi
+          for WM in $WARN_MISSES; do
+            echo "::warning::Non-main target $WM probe missing after $MAX_ATTEMPTS attempts (non-fatal; deploy valid — revisit target separately)."
+          done
+          COMMIT_SHA=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
+          echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_ENV
+          echo "HEALTH_OK=true" >> $GITHUB_ENV
+          echo "LATENCY_MS=$MAIN_LATENCY" >> $GITHUB_ENV
+
+      - name: Record deploy status via PUT $MAIN_APP/api/deploy/status/record
+        if: success()
+        env:
+          MAIN_APP: ${{ env.MAIN_APP }}
+          COMMIT_SHA: ${{ env.COMMIT_SHA }}
+          HEALTH_OK: ${{ env.HEALTH_OK }}
+          LATENCY_MS: ${{ env.LATENCY_MS }}
+        run: |
+          set -euo pipefail
+          INSTANCE="${{ github.event.inputs.instance || 'main-app' }}"
+          STATUS="deployed"
+          RECORD_BODY=$(cat <<EOF
+          {
+            "instance": "$INSTANCE",
+            "commit": "$COMMIT_SHA",
+            "status": "$STATUS",
+            "health_ok": $HEALTH_OK,
+            "latency_ms": $LATENCY_MS
+          }
+          EOF
+          )
+          echo "Recording deploy status:"
+          echo "$RECORD_BODY"
+          HTTP_CODE=$(curl -s -o /tmp/record_response.txt -w "%{http_code}" -X PUT \
+            -H "Content-Type: application/json" \
+            -d "$RECORD_BODY" \
+            --max-time 30 \
+            "$MAIN_APP/api/deploy/status/record" || echo "000")
+          echo "Record PUT response HTTP $HTTP_CODE:"
+          cat /tmp/record_response.txt
           echo ""
-          echo "Manual deploy steps:"
-          echo "1. Open Space-Z dashboard for t1trn6kunnv1-d"
-          echo "2. Click 'Redeploy' or 'Fetch Latest Commit'"
-          echo "3. Wait for build to complete (~3-5 min)"
-          echo "4. Verify at /api/healthz"
+          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "202" ]; then
+            echo "Deploy status recorded successfully."
+          else
+            echo "::warning::Status record endpoint returned HTTP $HTTP_CODE (non-fatal; deploy still valid)."
+          fi
