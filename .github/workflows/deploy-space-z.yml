@@ -20,12 +20,15 @@ permissions:
   contents: read
 
 env:
-  MAIN_APP: https://t1trn6kunnv1-d.space-z.ai
-  HIT_SWARM: https://x1he4604ap01-deploy.space-z.ai
-  PAYOUT_RECOVERY: https://z1jw2305dfr0-d.space-z.ai
-  TRACE_PLATFORM: https://b1fx661hzse0-d.space-z.ai
-  AGENTFLOW: https://a1pz9921rnb0-d.space-z.ai
-  PREVIEW_B: https://preview-chat-52b995fb-7bc4-47b5-8597-83766cbf7229.space-z.ai
+  # Space-Z instance URLs are stored in GitHub repo secrets to support
+  # rotation/reassignment without commit churn. The values below are safe
+  # defaults for repos that don't yet have the secrets provisioned.
+  MAIN_APP: ${{ secrets.SPACEZ_MAIN_APP_URL || 'https://t1trn6kunnv1-d.space-z.ai' }}
+  HIT_SWARM: ${{ secrets.SPACEZ_HIT_SWARM_URL || 'https://x1he4604ap01-deploy.space-z.ai' }}
+  PAYOUT_RECOVERY: ${{ secrets.SPACEZ_PAYOUT_RECOVERY_URL || 'https://z1jw2305dfr0-d.space-z.ai' }}
+  TRACE_PLATFORM: ${{ secrets.SPACEZ_TRACE_PLATFORM_URL || 'https://b1fx661hzse0-d.space-z.ai' }}
+  AGENTFLOW: ${{ secrets.SPACEZ_AGENTFLOW_URL || 'https://a1pz9921rnb0-d.space-z.ai' }}
+  PREVIEW_B: ${{ secrets.SPACEZ_PREVIEW_B_URL || 'https://preview-chat-52b995fb-7bc4-47b5-8597-83766cbf7229.space-z.ai' }}
 
 jobs:
   verify-secrets:
@@ -37,12 +40,26 @@ jobs:
           BASE44_API_KEY: ${{ secrets.BASE44_API_KEY }}
           BASE44_SERVICE_TOKEN: ${{ secrets.BASE44_SERVICE_TOKEN }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SPACEZ_DEPLOY_HOOK: ${{ secrets.SPACEZ_DEPLOY_HOOK }}
+          DEPLOY_RECORD_TOKEN: ${{ secrets.DEPLOY_RECORD_TOKEN }}
+          SPACEZ_MAIN_APP_URL: ${{ secrets.SPACEZ_MAIN_APP_URL }}
+          SPACEZ_HIT_SWARM_URL: ${{ secrets.SPACEZ_HIT_SWARM_URL }}
+          SPACEZ_PAYOUT_RECOVERY_URL: ${{ secrets.SPACEZ_PAYOUT_RECOVERY_URL }}
+          SPACEZ_TRACE_PLATFORM_URL: ${{ secrets.SPACEZ_TRACE_PLATFORM_URL }}
+          SPACEZ_AGENTFLOW_URL: ${{ secrets.SPACEZ_AGENTFLOW_URL }}
+          SPACEZ_PREVIEW_B_URL: ${{ secrets.SPACEZ_PREVIEW_B_URL }}
+          GITHUB_APP_WEBHOOK_SECRET: ${{ secrets.GITHUB_APP_WEBHOOK_SECRET }}
+          GITHUB_WEBHOOK_SECRET: ${{ secrets.GITHUB_WEBHOOK_SECRET }}
         run: |
           set -euo pipefail
           echo "Verifying z.ai runtime secret availability (values never printed; names only)."
           echo "| secret | present |"
           echo "|--------|---------|"
-          for k in BASE44_API_KEY BASE44_SERVICE_TOKEN DATABASE_URL; do
+          for k in BASE44_API_KEY BASE44_SERVICE_TOKEN DATABASE_URL \
+                   SPACEZ_DEPLOY_HOOK DEPLOY_RECORD_TOKEN \
+                   SPACEZ_MAIN_APP_URL SPACEZ_HIT_SWARM_URL SPACEZ_PAYOUT_RECOVERY_URL \
+                   SPACEZ_TRACE_PLATFORM_URL SPACEZ_AGENTFLOW_URL SPACEZ_PREVIEW_B_URL \
+                   GITHUB_APP_WEBHOOK_SECRET GITHUB_WEBHOOK_SECRET; do
             eval "v=\${${k}:-}"
             if [ -n "${v}" ]; then
               echo "| ${k} | yes |"
@@ -53,6 +70,7 @@ jobs:
           echo ""
           echo "Source of truth = GitHub repo secrets (org-secret-sync.yml keeps them org-wide)."
           echo "z.ai runtime must be provisioned with the same secret set exported from these repo secrets."
+          echo "Record PUTs require x-deploy-record-token: Bearer <DEPLOY_RECORD_TOKEN>."
 
   build-verify:
     runs-on: ubuntu-latest
@@ -205,6 +223,7 @@ jobs:
           COMMIT_SHA: ${{ env.COMMIT_SHA }}
           HEALTH_OK: ${{ env.HEALTH_OK }}
           LATENCY_MS: ${{ env.LATENCY_MS }}
+          DEPLOY_RECORD_TOKEN: ${{ secrets.DEPLOY_RECORD_TOKEN }}
         run: |
           set -euo pipefail
           INSTANCE="${{ github.event.inputs.instance || 'main-app' }}"
@@ -221,8 +240,16 @@ jobs:
           )
           echo "Recording deploy status:"
           echo "$RECORD_BODY"
+          EXTRA_HEADER=""
+          if [ -n "${DEPLOY_RECORD_TOKEN:-}" ]; then
+            EXTRA_HEADER="-H \"x-deploy-record-token: Bearer ${DEPLOY_RECORD_TOKEN}\""
+          else
+            echo "::warning::DEPLOY_RECORD_TOKEN secret not set — record PUT will be REJECTED if endpoint auth gate enabled."
+          fi
+          # shellcheck disable=SC2086
           HTTP_CODE=$(curl -s -o /tmp/record_response.txt -w "%{http_code}" -X PUT \
             -H "Content-Type: application/json" \
+            ${EXTRA_HEADER} \
             -d "$RECORD_BODY" \
             --max-time 30 \
             "$MAIN_APP/api/deploy/status/record" || echo "000")
@@ -231,6 +258,8 @@ jobs:
           echo ""
           if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "202" ]; then
             echo "Deploy status recorded successfully."
+          elif [ "$HTTP_CODE" = "401" ]; then
+            echo "::warning::Record PUT 401 — DEPLOY_RECORD_TOKEN missing or mismatched. Deploy valid; status not recorded."
           else
             echo "::warning::Status record endpoint returned HTTP $HTTP_CODE (non-fatal; deploy still valid)."
           fi

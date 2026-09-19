@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createHmac } from 'crypto';
 import { prisma } from '@/lib/db';
 import { sha256 } from '@/lib/strict-enforcement/crypto-utils';
@@ -14,11 +14,39 @@ const KNOWN_SECRET_CONNECTORS: Record<string, string> = {
   ATTIJARI_SCOPE: 'attijariwafa',
   ATTIJARI_API_BASE_URL: 'attijariwafa',
   ATTIJARI_PSD2_BASE_URL: 'attijariwafa',
+  ATTIJARI_CIB_LOGIN_URL: 'attijariwafa',
+  ATTIJARI_CIB_USER: 'attijariwafa',
+  ATTIJARI_CIB_PASS: 'attijariwafa',
+  ATTIJARI_CIB_SEL_USER: 'attijariwafa',
+  ATTIJARI_CIB_SEL_PASS: 'attijariwafa',
+  ATTIJARI_CIB_SEL_LOGIN: 'attijariwafa',
+  ATTIJARI_CIB_SEL_ACCT: 'attijariwafa',
+  ATTIJARI_CIB_SEL_STMT: 'attijariwafa',
+  ATTIJARI_CIB_SEL_DL: 'attijariwafa',
+  ATTIJARI_CIB_SEL_FROM: 'attijariwafa',
+  ATTIJARI_CIB_SEL_TO: 'attijariwafa',
+  ATTIJARI_QWAC_CERT_PATH: 'attijariwafa',
+  ATTIJARI_QWAC_KEY_PATH: 'attijariwafa',
+  BASE44_APP_ID: 'base44',
+  BASE44_SERVICE_TOKEN: 'base44',
+  BASE44_API_KEY: 'base44',
   OPENROUTER_API_KEY: 'base44',
   ZAI_API_KEY: 'base44',
-  BASE44_API_KEY: 'base44',
+  SPACEZ_DEPLOY_HOOK: 'deploy',
+  GITHUB_WEBHOOK_SECRET: 'deploy',
+  GITHUB_APP_WEBHOOK_SECRET: 'deploy',
+  DEPLOY_WEBHOOK_SECRET: 'deploy',
+  DEPLOY_RECORD_TOKEN: 'deploy',
+  DEPLOY_HOOK_TOKEN: 'deploy',
+  SPACEZ_MAIN_APP_URL: 'deploy',
+  SPACEZ_HIT_SWARM_URL: 'deploy',
+  SPACEZ_PAYOUT_RECOVERY_URL: 'deploy',
+  SPACEZ_TRACE_PLATFORM_URL: 'deploy',
+  SPACEZ_AGENTFLOW_URL: 'deploy',
+  SPACEZ_PREVIEW_B_URL: 'deploy',
   PAYPAL_CLIENT_ID: 'paypal',
   PAYPAL_CLIENT_SECRET: 'paypal',
+  PAYPAL_WEBHOOK_ID: 'paypal',
 };
 
 function verifyHMAC(payload: string, signature: string): boolean {
