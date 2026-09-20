@@ -11,8 +11,8 @@ import { NextRequest, NextResponse } from 'next/server'
  * Policy (fail-closed for scripts, transparent for the operator's own UI):
  *   1. ALLOW if header `x-ops-secret` matches OPS_API_SECRET || CRON_SECRET
  *      (constant-time compare) — the same secret-gate pattern as the swarm daemon.
- *   2. ALLOW if the browser attests same-origin (`sec-fetch-site: same-origin|same-site`)
- *      — dashboard fetch() calls always send this; cross-origin scripts/curl do not.
+ *   2. ALLOW if Authorization: Bearer <OPERATOR_TOKEN> or the operator_session
+ *      cookie matches OPERATOR_TOKEN — this mirrors the global middleware gate.
  *   3. Otherwise 401 BEFORE any business logic or DB access.
  */
 export function requireOpsAuth(request: NextRequest): NextResponse | null {
@@ -22,18 +22,42 @@ export function requireOpsAuth(request: NextRequest): NextResponse | null {
     return null
   }
 
-  const site = request.headers.get('sec-fetch-site')
-  if (site === 'same-origin' || site === 'same-site') {
+  const operatorToken = process.env.OPERATOR_TOKEN
+  const bearer = getBearerToken(request.headers.get('authorization'))
+  if (operatorToken && bearer && safeEqual(bearer, operatorToken.trim())) {
+    return null
+  }
+
+  const sessionCookie = getCookieValue(request.headers.get('cookie'), 'operator_session')
+  if (operatorToken && sessionCookie && safeEqual(sessionCookie, operatorToken.trim())) {
     return null
   }
 
   return NextResponse.json(
     {
       success: false,
-      error: 'Unauthorized: mutation endpoints require a same-origin request or the x-ops-secret header (OPS_API_SECRET / CRON_SECRET).',
+      error:
+        'Unauthorized: ops endpoints require x-ops-secret (OPS_API_SECRET / CRON_SECRET) or a valid operator token.',
     },
     { status: 401 },
   )
+}
+
+function getBearerToken(authorization: string | null): string | null {
+  if (!authorization?.startsWith('Bearer ')) return null
+  const token = authorization.slice(7).trim()
+  return token || null
+}
+
+function getCookieValue(cookieHeader: string | null, name: string): string | null {
+  if (!cookieHeader) return null
+  for (const part of cookieHeader.split(';')) {
+    const [rawName, ...rest] = part.trim().split('=')
+    if (rawName !== name) continue
+    const value = rest.join('=').trim()
+    return value || null
+  }
+  return null
 }
 
 function safeEqual(a: string, b: string): boolean {

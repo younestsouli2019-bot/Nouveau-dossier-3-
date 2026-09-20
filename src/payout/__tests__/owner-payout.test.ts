@@ -241,6 +241,7 @@ describe('Owner payout success — manual MAD rail + bucket routing + live gates
         ownerSettlement: {
           findFirst: async (q: {
             where?: {
+              id?: string;
               referenceId?: string;
               externalRef?: string;
               status?: string;
@@ -254,6 +255,7 @@ describe('Owner payout success — manual MAD rail + bucket routing + live gates
           }) => {
             const where = q?.where ?? {};
             const rows = mockSettlements.filter((s) => {
+              if (where.id !== undefined && s.id !== where.id) return false;
               if (where.referenceId !== undefined && s.referenceId !== where.referenceId) return false;
               if (where.externalRef !== undefined && s.externalRef !== where.externalRef) return false;
               if (where.status !== undefined && s.status !== where.status) return false;
@@ -276,13 +278,36 @@ describe('Owner payout success — manual MAD rail + bucket routing + live gates
               : rows;
             return ordered[0];
           },
-          findMany: async (q: { where?: { direction?: string; settledAt?: { gte?: Date } } }) => {
+          findMany: async (q: {
+            where?: {
+              direction?: string;
+              status?: string;
+              connectorStatus?: string;
+              ownerAccountId?: string;
+              settledAt?: { gte?: Date };
+            };
+            orderBy?: { createdAt?: 'asc' | 'desc' };
+            take?: number;
+          }) => {
             const where = q?.where ?? {};
-            return mockSettlements.filter((s) => {
+            let rows = mockSettlements.filter((s) => {
               if (where.direction !== undefined && s.direction !== where.direction) return false;
+              if (where.status !== undefined && s.status !== where.status) return false;
+              if (where.connectorStatus !== undefined && s.connectorStatus !== where.connectorStatus) return false;
+              if (where.ownerAccountId !== undefined && s.ownerAccountId !== where.ownerAccountId) return false;
               if (where.settledAt?.gte && (!s.settledAt || (s.settledAt as Date) < where.settledAt.gte)) return false;
               return true;
             });
+            if (q?.orderBy?.createdAt) {
+              rows = [...rows].sort((a, b) => {
+                const ta = String(a.createdAt ?? '').localeCompare(String(b.createdAt ?? ''));
+                return q.orderBy!.createdAt === 'asc' ? ta : -ta;
+              });
+            }
+            if (typeof q?.take === 'number') {
+              rows = rows.slice(0, q.take);
+            }
+            return rows;
           },
           count: async () => mockSettlements.length,
           create: async (p: { data: Record<string, unknown> }) => {
@@ -445,6 +470,45 @@ describe('Owner payout success — manual MAD rail + bucket routing + live gates
 
     expect(mockAudits.length).toBe(auditBefore);
     expect(mockSettlements.filter((s) => s.status === 'completed').length).toBe(settleCountBefore);
+  });
+
+  it('TR1.5 confirmRelease requires settlementId when multiple manual releases are pending, then settles only the targeted row', async () => {
+    process.env.LIVE_BANK_API = '';
+    process.env.OWNER_PAYOUT_IDENTIFIER = OWNER_MA_RIB_182.accountNumber!;
+    const { releaseOwnerFunds, confirmRelease } = await import('@/lib/treasury/release-engine');
+
+    const firstPending = await releaseOwnerFunds({
+      ownerAccountId: OWNER_MA_RIB_182.id,
+      amount: 1100,
+      currency: 'MAD',
+      reference: 'SALARY-PENDING-1',
+      bucketCode: 'salary_bucket',
+    });
+    const secondPending = await releaseOwnerFunds({
+      ownerAccountId: OWNER_MA_RIB_372.id,
+      amount: 2200,
+      currency: 'MAD',
+      reference: 'SALARY-PENDING-2',
+      bucketCode: 'debt_repayment',
+    });
+
+    expect(firstPending.settlementId).toBeDefined();
+    expect(secondPending.settlementId).toBeDefined();
+
+    const ambiguous = await confirmRelease('WPS-AMBIG-20260920');
+    expect(ambiguous.ok).toBe(false);
+    expect(ambiguous.status).toBe('AMBIGUOUS_PENDING');
+
+    const targeted = await confirmRelease('WPS-SECOND-20260920', secondPending.settlementId);
+    expect(targeted.ok).toBe(true);
+    expect(targeted.settlementId).toBe(secondPending.settlementId);
+
+    const firstRow = mockSettlements.find((s) => s.id === firstPending.settlementId);
+    const secondRow = mockSettlements.find((s) => s.id === secondPending.settlementId);
+    expect(firstRow?.status).toBe('processing');
+    expect(firstRow?.externalRef ?? null).toBeNull();
+    expect(secondRow?.status).toBe('completed');
+    expect(secondRow?.externalRef).toBe('WPS-SECOND-20260920');
   });
 
   // ─── TR2.1 Bank rail live when BANK_RAIL_* set ───────────────────────

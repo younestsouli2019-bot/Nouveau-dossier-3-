@@ -11,13 +11,15 @@ import {
  * Treasury release endpoint.
  *
  * GET  /api/treasury/release            -> read-only HELD vs SPENDABLE owner ledger
- * POST /api/treasury/release/confirm    -> poll real bank status for an externalRef
+ * POST /api/treasury/release            -> confirm a real bank status for an
+ *                                           externalRef; include settlementId
+ *                                           when multiple manual releases are pending
  * POST /api/treasury/release            -> release HELD funds to the owner via the
  *                                           real Attijari PSD2 PISP rail (fail-closed).
  *
- * Auth: same-origin UI or x-ops-secret (OPS_API_SECRET / CRON_SECRET). Mutations
- * are never writable without auth. The release itself is fail-closed: it only
- * books 'completed' when the real Attijari PISP returns a real paymentId.
+ * Auth: x-ops-secret (OPS_API_SECRET / CRON_SECRET) or the operator token/cookie.
+ * Mutations are never writable without auth. The release itself is fail-closed:
+ * it only books 'completed' when the real Attijari PISP returns a real paymentId.
  */
 
 export async function GET(request: NextRequest) {
@@ -47,10 +49,14 @@ export async function POST(request: NextRequest) {
 
   if (body.op === 'confirm') {
     const externalRef = String(body.externalRef || '').trim()
+    const settlementId =
+      typeof body.settlementId === 'string' && body.settlementId.trim()
+        ? body.settlementId.trim()
+        : undefined
     if (!externalRef) {
       return NextResponse.json({ success: false, error: 'externalRef required for confirm' }, { status: 400 })
     }
-    const result = await confirmRelease(externalRef)
+    const result = await confirmRelease(externalRef, settlementId)
     return NextResponse.json({ success: result.ok, ...result })
   }
 

@@ -241,7 +241,7 @@ async function bookPendingManual(
 }
 
 // Transition manual-rail pending to COMPLETED. Also used idempotently for PSD2 confirm.
-export async function confirmRelease(externalRef: string) {
+export async function confirmRelease(externalRef: string, pendingSettlementId?: string) {
   if (!isRealRef(externalRef)) {
     return {
       ok: false,
@@ -286,13 +286,43 @@ export async function confirmRelease(externalRef: string) {
       railUsed: 'mad_manual_operator_mobile' as const,
     };
   }
-  const pending = await prisma.ownerSettlement.findFirst({
-    where: {
-      status: 'processing',
-      connectorStatus: 'manual_attested_pending',
-    },
-    orderBy: { createdAt: 'asc' },
-  });
+  let pending = null;
+  if (pendingSettlementId) {
+    pending = await prisma.ownerSettlement.findFirst({
+      where: {
+        id: pendingSettlementId,
+        status: 'processing',
+        connectorStatus: 'manual_attested_pending',
+      },
+    });
+    if (!pending) {
+      return {
+        ok: false,
+        externalRef,
+        status: 'PENDING_NOT_FOUND',
+        reason: `No PENDING_MANUAL_TRANSFER matches settlementId ${pendingSettlementId}.`,
+      };
+    }
+  } else {
+    const pendingRows = await prisma.ownerSettlement.findMany({
+      where: {
+        status: 'processing',
+        connectorStatus: 'manual_attested_pending',
+      },
+      orderBy: { createdAt: 'asc' },
+      take: 2,
+    });
+    if (pendingRows.length > 1) {
+      return {
+        ok: false,
+        externalRef,
+        status: 'AMBIGUOUS_PENDING',
+        reason:
+          'Multiple PENDING_MANUAL_TRANSFER rows exist. Provide the settlementId returned by releaseOwnerFunds before confirming a real WPS/MT103 reference.',
+      };
+    }
+    pending = pendingRows[0] ?? null;
+  }
   if (!pending) {
     return {
       ok: false,
