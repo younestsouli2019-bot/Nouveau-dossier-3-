@@ -23,51 +23,81 @@ function oneDayAgo(): Date {
   return d;
 }
 
+function isPrismaTableMissing(err: unknown) {
+  // Neon schema has no public.Payout or public.FundBucket tables on this PROD cluster
+  // (schema-only code changes forbidden per project-wide rule). Treat PrismaClientKnownRequestError P2021
+  // code == "The table does not exist in the current database."
+  if (!err) return false;
+  try {
+    const e = err as { code?: string; message?: string };
+    if (e.code === 'P2021') return true;
+    const msg = String(e.message || '');
+    if (/public\.(Payout|FundBucket) does not exist/i.test(msg)) return true;
+    if (/table.*does not exist/i.test(msg)) return true;
+    if (/does not exist in the current database/i.test(msg)) return true;
+  } catch {}
+  return false;
+}
+
 async function countPayoutsByStatus() {
-  const rows = await prisma.payout.groupBy({
-    by: ['status'],
-    _count: { id: true },
-  });
-  const map: Record<string, number> = {};
-  for (const r of rows) map[r.status] = r._count.id;
-  return map;
+  try {
+    const rows = await prisma.payout.groupBy({
+      by: ['status'],
+      _count: { id: true },
+    });
+    const map: Record<string, number> = {};
+    for (const r of rows) map[r.status] = r._count.id;
+    return map;
+  } catch (e) {
+    if (isPrismaTableMissing(e)) return {};
+    throw e;
+  }
 }
 
 async function sumCompletedLast24h() {
   const since = oneDayAgo();
-  const result = await prisma.payout.aggregate({
-    where: {
-      status: { in: COMPLETED_PAYOUT_STATUSES },
-      completedAt: { gte: since },
-    },
-    _sum: { netAmount: true },
-    _count: { id: true },
-  });
-  return {
-    count: result._count.id ?? 0,
-    amount: Number(result._sum.netAmount ?? 0),
-  };
+  try {
+    const result = await prisma.payout.aggregate({
+      where: {
+        status: { in: COMPLETED_PAYOUT_STATUSES },
+        completedAt: { gte: since },
+      },
+      _sum: { netAmount: true },
+      _count: { id: true },
+    });
+    return {
+      count: result._count.id ?? 0,
+      amount: Number(result._sum.netAmount ?? 0),
+    };
+  } catch (e) {
+    if (isPrismaTableMissing(e)) return { count: 0, amount: 0 };
+    throw e;
+  }
 }
 
 async function byRailStats() {
   const since = oneDayAgo();
-  const byDest = await prisma.payout.groupBy({
-    by: ['destinationType', 'status'],
-    _count: { id: true },
-  });
   const pendingMap: Record<string, number> = { paypal: 0, bank: 0, crypto: 0, manual: 0 };
   const processingMap: Record<string, number> = { ...pendingMap };
   const completedMap: Record<string, number> = { ...pendingMap };
   const stuckMap: Record<string, number> = { ...pendingMap };
 
-  for (const r of byDest) {
-    const dest = r.destinationType || 'bank';
-    const key = dest === 'payoneer' ? 'bank' : dest === 'manual' ? 'manual' : dest;
-    const target = key === 'manual' ? 'manual' : key === 'bank' ? 'bank' : key === 'crypto' ? 'crypto' : 'paypal';
-    if (STUCK_PAYOUT_STATUSES.includes(r.status)) stuckMap[target] += r._count.id;
-    else if (PENDING_PAYOUT_STATUSES.includes(r.status)) pendingMap[target] += r._count.id;
-    else if (PROCESSING_PAYOUT_STATUSES.includes(r.status)) processingMap[target] += r._count.id;
-    else if (COMPLETED_PAYOUT_STATUSES.includes(r.status)) completedMap[target] += r._count.id;
+  try {
+    const byDest = await prisma.payout.groupBy({
+      by: ['destinationType', 'status'],
+      _count: { id: true },
+    });
+    for (const r of byDest) {
+      const dest = r.destinationType || 'bank';
+      const key = dest === 'payoneer' ? 'bank' : dest === 'manual' ? 'manual' : dest;
+      const target = key === 'manual' ? 'manual' : key === 'bank' ? 'bank' : key === 'crypto' ? 'crypto' : 'paypal';
+      if (STUCK_PAYOUT_STATUSES.includes(r.status)) stuckMap[target] += r._count.id;
+      else if (PENDING_PAYOUT_STATUSES.includes(r.status)) pendingMap[target] += r._count.id;
+      else if (PROCESSING_PAYOUT_STATUSES.includes(r.status)) processingMap[target] += r._count.id;
+      else if (COMPLETED_PAYOUT_STATUSES.includes(r.status)) completedMap[target] += r._count.id;
+    }
+  } catch (e) {
+    if (!isPrismaTableMissing(e)) throw e;
   }
 
   const manualPending = await prisma.ownerSettlement.count({
