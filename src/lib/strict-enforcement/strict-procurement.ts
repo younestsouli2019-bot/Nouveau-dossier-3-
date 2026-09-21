@@ -302,6 +302,29 @@ export async function approvePurchaseOrderWithBudgetCheck(
     return { approved: false, code: 'PO_NOT_FOUND', error: `Purchase order ${poId} not found.` }
   }
 
+  // Idempotency: already approved -> return prior approval without double-write
+  if (po.status === 'approved') {
+    const prior = await db.pOApproval.findFirst({
+      where: { purchaseOrderId: poId, action: 'approved' },
+      orderBy: { createdAt: 'desc' },
+    })
+    return {
+      approved: true,
+      code: 'IDEMPOTENT_REPLAY',
+      receipt: prior ? (prior as unknown as Record<string, unknown>) : undefined,
+      error: prior ? undefined : 'Approved PO but missing prior POApproval row (data legacy).',
+    }
+  }
+
+  // Terminal states: rejected / cancelled / delivered -> cannot approve
+  if (['rejected', 'cancelled', 'delivered', 'settled'].includes(po.status)) {
+    return {
+      approved: false,
+      code: `STATUS_${po.status.toUpperCase()}_NOT_APPROVABLE`,
+      error: `Cannot approve purchase order in terminal status='${po.status}'.`,
+    }
+  }
+
   const budget = await checkProcurementBudget(po.totalAmount, po.currency)
   if (!budget.ok) {
     return { approved: false, code: budget.code, error: `Budget check failed: ${budget.details}` }

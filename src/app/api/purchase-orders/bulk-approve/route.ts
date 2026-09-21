@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { approvePurchaseOrderWithBudgetCheck } from '@/lib/strict-enforcement/strict-procurement'
+
+function extractApprover(request: NextRequest): string {
+  const h = request.headers.get('x-performed-by') || request.headers.get('x-approver') || request.headers.get('x-ops-secret')
+  if (h && h.length > 0) return h.length > 8 ? `${h.slice(0,8)}…${h.slice(-4)}` : h
+  return 'bulk-user'
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,53 +19,34 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const approvablePOs = await db.purchaseOrder.findMany({
-      where: {
-        id: { in: poIds },
-        status: 'pending_approval',
-      },
-    })
-
+    const approver = extractApprover(request)
+    const results: Record<string, unknown>[] = []
     let approvedCount = 0
-    const now = new Date()
-
-    for (const po of approvablePOs) {
-      await db.$transaction([
-        db.purchaseOrder.update({
-          where: { id: po.id },
-          data: {
-            status: 'approved',
-            approvedBy: 'user',
-            approvedAt: now,
-          },
-        }),
-        db.pOApproval.create({
-          data: {
-            purchaseOrderId: po.id,
-            action: 'approved',
-            performedBy: 'user',
-            fromStatus: po.status,
-            toStatus: 'approved',
-          },
-        }),
-      ])
-      approvedCount++
+    let skippedOrFailed = 0
+    for (const id of poIds) {
+      try {
+        const r = await approvePurchaseOrderWithBudgetCheck(id, approver)
+        if (r.approved) { approvedCount++; results.push({ poId: id, approved: true, code: r.code, receipt: r.receipt }) }
+        else { skippedOrFailed++; results.push({ poId: id, approved: false, code: r.code, error: r.error }) }
+      } catch (e: any) {
+        skippedOrFailed++
+        results.push({ poId: id, approved: false, code: 'UNEXPECTED_ERROR', error: e.message || String(e) })
+      }
     }
-
-    const skippedCount = poIds.length - approvedCount
 
     return NextResponse.json({
       success: true,
       data: {
         approvedCount,
-        skippedCount,
+        skippedCount: skippedOrFailed,
         totalRequested: poIds.length,
+        perPo: results,
       },
     })
   } catch (error) {
-    console.error('Error bulk approving purchase orders:', error)
+    console.error('Error bulk approving purchase orders (budget-gated):', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to bulk approve purchase orders' },
+      { success: false, error: (error as Error).message || 'Failed to bulk approve purchase orders' },
       { status: 500 }
     )
   }

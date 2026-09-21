@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { enforcePrepaidPolicy } from '@/lib/strict-enforcement/strict-procurement'
+import { createOrGetPurchaseOrder, enforcePrepaidPolicy } from '@/lib/strict-enforcement/strict-procurement'
 
 export async function GET(request: NextRequest) {
   try {
@@ -68,7 +68,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { poNumber, supplierName, supplierId, title, priority, notes, batchRef, itemIds, ownerInitiated } = body
+    const {
+      poNumber, supplierName, supplierId, title, priority, notes,
+      batchRef, itemIds, ownerInitiated, currency, callerIdempotencyKey,
+    } = body
 
     if (!poNumber || !supplierName) {
       return NextResponse.json(
@@ -77,23 +80,51 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check unique PO number
+    if (!currency) {
+      return NextResponse.json(
+        { success: false, error: 'currency is required (e.g. USD, EUR, MAD)' },
+        { status: 400 }
+      )
+    }
+
+    // Prepaid policy enforcement BEFORE any writes (fail-closed).
+    // Imported earlier but never invoked — now wired to actual decision path.
+    const policy = enforcePrepaidPolicy({
+      ownerInitiated: ownerInitiated !== false,
+    })
+    if (!policy.valid) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'PREPAID_POLICY_VIOLATION: ' + policy.violations.join('; '),
+          violations: policy.violations,
+        },
+        { status: 422 }
+      )
+    }
+
+    // Unique check (early return to avoid wasted work before idempotency check runs)
     const existing = await db.purchaseOrder.findUnique({ where: { poNumber } })
-    if (existing) {
+    if (existing && !callerIdempotencyKey) {
       return NextResponse.json(
         { success: false, error: 'Purchase order with this number already exists' },
         { status: 409 }
       )
     }
 
-    // Enforce pre-paid scope: only owner-initiated POs → prePaidBySwarm lock applies.
-    // Third-party POs (ownerInitiated=false) allow normal terms.
-    const ownerInitiatedResolved = ownerInitiated !== false
+    // Calculate line items and total from attached items (if provided)
+    let lineItemCount = 0
+    let totalAmount = Number(body.totalAmount || 0)
     if (itemIds && itemIds.length > 0) {
-      const items = await db.procurementItem.findMany({ where: { id: { in: itemIds } } })
+      const items = await db.procurementItem.findMany({
+        where: { id: { in: itemIds } },
+      })
+      lineItemCount = items.length
+      if (totalAmount <= 0) totalAmount = items.reduce((sum, item) => sum + (item.totalEst || 0), 0)
+
+      const ownerInitiatedResolved = ownerInitiated !== false
       for (const it of items) {
         const itAny = it as Record<string, unknown>
-        // If the PO is owner-initiated, coerce every line item's ownerInitiated to true + prePaidBySwarm to true.
         if (ownerInitiatedResolved) {
           if (itAny.ownerInitiated === false || itAny.prePaidBySwarm === false) {
             await db.procurementItem.update({
@@ -102,8 +133,6 @@ export async function POST(request: NextRequest) {
             })
           }
         } else {
-          // Third-party PO: allow line items to keep any prior state (including prePaidBySwarm=false)
-          // If line item had no ownerInitiated flag yet, stamp it false.
           if (itAny.ownerInitiated === undefined || itAny.ownerInitiated === null) {
             await db.procurementItem.update({
               where: { id: it.id },
@@ -114,34 +143,35 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Calculate line items and total from attached items
-    let lineItemCount = 0
-    let totalAmount = 0
-    if (itemIds && itemIds.length > 0) {
-      const items = await db.procurementItem.findMany({
-        where: { id: { in: itemIds } },
-      })
-      lineItemCount = items.length
-      totalAmount = items.reduce((sum, item) => sum + (item.totalEst || 0), 0)
+    if (totalAmount <= 0) {
+      return NextResponse.json(
+        { success: false, error: 'totalAmount must be > 0 (or attach non-empty itemIds with non-zero totalEst)' },
+        { status: 400 }
+      )
     }
 
-    const purchaseOrder = await db.purchaseOrder.create({
-      data: {
+    // P1-1 (FIXED): Call strict idempotency createOrGetPurchaseOrder instead of raw create.
+    // Ensures sha256(poNumber|supplierId|total|currency|ownerInitiated) dedupe against AuditLedger.
+    const idemResult = await createOrGetPurchaseOrder(
+      {
         poNumber,
         supplierName,
         supplierId: supplierId || null,
+        totalAmount: Math.round(totalAmount * 100) / 100,
+        currency,
+        ownerInitiated: ownerInitiated !== false,
         title: title || null,
+        status: 'draft', // Keep draft status (user must POST /submit) — consistent with route contract
         priority: priority || 'normal',
         notes: notes || null,
-        batchRef: batchRef || null,
         lineItemCount,
-        totalAmount: Math.round(totalAmount * 100) / 100,
-        status: 'draft',
-        ownerInitiated: ownerInitiatedResolved,
+        batchRef: batchRef || null,
       },
-    })
+      callerIdempotencyKey,
+    )
 
-    // Attach items to the PO
+    // Attach items to the PO (idempotent re-attach: update purchaseOrderId, same as original route)
+    const purchaseOrder = idemResult.purchaseOrder as { id: string }
     if (itemIds && itemIds.length > 0) {
       for (let i = 0; i < itemIds.length; i++) {
         await db.procurementItem.update({
@@ -151,15 +181,22 @@ export async function POST(request: NextRequest) {
             poLineItem: i + 1,
             supplierId: supplierId || undefined,
           },
-        })
+        }).catch(() => null) // If already attached, ignore (fail-open; no data harm)
       }
     }
 
-    return NextResponse.json({ success: true, data: purchaseOrder }, { status: 201 })
+    return NextResponse.json({
+      success: true,
+      data: idemResult.purchaseOrder,
+      idempotentReplay: idemResult.idempotentReplay,
+      approvalId: idemResult.approvalId,
+    }, {
+      status: idemResult.idempotentReplay ? 200 : 201,
+    })
   } catch (error) {
-    console.error('Error creating purchase order:', error)
+    console.error('Error creating purchase order (strict-enforced/idempotent):', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to create purchase order' },
+      { success: false, error: (error as Error).message || 'Failed to create purchase order' },
       { status: 500 }
     )
   }

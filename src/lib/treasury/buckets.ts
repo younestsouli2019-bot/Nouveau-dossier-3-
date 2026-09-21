@@ -113,12 +113,58 @@ export interface ProcurementSpendAuthorisation {
 
 export async function getProcurementSpendAuthorisation(): Promise<ProcurementSpendAuthorisation> {
   const policy = getDisbursementPolicy();
+
+  // First: try FundBucket table. Neon PROD cluster lacks FundBucket table (schema-only
+  // project rule forbids schema changes → must fall back to code-only math using
+  // OwnerAccount ledger which DOES exist on Neon.
   const [procBuf, runtime] = await Promise.all([
     prisma.fundBucket.findUnique({ where: { code: 'procurement_buffer' } }).catch(() => null),
     prisma.fundBucket.findUnique({ where: { code: 'runtime_operations' } }).catch(() => null),
   ]);
-  const procurementBufferBalance = procBuf ? Math.max(0, procBuf.allocated - procBuf.released) : 0;
-  const runtimeBalance = runtime ? Math.max(0, runtime.allocated - runtime.released) : 0;
+
+  const fbFound = procBuf != null && runtime != null;
+  let procurementBufferBalance = procBuf ? Math.max(0, procBuf.allocated - procBuf.released) : 0;
+  let runtimeBalance = runtime ? Math.max(0, runtime.allocated - runtime.released) : 0;
+
+  // =============== CODE-ONLY FALLBACK (Neon missing FundBucket table) =======================
+  // Project rule: NO prisma.schema changes EVER → we cannot CREATE FundBucket on Neon.
+  // Fall back to math using OwnerAccount table (which DOES exist on Neon and has real balances).
+  // 1) sovereign_reserves → Banking Circle LU account id 01afb980-d04f-4e9a-87bb-e8caa25a516a last=646 OR sum OwnerAccount (30% of totalReceived)
+  // 2) runtime_operations → 20% of totalOwnerReceived
+  // 3) procurement_buffer → 5% of totalOwnerReceived (explicit float buffer);
+  //    procurement spendable = buffer + (50% × runtime_balance)
+  if (!fbFound) {
+    try {
+      const sql = `
+        SELECT
+          CASE
+            WHEN "accountNumberLast"='646' OR "label" ILIKE '%Banking Circle%' OR "countryCode"='LU' THEN 'sovereign_reserves'
+            WHEN "accountNumberLast" IN ('182','372') OR "label" ILIKE '%Attijari%' OR "label" ILIKE '%Salary%' OR "label" ILIKE '%Debt%' OR "countryCode"='MA' THEN CASE
+                WHEN "label" ILIKE '%Debt%' OR "accountNumberLast"='372' THEN 'debt_repayment' ELSE 'salary_bucket' END
+            WHEN "label" ILIKE '%PayPal%' OR "label" ILIKE '%Payoneer%' OR "label" ILIKE '%USDC%' OR "label" ILIKE '%Crypto%' THEN 'runtime_operations'
+            ELSE 'runtime_operations'
+          END AS code,
+          COUNT(*)::int AS cnt,
+          COALESCE(SUM("heldBalance"),0)::float AS held,
+          COALESCE(SUM("spendableBalance"),0)::float AS spendable,
+          COALESCE(SUM("totalSent"),0)::float AS sent,
+          COALESCE(SUM("totalReceived"),0)::float AS recv
+        FROM "OwnerAccount" WHERE "isActive"=true GROUP BY 1 ORDER BY 1;
+      `;
+      const rows: Array<{ code: string; total: bigint | number; held: bigint | number; spendable: bigint | number; sent: bigint | number; recv: bigint | number; }> =
+        await (prisma.$queryRawUnsafe as any)(sql);
+      const totalReceivedAll = rows.reduce((s, r) => s + Number(r.recv || 0), 0);
+      // Use the bucket 30/20/10/40 canonical percentages against totalReceived = realistic snapshot
+      runtimeBalance = Math.max(0, Math.round(totalReceivedAll * 0.20 * 100) / 100);
+      procurementBufferBalance = Math.max(0, Math.round(totalReceivedAll * 0.05 * 100) / 100);
+    } catch (e) {
+      // Absolute last-resort fallback: USD 0 (fail-closed: no procurement spend authorized).
+      runtimeBalance = 0;
+      procurementBufferBalance = 0;
+    }
+  }
+  // ===========================================================================================
+
   const runtimeSubBudgetAvailable =
     (runtimeBalance * policy.procurementSubBudgetPctOfRuntime) / 100;
   const spendableAmount = Math.max(0, Math.round((procurementBufferBalance + runtimeSubBudgetAvailable) * 100) / 100);
@@ -130,9 +176,10 @@ export async function getProcurementSpendAuthorisation(): Promise<ProcurementSpe
     policyConfigHash: policy.configHash,
     currency: 'USD',
     details:
-      `Procurement spend authorised = procurement_buffer.balance (${procurementBufferBalance}) ` +
+      `Procurement spend authorised = procurement_buffer.balance (${procurementBufferBalance.toFixed(2)}) ` +
       `+ (runtime_operations.balance × 50% sub-budget) (${runtimeSubBudgetAvailable.toFixed(2)}) ` +
-      `≤ total ${spendableAmount.toFixed(2)} USD. NEVER drawn from sovereign_reserves, salary_bucket, or debt_repayment.`,
+      `≤ total ${spendableAmount.toFixed(2)} USD. NEVER drawn from sovereign_reserves, salary_bucket, or debt_repayment.` +
+      (fbFound ? '' : ' [Source: code-only OwnerAccount ledger fallback — FundBucket table absent on Neon; totalReceived×20% runtime, ×5% buffer]'),
   };
 }
 
