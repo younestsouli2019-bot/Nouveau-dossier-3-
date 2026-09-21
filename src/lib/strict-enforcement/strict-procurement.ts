@@ -378,6 +378,7 @@ export async function approvePurchaseOrderWithBudgetCheck(
 
   return {
     approved: true,
+    code: 'BUDGET_OK',
     receipt: approvalReceipt as unknown as Record<string, unknown>,
   }
 }
