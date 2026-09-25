@@ -1,0 +1,43 @@
+name: DevOps Self-Healing
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Scan + triage only (no repair pushes)"
+        required: false
+        default: "true"
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: devops-self-healing
+  cancel-in-progress: false
+
+jobs:
+  scan-and-heal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - name: Resolve dry-run flag
+        id: flags
+        run: |
+          DRY="${{ inputs.dry_run != '' && inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          if [ "${{ github.event_name }}" = "schedule" ]; then DRY="--dry-run"; fi
+          echo "dry=$DRY" >> "$GITHUB_OUTPUT"
+      - name: Scan + triage failed workflow runs (control-plane; read-only)
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            node ./scripts/devops-self-healing.mjs --dry-run || echo "self-healing scan exit≠0 (non-fatal)"
+          else
+            node ./scripts/devops-self-healing.mjs ${{ steps.flags.outputs.dry }} || echo "self-healing exit≠0 (non-fatal)"
+          fi

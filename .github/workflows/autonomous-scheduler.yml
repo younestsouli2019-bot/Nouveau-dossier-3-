@@ -111,7 +111,19 @@ jobs:
       SWARM_CYCLE_REF: "cycle-1786593501227"
       VERCEL_PROJECT_URL: ${{ secrets.VERCEL_PROJECT_URL }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PAYOUT_TICK_SECRET: ${{ secrets.PAYOUT_TICK_SECRET }}
     steps:
+      - name: Fail-closed tick gate (PAYOUT_TICK_SECRET must be set)
+        run: |
+          # FAIL-CLOSED: this workflow must never run a payout/production tick
+          # without the PAYOUT_TICK_SECRET repo secret. Absence of the secret
+          # aborts the job with a distinct exit code; the clickless read-only
+          # tick below remains assessment-only.
+          if [ -z "${PAYOUT_TICK_SECRET:-}" ]; then
+            echo "::error::PAYOUT_TICK_SECRET is not set — failing closed, tick aborted."
+            exit 3
+          fi
+          echo "::notice::PAYOUT_TICK_SECRET present — fail-closed tick gate passed."
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
