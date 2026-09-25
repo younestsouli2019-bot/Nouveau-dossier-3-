@@ -2,32 +2,48 @@ import crypto from 'crypto';
 
 const API_KEY = process.env.BYBIT_API_KEY || '';
 const API_SECRET = process.env.BYBIT_API_SECRET || '';
-const BASE_URL = 'https://api-testnet.bybit.com';
+const BASE_URL = process.env.BYBIT_API_BASE || 'https://api.bybit.com';
 const COOLDOWN_MS = 65000;
 
 let lastTradeTime = 0;
 
-function sign(params, secret) {
-  const timestamp = Date.now();
-  const recvWindow = 5000;
-  const sorted = Object.keys(params).sort().map(k => `${k}=${params[k]}`).join('&');
+function sign(method, endpoint, params, timestamp, recvWindow = '5000') {
+  if (method === 'POST') {
+    const json = JSON.stringify(params);
+    const preSign = `${timestamp}${API_KEY}${recvWindow}${json}`;
+    const signature = crypto.createHmac('sha256', API_SECRET).update(preSign).digest('hex');
+    return { signature, json };
+  }
+  const sorted = Object.keys(params).sort().map(k => `${k}=${encodeURIComponent(params[k])}`).join('&');
   const preSign = `${timestamp}${API_KEY}${recvWindow}${sorted}`;
-  const signature = crypto.createHmac('sha256', secret).update(preSign).digest('hex');
-  return { ...params, timestamp, recvWindow, sign: signature };
+  const signature = crypto.createHmac('sha256', API_SECRET).update(preSign).digest('hex');
+  return { signature, queryString: sorted };
 }
 
 async function apiRequest(method, endpoint, params = {}) {
   await enforceCooldown();
 
-  const signed = sign(params, API_SECRET);
-  const url = new URL(`${BASE_URL}${endpoint}`);
-  Object.entries(signed).forEach(([k, v]) => url.searchParams.set(k, String(v)));
+  const timestamp = Date.now().toString();
+  const recvWindow = '5000';
+  const { signature, queryString, json } = sign(method, endpoint, params, timestamp, recvWindow);
+
+  const headers = {
+    'X-BAPI-API-KEY': API_KEY,
+    'X-BAPI-SIGN': signature,
+    'X-BAPI-SIGN-TYPE': '2',
+    'X-BAPI-TIMESTAMP': timestamp,
+    'X-BAPI-RECV-WINDOW': recvWindow,
+  };
+  if (method === 'POST' && json) headers['Content-Type'] = 'application/json';
+
+  const url = `${BASE_URL}${endpoint}${method === 'GET' && queryString ? '?' + queryString : ''}`;
 
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      const res = await fetch(url.toString(), {
+      const res = await fetch(url, {
         method,
-        headers: { 'X-API-APIKEY': API_KEY, 'Content-Type': 'application/json' }
+        headers,
+        ...(method === 'POST' && json ? { body: json } : {}),
       });
 
       if (res.status === 429) {

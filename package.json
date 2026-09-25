@@ -57,7 +57,8 @@
     "inference:up": "docker compose -f inference/docker-compose.yml up -d",
     "inference:down": "docker compose -f inference/docker-compose.yml down",
     "inference:health": "node --import tsx scripts/glm-local-health.mjs",
-    "audit:all": "npm run typecheck && npm run audit:truth && npm run guard:selftest && npm run audit:i8"
+    "audit:secrets": "node scripts/audit-workflow-secrets.mjs",
+    "audit:all": "npm run typecheck && npm run audit:truth && npm run guard:selftest && npm run audit:i8 && npm run audit:secrets"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.13",

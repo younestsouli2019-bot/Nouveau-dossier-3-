@@ -7,6 +7,10 @@ export interface ConnectorCredential {
   envFallbacks: Record<string, string>;
   activatedAt: Date | null;
   isActive: boolean;
+  /** Credential fields that must ALL be present for the connector to be considered live. */
+  requiredCredentialFields?: string[];
+  /** Groups of credential fields; at least ONE group must be fully present for live. */
+  anyOfCredentialGroups?: string[][];
 }
 
 const CREDENTIAL_REGISTRY: Record<string, ConnectorCredential> = {
@@ -32,6 +36,7 @@ const CREDENTIAL_REGISTRY: Record<string, ConnectorCredential> = {
       scope: 'ATTIJARI_SCOPE',
       apiBaseUrl: 'ATTIJARI_API_BASE_URL',
     },
+    requiredCredentialFields: ['psd2ApiToken'],
     activatedAt: null,
     isActive: false,
   },
@@ -49,6 +54,7 @@ const CREDENTIAL_REGISTRY: Record<string, ConnectorCredential> = {
       clientId: 'PAYPAL_CLIENT_ID',
       clientSecret: 'PAYPAL_CLIENT_SECRET',
     },
+    requiredCredentialFields: ['clientId', 'clientSecret'],
     activatedAt: null,
     isActive: false,
   },
@@ -69,6 +75,7 @@ const CREDENTIAL_REGISTRY: Record<string, ConnectorCredential> = {
       swift: 'OWNER_SWIFT',
       beneficiaryName: 'OWNER_BENEFICIARY_NAME',
     },
+    requiredCredentialFields: ['iban', 'swift'],
     activatedAt: null,
     isActive: false,
   },
@@ -86,6 +93,7 @@ const CREDENTIAL_REGISTRY: Record<string, ConnectorCredential> = {
       apiKey: 'BASE44_API_KEY',
       appId: 'BASE44_APP_ID',
     },
+    anyOfCredentialGroups: [['apiKey'], ['serviceToken']],
     activatedAt: null,
     isActive: false,
   },
@@ -104,6 +112,7 @@ const CREDENTIAL_REGISTRY: Record<string, ConnectorCredential> = {
       programId: 'PAYONEER_PROGRAM_ID',
       partnerId: 'PAYONEER_PARTNER_ID',
     },
+    requiredCredentialFields: ['apiToken'],
     activatedAt: null,
     isActive: false,
   },
@@ -121,6 +130,7 @@ const CREDENTIAL_REGISTRY: Record<string, ConnectorCredential> = {
       apiKey: 'BINANCE_API_KEY',
       apiSecret: 'BINANCE_API_SECRET',
     },
+    requiredCredentialFields: ['apiKey', 'apiSecret'],
     activatedAt: null,
     isActive: false,
   },
@@ -137,6 +147,7 @@ const CREDENTIAL_REGISTRY: Record<string, ConnectorCredential> = {
       apiKey: 'BYBIT_API_KEY',
       apiSecret: 'BYBIT_API_SECRET',
     },
+    requiredCredentialFields: ['apiKey', 'apiSecret'],
     activatedAt: null,
     isActive: false,
   },
@@ -155,6 +166,7 @@ const CREDENTIAL_REGISTRY: Record<string, ConnectorCredential> = {
       apiSecret: 'BITGET_API_SECRET',
       passphrase: 'BITGET_PASSPHRASE',
     },
+    requiredCredentialFields: ['apiKey', 'apiSecret', 'passphrase'],
     activatedAt: null,
     isActive: false,
   },
@@ -171,6 +183,7 @@ const CREDENTIAL_REGISTRY: Record<string, ConnectorCredential> = {
       apiToken: 'WISE_API_TOKEN',
       baseUrl: 'WISE_API_BASE',
     },
+    requiredCredentialFields: ['apiToken'],
     activatedAt: null,
     isActive: false,
   },
@@ -187,6 +200,7 @@ const CREDENTIAL_REGISTRY: Record<string, ConnectorCredential> = {
       secretKey: 'STRIPE_SECRET_KEY',
       publishableKey: 'STRIPE_PUBLISHABLE_KEY',
     },
+    requiredCredentialFields: ['secretKey'],
     activatedAt: null,
     isActive: false,
   },
@@ -204,6 +218,7 @@ const CREDENTIAL_REGISTRY: Record<string, ConnectorCredential> = {
       privateKey: 'TRON_PRIVATE_KEY',
       usdtAddress: 'TRON_USDT_ADDRESS',
     },
+    requiredCredentialFields: ['privateKey'],
     activatedAt: null,
     isActive: false,
   },
@@ -221,6 +236,7 @@ const CREDENTIAL_REGISTRY: Record<string, ConnectorCredential> = {
       merchantId: 'GOOGLEPAY_MERCHANT_ID',
       clientId: 'GOOGLEPAY_CLIENT_ID',
     },
+    requiredCredentialFields: ['merchantId', 'clientId'],
     activatedAt: null,
     isActive: false,
   },
@@ -236,7 +252,13 @@ function initializeCredentials(): void {
         resolved.config[field] = process.env[envVar]!;
       }
     }
-    const hasRequiredValues = Object.values(resolved.config).some(v => !!v);
+    const requiredFilled = !resolved.requiredCredentialFields
+      ? true
+      : resolved.requiredCredentialFields.every(f => !!resolved.config[f]);
+    const anyGroupFilled = !resolved.anyOfCredentialGroups
+      ? true
+      : resolved.anyOfCredentialGroups.some(g => g.every(f => !!resolved.config[f]));
+    const hasRequiredValues = !!(requiredFilled && anyGroupFilled);
     resolved.mode = hasRequiredValues ? 'live' : 'offline';
     resolved.isActive = hasRequiredValues;
     if (hasRequiredValues && !resolved.activatedAt) resolved.activatedAt = new Date();
