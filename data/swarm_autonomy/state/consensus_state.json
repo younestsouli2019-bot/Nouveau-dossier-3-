@@ -1,6 +1,6 @@
 {
-  "at": 1788709109407,
-  "iso": "2026-09-06T15:38:29.407Z",
+  "at": 1790336086602,
+  "iso": "2026-09-25T11:34:46.602Z",
   "holiday": {
     "active": false,
     "ok": true,
@@ -23,7 +23,7 @@
   },
   "selfAuditPasses": false,
   "deepAuditPasses": false,
-  "moneyOverridePasses": true,
+  "moneyOverridePasses": false,
   "essentials": [
     "SELF_AUDIT_HOURLY",
     "DEEP_AUDIT_DAILY",
