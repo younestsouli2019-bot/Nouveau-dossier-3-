@@ -77,6 +77,13 @@ function isRealRef(ref?: string | null): boolean {
   if (/^(PLACEHOLDER|TBD|N\/A|PENDING|TEST|MOCK|FAKE|-|_)+$/i.test(v)) return false;
   return true;
 }
+// Internal test/demo markers must NEVER be confirmable as real disbursements.
+const TEST_MARKER_RE =
+  /\b(LIVE[-_ ]?TEST|SELFTEST|DEMO|MOCK[-_ ]?RUN|AUTO[-_ ]?(VERIFY|RELEASE)|PROOFHASH[-_ ]?VERIFY|FINAL[-_ ]?PROOFHASH|DRY[-_ ]?RUN)\b/i;
+export function looksLikeTestMarker(s?: string | null): boolean {
+  if (!s) return false;
+  return TEST_MARKER_RE.test(s);
+}
 // Moroccan domestic RIB pattern: Attijariwafa domestic = 24-digit starting 00781
 // (5-digit bank code + 5-digit branch code + 11-digit account + 2-digit RIB key = 23 actually but seed uses 24).
 const MA_RIB_24 = /^00781\d{19}$/;
@@ -241,13 +248,21 @@ async function bookPendingManual(
 }
 
 // Transition manual-rail pending to COMPLETED. Also used idempotently for PSD2 confirm.
-export async function confirmRelease(externalRef: string) {
+export async function confirmRelease(externalRef: string, opts?: { settlementId?: string }) {
   if (!isRealRef(externalRef)) {
     return {
       ok: false,
       externalRef,
       status: 'REJECTED_PLACEHOLDER',
       reason: 'confirmRelease externalRef must be length>=6 and not a placeholder (TBD/PENDING/TEST/MOCK/FAKE/PLACEHOLDER)',
+    };
+  }
+  if (looksLikeTestMarker(externalRef)) {
+    return {
+      ok: false,
+      externalRef,
+      status: 'REJECTED_TEST_MARKER',
+      reason: 'confirmRelease externalRef contains an internal test/demo marker (LIVE-TEST/SELFTEST/MOCK/PROOFHASH-VERIFY/...) — real disbursement attestation required.',
     };
   }
   // Case 1: PSD2 live rail — poll the bank (original behavior, unmodified)
@@ -269,7 +284,7 @@ export async function confirmRelease(externalRef: string) {
     // fall through to manual rail logic below
   }
 
-  // Case 2: manual MAD rail — find an ownerSettlement pending (manual_attested_pending)
+  // Case 2: manual MAD rail — find an ownerSettlement pending (manual_rail_pending)
   // OR an ownerSettlement that already used this exact referenceId:
   const alreadyCompleted = await prisma.ownerSettlement.findFirst({
     where: { referenceId: externalRef, status: 'completed' },
@@ -286,19 +301,43 @@ export async function confirmRelease(externalRef: string) {
       railUsed: 'mad_manual_operator_mobile' as const,
     };
   }
-  const pending = await prisma.ownerSettlement.findFirst({
-    where: {
-      status: 'processing',
-      connectorStatus: 'manual_attested_pending',
-    },
-    orderBy: { createdAt: 'asc' },
-  });
-  if (!pending) {
+  const pending = opts?.settlementId
+    ? await prisma.ownerSettlement.findUnique({
+        where: { id: opts.settlementId },
+      })
+    : await prisma.ownerSettlement.findFirst({
+        where: {
+          status: 'processing',
+          connectorStatus: 'manual_attested_pending',
+          dataSource: 'manual_rail_pending',
+          purpose: 'release',
+        },
+        orderBy: { createdAt: 'asc' },
+      });
+  if (!pending || pending.status !== 'processing' || pending.connectorStatus !== 'manual_attested_pending') {
     return {
       ok: false,
       externalRef,
       status: 'NO_PENDING_FOUND',
-      reason: `No PENDING_MANUAL_TRANSFER found to settle with ref ${externalRef}. Check ownerSettlement manual_attested_pending rows.`,
+      reason: `No PENDING_MANUAL_TRANSFER found to settle with ref ${externalRef}. Check ownerSettlement manual_rail_pending rows.`,
+    };
+  }
+  // Only genuine bookPendingManual releases ({dataSource:'manual_rail_pending'}) are confirmable.
+  // Fabricated/linked rows (manual_attested_finance, internal_ledger_only, LIVE-TEST labels) are NOT.
+  if (pending.dataSource !== 'manual_rail_pending') {
+    return {
+      ok: false,
+      externalRef,
+      status: 'REJECTED_NOT_MANUAL_RAIL',
+      reason: `Settlement ${pending.id} dataSource=${pending.dataSource} is not 'manual_rail_pending' — only operator-booked manual releases are confirmable. Quarantine/live-test rows require manual reversal, not attestation.`,
+    };
+  }
+  if (looksLikeTestMarker(pending.sourceLabel) || looksLikeTestMarker(pending.description)) {
+    return {
+      ok: false,
+      externalRef,
+      status: 'REJECTED_TEST_MARKER',
+      reason: `Settlement ${pending.id} sourceLabel/description contains an internal test/demo marker — refusing to attest a live-test release as real disbursement.`,
     };
   }
   // ===== Apply real transfer transition =====
