@@ -50,7 +50,8 @@ export async function POST(request: NextRequest) {
     if (!externalRef) {
       return NextResponse.json({ success: false, error: 'externalRef required for confirm' }, { status: 400 })
     }
-    const result = await confirmRelease(externalRef)
+    const settlementId = typeof body.settlementId === 'string' && body.settlementId.trim() ? body.settlementId.trim() : undefined
+    const result = await confirmRelease(externalRef, settlementId ? { settlementId } : undefined)
     return NextResponse.json({ success: result.ok, ...result })
   }
 
