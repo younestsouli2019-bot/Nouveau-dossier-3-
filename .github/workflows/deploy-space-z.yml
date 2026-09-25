@@ -124,6 +124,7 @@ jobs:
 
   post-deploy-smoke:
     needs: [trigger-deploy]
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
