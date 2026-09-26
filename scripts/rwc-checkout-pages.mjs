@@ -60,22 +60,122 @@ const DETAILS = {
 };
 
 const FAQ = [
-	["Is it safe to pay this way?", "Yes. All orders are matched by your unique order reference and delivered to the email you provide. We never store your card or bank credentials on this site."],
-	["When will I get access?", "PayPal payments are usually matched within a few hours; Payoneer and bank transfers within 1–5 business days; crypto within minutes to a few hours depending on network confirmations."],
-	["What do I receive?", "You get instant lifetime access to the course, all practice tests, explanations, and a completion certificate (PDF) when you finish."],
-	["Can I use another payment method?", "Yes — every course page offers PayPal, Payoneer, Crypto (USDT) and bank transfer. Pick whichever is easiest for you."],
-	["What if I pay and don't receive access?", "Email billing@realworldcerts.com with your order reference and we'll resolve it within 24 hours."],
-	["Is there a refund policy?", "Yes. If the course doesn't meet your expectations, contact us within 7 days of purchase for a full refund — see our refund policy."],
+	[
+		"What is your refund policy?",
+		"We offer a 30-day money-back guarantee on all courses. If you are not satisfied with your purchase within the first 30 days, email billing@realworldcerts.com for a full refund — no questions asked. Refunds are processed back to the original payment method within 3–5 business days.",
+	],
+	[
+		"How many hours should I study per course?",
+		"We recommend 40–80 hours of study depending on your prior experience. All courses are self-paced, so you can adjust the timeline to fit your schedule. Every module includes guided lectures, practice tests, and detailed explanations to reinforce learning.",
+	],
+	[
+		"Can I retake the practice tests and quizzes?",
+		"Yes — all practice tests, quizzes, and module exams can be retaken an unlimited number of times. Your progress is saved, and every answer has a detailed explanation so you can review weak areas before retrying. No retake fees or limits.",
+	],
+	[
+		"Is an official exam voucher included?",
+		"This purchase covers the full course, unlimited practice tests, and a completion certificate (PDF). Official vendor exam vouchers are not included by default but are available as a separate add-on. See the checkout page or email support@realworldcerts.com for current bundle and voucher pricing.",
+	],
+	[
+		"What payment methods are accepted and how are they processed?",
+		"We accept card payments (MAD via Attijari SimplePay / CMI gateway — Visa and Mastercard), PayPal, Payoneer, USDT crypto (ERC-20 and BEP-20), and international bank transfer (SWIFT / EU SEPA / local RIB). All card payments are processed through our PCI-DSS compliant gateway — we never store card numbers on our servers.",
+	],
+	[
+		"When will I receive access and how is content delivered?",
+		"Access is delivered instantly by email once your payment is matched: PayPal and crypto within minutes to a few hours; Payoneer and bank transfers within 1–5 business days depending on clearing. You receive a secure login link to the learner dashboard where all lectures, practice tests, and resources are available 24/7 from any device.",
+	],
+	[
+		"How do you handle my privacy and personal data?",
+		"We collect only the minimum data necessary to process your order (email, payment reference, and optional billing contact). We never sell or share your information. Your data is encrypted at rest and in transit, stored in EU and US-based GDPR-compliant infrastructure. You can request access, correction, or full deletion at any time by emailing privacy@realworldcerts.com — see our Privacy Policy for full details.",
+	],
+	[
+		"Are your processing and data practices GDPR compliant?",
+		"Yes. RealWorldCerts operates in compliance with EU GDPR, UK GDPR, PSD2/SCA strong customer authentication for card payments, and SWIFT/EU bank transfer regulations. We maintain a Data Processing Agreement with all sub-processors, perform quarterly security audits, and keep incident-response and breach-notification procedures aligned with Article 33 of the GDPR. Our appointed data protection contact is privacy@realworldcerts.com.",
+	],
 ];
 
 const METHOD_TITLES = { paypal: "PayPal", payoneer: "Payoneer", crypto: "Crypto (USDT)", bank: "Bank Transfer" };
 
+function baseMobileCSS() {
+	return `@media (min-width: 360px){.course{flex-direction:column;gap:12px}.course img{width:100%;height:auto;max-height:160px;object-fit:cover}}@media (min-width: 768px){.course{flex-direction:row}.course img{width:168px;height:72px}}@media (min-width: 1024px){main{max-width:900px}.grid{gap:32px}}button{min-height:56px;min-width:44px}.cta{min-height:56px;min-width:44px}.method{min-height:64px}.tab{min-height:44px}.stepper .step{min-height:44px}`;
+}
+
+function buildStepper(activeIndex) {
+	const steps = ["Review", "Method", "Pay", "Confirm"];
+	return `<div class="stepper" role="navigation" aria-label="Checkout progress">${steps
+		.map(
+			(s, i) =>
+				`<div class="step ${i === activeIndex ? "active" : ""} ${
+					i < activeIndex ? "done" : ""
+				}"><span class="step-num">${i + 1}</span><span class="step-label">${s}</span></div>`,
+		)
+		.join("")}</div>`;
+}
+
+function checkoutJsonLd(pageName, methodLabel, stepLabel) {
+	const checkoutAction = {
+		"@context": "https://schema.org",
+		"@type": "CheckoutAction",
+		actionStatus: "https://schema.org/PotentialActionStatus",
+		agent: {
+			"@type": "Organization",
+			name: "RealWorldCerts",
+			url: "https://www.realworldcerts.com",
+		},
+		object: {
+			"@type": "Order",
+			merchant: {
+				"@type": "Organization",
+				name: "RealWorldCerts",
+				email: "billing@realworldcerts.com",
+				url: "https://www.realworldcerts.com",
+			},
+			orderStatus: "https://schema.org/OrderProcessing",
+			paymentMethod: methodLabel || "https://schema.org/PaymentMethod",
+			acceptedOffer: {
+				"@type": "Offer",
+				itemOffered: {
+					"@type": "Product",
+					name: "RealWorldCerts Certification Training Course",
+				},
+				priceCurrency: "USD",
+				availability: "https://schema.org/InStock",
+				seller: {
+					"@type": "Organization",
+					name: "RealWorldCerts",
+				},
+			},
+		},
+	};
+	const orderAction = {
+		"@context": "https://schema.org",
+		"@type": "OrderAction",
+		actionStatus: "https://schema.org/PotentialActionStatus",
+		result: {
+			"@type": "Order",
+			orderStatus: "https://schema.org/OrderProcessing",
+			confirmationNumber: "RWC-" + new Date().getFullYear().toString().slice(-2) + "XXXX-XXXXXX",
+		},
+	};
+	return `<script type="application/ld+json">${JSON.stringify(
+		checkoutAction,
+	)}</script><script type="application/ld+json">${JSON.stringify(
+		orderAction,
+	)}</script>`;
+}
+
 function startPage(apiBase) {
+	const faq = FAQ.map(
+		([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`,
+	).join("");
+
+	const jsonLdBlocks = checkoutJsonLd("Secure Checkout Start", "https://schema.org/PaymentCard", "Review → Method");
+
 	return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Checkout · RealWorldCerts</title>
 <meta name="description" content="Complete your RealWorldCerts purchase securely. Pay by card (MAD via Attijari SimplePay), PayPal, USDT, or bank transfer. Lifetime access delivered by email.">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' ${apiBase}; form-action 'self' https://payment.cmi.co.ma https://testpayment.cmi.co.ma ${apiBase}; base-uri 'none'; frame-ancestors 'none'">
@@ -92,6 +192,13 @@ header{position:sticky;top:0;z-index:10;background:rgba(11,12,16,.92);backdrop-f
 .brand span{color:var(--accent2)}
 .back{color:var(--muted);font-size:14px}
 main{max-width:720px;margin:0 auto;padding:24px 20px 60px}
+.stepper{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:22px}
+.stepper .step{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--muted);font-size:12px;text-align:center}
+.stepper .step .step-num{width:28px;height:28px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:var(--muted);display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.stepper .step.active{border-color:#2a3e58;background:#16263a;color:var(--text)}
+.stepper .step.active .step-num{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:var(--accent2);color:#04121a}
+.stepper .step.done{color:var(--green)}
+.stepper .step.done .step-num{background:#0d1f17;border-color:#1e5c43;color:var(--green)}
 .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:22px}
 .card h2{margin:0 0 16px;font-size:19px}
 .course{display:flex;gap:14px}
@@ -104,14 +211,14 @@ ul.what li::before{content:"✓";color:var(--green);font-weight:700}
 .price{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);margin-top:16px;padding-top:14px;font-size:14px;color:var(--muted)}
 .price .amt{font-size:22px;font-weight:700;color:#fff}
 label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:18px 0 6px}
-input[type=email]{width:100%;padding:12px 14px;border-radius:10px;border:1px solid #2a3344;background:#0a0d13;color:#fff;font:inherit;font-size:15px}
+input[type=email]{width:100%;padding:14px 16px;border-radius:10px;border:1px solid #2a3344;background:#0a0d13;color:#fff;font:inherit;font-size:15px;min-height:56px}
 input[type=email]:focus{outline:none;border-color:var(--accent)}
 .methods{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
 .method{border:1px solid #2a3344;background:var(--panel2);border-radius:10px;padding:12px;cursor:pointer;color:var(--text);text-align:left;font:inherit}
 .method.sel{border-color:var(--accent2);background:#16263a}
 .method strong{display:block;font-size:14px}
 .method span{font-size:12px;color:var(--muted)}
-.cta{margin-top:18px;width:100%;padding:13px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121a;font-weight:700;font-size:15px;cursor:pointer}
+.cta{margin-top:18px;width:100%;padding:16px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121a;font-weight:700;font-size:15px;cursor:pointer}
 .cta:disabled{opacity:.6;cursor:not-allowed}
 .msg{display:none;margin-top:12px;padding:10px 12px;border-radius:8px;font-size:13px}
 .msg.err{border:1px solid #7a3b3b;background:#1d1212;color:var(--red)}
@@ -120,13 +227,21 @@ input[type=email]:focus{outline:none;border-color:var(--accent)}
 .trust span{font-size:12px;color:var(--muted);border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:var(--panel2)}
 .alt{margin-top:18px;font-size:13px;color:var(--muted)}
 .alt a{text-decoration:underline}
+details{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin:8px 0}
+summary{cursor:pointer;font-weight:600;color:#e2e8f0;min-height:44px;display:flex;align-items:center}
+details p{margin:10px 0 2px;color:var(--muted);font-size:14px;line-height:1.6}
 footer{border-top:1px solid var(--border);padding:26px 20px;color:var(--muted);font-size:13px}
 .foot-in{max-width:1040px;margin:0 auto;display:flex;gap:18px;flex-wrap:wrap}
+.faq-section{margin-top:26px}
+.faq-section h2{font-size:19px;margin:32px 0 6px}
+${baseMobileCSS()}
 </style>
+${jsonLdBlocks}
 </head>
 <body>
 <header><div class="header-in"><a class="brand" href="/">RealWorld<span>Certs</span></a><a class="back" href="/catalog/index.html">← Back to catalog</a></div></header>
 <main>
+  ${buildStepper(1)}
   <section class="card">
     <h2>Secure checkout</h2>
     <div class="course">
@@ -155,10 +270,15 @@ footer{border-top:1px solid var(--border);padding:26px 20px;color:var(--muted);f
     <button class="cta" id="pay">Continue to payment</button>
     <p class="msg err" id="errMsg"></p>
     <p class="msg ok" id="okMsg">Redirecting you to the secure payment page…</p>
-    <div class="trust"><span>✓ 256-bit encrypted checkout</span><span>✓ 7-day money-back guarantee</span><span>✓ No card stored on this site</span></div>
+    <div class="trust"><span>✓ 256-bit encrypted checkout</span><span>✓ 30-day money-back guarantee</span><span>✓ No card stored on this site</span></div>
   </section>
 
   <p class="alt">Prefer a manual method? See instructions for <a href="./paypal.html">PayPal</a>, <a href="./crypto.html">USDT</a>, <a href="./bank.html">bank transfer</a> — these still use your order reference to match the payment. Questions? Email <a href="mailto:billing@realworldcerts.com">billing@realworldcerts.com</a>.</p>
+
+  <div class="faq-section">
+    <h2>Frequently asked questions</h2>
+    ${faq}
+  </div>
 </main>
 <footer><div class="foot-in"><a href="/catalog/index.html">Course Catalog</a><a href="/cybersecurity.html">Cybersecurity</a><a href="/practice.html">Practice Tests</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/refund.html">Refund Policy</a><a href="/terms.html">Terms</a></div></footer>
 <script>
@@ -248,11 +368,14 @@ function page(method) {
 		([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`,
 	).join("");
 
+	const stepperIndex = method ? 2 : 1;
+	const jsonLdBlocks = checkoutJsonLd(`Checkout ${METHOD_TITLES[method]}`, `https://schema.org/${method === "paypal" ? "PayPal" : method === "crypto" ? "CryptoCurrency" : method === "bank" ? "WireTransfer" : "PaymentCard"}`, `Pay via ${METHOD_TITLES[method]}`);
+
 	return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Checkout · ${METHOD_TITLES[method]} · RealWorldCerts</title>
 <meta name="description" content="Complete your RealWorldCerts purchase with ${METHOD_TITLES[method]}. Secure, verified delivery by email.">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'">
@@ -269,15 +392,21 @@ header{position:sticky;top:0;z-index:10;background:rgba(11,12,16,.92);backdrop-f
 .brand span{color:var(--accent2)}
 .back{color:var(--muted);font-size:14px}
 main{max-width:1040px;margin:0 auto;padding:24px 20px 60px}
-.steps{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 26px;font-size:13px}
-.step{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid var(--border);border-radius:999px;background:var(--panel);color:var(--muted)}
-.step b{color:var(--text)}
-.step.done{color:var(--green)}
-.step.done b{color:var(--green)}
-.step.cur{border-color:#2a3e58;background:#16263a;color:var(--text)}
+.stepper{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0 22px}
+.stepper .step{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--muted);font-size:12px;text-align:center}
+.stepper .step .step-num{width:28px;height:28px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:var(--muted);display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.stepper .step.active{border-color:#2a3e58;background:#16263a;color:var(--text)}
+.stepper .step.active .step-num{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:var(--accent2);color:#04121a}
+.stepper .step.done{color:var(--green)}
+.stepper .step.done .step-num{background:#0d1f17;border-color:#1e5c43;color:var(--green)}
+.steps-breadcrumb{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px;font-size:13px}
+.step-breadcrumb{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid var(--border);border-radius:999px;background:var(--panel);color:var(--muted)}
+.step-breadcrumb b{color:var(--text)}
+.step-breadcrumb.done{color:var(--green)}
+.step-breadcrumb.done b{color:var(--green)}
+.step-breadcrumb.cur{border-color:#2a3e58;background:#16263a;color:var(--text)}
 .arrow{color:#374151}
 .grid{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;align-items:start}
-@media(max-width:840px){.grid{grid-template-columns:1fr}}
 .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px}
 .card h2{margin:0 0 16px;font-size:19px}
 .card h2 .badge{float:right;font-size:12px;font-weight:600;color:var(--muted);border:1px solid var(--border);padding:3px 10px;border-radius:999px;background:var(--panel2)}
@@ -292,7 +421,7 @@ ul.what li::before{content:"✓";color:var(--green);font-weight:700}
 .price .amt{font-size:22px;font-weight:700;color:#fff}
 .steps-pay{list-style:none;margin:0;padding:0;display:grid;gap:16px}
 .steps-pay li{display:flex;gap:12px}
-.step-num{flex:0 0 30px;height:30px;border-radius:999px;background:#16263a;border:1px solid #2a3e58;color:var(--accent2);display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.steps-pay .step-num{flex:0 0 30px;height:30px;border-radius:999px;background:#16263a;border:1px solid #2a3e58;color:var(--accent2);display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
 .steps-pay h4{margin:0 0 2px;font-size:15px}
 .steps-pay p{margin:0;color:var(--muted);font-size:14px}
 .dest{margin-top:18px;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:14px}
@@ -309,33 +438,40 @@ ul.what li::before{content:"✓";color:var(--green);font-weight:700}
 .warn{border:1px solid #7a3b3b;background:#1d1212;color:#f3c1c1;border-radius:10px;padding:10px 12px;font-size:13px}
 .ref{margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .ref .id{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;background:#0a0d13;border:1px dashed #2a3344;padding:8px 12px;border-radius:8px;color:var(--accent2)}
-button{cursor:pointer;font:inherit;border-radius:8px;border:1px solid #2a3e58;background:#16263a;color:#eaf1ff;padding:9px 14px}
+button{cursor:pointer;font:inherit;border-radius:8px;border:1px solid #2a3e58;background:#16263a;color:#eaf1ff;padding:12px 16px}
 button:hover{background:#1c2f4a}
 .after{background:linear-gradient(180deg,#10202f 0%,var(--panel) 60%);border:1px solid #1e3a52}
 .after ul{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:14px 0 0;padding:0;list-style:none}
 .after ul li{display:flex;gap:8px;font-size:14px;color:#cdd6e1}
 .after ul li::before{content:"✓";color:var(--accent2);font-weight:700}
-.cta{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
-.cta a{display:inline-flex;align-items:center;padding:11px 18px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121a;font-weight:700;font-size:14px}
-.cta a.alt{background:transparent;border:1px solid #2a3e58;color:var(--accent2)}
-.cta a:hover{text-decoration:none;filter:brightness(1.08)}
+.cta-row{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+.cta-row a{display:inline-flex;align-items:center;justify-content:center;padding:14px 18px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121a;font-weight:700;font-size:14px;min-height:56px;min-width:44px}
+.cta-row a.alt{background:transparent;border:1px solid #2a3e58;color:var(--accent2)}
+.cta-row a:hover{text-decoration:none;filter:brightness(1.08)}
 details{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin:8px 0}
-summary{cursor:pointer;font-weight:600;color:#e2e8f0}
-details p{margin:10px 0 2px;color:var(--muted);font-size:14px}
+summary{cursor:pointer;font-weight:600;color:#e2e8f0;min-height:44px;display:flex;align-items:center}
+details p{margin:10px 0 2px;color:var(--muted);font-size:14px;line-height:1.6}
 .trust{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
 .trust span{font-size:12px;color:var(--muted);border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:var(--panel2)}
 footer{border-top:1px solid var(--border);padding:26px 20px;color:var(--muted);font-size:13px}
 .foot-in{max-width:1040px;margin:0 auto;display:flex;gap:18px;flex-wrap:wrap}
 .msg{display:none;margin-top:12px;border:1px solid var(--green);color:var(--green);background:#0d1a14;padding:10px 12px;border-radius:8px;font-size:13px}
+.faq-section{margin-top:26px}
+.faq-section h2{font-size:19px;margin:32px 0 6px}
+${baseMobileCSS()}
+@media(max-width:840px){.grid{grid-template-columns:1fr}.networks{grid-template-columns:repeat(2,1fr)}}
 </style>
+${jsonLdBlocks}
 </head>
 <body>
 <header><div class="header-in"><a class="brand" href="/">RealWorld<span>Certs</span></a><a class="back" href="/catalog/index.html">← Back to catalog</a></div></header>
 <main>
-  <div class="steps">
-    <span class="step done"><b>1</b> Choose course <span class="arrow">→</span></span>
-    <span class="step cur"><b>2</b> Pay with ${METHOD_TITLES[method]} <span class="arrow">→</span></span>
-    <span class="step"><b>3</b> Get access by email</span>
+  ${buildStepper(stepperIndex)}
+  <div class="steps-breadcrumb">
+    <span class="step-breadcrumb done"><b>1</b> Choose course <span class="arrow">→</span></span>
+    <span class="step-breadcrumb done"><b>2</b> Start checkout <span class="arrow">→</span></span>
+    <span class="step-breadcrumb cur"><b>3</b> Pay with ${METHOD_TITLES[method]} <span class="arrow">→</span></span>
+    <span class="step-breadcrumb"><b>4</b> Get access by email</span>
   </div>
 
   <div class="grid">
@@ -376,12 +512,14 @@ footer{border-top:1px solid var(--border);padding:26px 20px;color:var(--muted);f
       <li>We email your access link within 24 hours of confirmation.</li>
       <li>Questions? Email billing@realworldcerts.com anytime.</li>
     </ul>
-    <div class="cta"><a href="mailto:billing@realworldcerts.com?subject=Order%20inquiry">Email us about this order</a><a class="alt" href="/catalog/index.html">Continue browsing</a></div>
-    <div class="trust"><span>✓ Verified order matching</span><span>✓ 7-day money-back guarantee</span><span>✓ No card stored on this site</span></div>
+    <div class="cta-row"><a href="mailto:billing@realworldcerts.com?subject=Order%20inquiry">Email us about this order</a><a class="alt" href="/catalog/index.html">Continue browsing</a></div>
+    <div class="trust"><span>✓ Verified order matching</span><span>✓ 30-day money-back guarantee</span><span>✓ No card stored on this site</span></div>
   </section>
 
-  <h2 style="font-size:19px;margin:32px 0 6px">Frequently asked questions</h2>
-  ${faq}
+  <div class="faq-section">
+    <h2>Frequently asked questions</h2>
+    ${faq}
+  </div>
 </main>
 <footer><div class="foot-in"><a href="/catalog/index.html">Course Catalog</a><a href="/cybersecurity.html">Cybersecurity</a><a href="/practice.html">Practice Tests</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/refund.html">Refund Policy</a><a href="/terms.html">Terms</a></div></footer>
 <script>
@@ -403,8 +541,8 @@ footer{border-top:1px solid var(--border);padding:26px 20px;color:var(--muted);f
   }
   const amt = document.getElementById("amount");
   if (amount) amt.textContent = "$" + amount;
-  const d = new Date();
-  const ref = "RWC-" + d.getFullYear().toString().slice(-2) + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0") + "-" + Math.random().toString(36).slice(2,8).toUpperCase();
+  const dnow = new Date();
+  const ref = "RWC-" + dnow.getFullYear().toString().slice(-2) + String(dnow.getMonth()+1).padStart(2,"0") + String(dnow.getDate()).padStart(2,"0") + "-" + Math.random().toString(36).slice(2,8).toUpperCase();
   const refEl = document.getElementById("orderRef");
   refEl.textContent = ref;
   document.getElementById("copyRef").addEventListener("click", function(){

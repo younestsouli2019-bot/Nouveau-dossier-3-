@@ -35,6 +35,55 @@ const TASK_HANDLERS = {
 			...(task.payload?.topic ? [task.payload.topic] : []),
 		],
 	},
+	"edu:ai:generate-image": {
+		label: "edu AI image generation",
+		args: (task) => {
+			const p = task.payload || {};
+			const out = [];
+			if (p.prompt) out.push("--prompt", String(p.prompt));
+			if (p.out) out.push("--out", String(p.out));
+			if (p.width) out.push("--width", String(p.width));
+			if (p.height) out.push("--height", String(p.height));
+			if (p.seed != null) out.push("--seed", String(p.seed));
+			if (p.model) out.push("--model", String(p.model));
+			if (p.provider) out.push("--provider", String(p.provider));
+			return ["./scripts/edu-ai-generate-image.mjs", ...out];
+		},
+	},
+	"edu:ai:generate-video": {
+		label: "edu AI video generation",
+		args: (task) => {
+			const p = task.payload || {};
+			const out = [];
+			if (p.prompt) out.push("--prompt", String(p.prompt));
+			if (p.out) out.push("--out", String(p.out));
+			if (p.images) out.push("--images", Array.isArray(p.images) ? p.images.join(",") : String(p.images));
+			if (p.width) out.push("--width", String(p.width));
+			if (p.height) out.push("--height", String(p.height));
+			if (p.duration) out.push("--duration", String(p.duration));
+			if (p.audio) out.push("--audio", String(p.audio));
+			if (p.seed != null) out.push("--seed", String(p.seed));
+			if (p.model) out.push("--model", String(p.model));
+			if (p.provider) out.push("--provider", String(p.provider));
+			return ["./scripts/edu-ai-generate-video.mjs", ...out];
+		},
+	},
+	"edu:ai:tts": {
+		label: "edu AI text-to-speech",
+		args: (task) => {
+			const p = task.payload || {};
+			const out = [];
+			if (p.text) out.push("--text", String(p.text));
+			if (p.input) out.push("--input", String(p.input));
+			if (p.out) out.push("--out", String(p.out));
+			if (p.voice) out.push("--voice", String(p.voice));
+			if (p.language) out.push("--language", String(p.language));
+			if (p.rate != null) out.push("--rate", String(p.rate));
+			if (p.model) out.push("--model", String(p.model));
+			if (p.provider) out.push("--provider", String(p.provider));
+			return ["./scripts/edu-ai-tts.mjs", ...out];
+		},
+	},
 	"swarm:supervisor": {
 		label: "swarm supervisor once",
 		args: () => ["./scripts/supervisor-once.mjs"],

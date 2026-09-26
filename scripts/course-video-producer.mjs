@@ -9,6 +9,13 @@ import {
 	MIME_OK,
 } from "./course-media-contract.mjs";
 import { verifyImageAsset } from "./visual-intelligence.mjs";
+import {
+	resolveBestProvider,
+	resolveProviderChain,
+	OmniVideoFactory,
+	ArenaAiVideo,
+	FfmpegSlideshowProvider,
+} from "../src/edu/media/providers/index.mjs";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_DIR = path.join(ROOT, "data", "out");
@@ -111,6 +118,21 @@ function resolveImageProvider() {
 		};
 	}
 	throw new Error(NO_KEY_REASONS.image);
+}
+
+export async function synthesizeNarration(scriptLines, { outDir, code, language = "en-US", rate = 1.0, voice = null } = {}) {
+	const text = (Array.isArray(scriptLines) ? scriptLines : [scriptLines])
+		.map((l) => (typeof l === "string" ? l : (l?.text || l?.narration || l?.line || "")))
+		.filter(Boolean)
+		.join(" ")
+		.trim();
+	if (!text.length) return { path: null, skipped: true, reason: "empty narration text" };
+	const ttsProvider = resolveBestProvider("tts");
+	const safeCode = String(code || "NARR").replace(/[^A-Za-z0-9-]/g, "-");
+	const audioPath = path.join(outDir || ASSETS_LOCAL, `${safeCode}-NARRATION.mp3`);
+	fs.mkdirSync(path.dirname(audioPath), { recursive: true });
+	const result = await ttsProvider.synthesize({ text, outPath: audioPath, language, rate, voice });
+	return { ...result, text, chars: text.length };
 }
 
 function generateImage({ prompt, outPath, width = 1024, height = 768 }) {
@@ -240,19 +262,36 @@ async function generateImageOpenAICompatible(provider, { prompt, outPath, width,
 }
 
 /**
- * Synthesize course videos LOCALLY from the real generated images.
- * Fail-closed: requires ffmpeg + real source files, else throws and
- * the asset stays broken. No placeholders, no fabricated URLs.
- *
- * videoMode: "auto" (synthesize when ffmpeg is available and images
- * exist; otherwise throw "video_not_configured"), or "ffmpeg" (require
- * synthesis). Controlled by RWC_VIDEO_MODE env.
+ * Build a provider chain for video stages.
+ * Chain order: OmniVideoFactory -> ArenaAiVideo -> FfmpegSlideshowProvider
+ * Each stage catches and falls to the next; exhausts chain then throws.
+ */
+async function runVideoChain({ prompt, imagePaths, outPath, width, height, audioPath, durationSec, stageLabel }) {
+	const chain = [new OmniVideoFactory(), new ArenaAiVideo(), new FfmpegSlideshowProvider()];
+	const errors = [];
+	for (const provider of chain) {
+		try {
+			if (!provider.isAvailable()) {
+				errors.push(`${provider.providerName}: not available`);
+				continue;
+			}
+			const result = await provider.generate({ prompt, imagePaths, outPath, width, height, audioPath, durationSec });
+			return { ...result, providerUsed: provider.providerName, brand: provider.brandName, stage: stageLabel, chainTried: errors.length };
+		} catch (e) {
+			errors.push(`${provider.providerName}: ${e?.message || String(e)}`);
+		}
+	}
+	throw new Error(`${stageLabel} video chain exhausted: ${errors.join(" | ")}`);
+}
+
+/**
+ * Synthesize course videos with TTS narration.
+ * Provider chain: OmniVideoFactory -> ArenaAiVideo -> FfmpegSlideshowProvider
+ * Narration audio is muxed as 128k AAC (reused by video providers via audioPath).
  */
 async function buildVideos(course, assets, lessonCount, codeOverride) {
 	const mode = process.env.RWC_VIDEO_MODE || "auto";
-	const synth = await import("./video-synthesis.mjs").catch(() => { throw new Error(NO_KEY_REASONS.video); });
-	// resolve ffmpeg up-front so we fail fast with a clear message
-	synth.resolveFfmpeg();
+	if (mode === "off") throw new Error(NO_KEY_REASONS.video);
 
 	const imgs = assets.filter((a) => a.generated && a.local && !a.broken && ["HERO", "THUMB", "MOD", "DIAGRAM", "CHEAT"].includes(a.kind));
 	if (!imgs.length) throw new Error("no generated images available to synthesize videos from");
@@ -261,19 +300,61 @@ async function buildVideos(course, assets, lessonCount, codeOverride) {
 	const ordered = imgs.sort((a, b) => kindOrder.indexOf(a.kind) - kindOrder.indexOf(b.kind));
 	const code = codeOverride || course.code || courseCode(course.slug);
 	const slug = course.slug;
-
 	const dir = path.join(ASSETS_LOCAL, slug);
-	const trailerPath = path.join(dir, `${code}-TRAILER.mp4`);
-	const r = await synth.renderSlideshow({ imagePaths: ordered.map((a) => a.local), outPath: trailerPath, perImageMs: 2600, transitionMs: 500 });
-	assets.push({ assetId: `${code}-TRAILER`, kind: "TRAILER", kindLabel: "TRAILER", url: null, local: r.path, mime: "video/mp4", size: r.size, generated: true, http_verified: false, visual_intel: null, public_source: null });
+	fs.mkdirSync(dir, { recursive: true });
 
-	// lessons: rotate through images in slices
+	const title = course.title || slug;
+	const category = course.category || "General";
+
+	const trailerScript = [
+		`Welcome to ${title}.`,
+		`This course on ${category} covers essential concepts and practical skills.`,
+		`Let's get started.`,
+	];
+	const trailerAudio = await synthesizeNarration(trailerScript, { outDir: dir, code: `${code}-TRAILER` }).catch((e) => ({ path: null, error: e.message }));
+	const trailerPath = path.join(dir, `${code}-TRAILER.mp4`);
+	const trailerPrompt = `Professional course trailer for "${title}" (${category}). Educational, engaging, cinematic quality.`;
+	try {
+		const r = await runVideoChain({
+			prompt: trailerPrompt,
+			imagePaths: ordered.map((a) => a.local),
+			outPath: trailerPath,
+			width: 1280,
+			height: 720,
+			audioPath: trailerAudio.path || null,
+			durationSec: Math.max(10, ordered.length * 3),
+			stageLabel: "TRAILER",
+		});
+		assets.push({ assetId: `${code}-TRAILER`, kind: "TRAILER", kindLabel: "TRAILER", url: null, local: r.path, mime: "video/mp4", size: r.size || (fs.existsSync(r.path) ? fs.statSync(r.path).size : 0), generated: true, http_verified: false, visual_intel: null, public_source: null, provider_used: r.providerUsed, narration_audio: trailerAudio.path || null });
+	} catch (e) {
+		assets.push({ assetId: `${code}-TRAILER`, kind: "TRAILER", kindLabel: "TRAILER", url: null, local: null, generated: false, broken: e.message });
+	}
+
 	for (let i = 1; i <= lessonCount; i++) {
 		const sub = ordered.slice(Math.max(0, (i - 1) * Math.ceil(ordered.length / lessonCount)), Math.min(ordered.length, i * Math.ceil(ordered.length / lessonCount)));
 		const lessonPath = path.join(dir, `${code}-LESSON-${String(i).padStart(2, "0")}.mp4`);
+		const lessonScript = [
+			`Lesson ${i} of ${title}.`,
+			`In this session we explore ${category} fundamentals with guided examples.`,
+			`Follow along with the illustrations shown on screen.`,
+		];
+		let lessonAudio = { path: null };
 		try {
-			const lr = await synth.renderSlideshow({ imagePaths: sub.map((a) => a.local), outPath: lessonPath, perImageMs: 3000, transitionMs: 600 });
-			assets.push({ assetId: `${code}-LESSON-${String(i).padStart(2, "0")}`, kind: "LESSON", kindLabel: "LESSON", url: null, local: lr.path, mime: "video/mp4", size: lr.size, generated: true, http_verified: false, visual_intel: null, public_source: null });
+			lessonAudio = await synthesizeNarration(lessonScript, { outDir: dir, code: `${code}-LESSON-${String(i).padStart(2, "0")}` });
+		} catch { /* narration failure is advisory; proceed silent */ }
+		try {
+			const lessonPrompt = `Educational lesson ${i} excerpt for "${title}" (${category}). Clear instructional visuals, learning-focused.`;
+			const lr = await runVideoChain({
+				prompt: lessonPrompt,
+				imagePaths: sub.map((a) => a.local),
+				outPath: lessonPath,
+				width: 1280,
+				height: 720,
+				audioPath: lessonAudio.path || null,
+				durationSec: Math.max(15, sub.length * 4),
+				stageLabel: `LESSON-${String(i).padStart(2, "0")}`,
+			});
+			assets.push({ assetId: `${code}-LESSON-${String(i).padStart(2, "0")}`, kind: "LESSON", kindLabel: "LESSON", url: null, local: lr.path, mime: "video/mp4", size: lr.size || (fs.existsSync(lr.path) ? fs.statSync(lr.path).size : 0), generated: true, http_verified: false, visual_intel: null, public_source: null, provider_used: lr.providerUsed, narration_audio: lessonAudio.path || null });
 		} catch (e) {
 			assets.push({ assetId: `${code}-LESSON-${String(i).padStart(2, "0")}`, kind: "LESSON", kindLabel: "LESSON", url: null, local: null, generated: false, broken: e.message });
 		}

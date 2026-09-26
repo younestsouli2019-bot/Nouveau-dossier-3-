@@ -36,6 +36,28 @@ export function resolveFfmpeg() {
 	throw new Error("ffmpeg not found: set FFMPEG_PATH or install ffmpeg (verified static build: github.com/BtbN/FFmpeg-Builds)");
 }
 
+export const resolveFfmpegBinary = resolveFfmpeg;
+
+export async function muxAudioIntoVideo({ videoPath, audioPath, outPath = videoPath, audioBitrate = "128k" }) {
+	const ffmpeg = resolveFfmpeg();
+	if (!fs.existsSync(videoPath)) throw new Error(`muxAudioIntoVideo: video not found: ${videoPath}`);
+	if (!fs.existsSync(audioPath)) throw new Error(`muxAudioIntoVideo: audio not found: ${audioPath}`);
+	const finalOut = outPath || videoPath;
+	const isSame = path.resolve(finalOut) === path.resolve(videoPath);
+	const tmp = isSame ? videoPath + ".mux.tmp.mp4" : finalOut;
+	const { stderr } = await execFileP(ffmpeg, [
+		"-y", "-i", videoPath, "-i", audioPath,
+		"-c:v", "copy", "-c:a", "aac", "-b:a", String(audioBitrate), "-shortest",
+		"-movflags", "+faststart", tmp,
+	], { windowsHide: true, maxBuffer: 64 * 1024 * 1024 });
+	const ok = fs.existsSync(tmp) && fs.statSync(tmp).size > 4096;
+	if (!ok) throw new Error(`ffmpeg mux produced no usable file: ${String(stderr).slice(-300)}`);
+	if (isSame) {
+		fs.renameSync(tmp, finalOut);
+	}
+	return { path: finalOut, size: fs.statSync(finalOut).size };
+}
+
 /**
  * Ken-Burns slideshow render.
  * imagePaths: ordered list of real image files; outPath: target .mp4.
