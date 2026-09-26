@@ -171,7 +171,7 @@ function resolveRailPsd2(owner: { accountNumber?: string | null; accountNumberLa
 // Create a PENDING_MANUAL_TRANSFER settlement entry that the confirmRelease call
 // later transitions into 'completed' with a real operator-provided WPS/MT103 reference.
 // heldBalance STAYS (held until real proof).
-async function bookPendingManual(
+export async function bookPendingManual(
   owner: { id: string; accountNumberLast?: string | null },
   amount: number,
   currency: string,
