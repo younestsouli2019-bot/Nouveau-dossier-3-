@@ -198,3 +198,75 @@ export function plainteFormelleBankAlMaghrib({ caseData }) {
 		body,
 	};
 }
+
+/**
+ * Lettre de Médiation — Médiateur bancaire d'Attijariwafa Bank.
+ * Rung between the mise en demeure and the BAM complaint: free, mandatory
+ * channel under the Bank Al-Maghrib mediation framework.
+ */
+export function mediationLetterAttijariwafa({ caseData }) {
+	const c = caseData.complaint;
+	const body = [
+		"Monsieur/Madame le Médiateur bancaire",
+		"Attijariwafa Bank",
+		"Siège Social, Casablanca, Maroc",
+		"",
+		`Date : ${new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}`,
+		"Objet : Saisine du médiateur bancaire — Dénouement non effectué de quatre virements internationaux (MT103) — Réclamation préalable demeurée sans suite",
+		"",
+		"Madame, Monsieur le Médiateur,",
+		"",
+		`Je me permets de saisir votre instance de médiation conformément au dispositif de médiation bancaire institué sous l'égide de Bank Al-Maghrib, après qu'une réclamation formelle (mise en demeure avec délai de cinq jours ouvrés) est demeurée sans effet auprès du Centre de Relations Clientèles de votre établissement.`,
+		"",
+		`Bénéficiaire : ${c.beneficiary} — CIN : ${c.cin} — RIB : ${c.rib}`,
+		`Montant cumulé retenu : ${formatUsd(c.totalAmount)} (environ ${formatMad(c.totalAmount)}) sur ${(c.batches || []).length} lots MT103 :`,
+		`${batchList(c)}`,
+		"",
+		"Faits : malgré une remise conforme des messages MT103 (traces UETR jointes) et un délai très supérieur au standard SWIFT de 2 à 5 jours ouvrés, aucune créditation, aucun justificatif de blocage, ni aucune motivation écrite ne m'ont été communiqués.",
+		"",
+		"Je sollicite : (1) votre intercession pour obtenir le dénouement effectif des quatre virements ou une motivation écrite et opposable du maintien en suspens ; (2) la communication de la position consolidée de l'établissement sur chaque lot UETR ; (3) un avis de médiation dans les délais propres à votre instance.",
+		"",
+		"Vous trouverez en annexe : copie de la mise en demeure, les quatre justificatifs MT103/UETR, copie de la CIN, et l'historique des relances.",
+		"",
+		"Je vous prie d'agréer, Madame, Monsieur le Médiateur, l'expression de ma considération distinguée.",
+		"",
+		`${c.beneficiary}`,
+		`CIN : ${c.cin} — RIB : ${c.rib}`,
+		`Contact : ${c.ownerContact}`,
+		`Référence dossier : ${caseData.id}`,
+	].join("\r\n");
+
+	return {
+		subject: `SAISINE MÉDIATEUR BANCAIRE — Virements MT103 non dénoués (${formatUsd(c.totalAmount)}) — ${c.beneficiary}`,
+		body,
+	};
+}
+
+/**
+ * Check-list « dossier de régularisation » — Office des Changes / conformité.
+ * The most common real cause of a 15+ day inbound-FX hold is missing
+ * FX/purpose documentation, which only an in-person regularization can clear.
+ */
+export function regularisationDossierChecklist({ caseData }) {
+	const c = caseData.complaint;
+	return {
+		subject: `DOSSIER DE RÉGULARISATION — Virements entrants MT103 (${formatUsd(c.totalAmount)}) — ${c.beneficiary}`,
+		body: [
+			"Check-list à présenter en agence (original + copie) :",
+			"1. CIN du bénéficiaire (original + copie)",
+			"2. Les 4 justificatifs MT103 avec traces UETR",
+			"3. Justificatifs d'origine des fonds : contrats, factures, relevés de plateformes de paiement",
+			"4. Attestation d'activité / justificatif de revenus (freelance, prestations)",
+			"5. RIB d'accueil",
+			"6. Fiche de déclaration de virement reçu, datée et signée en agence",
+			"7. Demande écrite : statut par UETR (reçu / en suspens / gelé) + référence de réclamation écrite",
+			"",
+			"À exiger de l'agence par écrit :",
+			"- Un numéro de réclamation avec récépissé",
+			"- La motivation écrite de tout maintien en suspens (base réglementaire citée)",
+			"- Le délai contractuel de traitement de la réclamation",
+			"",
+			`Dossier : ${caseData.id} — Bénéficiaire : ${c.beneficiary} — RIB : ${c.rib}`,
+		].join("\r\n"),
+	};
+}
