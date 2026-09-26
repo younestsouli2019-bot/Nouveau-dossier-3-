@@ -7,6 +7,10 @@ import { sha256 } from '@/lib/strict-enforcement/crypto-utils';
 const WEBHOOK_SECRET =
   process.env.GITHUB_APP_WEBHOOK_SECRET || process.env.GITHUB_WEBHOOK_SECRET || '';
 
+const DEPLOY_HOOK_URL = process.env.SPACEZ_DEPLOY_HOOK || '';
+const DEPLOY_RECORD_TOKEN = process.env.DEPLOY_RECORD_TOKEN || '';
+const MAIN_APP_URL = process.env.SPACEZ_MAIN_APP_URL || '';
+
 // Events we can act on. Everything else is acknowledged but not processed.
 const HANDLED_EVENTS = new Set([
   'ping',
@@ -53,22 +57,75 @@ async function recordEvent(opts: {
   const hash = await sha256(
     JSON.stringify({ ...opts, ts: Date.now(), nonce: Math.random().toString(36).slice(2) }),
   );
-  await prisma.auditLedger.create({
-    data: {
-      entityType: 'github_app_webhook',
-      entityId: hash.slice(0, 16),
-      action: `${opts.event}${opts.action ? ':' + opts.action : ''}`,
-      entryHash: hash,
-      performedBy: opts.actor || opts.repo || 'github-app',
-      metadata: JSON.stringify({
-        event: opts.event,
-        action: opts.action,
-        repo: opts.repo,
-        actor: opts.actor ? opts.actor.toLowerCase() : undefined,
-        ...opts.meta,
-      }),
-    },
-  });
+  try {
+    await prisma.auditLedger.create({
+      data: {
+        entityType: 'github_app_webhook',
+        entityId: hash.slice(0, 16),
+        action: `${opts.event}${opts.action ? ':' + opts.action : ''}`,
+        entryHash: hash,
+        performedBy: opts.actor || opts.repo || 'github-app',
+        metadata: JSON.stringify({
+          event: opts.event,
+          action: opts.action,
+          repo: opts.repo,
+          actor: opts.actor ? opts.actor.toLowerCase() : undefined,
+          ...opts.meta,
+        }),
+      },
+    });
+  } catch (e) { /* ignore prisma errors */ }
+}
+
+async function collectTreasurySnapshot() {
+  try {
+    const ownerRows = await prisma.$queryRawUnsafe<any[]>(
+      `SELECT COALESCE(SUM("totalReceived"::float),0)::float AS tr, COALESCE(SUM("totalSent"::float),0)::float AS ts,
+              COALESCE(SUM("heldBalance"::float),0)::float AS held, COALESCE(SUM("spendableBalance"::float),0)::float AS spend,
+              COUNT(*)::int AS n FROM "OwnerAccount";`
+    ).catch(() => []);
+    const r = (ownerRows as any)[0] || {};
+    const osComp = await prisma.ownerSettlement.count({ where: { status: 'completed' } }).catch(() => 0);
+    const piComp = await prisma.payoutItem.count({ where: { status: 'completed' } }).catch(() => 0);
+    const poDeliv = await prisma.purchaseOrder.count({ where: { status: { in: ['delivered', 'receipt_confirmed', 'settled'] as any } } }).catch(() => 0);
+    const poSumRows = await prisma.$queryRawUnsafe<any[]>(
+      `SELECT COALESCE(SUM("totalAmount"::float),0)::float AS total FROM "PurchaseOrder" WHERE status::text IN ('delivered','receipt_confirmed','settled');`
+    ).catch(() => [] as any);
+    const rwcSale = await prisma.auditLedger.count({ where: { action: 'rwc_sale_received' } }).catch(() => 0);
+    return {
+      ownerAccount: { totalReceived: Number(r.tr || 0), totalSent: Number(r.ts || 0), heldBalance: Number(r.held || 0), spendableBalance: Number(r.spend || 0), n: Number(r.n || 0) },
+      settlements: { completed: Number(osComp || 0) },
+      payoutItems: { completed: Number(piComp || 0) },
+      purchaseOrders: { deliveredOrSettled: Number(poDeliv || 0), totalDeliveredValue: Number((poSumRows as any)[0]?.total || 0) },
+      realWorldCerts: { receivedAuditRows: Number(rwcSale || 0) },
+    };
+  } catch (e) { return { error: (e as any).message }; }
+}
+
+async function triggerSpaceZDeployHook(commitSha?: string) {
+  if (!DEPLOY_HOOK_URL) return { skipped: true, reason: 'SPACEZ_DEPLOY_HOOK env missing' };
+  try {
+    const finalUrl = commitSha ? `${DEPLOY_HOOK_URL}${DEPLOY_HOOK_URL.includes('?') ? '&' : '?'}commit=${encodeURIComponent(commitSha)}` : DEPLOY_HOOK_URL;
+    const r = await fetch(finalUrl, { method: 'GET', headers: { 'User-Agent': 'swarm-deploy-webhook/1.0' } });
+    const txt = await r.text().catch(() => '');
+    return { ok: r.ok, httpStatus: r.status, body: txt.slice(0, 500) };
+  } catch (e: any) {
+    return { ok: false, error: e.message };
+  }
+}
+
+async function putDeployRecord(instance: string, commit: string, status: string, meta: any = {}) {
+  if (!MAIN_APP_URL) return { skipped: true, reason: 'SPACEZ_MAIN_APP_URL env missing' };
+  try {
+    const snap = await collectTreasurySnapshot();
+    const body = JSON.stringify({ instance, commit, status, health_ok: true, latency_ms: 0, timestamp: new Date().toISOString(), treasury: snap, ...meta });
+    const hdrs: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (DEPLOY_RECORD_TOKEN) hdrs['x-deploy-record-token'] = `Bearer ${DEPLOY_RECORD_TOKEN}`;
+    const r = await fetch(`${MAIN_APP_URL.replace(/\/+$/, '')}/api/deploy/status/record`, { method: 'PUT', headers: hdrs, body });
+    return { ok: r.ok, httpStatus: r.status, body: (await r.text().catch(() => '')).slice(0, 400), treasuryIncluded: !!snap && !(snap as any).error };
+  } catch (e: any) {
+    return { ok: false, error: e.message };
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -80,16 +137,18 @@ export async function POST(req: NextRequest) {
 
   // Verify authenticity before trusting the payload.
   if (WEBHOOK_SECRET && !verifyHMAC(rawBody, signature)) {
-    await prisma.auditLedger.create({
-      data: {
-        entityType: 'github_app_webhook',
-        entityId: 'rejected',
-        action: 'hmac_verification_failed',
-        entryHash: await sha256(`github-app:rejected:${Date.now()}`),
-        performedBy: source,
-        discrepancyNote: 'GitHub App HMAC signature mismatch',
-      },
-    });
+    try {
+      await prisma.auditLedger.create({
+        data: {
+          entityType: 'github_app_webhook',
+          entityId: 'rejected',
+          action: 'hmac_verification_failed',
+          entryHash: await sha256(`github-app:rejected:${Date.now()}`),
+          performedBy: source,
+          discrepancyNote: 'GitHub App HMAC signature mismatch',
+        },
+      });
+    } catch (e) { /* ignore */ }
     return NextResponse.json({ error: 'Invalid HMAC signature' }, { status: 401 });
   }
 
@@ -106,6 +165,9 @@ export async function POST(req: NextRequest) {
     payload.installation?.account?.login ||
     payload.repository?.owner?.login ||
     '';
+  const commitSha = (event === 'push' && Array.isArray(payload.commits) && payload.commits.length > 0)
+    ? (payload.after || payload.head_commit?.id || '').slice(0, 12)
+    : (payload.check_run?.head_sha || payload.deployment?.sha || payload.workflow_run?.head_sha || '').slice(0, 12);
 
   if (event === 'ping') {
     await recordEvent({ event, entityId: delimiter, repo, actor, meta: { pong: true } });
@@ -119,23 +181,64 @@ export async function POST(req: NextRequest) {
 
   const action = payload.action || payload.check_run?.status || undefined;
 
+  // ---- NEW ZDEPLOY COORDINATION HOOKS ----
+  let deployHook: any = { skipped: true, reason: 'not push/deploy event' };
+  let record: any = { skipped: true, reason: 'not push/deploy event' };
+  const shouldTrigger = (event === 'push' && (payload.ref === 'refs/heads/main' || payload.ref === 'refs/heads/master'))
+    || event === 'deployment'
+    || event === 'workflow_run' && payload.action === 'completed' && payload.workflow_run?.conclusion === 'success' && payload.workflow_run?.head_branch === 'main';
+
+  if (shouldTrigger) {
+    deployHook = await triggerSpaceZDeployHook(commitSha || undefined);
+    // Fire deploy record AFTER deploy hook (non-blocking; failure not fatal)
+    record = await putDeployRecord('main-app', commitSha || payload.head_commit?.id || payload.after || 'unknown', 'deploying', {
+      event,
+      action,
+      repo,
+      actor,
+      deployHook,
+    });
+  }
+
   await recordEvent({
     event,
     action,
     repo,
     actor,
     entityId: delimiter,
-    meta: { delivered: delimiter },
+    meta: {
+      delivered: delimiter,
+      commit: commitSha || undefined,
+      deployHook,
+      record,
+      ref: payload.ref,
+    },
   });
 
-  return NextResponse.json({ status: 'processed', event, action, repo, actor });
+  return NextResponse.json({
+    status: 'processed',
+    event,
+    action,
+    repo,
+    actor,
+    commit: commitSha || undefined,
+    deployHook: deployHook && !(deployHook as any).skipped ? deployHook : undefined,
+    record: record && !(record as any).skipped ? record : undefined,
+  });
 }
 
 export async function GET() {
+  const snap = await collectTreasurySnapshot();
   return NextResponse.json({
     status: 'active',
     endpoint: 'POST /api/webhook/deploy',
     handledEvents: Array.from(HANDLED_EVENTS),
     verification: 'X-Hub-Signature-256 (HMAC-SHA256, GITHUB_APP_WEBHOOK_SECRET)',
+    coordination: {
+      deployHookConfigured: !!DEPLOY_HOOK_URL,
+      recordEndpointConfigured: !!MAIN_APP_URL,
+      authorizedPutRecord: !!DEPLOY_RECORD_TOKEN,
+    },
+    treasurySnapshot: snap,
   });
 }
