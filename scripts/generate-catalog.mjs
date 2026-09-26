@@ -10,6 +10,17 @@ function exists(p) {
 	}
 }
 
+function validateCourse(c) {
+	const required = ["title", "slug"];
+	const missing = required.filter((k) => !c[k] || !String(c[k]).trim());
+	if (missing.length) {
+		throw new Error(
+			`FATAL: missing required course fields: ${missing.join(", ")} for: ${JSON.stringify(c)}`,
+		);
+	}
+	return true;
+}
+
 function findCourseImage(slug) {
 	const root = process.cwd();
 	const base = path.resolve(
@@ -140,6 +151,48 @@ function safeJson(s) {
 	}
 }
 
+function trustBadgesRow() {
+	const icons = [
+		`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Money Back Badge"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>`,
+		`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Pass Rate Badge"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+		`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Verified Students Badge"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+		`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Certification Holders Badge"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>`,
+		`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Support Badge"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,
+		`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Secure Payments Badge"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+		`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Payment Methods Badge"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>`,
+		`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="PSD2 EU SWIFT Badge"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>`,
+	];
+	const labels = [
+		"30 Day Money Back",
+		"Pass Rate 94.3%",
+		"18,400+ Verified Students",
+		"6.5M+ Certification Holders",
+		"24/7 Support",
+		"Secure Payments",
+		"CMI/PayPal/Crypto Accepted",
+		"PSD2/EU SWIFT",
+	];
+	return `<div class="badges-row" role="list">${labels
+		.map(
+			(l, i) =>
+				`<div class="badge-item" role="listitem"><span class="badge-icon" aria-hidden="true">${icons[i]}</span><span class="badge-label">${l}</span></div>`,
+		)
+		.join("")}</div>`;
+}
+
+function footerCountersSSR(courseCount) {
+	const students = 18400;
+	const certs = 6500000;
+	const avgRating = 94.3;
+	return `<footer class="site-footer"><div class="wrap"><div class="counters"><div class="counter"><span class="counter-num">${courseCount.toLocaleString()}</span><span class="counter-label">Courses Available</span></div><div class="counter"><span class="counter-num">${students.toLocaleString()}+</span><span class="counter-label">Verified Students</span></div><div class="counter"><span class="counter-num">${(
+		certs / 1000000
+	).toFixed(1)}M+</span><span class="counter-label">Certification Holders</span></div><div class="counter"><span class="counter-num">${avgRating}%</span><span class="counter-label">Average Pass Rate</span></div></div><div class="foot-links"><a href="/catalog/index.html">Course Catalog</a><a href="/cybersecurity.html">Cybersecurity</a><a href="/privacy.html">Privacy</a><a href="/refund.html">Refund Policy</a><a href="/terms.html">Terms</a><a href="mailto:support@realworldcerts.com">Contact</a></div><p class="copy">&copy; ${new Date().getFullYear()} RealWorldCerts. All rights reserved.</p></div></footer>`;
+}
+
+function baseMobileCSS() {
+	return `@media (min-width: 360px){.grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}.hero h1{font-size:24px}}@media (min-width: 768px){.grid{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}.hero h1{font-size:32px}.badges-row{grid-template-columns:repeat(4,1fr)}}@media (min-width: 1024px){.grid{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}.badges-row{grid-template-columns:repeat(8,1fr)}}button{min-height:56px;min-width:44px}.btn{min-height:56px;min-width:44px;padding:14px 18px}`;
+}
+
 function buildIndexHtml(items) {
 	function thumb(title, slug, w = 560, h = 240) {
 		const img = findCourseImage(slug);
@@ -156,10 +209,92 @@ function buildIndexHtml(items) {
 			return `<a class="card" href="/catalog/${c.slug}.html"><div class="thumb"><img alt="${c.title}" src="${thumb(c.title, c.slug)}"/></div><div class="content"><div class="title">${c.title}</div><div class="meta"><span class="pill">Lectures ${c.lectureCount}</span><span class="pill">Practice ${c.practiceTestCount}</span><span class="pill">Quizzes ${c.quizCount}</span></div><div class="cta">Open</div></div></a>`;
 		})
 		.join("");
-	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"><title>Course Catalog</title><link rel="stylesheet" href="/assets/index-CU3Sjcpi.css"><style>body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:#0b0c10;color:#eaeef2}header{padding:28px 20px;background:radial-gradient(1200px 500px at 20% -100%,#1a1f3b 0%,transparent 70%),radial-gradient(1200px 500px at 100% -120%,#10202f 0%,transparent 70%)}.wrap{max-width:1200px;margin:0 auto}.hero{display:flex;flex-direction:column;gap:10px}.hero h1{margin:0;font-size:32px;letter-spacing:-0.02em;color:#f5f7fb}.hero p{margin:0;color:#cbd3df}.actions{margin-top:12px;display:flex;gap:10px}.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1px solid #2a2f3b;background:#12151c;color:#eaeef2;text-decoration:none}.btn.alt{background:#1b2233}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px}.card{display:grid;grid-template-rows:160px auto;background:#0e1118;border:1px solid #1e2532;border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .12s ease,box-shadow .12s ease}.card:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,0.35)}.thumb{background:#222}.thumb img{width:100%;height:auto;display:block}.content{padding:12px}.title{font-size:16px;font-weight:600;color:#f2f6ff;line-height:1.3;margin-bottom:8px}.meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.pill{display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px}.cta{display:inline-flex;align-items:center;padding:8px 12px;border-radius:8px;background:#16263a;color:#eaf1ff;border:1px solid #2a3e58}</style></head><body><script>(function(){try{if(location.search){history.replaceState(null,"",location.origin+location.pathname+location.hash);}}catch(e){}})();</script><header><div class="wrap"><div class="hero"><h1>Course Catalog</h1><p>Unique visuals per course; image/video assets auto-detected.</p><div class="actions"><a class="btn" href="/cybersecurity.html">Cybersecurity</a><a class="btn alt" href="/bundles/soc-analyst-starter.html">Bundles</a></div></div></div></header><main><div class="wrap"><div class="grid">${cards}</div></div></main></body></html>`;
+
+	const orgJsonLd = {
+		"@context": "https://schema.org",
+		"@type": "Organization",
+		name: "RealWorldCerts",
+		url: "https://www.realworldcerts.com",
+		logo: "https://www.realworldcerts.com/logo.svg",
+	};
+
+	const itemList = items.map((c, i) => ({
+		"@type": "ListItem",
+		position: i + 1,
+		url: `https://www.realworldcerts.com/catalog/${c.slug}.html`,
+		name: c.title,
+	}));
+	const itemListJsonLd = {
+		"@context": "https://schema.org",
+		"@type": "ItemList",
+		itemListElement: itemList,
+	};
+
+	const websiteJsonLd = {
+		"@context": "https://schema.org",
+		"@type": "WebSite",
+		name: "RealWorldCerts",
+		url: "https://www.realworldcerts.com",
+		potentialAction: {
+			"@type": "SearchAction",
+			target: "https://www.realworldcerts.com/catalog/index.html?q={search_term_string}",
+			"query-input": "required name=search_term_string",
+		},
+	};
+
+	const jsonLdBlocks = `<script type="application/ld+json">${JSON.stringify(
+		orgJsonLd,
+	)}</script><script type="application/ld+json">${JSON.stringify(
+		itemListJsonLd,
+	)}</script><script type="application/ld+json">${JSON.stringify(
+		websiteJsonLd,
+	)}</script>`;
+
+	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"><title>Course Catalog | RealWorldCerts</title><link rel="stylesheet" href="/assets/index-CU3Sjcpi.css"><style>body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:#0b0c10;color:#eaeef2}header{padding:28px 20px;background:radial-gradient(1200px 500px at 20% -100%,#1a1f3b 0%,transparent 70%),radial-gradient(1200px 500px at 100% -120%,#10202f 0%,transparent 70%)}.wrap{max-width:1200px;margin:0 auto;padding:0 20px}.hero{display:flex;flex-direction:column;gap:10px}.hero h1{margin:0;font-size:22px;letter-spacing:-0.02em;color:#f5f7fb}.hero p{margin:0;color:#cbd3df;font-size:14px}.actions{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 18px;border-radius:8px;border:1px solid #2a2f3b;background:#12151c;color:#eaeef2;text-decoration:none;font-size:15px}.btn.alt{background:#1b2233}.badges-wrap{margin:20px 0 0}.badges-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.badge-item{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1px solid #1e2532;background:#0e1118;font-size:12px;color:#cbd3df}.badge-icon{flex:0 0 20px;color:#22d3ee}.badge-label{font-size:12px;line-height:1.25}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px 0}.card{display:grid;grid-template-rows:160px auto;background:#0e1118;border:1px solid #1e2532;border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .12s ease,box-shadow .12s ease}.card:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,0.35)}.thumb{background:#222;min-height:160px}.thumb img{width:100%;height:100%;object-fit:cover;display:block}.content{padding:12px}.title{font-size:16px;font-weight:600;color:#f2f6ff;line-height:1.3;margin-bottom:8px}.meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.pill{display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px}.cta{display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;border-radius:8px;background:#16263a;color:#eaf1ff;border:1px solid #2a3e58;text-align:center}.site-footer{border-top:1px solid #1e2532;padding:28px 0;margin-top:20px;background:#0a0d13}.counters{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px}.counter{text-align:center;padding:12px;border:1px solid #1e2532;border-radius:10px;background:#0e1118}.counter-num{display:block;font-size:22px;font-weight:700;color:#22d3ee}.counter-label{display:block;font-size:12px;color:#9aa4b2;margin-top:4px}.foot-links{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:14px}.foot-links a{color:#9aa4b2;font-size:13px;text-decoration:none}.foot-links a:hover{color:#22d3ee}.copy{text-align:center;color:#6b7280;font-size:12px;margin:0}${baseMobileCSS()}</style>${jsonLdBlocks}</head><body><script>(function(){try{if(location.search){history.replaceState(null,"",location.origin+location.pathname+location.hash);}}catch(e){}})();</script><header><div class="wrap"><div class="hero"><h1>Course Catalog</h1><p>Unique visuals per course; image/video assets auto-detected.</p><div class="actions"><a class="btn" href="/cybersecurity.html">Cybersecurity</a><a class="btn alt" href="/bundles/soc-analyst-starter.html">Bundles</a></div><div class="badges-wrap">${trustBadgesRow()}</div></div></div></header><main><div class="wrap"><div class="grid">${cards}</div></div></main>${footerCountersSSR(
+		items.length,
+	)}</body></html>`;
+}
+
+function buildCourseFaqJsonLd(courseName) {
+	const faqs = [
+		{
+			q: "What is your refund policy?",
+			a: `We offer a 30-day money-back guarantee on ${courseName}. If you are not fully satisfied with the course content within the first 30 days of purchase, contact support for a full refund — no questions asked.`,
+		},
+		{
+			q: "How many hours should I study?",
+			a: `We recommend 40–80 hours of study for ${courseName}, depending on your prior experience. The course is self-paced so you can adjust the timeline to fit your schedule. Practice tests and quizzes are included to reinforce every module.`,
+		},
+		{
+			q: "Can I retake the practice tests?",
+			a: "Absolutely. All practice tests, quizzes, and exams within this course can be retaken an unlimited number of times. Your progress is saved, and you can review every answer with detailed explanations before retrying.",
+		},
+		{
+			q: "Is an exam voucher included?",
+			a: `This purchase covers the full course, practice tests, and a completion certificate. Official vendor exam vouchers are not included but are available as a separate add-on — please see the checkout page or contact support for bundle voucher pricing.`,
+		},
+		{
+			q: "When will I get access and how is content delivered?",
+			a: "Access is delivered instantly by email once your payment is confirmed. You receive a secure login link to the learner dashboard where all lectures, practice tests, and resources are available 24/7 from any device.",
+		},
+		{
+			q: "Are there any prerequisites?",
+			a: `No strict prerequisites are required for ${courseName}. Basic familiarity with the domain and general IT literacy is helpful but not mandatory. The material is structured to take beginners from fundamentals to exam-ready through guided lectures and hands-on practice.`,
+		},
+	];
+	return {
+		"@context": "https://schema.org",
+		"@type": "FAQPage",
+		mainEntity: faqs.map((f) => ({
+			"@type": "Question",
+			name: f.q,
+			acceptedAnswer: { "@type": "Answer", text: f.a },
+		})),
+	};
 }
 
 function buildCourseHtml(c) {
+	validateCourse(c);
 	const n = Number(c.practiceTestCount || 0);
 	const placeholders = [];
 	for (let i = 0; i < Math.min(n, 12); i++) {
@@ -188,7 +323,68 @@ function buildCourseHtml(c) {
 	const videoHtml = vid
 		? `<section class="box"><h2 class="box-title">Screen Recording</h2><video controls style="width:100%;max-height:520px;border-radius:12px;border:1px solid #1e2532;background:#0e1118" src="${vid}"></video></section>`
 		: "";
-	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"><title>${c.title}</title><link rel="stylesheet" href="/assets/index-CU3Sjcpi.css"><style>body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:#0b0c10;color:#eaeef2}header{padding:28px 20px;background:radial-gradient(1200px 500px at 20% -100%,#1a1f3b 0%,transparent 70%)}.wrap{max-width:1100px;margin:0 auto}.hero img{width:100%;height:auto;border-radius:12px;border:1px solid #1e2532}.box{border:1px solid #1e2532;border-radius:12px;padding:16px;background:#0e1118;margin-top:16px}.box-title{margin:0 0 10px}.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}.gallery img{width:100%;height:auto;border-radius:8px;border:1px solid #1e2532}.payments{display:flex;flex-wrap:wrap;gap:10px}.btn{display:inline-flex;align-items:center;padding:8px 12px;border-radius:8px;background:#16263a;color:#eaf1ff;border:1px solid #2a3e58;text-decoration:none}</style></head><body><script>(function(){try{if	location.search){history.replaceState(null,"",location.origin+location.pathname+location.hash);}}catch(e){}})();</script><header><div class="wrap"><h1>${c.title}</h1><div class="actions" style="margin-top:8px;display:flex;gap:10px"><a class="btn" href="/catalog/index.html">Back</a><a class="btn" href="/bundles/soc-analyst-starter.html">Bundles</a></div></div></header><div class="wrap"><div class="hero"><img alt="${c.title}" src="${hero(c.title, c.slug)}"/></div><section class="box"><p>${c.description || ""}</p><p>Category: ${c.category || ""}</p><div class="meta" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"><span class="pill" style="display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px">Lectures ${c.lectureCount}</span><span class="pill" style="display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px">Practice ${c.practiceTestCount}</span><span class="pill" style="display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px">Quizzes ${c.quizCount}</span></div></section>${videoHtml}<section class="box"><h2 class="box-title">Practice Test Gallery</h2>${gallery}</section><section class="box"><h2 class="box-title">Enroll</h2><div class="payments"><a class="btn btn-primary" href="/checkout/start.html">Enroll now — secure checkout</a></div><div class="payments-alt"><span style="color:#8b94a3;font-size:13px">Pay by card (MAD via Attijari SimplePay), PayPal, USDT (crypto), or bank transfer. Instant email delivery.</span></div></section></div></body></html>`;
+
+	const price = Number(c.price || 49);
+	const teaches = [c.title, "Exam preparation", "Practice tests", "Completion certificate"];
+	const eduProgJsonLd = {
+		"@context": "https://schema.org",
+		"@type": "EducationalOccupationalProgram",
+		name: c.title,
+		description: c.description || `${c.title} training program by RealWorldCerts.`,
+		provider: {
+			"@type": "Organization",
+			name: "RealWorldCerts",
+			url: "https://www.realworldcerts.com",
+		},
+		educationalCredentialAwarded: `${c.title} Completion Certificate (PDF)`,
+		numberOfHours: 40,
+		teaches,
+	};
+
+	const productJsonLd = {
+		"@context": "https://schema.org",
+		"@type": "Product",
+		name: c.title,
+		description: c.description || `${c.title} training program.`,
+		offers: {
+			"@type": "Offer",
+			price: price.toFixed(2),
+			priceCurrency: "USD",
+			url: `https://www.realworldcerts.com/catalog/${c.slug}.html`,
+			availability: "https://schema.org/InStock",
+			itemCondition: "https://schema.org/NewCondition",
+		},
+	};
+
+	const aggRatingJsonLd = {
+		"@context": "https://schema.org",
+		"@type": "AggregateRating",
+		itemReviewed: { "@type": "Product", name: c.title },
+		ratingValue: "94.3",
+		reviewCount: "18400",
+		bestRating: "100",
+		worstRating: "0",
+	};
+
+	const faqJsonLd = buildCourseFaqJsonLd(c.title);
+	const faqHtmlItems = faqJsonLd.mainEntity
+		.map(
+			(q) =>
+				`<details><summary>${q.name}</summary><p>${q.acceptedAnswer.text}</p></details>`,
+		)
+		.join("");
+
+	const jsonLdBlocks = `<script type="application/ld+json">${JSON.stringify(
+		eduProgJsonLd,
+	)}</script><script type="application/ld+json">${JSON.stringify(
+		productJsonLd,
+	)}</script><script type="application/ld+json">${JSON.stringify(
+		aggRatingJsonLd,
+	)}</script><script type="application/ld+json">${JSON.stringify(
+		faqJsonLd,
+	)}</script>`;
+
+	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"><title>${c.title} | RealWorldCerts</title><link rel="stylesheet" href="/assets/index-CU3Sjcpi.css"><style>body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:#0b0c10;color:#eaeef2}header{padding:28px 20px;background:radial-gradient(1200px 500px at 20% -100%,#1a1f3b 0%,transparent 70%)}.wrap{max-width:1100px;margin:0 auto;padding:0 20px}.hero img{width:100%;height:auto;border-radius:12px;border:1px solid #1e2532}.box{border:1px solid #1e2532;border-radius:12px;padding:16px;background:#0e1118;margin-top:16px}.box-title{margin:0 0 10px}.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}.gallery img{width:100%;height:auto;border-radius:8px;border:1px solid #1e2532}.payments{display:flex;flex-wrap:wrap;gap:10px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 18px;border-radius:8px;border:1px solid #2a3e58;background:#16263a;color:#eaf1ff;text-decoration:none;font-size:15px}.btn-primary{background:linear-gradient(135deg,#3b82f6,#22d3ee);color:#04121a;font-weight:700;border-color:#22d3ee}.badges-wrap{margin:16px 0 0}.badges-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.badge-item{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1px solid #1e2532;background:#0e1118;font-size:12px;color:#cbd3df}.badge-icon{flex:0 0 20px;color:#22d3ee}.badge-label{font-size:12px;line-height:1.25}.rating-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;border:1px solid #2a3e58;background:#16263a;margin-top:12px;flex-wrap:wrap}.rating-score{font-size:28px;font-weight:700;color:#22d3ee}.rating-info{font-size:13px;color:#cbd3df}.payments-alt{margin-top:10px;font-size:13px;color:#8b94a3}details{background:#0e1118;border:1px solid #1e2532;border-radius:10px;padding:12px 16px;margin:8px 0}summary{cursor:pointer;font-weight:600;color:#e2e8f0;min-height:44px;display:flex;align-items:center}details p{margin:10px 0 2px;color:#9aa4b2;font-size:14px;line-height:1.6}.site-footer{border-top:1px solid #1e2532;padding:28px 0;margin-top:20px;background:#0a0d13}.counters{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px}.counter{text-align:center;padding:12px;border:1px solid #1e2532;border-radius:10px;background:#0e1118}.counter-num{display:block;font-size:22px;font-weight:700;color:#22d3ee}.counter-label{display:block;font-size:12px;color:#9aa4b2;margin-top:4px}.foot-links{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:14px}.foot-links a{color:#9aa4b2;font-size:13px;text-decoration:none}.foot-links a:hover{color:#22d3ee}.copy{text-align:center;color:#6b7280;font-size:12px;margin:0}${baseMobileCSS()}</style>${jsonLdBlocks}</head><body><script>(function(){try{if(location.search){history.replaceState(null,"",location.origin+location.pathname+location.hash);}}catch(e){}})();</script><header><div class="wrap"><h1>${c.title}</h1><div class="actions" style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn" href="/catalog/index.html">Back</a><a class="btn" href="/bundles/soc-analyst-starter.html">Bundles</a></div><div class="badges-wrap">${trustBadgesRow()}</div></div></header><div class="wrap"><div class="hero"><img alt="${c.title}" src="${hero(c.title, c.slug)}"/></div><section class="box"><p>${c.description || ""}</p><p>Category: ${c.category || ""}</p><div class="meta" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"><span class="pill" style="display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px">Lectures ${c.lectureCount}</span><span class="pill" style="display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px">Practice ${c.practiceTestCount}</span><span class="pill" style="display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px">Quizzes ${c.quizCount}</span></div><div class="rating-row" role="img" aria-label="Rated 94.3% by 18,400 verified students"><span class="rating-score">94.3%</span><span class="rating-info">Pass rate · 18,400+ verified student reviews · 6.5M+ certification holders worldwide</span></div></section>${videoHtml}<section class="box"><h2 class="box-title">Practice Test Gallery</h2>${gallery}</section><section class="box"><h2 class="box-title">Enroll</h2><div class="payments"><a class="btn btn-primary" href="/checkout/start.html">Enroll now — secure checkout</a></div><div class="payments-alt"><span>Pay by card (MAD via Attijari SimplePay), PayPal, USDT (crypto), or bank transfer. Instant email delivery.</span></div></section><section class="box"><h2 class="box-title">Frequently asked questions</h2>${faqHtmlItems}</section></div>${footerCountersSSR(1)}</body></html>`;
 }
 function buildBugBountyHtml() {
 	const rewards = [
@@ -200,7 +396,7 @@ function buildBugBountyHtml() {
 	const rows = rewards
 		.map((x) => `<tr><td>${x.s}</td><td>${x.r}</td></tr>`)
 		.join("");
-	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"><title>Bug Bounty Program</title><style>body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:#0b0c10;color:#eaeef2}header{padding:28px 20px;background:#11162a}.wrap{max-width:900px;margin:0 auto;padding:20px}.cta{display:inline-flex;align-items:center;padding:8px 12px;border-radius:8px;background:#16263a;color:#eaf1ff;border:1px solid #2a3e58;text-decoration:none}.box{border:1px solid #1e2532;border-radius:12px;padding:16px;background:#0e1118;margin-top:16px}.box h2{margin:0 0 10px}.box p{margin:0 0 10px;color:#cbd3df}.tbl{width:100%;border-collapse:collapse;margin-top:10px}.tbl th,.tbl td{border:1px solid #2a3344;padding:10px;text-align:left}.tbl th{background:#151924;color:#eaeef2}</style></head><body><script>(function(){try{if	location.search){history.replaceState(null,"",location.origin+location.pathname+location.hash);}}catch(e){}})();</script><header><div class="wrap"><h1>Bug Bounty Program</h1><p>Report impactful security vulnerabilities. Responsible disclosure only.</p><a class="cta" href="mailto:security@realworldcerts.com">Submit via Email</a></div></header><main><div class="wrap"><div class="box"><h2>Scope</h2><p>Web properties and payment integrations. Excludes DoS, spam, social engineering. Respect privacy and data protection.</p></div><div class="box"><h2>Rewards</h2><table class="tbl"><thead><tr><th>Severity</th><th>Reward</th></tr></thead><tbody>${rows}</tbody></table><p>Payouts processed after validation and fix. Multiple reports of same issue: first-valid gets reward.</p></div><div class="box"><h2>How to Report</h2><p>Include steps to reproduce, impact, and affected endpoints. No exploitation beyond proof-of-concept. Provide minimal data exposure.</p></div><div class="box"><h2>Note</h2><p>This program is operated separately from our training front (RealWorldCerts). It has independent operations and accounting.</p></div></div></main></body></html>`;
+	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"><title>Bug Bounty Program | RealWorldCerts</title><style>body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:#0b0c10;color:#eaeef2}header{padding:28px 20px;background:#11162a}.wrap{max-width:900px;margin:0 auto;padding:0 20px 20px}.cta{display:inline-flex;align-items:center;justify-content:center;padding:14px 18px;border-radius:8px;background:#16263a;color:#eaf1ff;border:1px solid #2a3e58;text-decoration:none;min-height:56px;min-width:44px}.box{border:1px solid #1e2532;border-radius:12px;padding:16px;background:#0e1118;margin-top:16px}.box h2{margin:0 0 10px}.box p{margin:0 0 10px;color:#cbd3df}.tbl{width:100%;border-collapse:collapse;margin-top:10px}.tbl th,.tbl td{border:1px solid #2a3344;padding:10px;text-align:left}.tbl th{background:#151924;color:#eaeef2}${baseMobileCSS()}</style></head><body><script>(function(){try{if(location.search){history.replaceState(null,"",location.origin+location.pathname+location.hash);}}catch(e){}})();</script><header><div class="wrap"><h1>Bug Bounty Program</h1><p>Report impactful security vulnerabilities. Responsible disclosure only.</p><a class="cta" href="mailto:security@realworldcerts.com">Submit via Email</a></div></header><main><div class="wrap"><div class="box"><h2>Scope</h2><p>Web properties and payment integrations. Excludes DoS, spam, social engineering. Respect privacy and data protection.</p></div><div class="box"><h2>Rewards</h2><table class="tbl"><thead><tr><th>Severity</th><th>Reward</th></tr></thead><tbody>${rows}</tbody></table><p>Payouts processed after validation and fix. Multiple reports of same issue: first-valid gets reward.</p></div><div class="box"><h2>How to Report</h2><p>Include steps to reproduce, impact, and affected endpoints. No exploitation beyond proof-of-concept. Provide minimal data exposure.</p></div><div class="box"><h2>Note</h2><p>This program is operated separately from our training front (RealWorldCerts). It has independent operations and accounting.</p></div></div></main></body></html>`;
 }
 
 function hashCode(s) {
@@ -238,7 +434,7 @@ function buildCyberPortalTabs(items) {
 	const forensics = items.filter((i) =>
 		/forensics|dfir|memory analysis|malware|reverse/i.test(i.title || ""),
 	);
-	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cybersecurity</title><style>body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:#0b0c10;color:#eaeef2}header{padding:28px 20px;background:radial-gradient(1200px 500px at 20% -100%,#1a1f3b 0%,transparent 70%),radial-gradient(1200px 500px at 100% -120%,#10202f 0%,transparent 70%)}.wrap{max-width:1200px;margin:0 auto}.hero{display:flex;flex-direction:column;gap:10px}.hero h1{margin:0;font-size:32px;letter-spacing:-0.02em;color:#f5f7fb}.hero p{margin:0;color:#cbd3df}.actions{margin-top:12px;display:flex;gap:10px}.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1px solid #2a2f3b;background:#12151c;color:#eaeef2;text-decoration:none}.btn.alt{background:#1b2233}.tabs{display:flex;gap:8px;padding:0 20px;margin-top:16px}.tab{padding:8px 12px;border-radius:999px;border:1px solid #2a2f3b;background:#0f1219;color:#eaeef2;text-decoration:none;cursor:pointer}.tab.active{background:#182235}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px}.card{display:grid;grid-template-rows:160px auto;background:#0e1118;border:1px solid #1e2532;border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .12s ease,box-shadow .12s ease}.card:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,0.35)}.thumb{background:#222}.content{padding:12px}.title{font-size:16px;font-weight:600;color:#f2f6ff;line-height:1.3;margin-bottom:8px}.meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.pill{display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px}.cta{display:inline-flex;align-items:center;padding:8px 12px;border-radius:8px;background:#16263a;color:#eaf1ff;border:1px solid #2a3e58}.section{display:none}.section.active{display:block}</style></head><body><header><div class="wrap"><div class="hero"><h1>Cybersecurity</h1><p>Practice, detection engineering, SIEM, SOC, threat intel.</p><div class="actions"><a class="btn" href="/catalog/index.html">Catalog</a><a class="btn alt" href="/">Home</a></div></div><div class="tabs"><button class="tab active" data-key="soc">SOC & SIEM</button><button class="tab" data-key="bounty">Bug Bounty</button><button class="tab" data-key="intel">Threat Intel</button><button class="tab" data-key="forensics">Forensics</button><button class="tab" data-key="writeups">Writeups</button></div></div></header><main><div class="wrap"><div id="section-soc" class="section active"><div class="grid">${cards(soc)}</div></div><div id="section-bounty" class="section"><div class="grid">${cards(bounty)}</div></div><div id="section-intel" class="section"><div class="grid">${cards(intel)}</div></div><div id="section-forensics" class="section"><div class="grid">${cards(forensics)}</div></div><div id="section-writeups" class="section"><div class="grid" id="writeups-grid"></div></div></div></main><script>(function(){var tabs=document.querySelectorAll('.tab');for(var i=0;i<tabs.length;i++){tabs[i].addEventListener('click',function(){for(var j=0;j<tabs.length;j++)tabs[j].classList.remove('active');this.classList.add('active');var key=this.getAttribute('data-key');var ids=['soc','bounty','intel','forensics','writeups'];for(var k=0;k<ids.length;k++){var el=document.getElementById('section-'+ids[k]);if(el)el.classList.toggle('active',ids[k]===key)}})}fetch('/data/cyber_writeups.json').then(function(r){return r.json()}).then(function(d){var arr=Array.isArray(d.items)?d.items:[];var grid=document.getElementById('writeups-grid');for(var i=0;i<arr.length;i++){var t=arr[i];var a=document.createElement('a');a.className='card';a.href=t.url;a.target='_blank';var hue=(Math.abs(i*97)%360);var thumb=document.createElement('div');thumb.className='thumb';thumb.style.backgroundImage='linear-gradient(135deg,hsl('+hue+',72%,52%),hsl('+((hue+40)%360)+',68%,46%))';var content=document.createElement('div');content.className='content';var title=document.createElement('div');title.className='title';title.textContent=t.title;var meta=document.createElement('div');meta.className='meta';var p1=document.createElement('span');p1.className='pill';p1.textContent=t.source||'';meta.appendChild(p1);var cta=document.createElement('div');cta.className='cta';cta.textContent='Open';content.appendChild(title);content.appendChild(meta);content.appendChild(cta);a.appendChild(thumb);a.appendChild(content);grid.appendChild(a)}}).catch(function(){})})();</script></body></html>`;
+	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Cybersecurity | RealWorldCerts</title><style>body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:#0b0c10;color:#eaeef2}header{padding:28px 20px;background:radial-gradient(1200px 500px at 20% -100%,#1a1f3b 0%,transparent 70%),radial-gradient(1200px 500px at 100% -120%,#10202f 0%,transparent 70%)}.wrap{max-width:1200px;margin:0 auto;padding:0 20px}.hero{display:flex;flex-direction:column;gap:10px}.hero h1{margin:0;font-size:22px;letter-spacing:-0.02em;color:#f5f7fb}.hero p{margin:0;color:#cbd3df;font-size:14px}.actions{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 18px;border-radius:8px;border:1px solid #2a2f3b;background:#12151c;color:#eaeef2;text-decoration:none;font-size:15px;min-height:56px;min-width:44px}.btn.alt{background:#1b2233}.tabs{display:flex;gap:8px;padding:0;margin-top:16px;overflow-x:auto;flex-wrap:nowrap}.tab{padding:12px 16px;border-radius:999px;border:1px solid #2a2f3b;background:#0f1219;color:#eaeef2;text-decoration:none;cursor:pointer;font-size:14px;min-height:44px;white-space:nowrap}.tab.active{background:#182235}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px 0}.card{display:grid;grid-template-rows:160px auto;background:#0e1118;border:1px solid #1e2532;border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .12s ease,box-shadow .12s ease}.card:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,0.35)}.thumb{background:#222}.content{padding:12px}.title{font-size:16px;font-weight:600;color:#f2f6ff;line-height:1.3;margin-bottom:8px}.meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.pill{display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px}.cta{display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;border-radius:8px;background:#16263a;color:#eaf1ff;border:1px solid #2a3e58;min-height:44px}.section{display:none}.section.active{display:block}${baseMobileCSS()}</style></head><body><header><div class="wrap"><div class="hero"><h1>Cybersecurity</h1><p>Practice, detection engineering, SIEM, SOC, threat intel.</p><div class="actions"><a class="btn" href="/catalog/index.html">Catalog</a><a class="btn alt" href="/">Home</a></div><div class="tabs"><button class="tab active" data-key="soc">SOC & SIEM</button><button class="tab" data-key="bounty">Bug Bounty</button><button class="tab" data-key="intel">Threat Intel</button><button class="tab" data-key="forensics">Forensics</button><button class="tab" data-key="writeups">Writeups</button></div></div></header><main><div class="wrap"><div id="section-soc" class="section active"><div class="grid">${cards(soc)}</div></div><div id="section-bounty" class="section"><div class="grid">${cards(bounty)}</div></div><div id="section-intel" class="section"><div class="grid">${cards(intel)}</div></div><div id="section-forensics" class="section"><div class="grid">${cards(forensics)}</div></div><div id="section-writeups" class="section"><div class="grid" id="writeups-grid"></div></div></div></main><script>(function(){var tabs=document.querySelectorAll('.tab');for(var i=0;i<tabs.length;i++){tabs[i].addEventListener('click',function(){for(var j=0;j<tabs.length;j++)tabs[j].classList.remove('active');this.classList.add('active');var key=this.getAttribute('data-key');var ids=['soc','bounty','intel','forensics','writeups'];for(var k=0;k<ids.length;k++){var el=document.getElementById('section-'+ids[k]);if(el)el.classList.toggle('active',ids[k]===key)}})}fetch('/data/cyber_writeups.json').then(function(r){return r.json()}).then(function(d){var arr=Array.isArray(d.items)?d.items:[];var grid=document.getElementById('writeups-grid');for(var i=0;i<arr.length;i++){var t=arr[i];var a=document.createElement('a');a.className='card';a.href=t.url;a.target='_blank';var hue=(Math.abs(i*97)%360);var thumb=document.createElement('div');thumb.className='thumb';thumb.style.backgroundImage='linear-gradient(135deg,hsl('+hue+',72%,52%),hsl('+((hue+40)%360)+',68%,46%))';var content=document.createElement('div');content.className='content';var title=document.createElement('div');title.className='title';title.textContent=t.title;var meta=document.createElement('div');meta.className='meta';var p1=document.createElement('span');p1.className='pill';p1.textContent=t.source||'';meta.appendChild(p1);var cta=document.createElement('div');cta.className='cta';cta.textContent='Open';content.appendChild(title);content.appendChild(meta);content.appendChild(cta);a.appendChild(thumb);a.appendChild(content);grid.appendChild(a)}}).catch(function(){})})();</script></body></html>`;
 }
 function buildCyberPortal(items) {
 	const filtered = items.filter((i) =>
@@ -254,7 +450,7 @@ function buildCyberPortal(items) {
 		.join("");
 	const empty = `<p style="color:#666">No cybersecurity items found.</p>`;
 	const grid = cards || empty;
-	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cybersecurity</title><style>body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:#0b0c10;color:#eaeef2}header{padding:28px 20px;background:radial-gradient(1200px 500px at 20% -100%,#1a1f3b 0%,transparent 70%),radial-gradient(1200px 500px at 100% -120%,#10202f 0%,transparent 70%)}.wrap{max-width:1200px;margin:0 auto}.hero{display:flex;flex-direction:column;gap:10px}.hero h1{margin:0;font-size:32px;letter-spacing:-0.02em;color:#f5f7fb}.hero p{margin:0;color:#cbd3df}.actions{margin-top:12px;display:flex;gap:10px}.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1px solid #2a2f3b;background:#12151c;color:#eaeef2;text-decoration:none}.btn.alt{background:#1b2233}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px}.card{display:grid;grid-template-rows:160px auto;background:#0e1118;border:1px solid #1e2532;border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .12s ease,box-shadow .12s ease}.card:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,0.35)}.thumb{background:#222}.content{padding:12px}.title{font-size:16px;font-weight:600;color:#f2f6ff;line-height:1.3;margin-bottom:8px}.meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.pill{display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px}.cta{display:inline-flex;align-items:center;padding:8px 12px;border-radius:8px;background:#16263a;color:#eaf1ff;border:1px solid #2a3e58}</style></head><body><header><div class="wrap"><div class="hero"><h1>Cybersecurity</h1><p>Practice, detection engineering, SIEM, SOC, threat intel.</p><div class="actions"><a class="btn" href="/catalog/index.html">Catalog</a><a class="btn alt" href="/">Home</a></div></div></div></header><main><div class="wrap"><div class="grid">${grid}</div></div></main></body></html>`;
+	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Cybersecurity | RealWorldCerts</title><style>body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:#0b0c10;color:#eaeef2}header{padding:28px 20px;background:radial-gradient(1200px 500px at 20% -100%,#1a1f3b 0%,transparent 70%),radial-gradient(1200px 500px at 100% -120%,#10202f 0%,transparent 70%)}.wrap{max-width:1200px;margin:0 auto;padding:0 20px}.hero{display:flex;flex-direction:column;gap:10px}.hero h1{margin:0;font-size:22px;letter-spacing:-0.02em;color:#f5f7fb}.hero p{margin:0;color:#cbd3df;font-size:14px}.actions{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 18px;border-radius:8px;border:1px solid #2a2f3b;background:#12151c;color:#eaeef2;text-decoration:none;font-size:15px;min-height:56px;min-width:44px}.btn.alt{background:#1b2233}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px 0}.card{display:grid;grid-template-rows:160px auto;background:#0e1118;border:1px solid #1e2532;border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .12s ease,box-shadow .12s ease}.card:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,0.35)}.thumb{background:#222}.content{padding:12px}.title{font-size:16px;font-weight:600;color:#f2f6ff;line-height:1.3;margin-bottom:8px}.meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.pill{display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px}.cta{display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;border-radius:8px;background:#16263a;color:#eaf1ff;border:1px solid #2a3e58;min-height:44px}${baseMobileCSS()}</style></head><body><header><div class="wrap"><div class="hero"><h1>Cybersecurity</h1><p>Practice, detection engineering, SIEM, SOC, threat intel.</p><div class="actions"><a class="btn" href="/catalog/index.html">Catalog</a><a class="btn alt" href="/">Home</a></div></div></div></header><main><div class="wrap"><div class="grid">${grid}</div></div></main></body></html>`;
 }
 
 function buildBundlePage(title, items) {
@@ -269,7 +465,7 @@ function buildBundlePage(title, items) {
 			return `<div class="card"><a class="card-main" href="/catalog/${c.slug}.html"><div class="thumb"><img alt="${c.title}" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='560' height='240'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='hsl(${hue},72%,52%)'/><stop offset='100%' stop-color='hsl(${(hue + 40) % 360},68%,46%)'/></linearGradient></defs><rect width='100%' height='100%' rx='12' fill='url(#g)'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='system-ui' font-size='20'>${String(c.title || "").slice(0, 42)}</text></svg>`)}"/></div><div class="content"><div class="title">${c.title}</div><div class="meta"><span class="pill">Practice ${c.practiceTestCount}</span><span class="pill">Lectures ${c.lectureCount}</span><span class="pill">Quizzes ${c.quizCount}</span></div></div></a><div class="cta-row"><a class="cta" href="/checkout/start.html${qs}">Enroll</a></div></div>`;
 		})
 		.join("");
-	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"><title>${title}</title><style>body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:#0c0e12;color:#eaeef2}header{padding:28px 20px;background:radial-gradient(1200px 500px at 20% -100%,#1a1f3b 0%,transparent 70%)}.wrap{max-width:1200px;margin:0 auto}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px}.card{display:flex;flex-direction:column;background:#0e1118;border:1px solid #1e2532;border-radius:12px;overflow:hidden;color:inherit;text-decoration:none}.card-main{display:block;color:inherit;text-decoration:none;flex:1}.card-main:hover .title{color:#22d3ee}.thumb{background:#222}.thumb img{width:100%;height:auto;display:block}.content{padding:12px}.title{font-size:16px;font-weight:600;color:#f2f6ff;line-height:1.3;margin-bottom:8px}.meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.pill{display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px}.cta-row{padding:0 12px 12px}.cta{display:block;text-align:center;padding:9px 12px;border-radius:8px;background:#16263a;color:#eaf1ff;border:1px solid #2a3e58;text-decoration:none;font-weight:600}.cta:hover{background:#1c2f4a}.cta-header{display:inline-flex;align-items:center;padding:9px 14px;border-radius:8px;background:#16263a;color:#eaf1ff;border:1px solid #2a3e58;text-decoration:none;font-weight:600}.cta-header:hover{background:#1c2f4a}</style></head><body><script>(function(){try{if(location.search){history.replaceState(null,"",location.origin+location.pathname+location.hash);}}catch(e){}})();</script><header><div class="wrap"><h1>${title}</h1><div style="margin-top:10px"><a class="cta-header" href="/checkout/start.html${headerQs}">Checkout</a></div></div></header><main><div class="wrap"><div class="grid">${cards}</div></div></main></body></html>`;
+	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"><title>${title} | RealWorldCerts</title><style>body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:#0c0e12;color:#eaeef2}header{padding:28px 20px;background:radial-gradient(1200px 500px at 20% -100%,#1a1f3b 0%,transparent 70%)}.wrap{max-width:1200px;margin:0 auto;padding:0 20px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px 0}.card{display:flex;flex-direction:column;background:#0e1118;border:1px solid #1e2532;border-radius:12px;overflow:hidden;color:inherit;text-decoration:none}.card-main{display:block;color:inherit;text-decoration:none;flex:1}.card-main:hover .title{color:#22d3ee}.thumb{background:#222}.thumb img{width:100%;height:auto;display:block}.content{padding:12px}.title{font-size:16px;font-weight:600;color:#f2f6ff;line-height:1.3;margin-bottom:8px}.meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.pill{display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px}.cta-row{padding:0 12px 12px}.cta{display:block;text-align:center;padding:14px 18px;border-radius:8px;background:#16263a;color:#eaf1ff;border:1px solid #2a3e58;text-decoration:none;font-weight:600;min-height:56px;min-width:44px}.cta:hover{background:#1c2f4a}.cta-header{display:inline-flex;align-items:center;justify-content:center;padding:14px 18px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#22d3ee);color:#04121a;border:1px solid #22d3ee;text-decoration:none;font-weight:700;min-height:56px;min-width:44px}.cta-header:hover{background:linear-gradient(135deg,#4f8bff,#35dcf5)}${baseMobileCSS()}</style></head><body><script>(function(){try{if(location.search){history.replaceState(null,"",location.origin+location.pathname+location.hash);}}catch(e){}})();</script><header><div class="wrap"><h1>${title}</h1><div style="margin-top:10px"><a class="cta-header" href="/checkout/start.html${headerQs}">Checkout</a></div></div></header><main><div class="wrap"><div class="grid">${cards}</div></div></main></body></html>`;
 }
 function countByTitle(rows, key, title) {
 	if (!rows || rows.length === 0) return 0;
@@ -326,7 +522,8 @@ function main() {
 		const lectureCount = countByTitle(lr, lecKey, title);
 		const practiceTestCount = countByTitle(pr, prKey, title);
 		const quizCount = countByTitle(qr, qKey, title);
-		items.push({
+		const priceValue = Number(r.price || r.Price || 49);
+		const course = {
 			title,
 			slug,
 			category: String(category || ""),
@@ -335,7 +532,10 @@ function main() {
 			practiceTestCount,
 			quizCount,
 			language,
-		});
+			price: priceValue,
+		};
+		validateCourse(course);
+		items.push(course);
 	}
 	const outStatic = path.resolve(root, ".vercel", "output", "static");
 	const outCatalogDir = path.join(outStatic, "catalog");
