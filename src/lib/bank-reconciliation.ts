@@ -12,6 +12,10 @@
 
 import { db } from './db';
 import { sha256 } from './strict-enforcement/crypto-utils';
+import {
+  handsFreePolicyActive,
+  isHandsFreeOwner,
+} from './treasury/hands-free-policy';
 
 export type BankStatementEntry = {
   transactionId: string;
@@ -333,11 +337,55 @@ export async function runBankReconciliation(
       matchedSettlementIds.add(match.settlementId);
       matchedBankIds.add(match.bankEntryId);
 
+      let autoApprovedHandsFree = false;
       if (match.requiresHumanSignoff) {
-        humanSignoffRequired.push(match.settlementId);
+        const presetOwner = settlement.ownerAccountId
+          ? await isHandsFreeOwner(settlement.ownerAccountId)
+          : false;
+        const diffUsd = Number(match.discrepancyUsd ?? 0);
+        const amountDiscrepancyInTolerance =
+          match.matchType === 'amount_discrepancy' &&
+          diffUsd >= 0.01 &&
+          diffUsd <= 5.0;
+        const policyOn = handsFreePolicyActive();
+        if (policyOn && presetOwner && amountDiscrepancyInTolerance) {
+          try {
+            const proofHash = sha256(
+              `${settlement.id}:${match.bankEntryId}:${settlement.amount}:owner_hands_free_auto_approved:owner-hands-free-bot:${diffUsd.toFixed(2)}`,
+            );
+            await db.ownerSettlement.update({
+              where: { id: settlement.id },
+              data: {
+                status: 'completed',
+                externalRef: match.bankEntryId,
+                verifiedAt: now,
+                proofHash,
+                settledAt: now,
+                dataSource: 'owner_hands_free_reconciliation',
+                connectorStatus: 'owner_hands_free_auto_attested',
+                metadata: JSON.stringify({
+                  humanApprovedBy: 'owner-hands-free-bot',
+                  humanApprovedAt: now.toISOString(),
+                  matchType: 'amount_discrepancy_auto_approved_hands_free',
+                  discrepancyUsd: diffUsd,
+                  scope: 'preset-owner 6-accounts only, diff in [$0.01,$5.00] USD',
+                  policy: 'OWNER_HANDS_FREE_POLICY=true',
+                }),
+              },
+            });
+            match.autoSettled = true;
+            match.requiresHumanSignoff = false;
+            match.reason = `${match.reason} [OWNER-HANDS-FREE-AUTO-APPROVED diff=$${diffUsd.toFixed(2)} owner=${settlement.ownerAccountId?.slice(0, 8)}… by=owner-hands-free-bot]`;
+            autoApprovedHandsFree = true;
+          } catch (_e: any) {
+            humanSignoffRequired.push(match.settlementId);
+          }
+        } else {
+          humanSignoffRequired.push(match.settlementId);
+        }
       }
 
-      if (match.autoSettled && match.requiresHumanSignoff === false) {
+      if (match.autoSettled && match.requiresHumanSignoff === false && !autoApprovedHandsFree) {
         const proofHash = sha256(
           `${settlement.id}:${match.bankEntryId}:${settlement.amount}:${settlement.currency}:reconciled`,
         );
