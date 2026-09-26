@@ -258,7 +258,7 @@ async function main(): Promise<number> {
     return 99;
   } finally {
     try {
-      const fs = require('node:fs');
+      const fs = await import('node:fs');
       const dir = 'data/out';
       fs.mkdirSync(dir, { recursive: true });
       const path = `${dir}/daemon-tick-hands-free-v351.ndjson`;
@@ -268,7 +268,7 @@ async function main(): Promise<number> {
   }
 }
 
-if (require.main === module) {
+if (typeof require !== 'undefined' ? require.main === module : import.meta.url?.endsWith(process.argv[1]?.replace(/\\/g, '/'))) {
   main().then((code) => process.exit(code)).catch((e) => { console.error(e); process.exit(98); });
 }
 
