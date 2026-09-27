@@ -28,8 +28,8 @@ lint:
     - markdownlint@0.45.0
     - osv-scanner@2.11.1
     - pinact@5.1.1
-    - prettier@3.6.2
-    - ruff@0.16.8
+    - prettier@3.9.0
+    - ruff@0.17.3
     - shellcheck@0.11.0
     - shfmt@3.14.1
     - trufflehog@3.99.0
