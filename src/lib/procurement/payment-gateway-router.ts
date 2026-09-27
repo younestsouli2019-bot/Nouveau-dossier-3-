@@ -347,6 +347,8 @@ export interface PayoutReleaseGateOpts {
   requireHumanSignOff?: boolean
   requireQuantityMatch?: boolean
   totalOrderedQty?: number
+  threeWayMatchItemIds?: string[]
+  threeWayMatchPurchaseOrderId?: string
 }
 
 const DEFAULT_COD_WINDOW_MS = 24 * 60 * 60 * 1000 // 24 hours
@@ -373,7 +375,10 @@ export async function payoutReleaseGate(
   //    blocks payout.
   let threeWayStatus: 'PASS' | 'FAIL' | string = 'NOT_RUN'
   try {
-    const threeWayReport = await runThreeWayMatch()
+    const threeWayReport = await runThreeWayMatch({
+      itemIds: opts.threeWayMatchItemIds,
+      purchaseOrderId: opts.threeWayMatchPurchaseOrderId,
+    })
     const totalItems = threeWayReport.totalItems
     const blockingIssues =
       threeWayReport.missingReceipts +
