@@ -64,18 +64,30 @@ export interface ThreeWayReport {
 // Price tolerance: 5% variance is acceptable
 const PRICE_TOLERANCE_PCT = 5
 
+export interface RunThreeWayMatchOpts {
+  itemIds?: string[]
+  purchaseOrderId?: string
+}
+
 /**
- * Run three-way matching on all procurement items that have been received.
+ * Run three-way matching on procurement items.
+ * - Without opts: run on all items (not pending/cancelled) — legacy global scope.
+ * - With itemIds: scope to specified items only (per-item settlement gate).
+ * - With purchaseOrderId: scope to all items in a specific PO.
  */
-export async function runThreeWayMatch(): Promise<ThreeWayReport> {
+export async function runThreeWayMatch(opts: RunThreeWayMatchOpts = {}): Promise<ThreeWayReport> {
   const now = new Date()
   const matches: ThreeWayMatch[] = []
   const recoveryNeeded: ThreeWayReport['recoveryNeeded'] = []
 
-  // Get all items that have been at least ordered
-  const items = await db.procurementItem.findMany({
-    where: { status: { notIn: ['pending', 'cancelled'] } },
-  })
+  const where: any = { status: { notIn: ['pending', 'cancelled'] } }
+  if (opts.itemIds && opts.itemIds.length > 0) {
+    where.id = { in: opts.itemIds }
+  } else if (opts.purchaseOrderId) {
+    where.purchaseOrderId = opts.purchaseOrderId
+  }
+
+  const items = await db.procurementItem.findMany({ where })
 
   // Get all POs for price reference
   const pos = await db.purchaseOrder.findMany({ include: { items: true } })
