@@ -634,16 +634,21 @@ export function buildSwarmGuardrails(options = {}) {
     const independent = merged.filter(
       (s) => s && String(s) !== String(corruptibleMirrorSource),
     );
-    const triggered = independent.length < cfg.consensusMinIndependentSources;
+    const claimInFlight = merged.length > 0;
+    const triggered =
+      claimInFlight && independent.length < cfg.consensusMinIndependentSources;
     return {
       pattern: "echo_chamber_consensus",
       triggered,
-      reason: `independent sources=${independent.length}/${cfg.consensusMinIndependentSources}`,
+      reason: claimInFlight
+        ? `independent sources=${independent.length}/${cfg.consensusMinIndependentSources}`
+        : `no consensus claim in flight; independent sources=${independent.length}/${cfg.consensusMinIndependentSources}`,
       data: {
         sources: merged,
         independent: independent.length,
         baselineSources: defaultSources,
         minIndependent: cfg.consensusMinIndependentSources,
+        claimInFlight,
       },
     };
   }

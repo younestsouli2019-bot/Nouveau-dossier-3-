@@ -1,0 +1,92 @@
+{
+  "at": 1790585065993,
+  "score": 0,
+  "state": "SAFE",
+  "breakdown": {
+    "hallucinated_arbitrage_loop": {
+      "triggered": false,
+      "severity": 8,
+      "category": "reasoning",
+      "points": 0,
+      "reason": "spread=0.0000 confirmed by 0/2 independent oracles"
+    },
+    "hyper_optimization_death_spiral": {
+      "triggered": false,
+      "severity": 7,
+      "category": "reasoning",
+      "points": 0,
+      "reason": "compute_cost_usd=0.0000, yield_gained_usd=0.0000, ratio=0.00 (max=1)"
+    },
+    "echo_chamber_consensus": {
+      "triggered": false,
+      "severity": 7,
+      "category": "reasoning",
+      "points": 0,
+      "reason": "no consensus claim in flight; independent sources=0/2"
+    },
+    "risk_aversion_paralysis": {
+      "triggered": false,
+      "severity": 6,
+      "category": "reasoning",
+      "points": 0,
+      "reason": "consecutive safety halts=0 while 0 active market windows remain"
+    },
+    "context_window_amnesia_drift": {
+      "triggered": false,
+      "severity": 9,
+      "category": "reasoning",
+      "points": 0,
+      "reason": "decision signature repeats 0/3 in recent memory window"
+    },
+    "cannibalistic_competition": {
+      "triggered": false,
+      "severity": 9,
+      "category": "operational",
+      "points": 0,
+      "reason": "cycle <none> observed 0 duplicate settlements (dedup-keyed by cycle/recipient/amount/currency/connector)"
+    },
+    "sub_agent_proliferation": {
+      "triggered": false,
+      "severity": 8,
+      "category": "operational",
+      "points": 0,
+      "reason": "running=0, last_60s_spawns=0, max_concurrent=8, max_per_min=2"
+    },
+    "sunk_cost_resource_sink": {
+      "triggered": false,
+      "severity": 7,
+      "category": "toxic",
+      "points": 0,
+      "reason": "rail= attempts=0 (max=5)"
+    },
+    "fragile_exploitation_monopoly": {
+      "triggered": false,
+      "severity": 9,
+      "category": "toxic",
+      "points": 0,
+      "reason": "asset class redundancy >= 2"
+    },
+    "velocity_without_revenue": {
+      "triggered": false,
+      "severity": 8,
+      "category": "manifestation",
+      "points": 0,
+      "reason": "window settlements=0, revenue_usd=0.0000, ratio=0.00"
+    },
+    "token_to_revenue_decoupling": {
+      "triggered": false,
+      "severity": 8,
+      "category": "manifestation",
+      "points": 0,
+      "reason": "internal credits moved=0, revenue_usd=0.0000, ratio=0.00"
+    },
+    "log_monotony": {
+      "triggered": false,
+      "severity": 5,
+      "category": "manifestation",
+      "points": 0,
+      "reason": "last 0 audit entries: distinct statuses=0 (min=4)"
+    }
+  },
+  "triggered": []
+}
