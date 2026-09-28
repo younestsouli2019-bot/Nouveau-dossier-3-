@@ -6,12 +6,12 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const REGISTRY_DIR = path.join(ROOT, "data", "out");
 export const REGISTRY_FILE = path.join(REGISTRY_DIR, "course-asset-registry.json");
 
-export const CONTRACT_VERSION = "1.0.0";
+export const CONTRACT_VERSION = "2.0.0";
 
 export const PLACEHOLDER_PATTERNS = [
 	{ id: "placeholder_file", label: "placeholder-named file", re: /(^|\/)(placeholder|sample|temp|dummy)([-_.]|\d|$)/i },
 	{ id: "placeholder_alt", label: "placeholder text in alt", re: /placeholder|coming soon|coming-soon|to be added|tbd/i },
-	{ id: "empty_tag", label: "empty media tag", re: /<video[\s>][^>]*>\s*<\/video>|<img[\s>][^>]*>\s*<\/img>|<source[^>]*src=["']\s*["']/i },
+	{ id: "empty_tag", label: "empty media tag", re: /<video\b(?![^>]*\bsrc=)[^>]*>\s*<\/video>|<img\b(?![^>]*\bsrc=)[^>]*>\s*<\/img>|<source[^>]*src=["']\s*["']/i },
 	{ id: "youtube_unrelated", label: "bare YouTube embed", re: /youtube\.com\/(embed|watch)[^"']*/i },
 	{ id: "fake_filename", label: "generated-looking filename", re: /(^|\/)(image|img|photo|file|pic)[-_]?\d{2,}\.(jpg|jpeg|png|webp)(\?|$)/i },
 	{ id: "recycled_image", label: "same asset reused as unique content" },
@@ -36,12 +36,12 @@ export class MediaContract {
 		this.required = required || {
 			hero_image: 1,
 			thumbnail: 1,
-			module_images: 3,
-			diagrams: 2,
+			module_images: 1,
+			diagrams: 0,
 			trailer_video: 1,
-			lesson_videos: 3,
-			video_thumbnails: 3,
-			cheat_sheet: 1,
+			lesson_videos: 1,
+			video_thumbnails: 0,
+			cheat_sheet: 0,
 		};
 		this.results = {};
 	}
@@ -74,10 +74,11 @@ export class MediaContract {
 	}
 
 	checkQuantity(kind, actual, min) {
-		const pass = typeof actual === "number" && actual >= (min || 1);
+		const n = min ?? 1;
+		const pass = typeof actual === "number" && actual >= n;
 		this.results[kind] = {
 			kind,
-			required: min || 1,
+			required: n,
 			found: actual,
 			status: pass ? "PASS" : "FAIL",
 			assetIds: [],

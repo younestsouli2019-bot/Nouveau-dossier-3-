@@ -10,6 +10,145 @@ function exists(p) {
 	}
 }
 
+const SLOT_TOKENS = {
+	HERO: "hero",
+	THUMB: "thumb",
+	TRAILER: "trailer",
+	"MOD-01": "mod",
+	"DIAGRAM-01": "diagram",
+	CHEAT: "cheat",
+	"LESSON-01": "lesson",
+};
+const MEDIA_ROOT = path.resolve(process.cwd(), "rank", "output", "media");
+const COURSE_ASSET_DIR = path.resolve(
+	process.cwd(),
+	".vercel",
+	"output",
+	"static",
+	"assets",
+	"courses",
+);
+const SITE_ORIGIN = "https://www.realworldcerts.com";
+
+let currentMediaMap = new Map();
+let SITE_STATS = { courses: 0, questions: 0, categories: 0 };
+
+function copyMediaToAssets() {
+	const found = new Map();
+	if (!fs.existsSync(MEDIA_ROOT)) return found;
+	for (const slug of fs.readdirSync(MEDIA_ROOT)) {
+		const dir = path.join(MEDIA_ROOT, slug);
+		let st;
+		try {
+			st = fs.statSync(dir);
+		} catch {
+			continue;
+		}
+		if (!st.isDirectory()) continue;
+		const slot = {};
+		for (const f of fs.readdirSync(dir)) {
+			const m =
+				/^(.+?)-((?:MOD|DIAGRAM|CHEAT|LESSON)-[0-9A-Z]+|HERO|THUMB|TRAILER)\.(webp|mp4|webm)$/i.exec(
+					f,
+				);
+			if (!m) continue;
+			const key = SLOT_TOKENS[String(m[2]).toUpperCase()];
+			if (!key) continue;
+			const ext = m[3].toLowerCase();
+			const dest = `${slug}-${String(m[2]).toUpperCase()}.${ext}`;
+			ensureDir(COURSE_ASSET_DIR);
+			fs.copyFileSync(path.join(dir, f), path.join(COURSE_ASSET_DIR, dest));
+			slot[key] = `/assets/courses/${dest}`;
+		}
+		found.set(slug, slot);
+	}
+	return found;
+}
+
+const CATEGORY_RULES = [
+	["Security", /(security|siem|soc|incident|threat|hack|offensive|penetration|cyber|red team|defens|oscp|ceh|ejpt|ecppt|pnpt|bscp|ccna|ccnp|cisco|juniper|comptia|giac|splunk|elastic|sentinel|palo alto|fortinet)/i],
+	["Cloud", /(cloud|aws|azure|gcp|data center|databricks|kubernetes|openstack|vmware)/i],
+	["Data & AI", /(ai|machine learning|ml|data|analytics|genai|generative|rag|llm|python|tensorflow)/i],
+	["Engineering", /(engineering|engineer|architecture|developer|software|programming|code|automation|devops|network|telecom)/i],
+	["Finance", /(finance|financial|cost|certified public|bank|accounting|tax|trader|investment)/i],
+	["Health", /(health|medical|nursing|nurse|pharm|physician|dental)/i],
+	["Management", /(management|project|product|agile|scrum|pmp|human resources|leadership)/i],
+	["Operations & Safety", /(safety|osha|operator|maintenance|construction|crane|forklift|electrical|welding)/i],
+	["Law & Real Estate", /(law|legal|real estate|property|license|notary|broker|apprais)/i],
+	["Education & Language", /(teaching|teacher|education|language|ielts|toefl|tutor)/i],
+	["Automotive", /(automotive|mechanical|diesel|vehicle)/i],
+];
+
+function inferCategory(title) {
+	for (const [label, re] of CATEGORY_RULES) {
+		if (re.test(String(title || ""))) return label;
+	}
+	return "Certifications";
+}
+
+function stripPlaceholders(str) {
+	return String(str || "")
+		.replace(
+			/(\[(?:insert|your|add|number|count|title|here|text|name|date|module|lesson)[^\]]*\])|(lorem ipsum[^.]*)/gi,
+			"",
+		)
+		.replace(/\s{2,}/g, " ")
+		.trim();
+}
+
+function xmlEscape(s) {
+	return String(s || "")
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;");
+}
+
+function buildRobots() {
+	return `User-agent: *
+Allow: /
+
+Sitemap: ${SITE_ORIGIN}/sitemap.xml
+`;
+}
+
+function buildSitemap(items, today) {
+	const urls = [];
+	const staticPages = [
+		"",
+		"/catalog/index.html",
+		"/cybersecurity.html",
+		"/bounty/",
+		"/bundles/soc-analyst-starter.html",
+		"/bundles/bug-bounty-starter.html",
+		"/bundles/detection-engineering-starter.html",
+	];
+	for (const p of staticPages) {
+		urls.push(`  <url><loc>${SITE_ORIGIN}${p === "" ? "/" : p}</loc><lastmod>${today}</lastmod></url>`);
+	}
+	for (const it of items) {
+		const loc = `${SITE_ORIGIN}/catalog/${encodeURIComponent(it.slug)}.html`;
+		urls.push(`  <url><loc>${loc}</loc><lastmod>${today}</lastmod></url>`);
+	}
+	return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.join("\n")}
+</urlset>
+`;
+}
+
+function metaTags(c, media) {
+	const desc = String(c.description || "")
+		.replace(/<[^>]+>/g, " ")
+		.replace(/\s+/g, " ")
+		.trim()
+		.slice(0, 158);
+	const og = media && media.hero
+		? `<meta property="og:image" content="${SITE_ORIGIN}${media.hero}"/>`
+		: "";
+	return `<meta name="description" content="${xmlEscape(desc)}"/><link rel="canonical" href="${SITE_ORIGIN}/catalog/${encodeURIComponent(c.slug)}.html"/>${og}`;
+}
+
 function validateCourse(c) {
 	const required = ["title", "slug"];
 	const missing = required.filter((k) => !c[k] || !String(c[k]).trim());
@@ -31,10 +170,10 @@ function findCourseImage(slug) {
 		"assets",
 		"courses",
 	);
-	const exts = [".webp", ".png", ".jpg", ".jpeg", ".svg"];
-	for (const ext of exts) {
-		const p = path.join(base, slug + ext);
-		if (exists(p)) return "/assets/courses/" + slug + ext;
+	const candidates = [`${slug}-HERO.webp`, `${slug}.webp`, `${slug}.png`, `${slug}.jpg`, `${slug}.jpeg`, `${slug}.svg`];
+	for (const name of candidates) {
+		const p = path.join(base, name);
+		if (exists(p)) return "/assets/courses/" + name;
 	}
 	return null;
 }
@@ -49,10 +188,9 @@ function findCourseVideo(slug) {
 		"assets",
 		"courses",
 	);
-	const exts = [".mp4", ".webm"];
-	for (const ext of exts) {
-		const p = path.join(base, slug + ext);
-		if (exists(p)) return "/assets/courses/" + slug + ext;
+	for (const name of [`${slug}-TRAILER.mp4`, `${slug}-LESSON-01.mp4`, `${slug}.mp4`, `${slug}-TRAILER.webm`, `${slug}.webm`]) {
+		const p = path.join(base, name);
+		if (exists(p)) return "/assets/courses/" + name;
 	}
 	return null;
 }
@@ -164,9 +302,9 @@ function trustBadgesRow() {
 	];
 	const labels = [
 		"30 Day Money Back",
-		"Pass Rate 94.3%",
-		"18,400+ Verified Students",
-		"6.5M+ Certification Holders",
+		"Unlimited Practice Retakes",
+		"Instant Email Delivery",
+		"Lifetime Course Access",
 		"24/7 Support",
 		"Secure Payments",
 		"CMI/PayPal/Crypto Accepted",
@@ -181,12 +319,8 @@ function trustBadgesRow() {
 }
 
 function footerCountersSSR(courseCount) {
-	const students = 18400;
-	const certs = 6500000;
-	const avgRating = 94.3;
-	return `<footer class="site-footer"><div class="wrap"><div class="counters"><div class="counter"><span class="counter-num">${courseCount.toLocaleString()}</span><span class="counter-label">Courses Available</span></div><div class="counter"><span class="counter-num">${students.toLocaleString()}+</span><span class="counter-label">Verified Students</span></div><div class="counter"><span class="counter-num">${(
-		certs / 1000000
-	).toFixed(1)}M+</span><span class="counter-label">Certification Holders</span></div><div class="counter"><span class="counter-num">${avgRating}%</span><span class="counter-label">Average Pass Rate</span></div></div><div class="foot-links"><a href="/catalog/index.html">Course Catalog</a><a href="/cybersecurity.html">Cybersecurity</a><a href="/privacy.html">Privacy</a><a href="/refund.html">Refund Policy</a><a href="/terms.html">Terms</a><a href="mailto:support@realworldcerts.com">Contact</a></div><p class="copy">&copy; ${new Date().getFullYear()} RealWorldCerts. All rights reserved.</p></div></footer>`;
+	const s = SITE_STATS;
+	return `<footer class="site-footer"><div class="wrap"><div class="counters"><div class="counter"><span class="counter-num">${courseCount.toLocaleString()}</span><span class="counter-label">Certification Courses</span></div><div class="counter"><span class="counter-num">${s.questions.toLocaleString()}</span><span class="counter-label">Practice Questions</span></div><div class="counter"><span class="counter-num">${s.categories.toLocaleString()}</span><span class="counter-label">Course Categories</span></div><div class="counter"><span class="counter-num">1</span><span class="counter-label">Language (English)</span></div></div><div class="foot-links"><a href="/catalog/index.html">Course Catalog</a><a href="/cybersecurity.html">Cybersecurity</a><a href="/privacy.html">Privacy</a><a href="/refund.html">Refund Policy</a><a href="/terms.html">Terms</a><a href="mailto:support@realworldcerts.com">Contact</a></div><p class="copy">&copy; ${new Date().getFullYear()} RealWorldCerts. All rights reserved.</p></div></footer>`;
 }
 
 function baseMobileCSS() {
@@ -295,6 +429,7 @@ function buildCourseFaqJsonLd(courseName) {
 
 function buildCourseHtml(c) {
 	validateCourse(c);
+	const media = currentMediaMap.get(c.slug) || null;
 	const n = Number(c.practiceTestCount || 0);
 	const placeholders = [];
 	for (let i = 0; i < Math.min(n, 12); i++) {
@@ -306,10 +441,8 @@ function buildCourseHtml(c) {
 			`<img alt="Practice Test ${i + 1}" src="data:image/svg+xml;charset=utf-8,${svg}" />`,
 		);
 	}
-	const gallery = placeholders.length
-		? `<div class="gallery">${placeholders.join("")}</div>`
-		: `<p>No practice tests listed.</p>`;
 	function hero(title, slug) {
+		if (media && media.hero) return media.hero;
 		const img = findCourseImage(slug);
 		if (img) return img;
 		const hue = Math.abs(hashCode(slug)) % 360;
@@ -319,12 +452,26 @@ function buildCourseHtml(c) {
 		);
 		return `data:image/svg+xml;charset=utf-8,${svg}`;
 	}
-	const vid = findCourseVideo(c.slug);
+	function buildGallery() {
+		if (media) {
+			const slides = [];
+			for (const key of ["hero", "thumb", "diagram", "cheat", "mod"]) {
+				const u = media[key];
+				if (!u) continue;
+				slides.push(`<img alt="${key === "hero" ? "Course banner" : key} for ${xmlEscape(c.title)}" src="${u}" loading="lazy" />`);
+			}
+			if (slides.length) return `<div class="gallery">${slides.join("")}</div>`;
+		}
+		return placeholders.length
+			? `<div class="gallery">${placeholders.join("")}</div>`
+			: `<p>No practice tests listed.</p>`;
+	}
+	const gallery = buildGallery();
+	const vid = (media && (media.trailer || media.lesson)) || findCourseVideo(c.slug);
 	const videoHtml = vid
 		? `<section class="box"><h2 class="box-title">Screen Recording</h2><video controls style="width:100%;max-height:520px;border-radius:12px;border:1px solid #1e2532;background:#0e1118" src="${vid}"></video></section>`
 		: "";
 
-	const price = Number(c.price || 49);
 	const teaches = [c.title, "Exam preparation", "Practice tests", "Completion certificate"];
 	const eduProgJsonLd = {
 		"@context": "https://schema.org",
@@ -341,29 +488,24 @@ function buildCourseHtml(c) {
 		teaches,
 	};
 
+	const hasPrice = Number(c.price) > 0;
+	const offers = {
+		"@type": "Offer",
+		url: `https://www.realworldcerts.com/catalog/${c.slug}.html`,
+		availability: "https://schema.org/InStock",
+		itemCondition: "https://schema.org/NewCondition",
+		...(hasPrice
+			? { price: c.price.toFixed(2), priceCurrency: "USD" }
+			: { priceCurrency: "USD" }),
+	};
 	const productJsonLd = {
 		"@context": "https://schema.org",
 		"@type": "Product",
 		name: c.title,
-		description: c.description || `${c.title} training program.`,
-		offers: {
-			"@type": "Offer",
-			price: price.toFixed(2),
-			priceCurrency: "USD",
-			url: `https://www.realworldcerts.com/catalog/${c.slug}.html`,
-			availability: "https://schema.org/InStock",
-			itemCondition: "https://schema.org/NewCondition",
-		},
-	};
-
-	const aggRatingJsonLd = {
-		"@context": "https://schema.org",
-		"@type": "AggregateRating",
-		itemReviewed: { "@type": "Product", name: c.title },
-		ratingValue: "94.3",
-		reviewCount: "18400",
-		bestRating: "100",
-		worstRating: "0",
+		description: stripPlaceholders(
+			c.description || `${c.title} training program.`,
+		).slice(0, 300),
+		offers,
 	};
 
 	const faqJsonLd = buildCourseFaqJsonLd(c.title);
@@ -379,12 +521,10 @@ function buildCourseHtml(c) {
 	)}</script><script type="application/ld+json">${JSON.stringify(
 		productJsonLd,
 	)}</script><script type="application/ld+json">${JSON.stringify(
-		aggRatingJsonLd,
-	)}</script><script type="application/ld+json">${JSON.stringify(
 		faqJsonLd,
 	)}</script>`;
 
-	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"><title>${c.title} | RealWorldCerts</title><link rel="stylesheet" href="/assets/index-CU3Sjcpi.css"><style>body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:#0b0c10;color:#eaeef2}header{padding:28px 20px;background:radial-gradient(1200px 500px at 20% -100%,#1a1f3b 0%,transparent 70%)}.wrap{max-width:1100px;margin:0 auto;padding:0 20px}.hero img{width:100%;height:auto;border-radius:12px;border:1px solid #1e2532}.box{border:1px solid #1e2532;border-radius:12px;padding:16px;background:#0e1118;margin-top:16px}.box-title{margin:0 0 10px}.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}.gallery img{width:100%;height:auto;border-radius:8px;border:1px solid #1e2532}.payments{display:flex;flex-wrap:wrap;gap:10px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 18px;border-radius:8px;border:1px solid #2a3e58;background:#16263a;color:#eaf1ff;text-decoration:none;font-size:15px}.btn-primary{background:linear-gradient(135deg,#3b82f6,#22d3ee);color:#04121a;font-weight:700;border-color:#22d3ee}.badges-wrap{margin:16px 0 0}.badges-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.badge-item{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1px solid #1e2532;background:#0e1118;font-size:12px;color:#cbd3df}.badge-icon{flex:0 0 20px;color:#22d3ee}.badge-label{font-size:12px;line-height:1.25}.rating-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;border:1px solid #2a3e58;background:#16263a;margin-top:12px;flex-wrap:wrap}.rating-score{font-size:28px;font-weight:700;color:#22d3ee}.rating-info{font-size:13px;color:#cbd3df}.payments-alt{margin-top:10px;font-size:13px;color:#8b94a3}details{background:#0e1118;border:1px solid #1e2532;border-radius:10px;padding:12px 16px;margin:8px 0}summary{cursor:pointer;font-weight:600;color:#e2e8f0;min-height:44px;display:flex;align-items:center}details p{margin:10px 0 2px;color:#9aa4b2;font-size:14px;line-height:1.6}.site-footer{border-top:1px solid #1e2532;padding:28px 0;margin-top:20px;background:#0a0d13}.counters{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px}.counter{text-align:center;padding:12px;border:1px solid #1e2532;border-radius:10px;background:#0e1118}.counter-num{display:block;font-size:22px;font-weight:700;color:#22d3ee}.counter-label{display:block;font-size:12px;color:#9aa4b2;margin-top:4px}.foot-links{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:14px}.foot-links a{color:#9aa4b2;font-size:13px;text-decoration:none}.foot-links a:hover{color:#22d3ee}.copy{text-align:center;color:#6b7280;font-size:12px;margin:0}${baseMobileCSS()}</style>${jsonLdBlocks}</head><body><script>(function(){try{if(location.search){history.replaceState(null,"",location.origin+location.pathname+location.hash);}}catch(e){}})();</script><header><div class="wrap"><h1>${c.title}</h1><div class="actions" style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn" href="/catalog/index.html">Back</a><a class="btn" href="/bundles/soc-analyst-starter.html">Bundles</a></div><div class="badges-wrap">${trustBadgesRow()}</div></div></header><div class="wrap"><div class="hero"><img alt="${c.title}" src="${hero(c.title, c.slug)}"/></div><section class="box"><p>${c.description || ""}</p><p>Category: ${c.category || ""}</p><div class="meta" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"><span class="pill" style="display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px">Lectures ${c.lectureCount}</span><span class="pill" style="display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px">Practice ${c.practiceTestCount}</span><span class="pill" style="display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px">Quizzes ${c.quizCount}</span></div><div class="rating-row" role="img" aria-label="Rated 94.3% by 18,400 verified students"><span class="rating-score">94.3%</span><span class="rating-info">Pass rate · 18,400+ verified student reviews · 6.5M+ certification holders worldwide</span></div></section>${videoHtml}<section class="box"><h2 class="box-title">Practice Test Gallery</h2>${gallery}</section><section class="box"><h2 class="box-title">Enroll</h2><div class="payments"><a class="btn btn-primary" href="/checkout/start.html">Enroll now — secure checkout</a></div><div class="payments-alt"><span>Pay by card (MAD via Attijari SimplePay), PayPal, USDT (crypto), or bank transfer. Instant email delivery.</span></div></section><section class="box"><h2 class="box-title">Frequently asked questions</h2>${faqHtmlItems}</section></div>${footerCountersSSR(1)}</body></html>`;
+	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"><title>${c.title} | RealWorldCerts</title>${metaTags(c, media)}<link rel="stylesheet" href="/assets/index-CU3Sjcpi.css"><style>body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:#0b0c10;color:#eaeef2}header{padding:28px 20px;background:radial-gradient(1200px 500px at 20% -100%,#1a1f3b 0%,transparent 70%)}.wrap{max-width:1100px;margin:0 auto;padding:0 20px}.hero img{width:100%;height:auto;border-radius:12px;border:1px solid #1e2532}.box{border:1px solid #1e2532;border-radius:12px;padding:16px;background:#0e1118;margin-top:16px}.box-title{margin:0 0 10px}.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}.gallery img{width:100%;height:auto;border-radius:8px;border:1px solid #1e2532}.payments{display:flex;flex-wrap:wrap;gap:10px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 18px;border-radius:8px;border:1px solid #2a3e58;background:#16263a;color:#eaf1ff;text-decoration:none;font-size:15px}.btn-primary{background:linear-gradient(135deg,#3b82f6,#22d3ee);color:#04121a;font-weight:700;border-color:#22d3ee}.badges-wrap{margin:16px 0 0}.badges-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.badge-item{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1px solid #1e2532;background:#0e1118;font-size:12px;color:#cbd3df}.badge-icon{flex:0 0 20px;color:#22d3ee}.badge-label{font-size:12px;line-height:1.25}.rating-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;border:1px solid #2a3e58;background:#16263a;margin-top:12px;flex-wrap:wrap}.rating-score{font-size:28px;font-weight:700;color:#22d3ee}.rating-info{font-size:13px;color:#cbd3df}.payments-alt{margin-top:10px;font-size:13px;color:#8b94a3}details{background:#0e1118;border:1px solid #1e2532;border-radius:10px;padding:12px 16px;margin:8px 0}summary{cursor:pointer;font-weight:600;color:#e2e8f0;min-height:44px;display:flex;align-items:center}details p{margin:10px 0 2px;color:#9aa4b2;font-size:14px;line-height:1.6}.site-footer{border-top:1px solid #1e2532;padding:28px 0;margin-top:20px;background:#0a0d13}.counters{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px}.counter{text-align:center;padding:12px;border:1px solid #1e2532;border-radius:10px;background:#0e1118}.counter-num{display:block;font-size:22px;font-weight:700;color:#22d3ee}.counter-label{display:block;font-size:12px;color:#9aa4b2;margin-top:4px}.foot-links{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:14px}.foot-links a{color:#9aa4b2;font-size:13px;text-decoration:none}.foot-links a:hover{color:#22d3ee}.copy{text-align:center;color:#6b7280;font-size:12px;margin:0}${baseMobileCSS()}</style>${jsonLdBlocks}</head><body><script>(function(){try{if(location.search){history.replaceState(null,"",location.origin+location.pathname+location.hash);}}catch(e){}})();</script><header><div class="wrap"><h1>${c.title}</h1><div class="actions" style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn" href="/catalog/index.html">Back</a><a class="btn" href="/bundles/soc-analyst-starter.html">Bundles</a></div><div class="badges-wrap">${trustBadgesRow()}</div></div></header><div class="wrap"><div class="hero"><img alt="${c.title}" src="${hero(c.title, c.slug)}"/></div><section class="box"><p>${c.description || ""}</p><p>Category: ${c.category || ""}</p><div class="meta" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"><span class="pill" style="display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px">Lectures ${c.lectureCount}</span><span class="pill" style="display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px">Practice ${c.practiceTestCount}</span><span class="pill" style="display:inline-flex;padding:4px 8px;border-radius:999px;background:#151924;border:1px solid #2a3344;color:#cbd3df;font-size:12px">Quizzes ${c.quizCount}</span></div><div class="rating-row" role="img" aria-label="${c.practiceTestCount || 0} practice questions in this course"><span class="rating-score">${(c.practiceTestCount || 0).toLocaleString()}</span><span class="rating-info">Practice questions · unlimited retakes · lifetime access · completion certificate</span></div></section>${videoHtml}<section class="box"><h2 class="box-title">Practice Test Gallery</h2>${gallery}</section><section class="box"><h2 class="box-title">Enroll</h2><div class="payments"><a class="btn btn-primary" href="/checkout/start.html">Enroll now — secure checkout</a></div><div class="payments-alt"><span>Pay by card (MAD via Attijari SimplePay), PayPal, USDT (crypto), or bank transfer. Instant email delivery.</span></div></section><section class="box"><h2 class="box-title">Frequently asked questions</h2>${faqHtmlItems}</section></div>${footerCountersSSR(SITE_STATS.courses)}</body></html>`;
 }
 function buildBugBountyHtml() {
 	const rewards = [
@@ -495,47 +635,96 @@ function main() {
 		"practice_tests.csv",
 	);
 	const quizzesCsv = path.join(dataDir, "quizzes.csv");
-	const { headers: ch, rows: cr } = readCsvFile(coursesCsv);
-	const { headers: lh, rows: lr } = readCsvFile(lecturesCsv);
-	const { headers: ph, rows: pr1 } = readCsvFile(practiceCsv);
-	const { headers: p2h, rows: pr2 } = readCsvFile(practiceCsvAlt);
-	const pr = [...(pr1 || []), ...(pr2 || [])];
-	const { headers: qh, rows: qr } = readCsvFile(quizzesCsv);
-	const titleKey = findTitleKey(ch);
-	const lecKey = findTitleKey(lh);
-	const prKey = findTitleKey(ph.length ? ph : p2h);
-	const qKey = findTitleKey(qh);
-	const items = [];
-	const languagesSet = new Set();
-	for (const r of cr) {
-		const title = String(r[titleKey] || "").trim();
-		if (!title) continue;
-		const slug = slugify(title);
-		const category =
-			r.category || r.Category || r.subject || r.Subject || r.topics || "";
-		const lang =
-			r.language || r.Language || r.lang || r.Locale || r.locale || "en";
-		const language = String(lang || "en").trim();
-		if (language) languagesSet.add(language);
-		const description =
-			r.description || r.Description || r.summary || r.Summary || "";
-		const lectureCount = countByTitle(lr, lecKey, title);
-		const practiceTestCount = countByTitle(pr, prKey, title);
-		const quizCount = countByTitle(qr, qKey, title);
-		const priceValue = Number(r.price || r.Price || 49);
-		const course = {
-			title,
-			slug,
-			category: String(category || ""),
-			description: String(description || ""),
-			lectureCount,
-			practiceTestCount,
-			quizCount,
-			language,
-			price: priceValue,
-		};
-		validateCourse(course);
-		items.push(course);
+	const csvExists = exists(coursesCsv);
+	let items = [];
+	let languagesSet = new Set();
+	let pr = [];
+	let titleKey = null;
+	let prKey = null;
+	if (csvExists) {
+		const { headers: ch, rows: cr } = readCsvFile(coursesCsv);
+		const { headers: lh, rows: lr } = readCsvFile(lecturesCsv);
+		const { headers: ph, rows: pr1 } = readCsvFile(practiceCsv);
+		const { headers: p2h, rows: pr2 } = readCsvFile(practiceCsvAlt);
+		pr = [...(pr1 || []), ...(pr2 || [])];
+		const { headers: qh, rows: qr } = readCsvFile(quizzesCsv);
+		titleKey = findTitleKey(ch);
+		const lecKey = findTitleKey(lh);
+		prKey = findTitleKey(ph.length ? ph : p2h);
+		const qKey = findTitleKey(qh);
+		for (const r of cr) {
+			const title = String(r[titleKey] || "").trim();
+			if (!title) continue;
+			const slug = slugify(title);
+			const category =
+				r.category || r.Category || r.subject || r.Subject || r.topics || "";
+			const lang =
+				r.language || r.Language || r.lang || r.Locale || r.locale || "en";
+			const language = String(lang || "en").trim();
+			if (language) languagesSet.add(language);
+			const description = stripPlaceholders(
+				r.description || r.Description || r.summary || r.Summary || "",
+			);
+			const course = {
+				title,
+				slug,
+				category: String(category || ""),
+				description: String(description || ""),
+				lectureCount: countByTitle(lr, lecKey, title),
+				practiceTestCount: countByTitle(pr, prKey, title),
+				quizCount: countByTitle(qr, qKey, title),
+				language,
+				price: Number(r.price || r.Price || 0),
+			};
+			validateCourse(course);
+			items.push(course);
+		}
+	} else {
+		const fallbackPath = path.resolve(root, "data", "rwc-catalog-live.json");
+		const raw = safeJson(readText(fallbackPath));
+		if (!raw || !Array.isArray(raw.items) || !raw.items.length) {
+			throw new Error(
+				`No course source available: missing ${coursesCsv} and ${fallbackPath}`,
+			);
+		}
+		for (const r of raw.items) {
+			const title = String(r.title || "").trim();
+			if (!title) continue;
+			const slug = String(r.slug || slugify(title)).trim();
+			const language = String(r.language || "en").trim();
+			if (language) languagesSet.add(language);
+			const course = {
+				title,
+				slug,
+				category: inferCategory(title),
+				description: stripPlaceholders(r.description || ""),
+				lectureCount: Number(r.lectureCount || 0),
+				practiceTestCount: Number(r.practiceTestCount || 0),
+				quizCount: Number(r.quizCount || 0),
+				language,
+				image: `/assets/courses/${slug}.svg`,
+			};
+			validateCourse(course);
+			items.push(course);
+		}
+	}
+	const seenSlugs = new Set();
+	const deduped = [];
+	for (const c of items) {
+		if (seenSlugs.has(c.slug)) continue;
+		seenSlugs.add(c.slug);
+		deduped.push(c);
+	}
+	items = deduped;
+	SITE_STATS = {
+		courses: items.length,
+		questions: items.reduce((s, i) => s + Number(i.practiceTestCount || 0), 0),
+		categories: new Set(items.map((i) => i.category || "Certifications")).size,
+	};
+	currentMediaMap = copyMediaToAssets();
+	for (const c of items) {
+		const m = currentMediaMap.get(c.slug);
+		if (m && m.hero) c.image = m.hero;
 	}
 	const outStatic = path.resolve(root, ".vercel", "output", "static");
 	const outCatalogDir = path.join(outStatic, "catalog");
@@ -588,6 +777,11 @@ function main() {
 	writeText(
 		path.join(outStatic, "data", "catalog.json"),
 		JSON.stringify({ items }, null, 2),
+	);
+	writeText(path.join(outStatic, "robots.txt"), buildRobots());
+	writeText(
+		path.join(outStatic, "sitemap.xml"),
+		buildSitemap(items, new Date().toISOString().slice(0, 10)),
 	);
 	const languages = Array.from(languagesSet.values()).sort();
 	writeText(
@@ -644,13 +838,15 @@ function main() {
 		JSON.stringify({ items: cyberWriteups }, null, 2),
 	);
 	const byTitle = new Map();
-	for (const r of pr) {
-		const t = String(r[prKey] || r[titleKey] || "").trim();
-		if (!t) continue;
-		const key = t.toLowerCase();
-		const arr = byTitle.get(key) || [];
-		arr.push(r);
-		byTitle.set(key, arr);
+	if (pr.length) {
+		for (const r of pr) {
+			const t = String(r[prKey] || r[titleKey] || "").trim();
+			if (!t) continue;
+			const key = t.toLowerCase();
+			const arr = byTitle.get(key) || [];
+			arr.push(r);
+			byTitle.set(key, arr);
+		}
 	}
 	for (const r of items) {
 		const t = String(r.title || "")

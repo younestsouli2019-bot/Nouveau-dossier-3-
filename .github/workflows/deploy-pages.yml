@@ -100,10 +100,10 @@ jobs:
             echo "Install retry ($n)..."
             sleep 5
           done
-      - name: Run course media contract audit (live site)
+      - name: Run course media contract gate (committed artifact)
         run: |
           set -euo pipefail
-          node scripts/rwc-course-media-audit.mjs --json --out data/out/course-media-audit.json
+          node scripts/rwc-course-media-audit.mjs --root rank/output --json --out data/out/course-media-audit.json
           RC=$?
           echo "audit exit code: $RC"
           if [ "$RC" -ne 0 ]; then
