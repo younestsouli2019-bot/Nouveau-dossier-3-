@@ -1,8 +1,7 @@
 import { prisma } from './db';
 
-const PSD2_BASE_URL = process.env.ATTIJARI_PSD2_BASE_URL || 'https://attijariwafabank.eu';
+const PSD2_BASE_URL = process.env.ATTIJARI_PSD2_BASE_URL || process.env.ATTIJARI_API_BASE || 'https://attijariwafabank.eu';
 const LIVE_BANK_API = process.env.LIVE_BANK_API || '';
-
 const ALLOWED_ORIGINS = [
   'https://t1trn6kunnv1-d.space-z.ai',
   'https://x1he4604ap01-deploy.space-z.ai',
@@ -10,6 +9,53 @@ const ALLOWED_ORIGINS = [
   'https://app.base44.com/apps/689afeabf1db9c30efe0bd7e/',
   'https://app.base44.com/apps/6888ac155ebf84dd9855ea98',
 ];
+
+let cachedAccessToken: { token: string; expiresAtMs: number } | null = null;
+
+/**
+ * Attijari PSD2 OAuth2 client_credentials grant — used when ATTIJARI_CLIENT_ID +
+ * ATTIJARI_CLIENT_SECRET are provided (repo secrets 2026-09-28). Falls back to
+ * LIVE_BANK_API as bearer token when OAuth is not configured. Fail-closed.
+ */
+async function getAccessToken(): Promise<string> {
+  const clientId = process.env.ATTIJARI_CLIENT_ID || '';
+  const clientSecret = process.env.ATTIJARI_CLIENT_SECRET || '';
+  const tokenUrl = process.env.ATTIJARI_TOKEN_URL || `${PSD2_BASE_URL}/api/psd2/oauth/token`;
+
+  if (cachedAccessToken && cachedAccessToken.expiresAtMs > Date.now() + 60000) {
+    return cachedAccessToken.token;
+  }
+
+  if (clientId && clientSecret) {
+    try {
+      const params = new URLSearchParams();
+      params.set('grant_type', 'client_credentials');
+      params.set('client_id', clientId);
+      params.set('client_secret', clientSecret);
+      params.set('scope', 'ais:read pis:write');
+      const resp = await fetch(tokenUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+          'X-Request-ID': crypto.randomUUID(),
+        },
+        body: params.toString(),
+      });
+      const data = await resp.json().catch(() => ({})) as Record<string, unknown>;
+      const accessToken = (data.access_token as string) || '';
+      const expiresIn = Number(data.expires_in || 1800);
+      if (accessToken && typeof accessToken === 'string' && accessToken.length >= 16) {
+        cachedAccessToken = { token: accessToken, expiresAtMs: Date.now() + expiresIn * 1000 };
+        return accessToken;
+      }
+    } catch (e) {
+      // fallthrough: try LIVE_BANK_API bearer
+    }
+  }
+  // Fallback (original behavior): LIVE_BANK_API used directly as bearer token
+  return LIVE_BANK_API;
+}
 
 interface PSD2Account {
   accountId: string;
@@ -66,20 +112,58 @@ async function psd2Request(
     return { status: 503, data: { error: 'LIVE_BANK_API not configured', mode: 'offline' } };
   }
 
+  let accessToken = '';
+  try {
+    accessToken = token || (await getAccessToken());
+  } catch (e) {
+    accessToken = token || LIVE_BANK_API;
+  }
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
     'X-Request-ID': crypto.randomUUID(),
-    'Authorization': `Bearer ${token || LIVE_BANK_API}`,
   };
+  if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+  if (process.env.ATTIJARI_TITULAIRE_CIN) headers['X-Titulaire-CIN'] = process.env.ATTIJARI_TITULAIRE_CIN;
+  if (process.env.ATTIJARI_PSD2_CODE) headers['X-PSD2-Consent'] = process.env.ATTIJARI_PSD2_CODE;
 
   const url = `${PSD2_BASE_URL}${path}`;
-  const resp = await fetch(url, {
+  const fetchOpts: Record<string, unknown> = {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
-  });
-
-  const data = await resp.json().catch(() => ({}));
+  };
+  // Windows fetch default for node 22+ may fail in sandbox environments
+  if (process.env.NODE_TLS_REJECT_UNAUTHORIZED) {
+    fetchOpts.dispatcher = (globalThis as { dispatcher?: unknown }).dispatcher;
+  }
+  let resp;
+  try {
+    resp = await fetch(url, fetchOpts as RequestInit);
+  } catch (e) {
+    return {
+      status: 0,
+      data: {
+        error: 'fetch failed (network)',
+        detail: e instanceof Error ? e.message : String(e),
+        url: `${PSD2_BASE_URL.slice(0, 30)}…${path}`,
+        mode: LIVE_BANK_API ? 'online-but-network-error' : 'offline',
+        provided: {
+          psd2BaseUrl_len: PSD2_BASE_URL.length,
+          has_client_id: !!process.env.ATTIJARI_CLIENT_ID,
+          has_client_secret: !!process.env.ATTIJARI_CLIENT_SECRET,
+          bearer_len: accessToken.length,
+          titulaire_cin: process.env.ATTIJARI_TITULAIRE_CIN || '',
+          has_psd2_consent: !!process.env.ATTIJARI_PSD2_CODE,
+        },
+      },
+    };
+  }
+  const ct = resp.headers?.get('content-type') || '';
+  const data = ct.includes('application/json')
+    ? await resp.json().catch(() => ({}))
+    : { raw: (await resp.text().catch(() => '')).slice(0, 200) };
   return { status: resp.status, data };
 }
 

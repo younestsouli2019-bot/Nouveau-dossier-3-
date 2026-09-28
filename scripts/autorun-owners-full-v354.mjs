@@ -15,6 +15,32 @@ process.env.AUTO_CONFIRM_OWNER_BATCHES = 'true';
 process.env.DAEMON_HANDS_FREE_TICK = '1';
 process.env.OWNER_EXEC_UNLOCK = process.env.OWNER_EXEC_UNLOCK || 'owner-hands-free-exec-unlock-v351';
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
+/* 2026-09-28 LIVE_BANK rail env — source rails ONLY from process.env (repo secrets
+ * or shell inject). NEVER hardcode. Honest presence check: if LIVE_BANK_API /
+ * ATTIJARI_CLIENT_ID / STRIPE_SECRET_KEY / PAYONEER_CLIENT_ID are present we
+ * forward them verbatim to harness so release-engine.resolveRail() picks them up.
+ * If any key is absent the rail returns needs_manual_proof (fail-closed, no move).
+ */
+const RAIL_KEYS = [
+  'LIVE_BANK_API',
+  'ATTIJARI_CLIENT_ID','ATTIJARI_CLIENT_SECRET','ATTIJARI_API_BASE',
+  'ATTIJARI_PSD2_CODE','ATTIJARI_TITULAIRE_CIN',
+  'STRIPE_SECRET_KEY','STRIPE_ACCOUNT_ID','STRIPE_CONNECTED_ACCOUNT_ID',
+  'PAYONEER_CLIENT_ID','PAYONEER_CLIENT_SECRET','PAYONEER_ACCESS_TOKEN',
+  'PAYPAL_CLIENT_ID','PAYPAL_CLIENT_SECRET',
+  'USDC_RPC_URL','USDC_SENDER_PRIVATE_KEY',
+];
+const present = {};
+for (const k of RAIL_KEYS) {
+  if (process.env[k]) present[k] = { len: process.env[k].length, masked: process.env[k].slice(0,4)+'…' };
+}
+console.log(`  rail_env present: ${Object.keys(present).length}/${RAIL_KEYS.length}`);
+for (const [k,v] of Object.entries(present)) console.log(`    ${k} len=${v.len} ${v.masked}`);
+if (process.env.LIVE_BANK_API) {
+  // Owner titulaire CIN pin (user 2026-09-28 VERBATIM correction):
+  process.env.ATTIJARI_TITULAIRE_CIN = process.env.ATTIJARI_TITULAIRE_CIN || 'A337773';
+  console.log(`  ATTIJARI_TITULAIRE_CIN = ${process.env.ATTIJARI_TITULAIRE_CIN} (signataire Younes Tsouli 45 Av Ibn Sina Appt 4 Agdal 018)`);
+}
 
 const __dir = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dir, '..');

@@ -39,14 +39,25 @@ function parseProcurementTXT(raw) {
     branchCode: '045', branch: 'Attijari Settat — Bouznika',
     city: 'Bouznika', postal: '13100',
   });
-  // Bachir L9
+  // Bachir L9 (procurement recipient only — NOT owner of Agdal Contentieux account)
   const bR = /delivery address:for M Bachir Tsouli address:\s*(\d+ Avenue Ibn Sina[^H]*?)\s*Tablette CR/i;
   const mB = raw.match(bR);
   if (mB) out.push({
-    ownerLabel: 'Bachir Tsouli — RIB 372 (debt_repayment proxy / Agdal Contentieux)',
+    ownerLabel: 'Bachir Tsouli — RIB 372 (debt_repayment proxy, recipient Procurement Agdal 45 Av Ibn Sina Appt 4)',
     ribLast: '372', ribFull: '00781 00004 482000613213 72',
     address: mB[1].trim().replace(/\s+/g, ' '), tel: '—',
-    branchCode: '018', branch: 'Attijari Rabat Agdal — Contentieux / Traitement (45 Av. Ibn Sina)',
+    branchCode: '018', branch: 'Attijari Rabat Agdal — Agdal client counter (NOT Contentieux / Traitement — owner is Younes Tsouli CIN A337773)',
+    city: 'Rabat', postal: '10090',
+  });
+  // OWNER of Contentieux / Traitement Agdal (VERBATIM correction 2026-09-28):
+  //   Branch 018 Rabat Agdal Contentieux / Traitement — 45 Av Ibn Sina Appt 4 = Younes Tsouli CIN A337773
+  //   (NOT Bachir Tsouli — Bachir is the Procurement recipient there, not the account holder)
+  out.push({
+    ownerLabel: 'OWNER Younes Tsouli CIN A337773 — Contentieux / Traitement Rabat Agdal (018) — RIB 646 (Banking Circle primary + domestic MAD mirror)',
+    ribLast: '646', ribFull: 'LU 646 BANKING CIRCLE 001 (MAD mirror 018 / Agdal Contentieux / Traitement — signataire titulaire)',
+    address: '45 Avenue Ibn Sina, Appartement 4, Agdal, Rabat, Maroc',
+    tel: '+212639158209', cin: 'A337773',
+    branchCode: '018', branch: 'Attijari Rabat Agdal — Contentieux / Traitement (45 Av. Ibn Sina Appt 4 — TITULAIRE Younes Tsouli CIN A337773)',
     city: 'Rabat', postal: '10090',
   });
   return out;
@@ -75,6 +86,7 @@ MOTIF                : Virement libératoire – règlement créances fournisseu
 REFERENCE            : REF-CONTENTIEUX-${e.branchCode || 'BRC'}-${Date.now().toString().slice(-6)}
 CODE MOTIF (CFONB)   : SALA / REMB / CRED / FOURN — selon origine de créance
 EXECUTION DATE       : ${new Date().toISOString().slice(0,10)} (demande envoyée à traitement)
+TITULAIRE DU COMPTE  : ${e.cin ? `CIN ${e.cin} — ` : ''}${e.cin ? 'ATTENTION: seul le signataire titulaire CIN peut valider' : '—'}
 INSTRUCTIONS         : Signataire : Service Trésorerie / Owner Attestation
                        Signature électronique : hash-sha256(ownerAttestation)
 ================================================================

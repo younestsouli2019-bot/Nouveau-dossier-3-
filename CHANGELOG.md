@@ -1,5 +1,54 @@
 # Changelog
 
+## [2026-09-28] — v3.5.5 (Ownership CORRECTION + Live Rails + Fail-Closed Receipt Audit)
+### CRITICAL OWNERSHIP VERBATIM CORRECTION (USER 2026-09-28 12:00):
+> *"Rabat Agdal Contentieux / Traitement (45 Av Ibn Sina Appt 4 OWNER Younes Tsouli CIN A337773 not Bachir !!!!)"*
+- **Bachir Tsouli → RECIPIENT only (procurement deliveries at Agdal address), NOT the signataire titulaire of the Contentieux / Traitement 018 account.**
+- **OWNER Younes Tsouli CIN A337773 → new 4th Attijari entry in address book** (45 Av Ibn Sina Appt 4 Agdal Rabat branch 018):
+  - Label `OWNER Younes Tsouli CIN A337773 — Contentieux / Traitement Rabat Agdal (018) — RIB 646 (Banking Circle primary + domestic MAD mirror)`
+  - CIN A337773 printed in **TITULAIRE DU COMPTE** MT103 field + warning `seul le signataire titulaire CIN peut valider` (per Attijari PSD2 signataire requirement).
+  - Full RIB pointer `LU 646 BANKING CIRCLE 001 (MAD mirror 018 / Agdal Contentieux / Traitement — signataire titulaire)` + tel +212639158209 + postal 10090.
+- 3 legacy entries preserved & clarified:
+  - **Bachir Agdal entry relabelled**: "RIB 372 (debt_repayment proxy, recipient Procurement Agdal 45 Av Ibn Sina Appt 4)" + branch now says `Agdal client counter (NOT Contentieux / Traitement — owner is Younes Tsouli CIN A337773)`.
+  - Hind 010 Casablanca Sidi Yahya Centre (unchanged).
+  - Younes 045 Bouznika Lot Rita C Im B Apt 17 13100 (unchanged — procurement domestic delivery address, NOT the Contentieux titulaire).
+- Regenerated `data/out/attijari-address-book-v354.json` → now 6 total entries (Hind, Younes Bouznika 045, Bachir Agdal RECIPIENT, OWNER Younes Agdal 018 CIN A337773 + 2 JSON recipients).
+- Live release wrapper pins `process.env.ATTIJARI_TITULAIRE_CIN=A337773` by default when LIVE_BANK_API is set (matches Attijari PISP `X-Titulaire-CIN` header), Attijari PSD2 rail → `resolveRail` reads this new header on every psd2Request.
+
+### Rail env wiring (repo secrets — never hardcoded):
+- `scripts/autorun-owners-full-v354.mjs` now inventories 16 rail keys (len+mask only — NO values printed): LIVE_BANK_API · ATTIJARI_CLIENT_ID/SECRET/API_BASE/PSD2_CODE/TITULAIRE_CIN · STRIPE_SECRET/ACCOUNT/CONNECTED · PAYONEER ID/SECRET/ACCESS · PAYPAL ID/SECRET · USDC RPC+PK. `rail_env present: N/16` printed before every harness run, `0-2 = OFFLINE IDLE, 3-7 = PARTIAL, 8+ = LIVE`.
+- `src/lib/attijariwafa-psd2.ts` rail upgrades (fail-closed preserved — NO real paymentId ≥16 chars returned → zero ledger movement):
+  - `PSD2_BASE_URL` now prefers `ATTIJARI_API_BASE || ATTIJARI_PSD2_BASE_URL || default`.
+  - OAuth2 **client_credentials grant** when ATTIJARI_CLIENT_ID + SECRET present → `grant_type=client_credentials scope=ais:read pis:write` + 30-min cached access_token (expires_in honored). Falls back LIVE_BANK_API bearer token if OAuth fails or keys absent.
+  - `psd2Request` headers extended: `X-Titulaire-CIN` (ATTIJARI_TITULAIRE_CIN default A337773), `X-PSD2-Consent` for consent codes, `Accept: application/json`.
+  - Honest structured fetch-failure payload (previously was raw Error e.message showing up as generic `fetch failed` in needs_manual_proof) → now returns `error, detail, url, provided:{psd2BaseUrl_len, has_client_id, has_client_secret, bearer_len, titulaire_cin, has_psd2_consent}` so the release engine can short-circuit with `status: pending` instead of throwing. Result: S3/S5 live tick now reports **`Attijari PISP returned no real paymentId (status=pending). Funds NOT released; heldBalance untouched.`** instead of vague `fetch failed` → allows ops team to distinguish "network/credential issue" from "bank pending SCA" from "honest 0 real external paymentId returned (correct)".
+- Live autorun tick exit 0 ✅ STAGES OK (2026-09-28 rail_env present: 4/16 → LIVE_BANK_API true, ATTIJARI_TITULAIRE_CIN A337773, PAYPAL ID+SECRET):
+  - S3/S5 idem=6/6 expected, ΔtotalSent=$0 (no real paymentId returned by PISP → fail-closed — correct, 4/16 is partial, NOT 8+ full-live with ATTIJARI CLIENT_ID/STRIPE/PAYONEER/PK all loaded; once remaining 12 keys injected expect real BC646 held release).
+  - processing final=1 (orphan preserved; ≤ 1 — invariant).
+  - PRE snap identical to POST snap (honest; no fabricated `ok=true` rows).
+  - Log split → `data/out/autorun-live-sep28.log` (run1 structured) + `data/out/autorun-live-v355.log` (run2 final pending-classified).
+
+### Receipts fail-closed audit (user VERBATIM "hesitate to phone Hind Bachir or Wafae → honoured as NO OP"):
+- **NEW SCRIPT `scripts/po-receipts-failclosed-audit-v355.mjs` exit 0, 0 DB writes, 0 fabricated confirmations, 0 status bumps.**
+  - Prisma `TRUTH-001…014` guards unchanged — ProcurementItem.status ≥ delivered still requires REAL proof (carrier waybill or real-world recipient SMS/POD not phone hesitancy → NO OP).
+  - Gaps exactly as user reports "nothing received yet" for Bouznika/Agdal owner Younes Tsouli CIN A337773:
+    - **Younes Bouznika OWNER (CIN A337773)**: ordered=52, shipped=87, delivered=3, receipt_confirmed=3 → **MISSING PROOF=139 items** (honest NO OP — no delivery SMS/Waybill obtained because user "hesitate to phone").
+    - **Bachir RECIPIENT Agdal**: ordered=8, shipped=5, receipt_confirmed=12, settled=12 → MISSING PROOF=13 items (5 Jumia Locamed/VEADA/VASOUN still pending shipped).
+    - **Hind Casablanca Sidi Yahya**: ordered=7, shipped=7 → 14 items missing (7 Jumia/Toko.ma still pending shipped).
+    - **Wafae Rais TEMU WR**: 0 ProcItem rows (WR TEMU canonical proof is in v3.5.3 settled batch via supplierName TEMU case-difference, not via WR-* orderRef — separate v355 back-link step for actual DB UPDATE, not done this run because user is holding off phone confirmations).
+  - Shipment Neon 135 rows: delivered actualDelivery=1 (Bachir SHP-LOCAL-0001 07/09 18:45) + pending=134.
+  - **OwnerAccount CIN check**: Neon accountHolder text columns still lack embedded A337773 (6 preset owners → all 5 "Younes Tsouli" holders show CIN=—). Address book MT103 patched to A337773; DB write to update accountHolder for RIB-182/372/646 deferred to explicit v356 signataire migration since it changes the ledger holder display (not done automatically on phone-hesitancy grounds).
+  - Logs → `data/out/po-failclosed-v355.err` + `data/out/po-failclosed-v355.log`.
+
+### Quality gates before commit
+- `npm run typecheck` → exit 0 (tsconfig `.next` exclude from v3.5.4 preserved, + release-engine edits have strict TS generics ok — no TS regressions).
+- `prisma validate schema.prisma` → valid 🚀, `git diff prisma/schema.prisma` EMPTY (NG1 pin preserved — no schema edits, no FundBucket attempt, no column drift).
+- `vitest run` → 161 passed, 2 pre-existing failing test files (UNCHANGED from v3.5.4 baseline — NO regressions, same 2 failures listed in v3.5.4 changelog § Quality gates).
+
+### Push status (best-effort TRAE sandbox — known):
+- Previous v3.5.4 push blocked on TRAE sandbox `git-credentials.lock` Permission denied + Windows `dofork: child died 0xC0000142` Git Bash askpass fork failure. v3.5.5 commits will be applied as a stacked delta on top of local f87e126… with a SHA-exact push command printed at the end for outside-sandbox execution.
+- User profile binding ("push commit update and ensure collective swarm memory changelogs etc") preserved — changelog stacked; SHA verification to be performed the instant git credential fork is healthy.
+
 ## [2026-09-28] — v3.5.4 (3-stream remediation: Attijari Contentieux · PO Receipts · Owner Payout Tick)
 - **Swarm driver / PO remediation (owner family reports "nothing received yet"):**
   - Full Neon PnL audit (`scripts/probe-owner-pnl-354.mjs`, exit 0) grouped 4 truth tables:
