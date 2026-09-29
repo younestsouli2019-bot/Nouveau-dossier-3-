@@ -102,14 +102,57 @@ interface PSD2PaymentInitiation {
   links?: Record<string, string>;
 }
 
+/**
+ * Raised for every non-success outcome of an Attijari PSD2 call.
+ *
+ * psd2Request previously never failed: it returned `{ status, data }` for HTTP
+ * errors, transport failures and "not configured" alike. Callers then parsed
+ * the error body as if it were a payment resource, so a rejected initiation
+ * surfaced as `paymentId: ''` with `status: 'pending'`. Failure, refusal and
+ * success must be distinguishable, so all of them now throw.
+ */
+export class Psd2Error extends Error {
+  readonly httpStatus: number;
+  readonly body: unknown;
+  readonly method: string;
+  readonly path: string;
+  readonly requestId: string | undefined;
+
+  constructor(init: {
+    httpStatus: number;
+    body?: unknown;
+    method: string;
+    path: string;
+    requestId?: string;
+    message?: string;
+  }) {
+    super(
+      init.message ||
+        `Attijari PSD2 ${init.method} ${init.path} failed (HTTP ${init.httpStatus})`,
+    );
+    this.name = 'Psd2Error';
+    this.httpStatus = init.httpStatus;
+    this.body = init.body;
+    this.method = init.method;
+    this.path = init.path;
+    this.requestId = init.requestId;
+  }
+}
+
 async function psd2Request(
   method: string,
   path: string,
   body?: Record<string, unknown>,
   token?: string,
 ): Promise<{ status: number; data: unknown }> {
-  if (!LIVE_BANK_API) {
-    return { status: 503, data: { error: 'LIVE_BANK_API not configured', mode: 'offline' } };
+  if (!LIVE_BANK_API && !process.env.ATTIJARI_CLIENT_ID) {
+    throw new Psd2Error({
+      httpStatus: 503,
+      method,
+      path,
+      message:
+        'Attijari PSD2 not configured: set LIVE_BANK_API, or ATTIJARI_CLIENT_ID + ATTIJARI_CLIENT_SECRET',
+    });
   }
 
   let accessToken = '';
@@ -142,28 +185,38 @@ async function psd2Request(
   try {
     resp = await fetch(url, fetchOpts as RequestInit);
   } catch (e) {
-    return {
-      status: 0,
-      data: {
-        error: 'fetch failed (network)',
-        detail: e instanceof Error ? e.message : String(e),
-        url: `${PSD2_BASE_URL.slice(0, 30)}…${path}`,
-        mode: LIVE_BANK_API ? 'online-but-network-error' : 'offline',
-        provided: {
-          psd2BaseUrl_len: PSD2_BASE_URL.length,
-          has_client_id: !!process.env.ATTIJARI_CLIENT_ID,
-          has_client_secret: !!process.env.ATTIJARI_CLIENT_SECRET,
-          bearer_len: accessToken.length,
-          titulaire_cin: process.env.ATTIJARI_TITULAIRE_CIN || '',
-          has_psd2_consent: !!process.env.ATTIJARI_PSD2_CODE,
-        },
+    throw new Psd2Error({
+      httpStatus: 0,
+      method,
+      path,
+      requestId: headers['X-Request-ID'],
+      message: `Attijari PSD2 ${method} ${path} transport failure: ${
+        e instanceof Error ? e.message : String(e)
+      }`,
+      body: {
+        transport: 'fetch-failed',
+        baseUrl_len: PSD2_BASE_URL.length,
+        has_client_id: !!process.env.ATTIJARI_CLIENT_ID,
+        has_client_secret: !!process.env.ATTIJARI_CLIENT_SECRET,
+        bearer_len: accessToken.length,
+        titulaire_cin: process.env.ATTIJARI_TITULAIRE_CIN || '',
+        has_psd2_consent: !!process.env.ATTIJARI_PSD2_CODE,
       },
-    };
+    });
   }
   const ct = resp.headers?.get('content-type') || '';
-  const data = ct.includes('application/json')
+  const data: unknown = ct.includes('application/json')
     ? await resp.json().catch(() => ({}))
     : { raw: (await resp.text().catch(() => '')).slice(0, 200) };
+  if (!resp.ok) {
+    throw new Psd2Error({
+      httpStatus: resp.status,
+      body: data,
+      method,
+      path,
+      requestId: headers['X-Request-ID'],
+    });
+  }
   return { status: resp.status, data };
 }
 
@@ -294,9 +347,21 @@ export async function initiatePayment(params: {
 
   const resp = await psd2Request('POST', '/api/psd2/v1/payments/sepa-credit-transfers', body);
   const d = resp.data as Record<string, unknown>;
+  const status = typeof d.status === 'string' ? d.status : '';
+  if (!status) {
+    // A 2xx with no status field is a contract violation, not a pending
+    // payment. Fail loudly instead of fabricating 'pending'.
+    throw new Psd2Error({
+      httpStatus: resp.status,
+      body: d,
+      method: 'POST',
+      path: '/api/psd2/v1/payments/sepa-credit-transfers',
+      message: 'Attijari returned 2xx for a credit transfer with no status field',
+    });
+  }
   return {
     paymentId: (d.paymentId || d.payment_id || d.taskId || '') as string,
-    status: (d.status || 'pending') as string,
+    status,
     transactionStatus: (d.transactionStatus || '') as string,
     cmbpPaymentId: d.cmbpPaymentId as string | undefined,
     links: d._links as Record<string, string> | undefined,
