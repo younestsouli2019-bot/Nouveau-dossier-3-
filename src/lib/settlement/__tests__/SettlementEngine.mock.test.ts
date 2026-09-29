@@ -369,7 +369,28 @@ describe('T9 — CSV/export never triggers SETTLED without reconcile proof', () 
 });
 
 describe('T10 — TERMINAL states cannot transition (valid transitions matrix fail-closed)', () => {
-  it('SETTLED, REJECTED, CANCELLED, QUARANTINED, EXPIRED each have VALID_TRANSITIONS.size === 0', () => {
+  it('SETTLED, REJECTED, CANCELLED, EXPIRED each have VALID_TRANSITIONS.size === 0', () => {
+    for (const term of [
+      SettlementState.SETTLED,
+      SettlementState.REJECTED,
+      SettlementState.CANCELLED,
+      SettlementState.EXPIRED,
+    ]) {
+      expect(VALID_TRANSITIONS[term].size).toBe(0);
+    }
+  });
+
+  // QUARANTINED is a hold, not a dead end: an operator releases it back into
+  // reconciliation or rejects it. See SettlementEngine.pure.test.ts T9, which
+  // asserts these two edges. Listing it as zero-outgoing here contradicted
+  // that test and blocked any quarantine recovery.
+  it('QUARANTINED releases to PROVIDER_RECONCILED or REJECTED only', () => {
+    expect(VALID_TRANSITIONS[SettlementState.QUARANTINED].size).toBe(2);
+    expect(VALID_TRANSITIONS[SettlementState.QUARANTINED].has(SettlementState.PROVIDER_RECONCILED)).toBe(true);
+    expect(VALID_TRANSITIONS[SettlementState.QUARANTINED].has(SettlementState.REJECTED)).toBe(true);
+  });
+
+  it('no terminal state can reach SETTLED after the fact', () => {
     for (const term of [
       SettlementState.SETTLED,
       SettlementState.REJECTED,
@@ -377,7 +398,7 @@ describe('T10 — TERMINAL states cannot transition (valid transitions matrix fa
       SettlementState.QUARANTINED,
       SettlementState.EXPIRED,
     ]) {
-      expect(VALID_TRANSITIONS[term].size).toBe(0);
+      expect(VALID_TRANSITIONS[term].has(SettlementState.SETTLED)).toBe(false);
     }
   });
 });

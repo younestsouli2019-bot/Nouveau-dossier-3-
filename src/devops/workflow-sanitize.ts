@@ -34,10 +34,14 @@ interface ParsedLine {
 }
 
 function parse(text: string): ParsedLine[] {
+  // Split on \n then strip a trailing \r: a CRLF checkout leaves \r on every
+  // line, and `.` does not match \r, so the indent regex returned null.
   return text.split('\n').map((raw, i) => {
-    const m = raw.match(/^(\s*)(.*)$/);
     void i;
-    return { indent: m[1].replace(/\t/g, '  ').length, text: m[2].trim(), raw };
+    const line = raw.endsWith('\r') ? raw.slice(0, -1) : raw;
+    const m = line.match(/^(\s*)(.*)$/);
+    if (!m) return { indent: 0, text: line.trim(), raw: line };
+    return { indent: m[1].replace(/\t/g, '  ').length, text: m[2].trim(), raw: line };
   });
 }
 
