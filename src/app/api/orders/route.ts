@@ -39,14 +39,15 @@ type OrderRecord = {
 }
 
 /**
- * Reference format: RWC-<8 hex>-<6 hex>. Two random segments, 160 bits
- * total. Shown to the buyer and quoted back on the payment, so the
- * matcher can bind a rail transaction to exactly one order.
+ * Reference format: RWC-<10 hex>-<10 hex>-<10 hex>-<10 hex>, i.e. four
+ * 5-byte groups rendered as 40 hex characters. 20 bytes * 8 bits = 160 bits
+ * of CSPRNG entropy. The dashes are purely for legibility: an operator
+ * reads these back over the phone to bind a rail transaction to exactly one
+ * order, so the groups are uniform width rather than one unbroken blob.
  */
 function mintReference(): string {
-  const a = randomBytes(4).toString('hex').toUpperCase()
-  const b = randomBytes(3).toString('hex').toUpperCase()
-  return `RWC-${a}-${b}`
+  const hex = randomBytes(20).toString('hex').toUpperCase()
+  return `RWC-${hex.match(/.{1,10}/g)!.join('-')}`
 }
 
 function normalizeEmail(v: unknown): string | null {

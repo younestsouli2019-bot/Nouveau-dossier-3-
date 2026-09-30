@@ -57,7 +57,7 @@ describe('/api/orders — order capture', () => {
 		})
 		expect(res.status).toBe(201)
 		const body = await res.json()
-		expect(body.reference).toMatch(/^RWC-[0-9A-F]{8}-[0-9A-F]{6}$/)
+		expect(body.reference).toMatch(/^RWC-[0-9A-F]{10}-[0-9A-F]{10}-[0-9A-F]{10}-[0-9A-F]{10}$/)
 		// Comma-formatted price is normalized, and the client cannot set it.
 		expect(body.amount).toBe('1299.00')
 		expect(body.currency).toBe('MAD')
