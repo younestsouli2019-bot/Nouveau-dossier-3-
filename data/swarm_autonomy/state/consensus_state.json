@@ -1,29 +1,10 @@
 {
-  "at": 1788709109407,
-  "iso": "2026-09-06T15:38:29.407Z",
-  "holiday": {
-    "active": false,
-    "ok": true,
-    "proposalType": "HOLIDAY_NON_ESSENTIALS",
-    "label": "Pause non-essential swarm work up to 6h",
-    "windowHours": 6,
-    "ballotsCounted": 0,
-    "expiredBallots": 0,
-    "quorumPct": 0.67,
-    "requiresWeight": true,
-    "approvalPct": 0,
-    "approvalByVotes": 0,
-    "approvalByWeight": 0,
-    "yesWeighted": 0,
-    "noWeighted": 0,
-    "yesCount": 0,
-    "noCount": 0,
-    "minVotersRequired": 2,
-    "passes": false
-  },
+  "at": 1790785704951,
+  "iso": "2026-09-30T16:28:24.951Z",
+  "holiday": false,
   "selfAuditPasses": false,
   "deepAuditPasses": false,
-  "moneyOverridePasses": true,
+  "moneyOverridePasses": false,
   "essentials": [
     "SELF_AUDIT_HOURLY",
     "DEEP_AUDIT_DAILY",
@@ -31,5 +12,48 @@
     "OWNER_BACK_SOON_PING",
     "RECONCILE_BALANCE_DELTA",
     "SETTLEMENT_LEDGER_UNBLOCK"
-  ]
+  ],
+  "liveness": {
+    "checkedAt": "2026-09-30T16:28:24.948Z",
+    "processesTracked": 3,
+    "processesAlive": 0,
+    "processesDown": true,
+    "stateAgeMs": 69219725.07421875,
+    "stateStale": true,
+    "noState": false,
+    "stale": true,
+    "staleAfterMs": 900000
+  },
+  "tallies": {
+    "selfAudit": {
+      "passes": false,
+      "distinctVoters": 0,
+      "yesVoters": 0,
+      "voters": [],
+      "failsBecause": [
+        "approval 0.0% < quorum 50.0%",
+        "only 0 distinct voter(s); 2 required"
+      ]
+    },
+    "deepAudit": {
+      "passes": false,
+      "distinctVoters": 0,
+      "yesVoters": 0,
+      "voters": [],
+      "failsBecause": [
+        "approval 0.0% < quorum 60.0%",
+        "only 0 distinct voter(s); 2 required"
+      ]
+    },
+    "moneyOverride": {
+      "passes": false,
+      "distinctVoters": 0,
+      "yesVoters": 0,
+      "voters": [],
+      "failsBecause": [
+        "approval 0.0% < quorum 85.0%",
+        "only 0 distinct voter(s); 2 required"
+      ]
+    }
+  }
 }

@@ -305,7 +305,10 @@ function welcomeDigestWrite(resultsThisTick, safety) {
   md.push(`- Holiday (non-essentials pause): active=${st.holiday.active} (approval=${st.holiday.approvalPct} / quorum ${st.holiday.quorumPct})`);
   md.push(`- Self-audit-now passes: ${st.selfAuditPasses}`);
   md.push(`- Deep-audit passes: ${st.deepAuditPasses}`);
-  md.push(`- Money-blocked override passes: ${st.moneyOverridePasses}`);
+  md.push(`- Money-blocked override passes: ${st.moneyOverridePasses}${st.moneyOverridePasses ? '' : ' (or void: not enough distinct voters / stale swarm)'}`);
+if (st?.liveness?.stale) {
+    md.push(`- \u26a0\ufe0f **Swarm state is STALE** \u2014 ${st.liveness.processesAlive}/${st.liveness.processesTracked} components alive, state age ${Math.round((st.liveness.stateAgeMs ?? 0) / 60000)}min. All \`passes\` flags above are VOID, not approvals.`);
+  }
   md.push(`\n## 🛡️ Rules Enforced (no degradation, no silent shutdowns)\n`);
   md.push('- Watchdog re-spawns dead peers from pidfiles (age > 120min or PID not alive)');
   md.push('- Heartbeat file age > 5min → automatic resurrect of that daemon');

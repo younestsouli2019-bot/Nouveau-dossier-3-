@@ -73,7 +73,46 @@ export function tally(proposalType) {
 
   const windowMs = spec.maxHours * 3600_000;
   const now = Date.now();
-  const recent = ballots.filter(b => (now - b.at) < windowMs);
+  const inWindow = ballots.filter(b => (now - b.at) < windowMs);
+  const result = evaluateQuorum(inWindow, spec);
+  return {
+    ok: true,
+    proposalType,
+    label: spec.label,
+    windowHours: spec.maxHours,
+    ballotsCounted: inWindow.length,
+    expiredBallots: ballots.length - inWindow.length,
+    quorumPct: spec.quorumPct,
+    requiresWeight: spec.requiresWeight,
+    ...result,
+  };
+}
+
+/**
+ * Pure quorum evaluation, exported for testing.
+ *
+ * Two rules the naive version got wrong:
+ *
+ *  1. One position per voter. Ballots are collapsed to each voter's most
+ *     recent one, because a vote is a position and not a frequency.
+ *     Repeating a ballot adds no information, so it must not add weight or
+ *     count toward a voter minimum.
+ *  2. Quorum needs DISTINCT voters in favour, never a raw ballot count. One
+ *     voter cannot carry a proposal however many times it votes.
+ */
+export const MIN_DISTINCT_VOTERS = 2;
+
+export function evaluateQuorum(ballots, spec, { now = Date.now() } = {}) {
+  // Collapse to one ballot per voter, keeping that voter's MOST RECENT one.
+  const latestByVoter = new Map();
+  let duplicateBallots = 0;
+  for (const b of ballots) {
+    const key = String(b.voter ?? '');
+    const prev = latestByVoter.get(key);
+    if (prev) { duplicateBallots++; if ((b.at ?? 0) > (prev.at ?? 0)) latestByVoter.set(key, b); }
+    else latestByVoter.set(key, b);
+  }
+  const recent = [...latestByVoter.values()];
 
   let yW = 0, nW = 0, yN = 0, nN = 0;
   for (const b of recent) {
@@ -86,16 +125,25 @@ export function tally(proposalType) {
   const approvalByWeight = denomW ? yW / denomW : 0;
   const approvalUsed = spec.requiresWeight ? approvalByWeight : approvalByVotes;
 
-  const passes = approvalUsed >= spec.quorumPct && yN >= 2;
+  const distinctVoters = new Set(recent.map(b => String(b.voter ?? ''))).size;
+  const yesVoters = new Set(recent.filter(b => b.inFavor).map(b => String(b.voter ?? ''))).size;
+  const passes = approvalUsed >= spec.quorumPct && yesVoters >= MIN_DISTINCT_VOTERS;
+
+  const reasons = [];
+  if (approvalUsed < spec.quorumPct) {
+    reasons.push(`approval ${(approvalUsed * 100).toFixed(1)}% < quorum ${(spec.quorumPct * 100).toFixed(1)}%`);
+  }
+  if (yesVoters < MIN_DISTINCT_VOTERS) {
+    reasons.push(
+      distinctVoters < MIN_DISTINCT_VOTERS
+        ? `only ${distinctVoters} distinct voter(s); ${MIN_DISTINCT_VOTERS} required`
+        : `only ${yesVoters} distinct voter(s) in favour; ${MIN_DISTINCT_VOTERS} required`
+    );
+  }
+
   return {
-    ok: true,
-    proposalType,
-    label: spec.label,
-    windowHours: spec.maxHours,
-    ballotsCounted: recent.length,
-    expiredBallots: ballots.length - recent.length,
-    quorumPct: spec.quorumPct,
-    requiresWeight: spec.requiresWeight,
+    ballotsAfterDedup: recent.length,
+    duplicateBallotsIgnored: duplicateBallots,
     approvalPct: +approvalUsed.toFixed(3),
     approvalByVotes: +approvalByVotes.toFixed(3),
     approvalByWeight: +approvalByWeight.toFixed(3),
@@ -103,8 +151,13 @@ export function tally(proposalType) {
     noWeighted: +nW.toFixed(2),
     yesCount: yN,
     noCount: nN,
-    minVotersRequired: 2,
+    distinctVoters,
+    yesVoters,
+    voters: [...new Set(recent.map(b => String(b.voter ?? '')))],
+    minVotersRequired: MIN_DISTINCT_VOTERS,
     passes,
+    failsBecause: reasons.length ? reasons : null,
+    _now: now,
   };
 }
 
@@ -134,15 +187,97 @@ export function listProposals() {
   return Object.keys(PROPOSAL_TYPES).map(k => ({ key: k, ...PROPOSAL_TYPES[k] }));
 }
 
+/**
+ * Liveness of the swarm processes that are supposed to be voting.
+ *
+ * A consensus file can be read long after the daemons stop. Without this,
+ * a dead swarm still presents yesterday's verdicts — including a passing
+ * money-move override — with nothing in the file to say so. `stale: true`
+ * means every `passes` flag in the state MUST be treated as void.
+ *
+ * Process existence is necessary but not sufficient, so staleness is also
+ * driven by the age of this very file: if nothing has rewritten the state
+ * recently, no voter has been present recently either.
+ */
+export function swarmLiveness({ staleAfterMs = 15 * 60_000 } = {}) {
+  const pidsDir = resolve(SWARM_DIR, 'pids');
+  const components = [];
+  let alive = 0;
+  let files = [];
+  try { files = readdirSync(pidsDir).filter(f => f.endsWith('.pid')); } catch { files = []; }
+
+  for (const f of files) {
+    let pid = null;
+    try {
+      const raw = JSON.parse(readFileSync(resolve(pidsDir, f), 'utf-8'));
+      pid = Number(raw?.pid);
+    } catch {
+      // Unparseable pidfile is treated as dead rather than assumed good.
+    }
+    const running = Number.isInteger(pid) && pid > 0 && isProcessAlive(pid);
+    if (running) alive++;
+    components.push({ name: f.replace(/\.pid$/, ''), pid, running });
+  }
+
+  let stateAgeMs = null;
+  const statePath = resolve(STATE_DIR, 'consensus_state.json');
+  if (existsSync(statePath)) {
+    try { stateAgeMs = Date.now() - statSync(statePath).mtimeMs; } catch { /* ignore */ }
+  }
+
+  const processesDown = files.length > 0 && alive === 0;
+  const stateStale = stateAgeMs !== null && stateAgeMs > staleAfterMs;
+  const noState = stateAgeMs === null;
+
+  return {
+    checkedAt: new Date().toISOString(),
+    processesTracked: files.length,
+    processesAlive: alive,
+    processesDown,
+    stateAgeMs,
+    stateStale,
+    noState,
+    stale: processesDown || stateStale || noState,
+    staleAfterMs,
+  };
+}
+
+function isProcessAlive(pid) {
+  try {
+    // Signal 0 performs the permission/existence check without delivering.
+    process.kill(pid, 0);
+    return true;
+  } catch (err) {
+    // EPERM means the process exists but is owned by another user.
+    return err && err.code === 'EPERM';
+  }
+}
+
 // Persist current active-pause flags for other swarm scripts to check (file-poll API)
 export function writeConsensusState() {
+  const liveness = swarmLiveness();
+  // A passing tally from a swarm that is not running is not a quorum, it is
+  // a leftover. Force the flags false and say why, so no reader can mistake
+  // stale state for a live mandate.
+  const selfAudit = tally('SELF_AUDIT_NOW');
+  const deepAudit = tally('ELEVATED_AUDIT_DEEP');
+  const moneyOverride = tally('MONEY_MOVING_BLOCKED_OVERRIDE');
+
   const state = {
     at: Date.now(), iso: new Date().toISOString(),
-    holiday: isHolidayActive(),
-    selfAuditPasses: tally('SELF_AUDIT_NOW').passes,
-    deepAuditPasses: tally('ELEVATED_AUDIT_DEEP').passes,
-    moneyOverridePasses: tally('MONEY_MOVING_BLOCKED_OVERRIDE').passes,
+    holiday: liveness.stale ? false : isHolidayActive(),
+    selfAuditPasses: liveness.stale ? false : selfAudit.passes,
+    deepAuditPasses: liveness.stale ? false : deepAudit.passes,
+    moneyOverridePasses: liveness.stale ? false : moneyOverride.passes,
     essentials: ESSENTIAL_JOB_IDS,
+    liveness,
+    // Raw tallies retained for audit. Never use these to authorise anything
+    // while liveness.stale is true.
+    tallies: {
+      selfAudit: { passes: selfAudit.passes, distinctVoters: selfAudit.distinctVoters, yesVoters: selfAudit.yesVoters, voters: selfAudit.voters, failsBecause: selfAudit.failsBecause },
+      deepAudit: { passes: deepAudit.passes, distinctVoters: deepAudit.distinctVoters, yesVoters: deepAudit.yesVoters, voters: deepAudit.voters, failsBecause: deepAudit.failsBecause },
+      moneyOverride: { passes: moneyOverride.passes, distinctVoters: moneyOverride.distinctVoters, yesVoters: moneyOverride.yesVoters, voters: moneyOverride.voters, failsBecause: moneyOverride.failsBecause },
+    },
   };
   writeFileSync(resolve(STATE_DIR, 'consensus_state.json'), JSON.stringify(state, null, 2));
   return state;
@@ -172,6 +307,7 @@ if (process.argv[1] && process.argv[1].replace(/\\/g, '/').endsWith('/swarm-cons
   job-allowed <taskId>
   prune
   state
+  liveness
         `);
       } else if (cmd === 'list-proposals') {
         console.log(JSON.stringify(listProposals(), null, 2));
@@ -187,6 +323,8 @@ if (process.argv[1] && process.argv[1].replace(/\\/g, '/').endsWith('/swarm-cons
         console.log(JSON.stringify(isJobAllowed(args[1]), null, 2));
       } else if (cmd === 'prune') {
         console.log(JSON.stringify({ pruned: pruneOldVotes() }, null, 2));
+      } else if (cmd === 'liveness') {
+        console.log(JSON.stringify(swarmLiveness(), null, 2));
       } else if (cmd === 'state') {
         console.log(JSON.stringify(writeConsensusState(), null, 2));
       } else {
