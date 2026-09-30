@@ -65,6 +65,29 @@ export function middleware(request: NextRequest) {
     response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload')
   }
 
+  // Admin-only reads: order lookup, payment config. The route also
+  // authenticates internally, but reject unauthenticated calls here so
+  // they never reach the handler.
+  if (request.method === 'GET') {
+    const ADMIN_READ_PATHS = ['/api/orders', '/api/owner-payments']
+    const path = request.nextUrl.pathname
+    if (ADMIN_READ_PATHS.some(p => path === p || path.startsWith(`${p}/`))) {
+      const operatorToken = process.env.OPERATOR_TOKEN
+      if (!operatorToken) {
+        if (!isDev) return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+      } else {
+        const authHeader = request.headers.get('authorization')
+        const sessionCookie = request.cookies.get('operator_session')?.value
+        const provided = authHeader?.startsWith('Bearer ')
+          ? authHeader.slice(7)
+          : sessionCookie ?? ''
+        if (!provided || !CONSTANT_TIME_COMPARE(provided, operatorToken)) {
+          return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
+        }
+      }
+    }
+  }
+
   if (request.method === 'POST') {
     const path = request.nextUrl.pathname
     const isProtected = PROTECTED_POST_PATHS.some(p => path.startsWith(p))
