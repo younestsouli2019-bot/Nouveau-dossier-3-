@@ -1,0 +1,9 @@
+{
+  "$comment": "Authoritative price book. The ONLY permitted source of a course price. Never accept an amount from a client request body. Contract and publishing process: ./README.md in this directory.",
+  "schemaVersion": 1,
+  "updated": "2026-09-30",
+  "currency": "MAD",
+  "minorUnits": 2,
+  "$comment_modes": "Each course is either 'fixed' (amount is authoritative) or 'quote_required' (no amount is published; the order is captured as a lead and a human quotes it). 'absent' means the course is not for sale.",
+  "courses": {}
+}

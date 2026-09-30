@@ -25,17 +25,29 @@ const ORDER_LOG_DIR = join(process.cwd(), 'data', 'out', 'orders')
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
+/**
+ * An order is either priced or a quote lead.
+ *
+ * `awaiting_payment` orders carry an amount and can be matched against an
+ * incoming rail notification. `awaiting_quote` orders carry NO amount: the
+ * course is sellable but priced per deal, so a human quotes it out of band.
+ * A quote lead can never be auto-matched against a payment by mistake,
+ * because there is no amount to match on.
+ */
 type OrderRecord = {
   reference: string
   createdAt: string
   courseSlug: string
   courseTitle: string
-  amount: string
+  /** Integer minor units (MAD cents). Present only when status is awaiting_payment. */
+  amountMinor: number | null
   currency: string
   method: 'paypal' | 'payoneer' | 'crypto' | 'bank'
   buyerEmail: string
-  status: 'awaiting_payment'
+  status: 'awaiting_payment' | 'awaiting_quote'
   contactEmail: string
+  /** Set when the amount came from a `quote_required` price-book entry. */
+  quotedManually?: boolean
 }
 
 /**
@@ -56,46 +68,144 @@ function normalizeEmail(v: unknown): string | null {
   return s
 }
 
-/**
- * Read the published catalog so the order is priced from a real course
- * rather than a client-supplied number. If the catalog is unreachable we
- * fail closed: an order with an unverifiable price is worse than no order,
- * because it would be matched against a wrong amount.
- */
-function priceFromCatalog(slug: string): { title: string; amount: string; currency: string } | null {
-  const candidates = [
+type CatalogEntry = { title: string } | null
+type PriceBookEntry =
+  | { kind: 'fixed'; amountMinor: number; currency: string }
+  | { kind: 'quote_required'; currency: string }
+
+/** Distinguishes "no such course" from "price source is broken". */
+type PriceLookup =
+  | { state: 'priced'; title: string; amountMinor: number; currency: string }
+  | { state: 'quote'; title: string; currency: string }
+  | { state: 'not_for_sale' }
+  | { state: 'source_unavailable' }
+
+function readJson(p: string): any | undefined {
+  if (!existsSync(p)) return undefined
+  try {
+    return JSON.parse(readFileSync(p, 'utf8'))
+  } catch {
+    return undefined
+  }
+}
+
+function findCatalogEntry(slug: string): CatalogEntry {
+  for (const p of [
     join(process.cwd(), 'rank', 'output', 'data', 'catalog.json'),
     join(process.cwd(), '.vercel', 'output', 'static', 'data', 'catalog.json'),
-  ]
-  for (const p of candidates) {
-    if (!existsSync(p)) continue
-    try {
-      const parsed = JSON.parse(readFileSync(p, 'utf8'))
-      const items: any[] = Array.isArray(parsed.items) ? parsed.items : []
-      const hit = items.find(
-        (i) => typeof i?.slug === 'string' && i.slug.toLowerCase() === slug.toLowerCase(),
-      )
-      if (!hit) return null
-      const raw =
-        hit.price ?? hit.amount ?? hit.priceMAD ?? hit.price_eur ?? hit.priceEUR ?? null
-      if (raw === null || raw === undefined || String(raw).trim() === '') return null
-      // Strip formatting separators (1,299.00 / 1 299,00) before validating.
-      const cleaned = String(raw).replace(/[\s,]/g, '')
-      if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null
-      const currency =
-        typeof hit.currency === 'string' && /^[A-Z]{3}$/.test(hit.currency)
-          ? hit.currency
-          : 'MAD'
-      return {
-        title: typeof hit.title === 'string' && hit.title ? hit.title : slug,
-        amount: cleaned,
-        currency,
-      }
-    } catch {
-      return null
-    }
+  ]) {
+    const parsed = readJson(p)
+    if (!parsed) continue
+    const items: any[] = Array.isArray(parsed.items) ? parsed.items : []
+    const hit = items.find(
+      (i) => typeof i?.slug === 'string' && i.slug.toLowerCase() === slug.toLowerCase(),
+    )
+    if (!hit) return null
+    return { title: typeof hit.title === 'string' && hit.title ? hit.title : slug }
   }
   return null
+}
+
+/**
+ * Resolve a course slug to a price using ONLY the owner's price book.
+ *
+ * The book is a separate file from the catalog on purpose: prices are
+ * commercial decisions that change on their own schedule, and the catalog
+ * is republished often. It also carries an explicit `quote_required` mode,
+ * which is how this business actually sells today ("Confirmed via email").
+ * That lets a lead be captured without inventing a number.
+ *
+ * Fail-closed: an unreadable book, an unknown schema version, or a `fixed`
+ * entry whose amount is not a positive integer of minor units yields
+ * `source_unavailable`, and the caller mints no reference. An order that
+ * exists but cannot be priced correctly is worse than no order.
+ */
+function resolvePrice(slug: string): PriceLookup {
+  let book: any
+  let sawBook = false
+  for (const p of [
+    join(process.cwd(), 'rank', 'output', 'data', 'pricing', 'prices.json'),
+    join(process.cwd(), '.vercel', 'output', 'static', 'data', 'pricing', 'prices.json'),
+  ]) {
+    const parsed = readJson(p)
+    if (parsed) {
+      book = parsed
+      sawBook = true
+      break
+    }
+  }
+  if (!sawBook) return { state: 'source_unavailable' }
+  if (book?.schemaVersion !== 1) return { state: 'source_unavailable' }
+
+  const currency =
+    typeof book.currency === 'string' && /^[A-Z]{3}$/.test(book.currency) ? book.currency : null
+  if (!currency) return { state: 'source_unavailable' }
+
+  const courses = book.courses && typeof book.courses === 'object' ? book.courses : {}
+  const key = Object.keys(courses).find((k) => k.toLowerCase() === slug.toLowerCase())
+  if (!key) return { state: 'not_for_sale' }
+
+  const raw = courses[key]
+  // A price without owner approval metadata is a half-finished edit, not a
+  // price. Refuse it rather than guessing who authorised it.
+  if (!raw || typeof raw !== 'object') return { state: 'source_unavailable' }
+  if (typeof raw.approvedBy !== 'string' || !raw.approvedBy.trim()) {
+    return { state: 'source_unavailable' }
+  }
+  if (typeof raw.approvedAt !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(raw.approvedAt)) {
+    return { state: 'source_unavailable' }
+  }
+
+  const title = findCatalogEntry(slug)?.title ?? slug
+
+  if (raw.mode === 'quote_required') {
+    return { state: 'quote', title, currency }
+  }
+  if (raw.mode !== 'fixed') return { state: 'source_unavailable' }
+
+  const amount = raw.amountMinor
+  if (typeof amount !== 'number' || !Number.isSafeInteger(amount) || amount <= 0) {
+    return { state: 'source_unavailable' }
+  }
+  return { state: 'priced', title, amountMinor: amount, currency }
+}
+
+/** Render minor units as a display string without going through a float. */
+function formatMinor(amountMinor: number, minorUnits: number): string {
+  if (minorUnits === 0) return String(amountMinor)
+  const div = 10 ** minorUnits
+  const whole = Math.trunc(amountMinor / div)
+  const frac = String(amountMinor % div).padStart(minorUnits, '0')
+  return `${whole}.${frac}`
+}
+
+/**
+ * Declared once by the price book. Cached per process because it is part of
+ * the book's own contract: changing it changes the meaning of every existing
+ * amountMinor, so it is read as a constant rather than inferred per request.
+ */
+function readMinorUnits(): number {
+  for (const p of [
+    join(process.cwd(), 'rank', 'output', 'data', 'pricing', 'prices.json'),
+    join(process.cwd(), '.vercel', 'output', 'static', 'data', 'pricing', 'prices.json'),
+  ]) {
+    const parsed = readJson(p)
+    if (parsed) {
+      return typeof parsed.minorUnits === 'number' &&
+        Number.isSafeInteger(parsed.minorUnits) &&
+        parsed.minorUnits >= 0 &&
+        parsed.minorUnits <= 4
+        ? parsed.minorUnits
+        : 2
+    }
+  }
+  return 2
+}
+
+let PRICE_BOOK_MINOR_UNITS: number | undefined
+function minorUnits(): number {
+  if (PRICE_BOOK_MINOR_UNITS === undefined) PRICE_BOOK_MINOR_UNITS = readMinorUnits()
+  return PRICE_BOOK_MINOR_UNITS
 }
 
 export async function POST(request: NextRequest) {
@@ -121,22 +231,31 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'invalid_method' }, { status: 400 })
   }
 
-  const priced = priceFromCatalog(slug)
-  if (!priced) {
-    // Fail closed rather than accept an unpriced or unverifiable order.
+  const price = resolvePrice(slug)
+  if (price.state === 'not_for_sale') {
     return NextResponse.json({ error: 'course_not_found' }, { status: 404 })
   }
+  if (price.state === 'source_unavailable') {
+    // The book exists but we cannot trust it. Minting nothing is the whole
+    // point: an order whose amount we cannot prove is not reconcilable.
+    return NextResponse.json({ error: 'price_book_unavailable' }, { status: 503 })
+  }
 
+  const isQuote = price.state === 'quote'
   const record: OrderRecord = {
     reference: mintReference(),
     createdAt: new Date().toISOString(),
     courseSlug: slug,
-    courseTitle: priced.title,
-    amount: priced.amount,
-    currency: priced.currency,
+    courseTitle: price.title,
+    // A quote lead carries no amount at all. Never 0, never a placeholder:
+    // an explicit null is what makes "not yet priced" distinguishable from
+    // "priced at zero".
+    amountMinor: isQuote ? null : price.amountMinor,
+    currency: price.currency,
     method: methodRaw as OrderRecord['method'],
     buyerEmail,
-    status: 'awaiting_payment',
+    status: isQuote ? 'awaiting_quote' : 'awaiting_payment',
+    quotedManually: isQuote,
     // Never echoed from the client; the buyer is emailed this address.
     contactEmail: 'billing@realworldcerts.com',
   }
@@ -150,18 +269,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'order_store_unavailable' }, { status: 503 })
   }
 
+  const mu = minorUnits()
+
   return NextResponse.json(
     {
       reference: record.reference,
       status: record.status,
       course: { slug: record.courseSlug, title: record.courseTitle },
-      amount: record.amount,
       currency: record.currency,
       method: record.method,
-      instructions:
-        'Send the exact amount using your selected method, and include the ' +
-        'reference in the payment note. Access is delivered once the payment ' +
-        'is confirmed.',
+      ...(isQuote
+        ? {
+            // No amount is returned. A buyer is told a human will quote, and
+            // nothing on the wire implies a price exists yet.
+            amount: null,
+            instructions:
+              'We have your request. This course is priced per order, so a ' +
+              'quote will be emailed to you with payment instructions. No ' +
+              'payment is required yet. Keep your reference ' +
+              `${record.reference} for any correspondence.`,
+          }
+        : {
+            amountMinor: record.amountMinor,
+            amount: formatMinor(record.amountMinor as number, mu),
+            instructions:
+              'Send the exact amount using your selected method, and include ' +
+              'the reference in the payment note. Access is delivered once the ' +
+              'payment is confirmed.',
+          }),
     },
     { status: 201 },
   )
