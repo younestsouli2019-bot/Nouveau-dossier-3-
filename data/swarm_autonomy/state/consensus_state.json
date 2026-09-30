@@ -1,7 +1,36 @@
 {
-  "at": 1790785704951,
-  "iso": "2026-09-30T16:28:24.951Z",
-  "holiday": false,
+  "at": 1790793990713,
+  "iso": "2026-09-30T18:46:30.713Z",
+  "holiday": {
+    "active": false,
+    "ok": true,
+    "proposalType": "HOLIDAY_NON_ESSENTIALS",
+    "label": "Pause non-essential swarm work up to 6h",
+    "windowHours": 6,
+    "ballotsCounted": 0,
+    "expiredBallots": 0,
+    "quorumPct": 0.67,
+    "requiresWeight": true,
+    "ballotsAfterDedup": 0,
+    "duplicateBallotsIgnored": 0,
+    "approvalPct": 0,
+    "approvalByVotes": 0,
+    "approvalByWeight": 0,
+    "yesWeighted": 0,
+    "noWeighted": 0,
+    "yesCount": 0,
+    "noCount": 0,
+    "distinctVoters": 0,
+    "yesVoters": 0,
+    "voters": [],
+    "minVotersRequired": 2,
+    "passes": false,
+    "failsBecause": [
+      "approval 0.0% < quorum 67.0%",
+      "only 0 distinct voter(s); 2 required"
+    ],
+    "_now": 1790793990713
+  },
   "selfAuditPasses": false,
   "deepAuditPasses": false,
   "moneyOverridePasses": false,
@@ -14,14 +43,14 @@
     "SETTLEMENT_LEDGER_UNBLOCK"
   ],
   "liveness": {
-    "checkedAt": "2026-09-30T16:28:24.948Z",
-    "processesTracked": 3,
-    "processesAlive": 0,
-    "processesDown": true,
-    "stateAgeMs": 69219725.07421875,
-    "stateStale": true,
+    "checkedAt": "2026-09-30T18:46:30.710Z",
+    "processesTracked": 4,
+    "processesAlive": 4,
+    "processesDown": false,
+    "stateAgeMs": 8.24951171875,
+    "stateStale": false,
     "noState": false,
-    "stale": true,
+    "stale": false,
     "staleAfterMs": 900000
   },
   "tallies": {
@@ -47,12 +76,13 @@
     },
     "moneyOverride": {
       "passes": false,
-      "distinctVoters": 0,
-      "yesVoters": 0,
-      "voters": [],
+      "distinctVoters": 1,
+      "yesVoters": 1,
+      "voters": [
+        "swarm-improve-loop"
+      ],
       "failsBecause": [
-        "approval 0.0% < quorum 85.0%",
-        "only 0 distinct voter(s); 2 required"
+        "only 1 distinct voter(s); 2 required"
       ]
     }
   }
