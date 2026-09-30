@@ -1,6 +1,6 @@
 {
-  "at": 1790793990713,
-  "iso": "2026-09-30T18:46:30.713Z",
+  "at": 1790798670890,
+  "iso": "2026-09-30T20:04:30.890Z",
   "holiday": {
     "active": false,
     "ok": true,
@@ -29,7 +29,7 @@
       "approval 0.0% < quorum 67.0%",
       "only 0 distinct voter(s); 2 required"
     ],
-    "_now": 1790793990713
+    "_now": 1790798670890
   },
   "selfAuditPasses": false,
   "deepAuditPasses": false,
@@ -43,11 +43,11 @@
     "SETTLEMENT_LEDGER_UNBLOCK"
   ],
   "liveness": {
-    "checkedAt": "2026-09-30T18:46:30.710Z",
+    "checkedAt": "2026-09-30T20:04:30.888Z",
     "processesTracked": 4,
     "processesAlive": 4,
     "processesDown": false,
-    "stateAgeMs": 8.24951171875,
+    "stateAgeMs": 1.768310546875,
     "stateStale": false,
     "noState": false,
     "stale": false,
@@ -76,13 +76,12 @@
     },
     "moneyOverride": {
       "passes": false,
-      "distinctVoters": 1,
-      "yesVoters": 1,
-      "voters": [
-        "swarm-improve-loop"
-      ],
+      "distinctVoters": 0,
+      "yesVoters": 0,
+      "voters": [],
       "failsBecause": [
-        "only 1 distinct voter(s); 2 required"
+        "approval 0.0% < quorum 85.0%",
+        "only 0 distinct voter(s); 2 required"
       ]
     }
   }
