@@ -15,6 +15,9 @@
 - `scripts/rwc-checkout-pages.mjs` — static generator now writes a card-first method grid and
   `checkout/thanks.html` (Stripe `success_url` target). Regenerate + redeploy the static site after edits.
 - `scripts/rwc-flush-pending-deliveries.mjs` — replays PENDING deliveries once a mail key exists.
+- `scripts/test/rwc-flush-pending-deliveries.test.mjs` — integration suite (mock mail provider,
+  temp ledger): `node scripts/test/rwc-flush-pending-deliveries.test.mjs` → 18 checks
+  covering fail-closed, dry-run, live flush, idempotency, provider-500 and provider-outage.
 
 ## Fail-closed rules
 
