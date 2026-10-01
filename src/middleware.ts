@@ -1,19 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { checkRateLimit } from '@/lib/security/rate-limit';
-import { checkBadActor } from '@/lib/security/bad-actor';
-
-let cachedNodeCrypto: typeof import('crypto') | null = null;
-function getNodeCrypto(): typeof import('crypto') | null {
-  if (cachedNodeCrypto) return cachedNodeCrypto;
-  try {
-    if (typeof process !== 'undefined' && (process.versions as any)?.node) {
-      cachedNodeCrypto = require('crypto') as typeof import('crypto');
-      return cachedNodeCrypto;
-    }
-  } catch { /* ignore */ }
-  return null;
-}
+import { checkRateLimitEdge } from '@/lib/security/edge-gate';
+import { checkBadActorEdge } from '@/lib/security/edge-gate';
 
 function webHex(bytes: number): string {
   if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
@@ -27,14 +15,10 @@ function webHex(bytes: number): string {
 }
 
 function generateNonce(): string {
-  const nc = getNodeCrypto();
-  if (nc) return nc.randomBytes(16).toString('hex');
   return webHex(16);
 }
 
 function generateCsrfToken(): string {
-  const nc = getNodeCrypto();
-  if (nc) return nc.randomBytes(32).toString('hex');
   return webHex(32);
 }
 
@@ -149,7 +133,7 @@ function isBrowserPost(headers: Headers): boolean {
 }
 
 export async function middleware(request: NextRequest) {
-  const badActor = checkBadActor(request);
+  const badActor = checkBadActorEdge(request);
   if (badActor.blocked) {
     return NextResponse.json(
       { code: 'BAD_ACTOR' },
@@ -157,7 +141,7 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  const rateLimit = checkRateLimit(request);
+  const rateLimit = checkRateLimitEdge(request);
   if (!rateLimit.allowed) {
     const retrySec = Math.ceil(rateLimit.retryAfterMs / 1000);
     return NextResponse.json(
