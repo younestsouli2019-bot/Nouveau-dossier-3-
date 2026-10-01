@@ -261,7 +261,8 @@ ${jsonLdBlocks}
 
     <label>Payment method</label>
     <div class="methods" id="methods">
-      <div class="method sel" data-method="cmi"><strong>Card (MAD)</strong><span>Attijari SimplePay, Visa/Mastercard</span></div>
+      <div class="method sel" data-method="card"><strong>Card (Visa/Mastercard)</strong><span>Secure Stripe checkout — instant confirmation</span></div>
+      <div class="method" data-method="cmi"><strong>Card (MAD)</strong><span>Attijari SimplePay, Visa/Mastercard</span></div>
       <div class="method" data-method="paypal"><strong>PayPal</strong><span>PayPal balance or card</span></div>
       <div class="method" data-method="crypto"><strong>USDT</strong><span>Crypto wallet (ERC-20 / BEP-20)</span></div>
       <div class="method" data-method="bank"><strong>Bank transfer</strong><span>SWIFT or local RIB</span></div>
@@ -296,7 +297,7 @@ ${jsonLdBlocks}
   if (course) { document.getElementById("courseTitle").textContent = course; try { fetch("/data/catalog.json").then(function(r){return r.json()}).then(function(d){ var hit = (Array.isArray(d.items)?d.items:[]).find(function(i){return i.slug===slug}); if (hit){ document.getElementById("courseTitle").textContent = hit.title; if(hit.practiceTestCount) document.getElementById("courseMeta").textContent = hit.practiceTestCount + " practice questions with detailed explanations"; }}).catch(function(){}); } catch(e){} }
   if (amount) document.getElementById("amount").textContent = "$" + amount;
 
-  var chosen = "cmi";
+  var chosen = "card";
   var methods = Array.prototype.slice.call(document.querySelectorAll(".method"));
   methods.forEach(function(m){ m.addEventListener("click", function(){ chosen = m.getAttribute("data-method"); methods.forEach(function(x){ x.classList.toggle("sel", x===m); }); }); });
 
@@ -353,6 +354,37 @@ for (const m of Object.keys(METHOD_TITLES)) {
 }
 writeFileSync(join(OUT, "start.html"), startPage(API_BASE), "utf8");
 console.log(`checkout: wrote start.html (apiBase=${API_BASE})`);
+
+function thanksPage() {
+	return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Order confirmed — RealWorldCerts</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:#0b1220;color:#e6edf3;display:grid;place-items:center;min-height:100vh;padding:24px}
+.card{max-width:520px;background:#101a2c;border:1px solid #2a3344;border-radius:14px;padding:32px;text-align:center}
+h1{font-size:22px;margin:0 0 12px;color:#22c55e}
+p{line-height:1.6;color:#9fb0c3;font-size:15px}
+a.cta{display:inline-block;margin-top:20px;padding:12px 22px;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>Payment received ✓</h1>
+<p>Your order is confirmed. A receipt is on its way to your email, and your course access follows from our delivery team. Keep an eye on your inbox (and spam folder just in case).</p>
+<p>Questions? Email <a href="mailto:billing@realworldcerts.com" style="color:#60a5fa">billing@realworldcerts.com</a>.</p>
+<a class="cta" href="/">Back to the catalog</a>
+</div>
+</body>
+</html>
+`;
+}
+writeFileSync(join(OUT, "thanks.html"), thanksPage(), "utf8");
+console.log("checkout: wrote thanks.html");
 
 function page(method) {
 	const steps = STEPS[method]
