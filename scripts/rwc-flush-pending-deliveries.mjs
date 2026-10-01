@@ -7,6 +7,8 @@
  *
  * Usage:
  *   RESEND_API_KEY=rk_... node scripts/rwc-flush-pending-deliveries.mjs
+ *   RWC_RESEND_ENDPOINT=http://127.0.0.1:PORT/emails ...   # test hook (mock provider)
+ *   node scripts/rwc-flush-pending-deliveries.mjs --dry-run # report only, no sends
  *
  * Reads data/out/course-orders.ndjson, sends the receipt email for each
  * pending order, and rewrites the ledger line to delivery=SENT.
@@ -15,8 +17,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const LEDGER = path.join(process.cwd(), 'data', 'out', 'course-orders.ndjson');
+const LEDGER = process.env.RWC_ORDERS_LEDGER || path.join(process.cwd(), 'data', 'out', 'course-orders.ndjson');
 const FROM = process.env.RWC_RECEIPT_FROM || 'RealWorldCerts <billing@realworldcerts.com>';
+const ENDPOINT = process.env.RWC_RESEND_ENDPOINT || 'https://api.resend.com/emails';
+const DRY_RUN = process.argv.includes('--dry-run');
 
 function receiptHtml(o) {
   return `
@@ -30,7 +34,7 @@ function receiptHtml(o) {
 }
 
 async function main() {
-  if (!process.env.RESEND_API_KEY) {
+  if (!process.env.RESEND_API_KEY && !DRY_RUN) {
     console.error('RESEND_API_KEY is not set — nothing to send with. Aborting.');
     process.exit(1);
   }
@@ -50,8 +54,13 @@ async function main() {
       continue;
     }
     pending++;
+    if (DRY_RUN) {
+      console.log(`[dry-run] would send to ${o.email} for "${o.title}" (${o.session_id})`);
+      out.push(line);
+      continue;
+    }
     try {
-      const res = await fetch('https://api.resend.com/emails', {
+      const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -76,7 +85,7 @@ async function main() {
     out.push(JSON.stringify(o));
   }
 
-  fs.writeFileSync(LEDGER, out.join('\n') + '\n', 'utf8');
+  if (!DRY_RUN) fs.writeFileSync(LEDGER, out.join('\n') + '\n', 'utf8');
   console.log(`Pending: ${pending} → sent: ${sent}, failed: ${failed}, skipped/other: ${lines.length - pending}`);
 }
 
