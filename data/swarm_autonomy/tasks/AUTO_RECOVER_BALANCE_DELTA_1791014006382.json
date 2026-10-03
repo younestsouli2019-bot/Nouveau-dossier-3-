@@ -1,0 +1,9 @@
+{
+  "id": "AUTO_RECOVER_BALANCE_DELTA",
+  "at": 1791014006382,
+  "result": {
+    "ok": false,
+    "reason": "missing-files",
+    "note": "No verified delta to reconcile: no verified delta — Processor-Receivable and Owner-Payable are both $0. Both source files must exist before any recovery proposal is written."
+  }
+}

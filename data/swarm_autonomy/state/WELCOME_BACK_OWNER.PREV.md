@@ -1,15 +1,17 @@
 # 👋 WELCOME BACK, OWNER
 
-Swarm is alive. Silent. Rolling. Last digest update: **2026-09-06T15:38:18.993Z**
+Swarm is alive. Silent. Rolling. Last digest update: **2026-10-03T08:02:26.504Z**
 
 ## 📍 Swarm Status
 
 - PID swarm-autonomy: see `data/swarm_autonomy/pids/swarm-autonomy.pid` — last heartbeat **<60s ago** if alive
-- PID swarm-improve-loop (this): **20020**
+- PID swarm-improve-loop (this): **22372**
 - Safety score last: **100** / 100 → action **NORMAL**
-- Balance delta (revenue − settled − disbursed): **⚠️  $33,278.49** (owner review needed → recovery proposals in data/swarm_autonomy/state/recovery_proposals_*.json)
+- Balance delta (revenue − settled − disbursed): **no verified delta — Processor-Receivable and Owner-Payable are both $0**
+  - _Source: `data/out/authorizer-ledger-report.json`; Processor-Receivable 0, Owner-Payable 0, Platform-Revenue 0, Operating-Bank 0_
+  - _Derived, never hardcoded. If no verified ledger exists, no delta is claimed._
 - Quarantine entries: **0**
-- Latest audit: `reports/FINAL-AUDIT-MASTER-1788709051569.json` → 0 crit / 0 high / $0 at-risk / 0 q-writes
+- Latest audit: `reports/FINAL-AUDIT-MASTER-1791014186574.json` → 0 crit / 0 high / $0 at-risk / 0 q-writes
 
 ## 🧪 Tick Results (this loop run)
 
@@ -21,7 +23,7 @@ _0 tasks ran this tick (all in cooldown / holiday pause — only essentials proc
 - Holiday (non-essentials pause): active=false (approval=0 / quorum 0.67)
 - Self-audit-now passes: false
 - Deep-audit passes: false
-- Money-blocked override passes: true
+- Money-blocked override passes: false (or void: not enough distinct voters / stale swarm)
 
 ## 🛡️ Rules Enforced (no degradation, no silent shutdowns)
 

@@ -1,0 +1,11 @@
+{
+  "taskId": "DEEP_AUDIT_DAILY",
+  "at": 1790812840125,
+  "result": {
+    "ok": false,
+    "tag": "DEEP_AUDIT_DAILY",
+    "script": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\scripts\\deep-sqlite-audit-sqljs.mjs",
+    "code": 1,
+    "err": "Command failed: \"C:\\Program Files\\nodejs\\node.exe\" \"C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\scripts\\deep-sqlite-audit-sqljs.mjs\" >NUL 2>&1"
+  }
+}

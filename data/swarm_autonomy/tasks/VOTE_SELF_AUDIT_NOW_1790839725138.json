@@ -1,0 +1,16 @@
+{
+  "taskId": "VOTE_SELF_AUDIT_NOW",
+  "at": 1790839725138,
+  "result": {
+    "proposalType": "SELF_AUDIT_NOW",
+    "ballots": 4,
+    "recentBallots": 4,
+    "yesWeighted": 4,
+    "noWeighted": 0,
+    "yesCount": 4,
+    "noCount": 0,
+    "quorumPct": 0.5,
+    "approvalPct": 1,
+    "passes": true
+  }
+}

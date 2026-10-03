@@ -1,12 +1,28 @@
 {
   "api": "SWARM_AUTONOMY_V1",
-  "pid": 9776,
-  "uptimeSec": 5368,
-  "ticks": 203,
+  "pid": 250608,
+  "uptimeSec": 62783,
+  "ticks": 1023,
   "recentTasks": [
     {
+      "id": "VOTE_SELF_AUDIT_NOW",
+      "at": 1790871461589,
+      "result": {
+        "proposalType": "SELF_AUDIT_NOW",
+        "ballots": 1,
+        "recentBallots": 1,
+        "yesWeighted": 1,
+        "noWeighted": 0,
+        "yesCount": 1,
+        "noCount": 0,
+        "quorumPct": 0.5,
+        "approvalPct": 1,
+        "passes": false
+      }
+    },
+    {
       "id": "SELF_AUDIT_HOURLY",
-      "at": 1788708671305,
+      "at": 1790871340374,
       "result": {
         "ok": true,
         "exit": 0,
@@ -16,8 +32,24 @@
       }
     },
     {
+      "id": "VOTE_SELF_AUDIT_NOW",
+      "at": 1790871216851,
+      "result": {
+        "proposalType": "SELF_AUDIT_NOW",
+        "ballots": 2,
+        "recentBallots": 2,
+        "yesWeighted": 2,
+        "noWeighted": 0,
+        "yesCount": 2,
+        "noCount": 0,
+        "quorumPct": 0.5,
+        "approvalPct": 1,
+        "passes": true
+      }
+    },
+    {
       "id": "OWNER_BACK_SOON_PING",
-      "at": 1788708460854,
+      "at": 1790870616429,
       "result": {
         "ok": true,
         "msg": "ping written"
@@ -25,39 +57,25 @@
     },
     {
       "id": "OWNER_BACK_SOON_PING",
-      "at": 1788708325325,
+      "at": 1790870259231,
       "result": {
         "ok": true,
         "msg": "ping written"
-      }
-    },
-    {
-      "id": "OWNER_BACK_SOON_PING",
-      "at": 1788708308016,
-      "result": {
-        "ok": true,
-        "msg": "ping written"
-      }
-    },
-    {
-      "id": "SELF_AUDIT_HOURLY",
-      "at": 1788707623582,
-      "result": {
-        "ok": true,
-        "exit": 0,
-        "tag": "SELF_AUDIT_HOURLY",
-        "script": "C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\scripts\\final-master-audit.mjs",
-        "out": "silent"
       }
     }
   ],
   "resurrectedDead": [
     {
       "name": "swarm-improve-loop",
-      "ageMin": 9.948583333333334,
+      "ageMin": 34783.17988333333,
+      "alive": false
+    },
+    {
+      "name": "swarm-self-launch",
+      "ageMin": 34791.1899,
       "alive": false
     }
   ],
   "resurrectedHB": null,
-  "at": 1788709127511
+  "at": 1790871658040
 }

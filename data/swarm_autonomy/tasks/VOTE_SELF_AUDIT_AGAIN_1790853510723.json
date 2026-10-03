@@ -1,0 +1,34 @@
+{
+  "id": "VOTE_SELF_AUDIT_AGAIN",
+  "at": 1790853510723,
+  "result": {
+    "ok": true,
+    "proposalType": "SELF_AUDIT_NOW",
+    "label": "Run full self-audit immediately",
+    "windowHours": 2,
+    "ballotsCounted": 2,
+    "expiredBallots": 0,
+    "quorumPct": 0.5,
+    "requiresWeight": false,
+    "ballotsAfterDedup": 1,
+    "duplicateBallotsIgnored": 1,
+    "approvalPct": 1,
+    "approvalByVotes": 1,
+    "approvalByWeight": 1,
+    "yesWeighted": 1,
+    "noWeighted": 0,
+    "yesCount": 1,
+    "noCount": 0,
+    "distinctVoters": 1,
+    "yesVoters": 1,
+    "voters": [
+      "swarm-improve-loop"
+    ],
+    "minVotersRequired": 2,
+    "passes": false,
+    "failsBecause": [
+      "only 1 distinct voter(s); 2 required"
+    ],
+    "_now": 1790853510723
+  }
+}
