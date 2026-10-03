@@ -86,13 +86,13 @@ ownerOverrideLog(`active blockNewMoneyMoving=${OWNER_FORCE_OVERRIDE.blockNewMone
 const CATALOG = [
   // --- Revenue / recovery tier (ROI ≥ 90) ---
   {
-    id: 'AUTO_RECOVER_BALANCE_DELTA_33K',
+    id: 'AUTO_RECOVER_BALANCE_DELTA',
     category: 'revenue-recovery', roi: 98, estimatedMin: 3, cooldownMs: 2 * 3600_000, essential: true,
     async run() {
       // Scan CSV + settlement ledger; attempt to match any CSV rows flagged INBOUND with 0 settled sum.
       const csvP = resolve(REPORTS, 'reconciliation_report.csv');
       const slP = resolve(DATA, 'financial', 'settlement_ledger.json');
-      if (!existsSync(csvP) || !existsSync(slP)) return { ok: false, reason: 'missing-files' };
+      if (!existsSync(csvP) || !existsSync(slP)) return { ok: false, reason: 'missing-files', note: `No verified delta to reconcile: ${verifiedBalanceDelta().text}. Both source files must exist before any recovery proposal is written.` };
       const raw = readFileSync(csvP, 'utf-8');
       const lines = raw.split(/\r?\n/).filter(l => l.trim().length);
       if (lines.length < 2) return { ok: false, reason: 'empty-csv' };
@@ -111,7 +111,7 @@ const CATALOG = [
       const ranked = inbound.sort((a,b) => b.amt - a.amt).slice(0, 20);
       const totalRanked = ranked.reduce((s,r) => s + r.amt, 0);
       const outP = resolve(STATE, `recovery_proposals_${Date.now()}.json`);
-      writeFileSync(outP, JSON.stringify({ inboundFound: inbound.length, top: ranked, sumTop: totalRanked, goal: 'RECONCILE THE $33,278.49 BALANCE DELTA', hint: 'Owner — rank by $, confirm which are real inbound, then mark settlement_ledger transactions COMPLETED with real extRefs.' }, null, 2));
+      writeFileSync(outP, JSON.stringify({ inboundFound: inbound.length, top: ranked, sumTop: totalRanked, goal: `RECONCILE VERIFIED BALANCE DELTA: ${delta.text}`, source: 'data/out/authorizer-ledger-report.json', hint: 'Owner — rank by $, confirm which are real inbound, then mark settlement_ledger transactions COMPLETED with real extRefs. Never trust a target figure that is not derived from a verified ledger.' }, null, 2));
       // Also write same content to WELCOME digest
       consensus.writeConsensusState();
       return { ok: true, inboundRows: inbound.length, topSum: totalRanked, proposalFile: outP };
@@ -276,6 +276,31 @@ function pickAndFilterTasks() {
   return ranked;
 }
 
+function verifiedBalanceDelta() {
+  const p = resolve(DATA, 'out', 'authorizer-ledger-report.json');
+  if (!existsSync(p)) return { ok: false, text: 'no verified ledger (authorizer-ledger-report.json absent)' };
+  let rep;
+  try { rep = JSON.parse(readFileSync(p, 'utf-8')); } catch { return { ok: false, text: 'ledger unreadable' }; }
+  const accts = Array.isArray(rep?.accounts) ? rep.accounts : null;
+  if (!accts) return { ok: false, text: 'ledger has no accounts array' };
+  const named = (n) => { const a = accts.find(x => x?.name === n); return a && Number.isFinite(Number(a.balance)) ? Number(a.balance) : null; };
+  const receivable = named('Processor-Receivable');
+  const ownerPayable = named('Owner-Payable');
+  const revenue = named('Platform-Revenue');
+  const operating = named('Operating-Bank');
+  if (receivable === null || ownerPayable === null) return { ok: false, text: 'ledger lacks Processor-Receivable or Owner-Payable' };
+  const delta = receivable - ownerPayable;
+  return {
+    ok: true,
+    delta,
+    receivable, ownerPayable, revenue, operating,
+    at: rep.at ?? null,
+    text: delta === 0
+      ? 'no verified delta — Processor-Receivable and Owner-Payable are both $0'
+      : `$${delta.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (Processor-Receivable ${receivable} − Owner-Payable ${ownerPayable}; ledger @ ${rep.at ?? 'unknown'})`,
+  };
+}
+
 function welcomeDigestWrite(resultsThisTick, safety) {
   const audits = readdirSync(REPORTS).filter(f => f.startsWith('FINAL-AUDIT-MASTER-') && f.endsWith('.json')).sort();
   let latestAudit = null; if (audits.length) {
@@ -285,6 +310,7 @@ function welcomeDigestWrite(resultsThisTick, safety) {
     } catch {}
   }
   const qCount = existsSync(QUARANTINE) ? readdirSync(QUARANTINE).filter(f => f.endsWith('.json')).length : 0;
+  const delta = verifiedBalanceDelta();
   const md = [];
   md.push('# 👋 WELCOME BACK, OWNER');
   md.push(`\nSwarm is alive. Silent. Rolling. Last digest update: **${new Date().toISOString()}**\n`);
@@ -292,7 +318,9 @@ function welcomeDigestWrite(resultsThisTick, safety) {
   md.push(`- PID swarm-autonomy: see \`data/swarm_autonomy/pids/swarm-autonomy.pid\` — last heartbeat **<60s ago** if alive`);
   md.push(`- PID swarm-improve-loop (this): **${PID}**`);
   md.push(`- Safety score last: **${safety?.score ?? 'n/a'}** / 100 → action **${safety?.action ?? 'n/a'}**`);
-  md.push(`- Balance delta (revenue − settled − disbursed): **⚠️  $33,278.49** (owner review needed → recovery proposals in data/swarm_autonomy/state/recovery_proposals_*.json)`);
+  md.push(`- Balance delta (revenue − settled − disbursed): **${delta.text}**${delta.ok && delta.delta !== 0 ? ' (owner review needed)' : ''}`);
+  md.push(`  - _Source: \`data/out/authorizer-ledger-report.json\`${delta.ok ? `; Processor-Receivable ${delta.receivable}, Owner-Payable ${delta.ownerPayable}, Platform-Revenue ${delta.revenue ?? 'n/a'}, Operating-Bank ${delta.operating ?? 'n/a'}` : ''}_`);
+  md.push(`  - _Derived, never hardcoded. If no verified ledger exists, no delta is claimed._`);
   md.push(`- Quarantine entries: **${qCount}**`);
   if (latestAudit) md.push(`- Latest audit: \`reports/${latestAudit.file}\` → ${latestAudit.crit} crit / ${latestAudit.high} high / $${latestAudit.atRisk} at-risk / ${latestAudit.quarantined} q-writes`);
   md.push(`\n## 🧪 Tick Results (this loop run)\n`);

@@ -272,9 +272,10 @@ const TASK_CATALOG = [
   {
     id: 'RECONCILE_BALANCE_DELTA', category: 'revenue-recovery', roi: 95, estimatedMin: 1,
     runner: () => {
-      // 1) Attempt to auto-tag $33,278.49 uncategorized inflow against most likely rail (settlement_ledger inbound=0 so try to parse CSV for inbound rows flagged as IN)
+      // Attempt to auto-tag uncategorized inflow against the most likely rail.
+      // No target figure: the delta must come from a verified ledger, never a literal.
       const csvPath = resolve(AUDITS_DIR, 'reconciliation_report.csv');
-      if (!existsSync(csvPath)) return { ok: false, reason: 'no-csv' };
+      if (!existsSync(csvPath)) return { ok: false, reason: 'no-csv', note: 'No verified delta to reconcile without reconciliation_report.csv.' };
       const raw = readFileSync(csvPath, 'utf-8');
       const lines = raw.split(/\r?\n/).filter(l => l.trim().length);
       if (lines.length < 2) return { ok: false, reason: 'empty-csv' };
@@ -285,7 +286,14 @@ const TASK_CATALOG = [
         const rec = {}; hdrs.forEach((h, idx) => { rec[h] = parts[idx] ?? ''; });
         const amt = Math.abs(Number(rec.amount || rec.total || rec.value || rec.net || 0));
         const dir = String(rec.direction || rec.type || rec.status || '').toLowerCase();
-        if (dir.includes('in') || dir.includes('receiv') || dir.includes('credit') || amt > 1000) {
+        // Direction is REQUIRED. A large magnitude alone must never imply inbound:
+        // that misclassifies outflows/refunds as money arriving and proposes
+        // "recovering" expenses. Only classify when direction is explicitly positive.
+        const isInbound = dir.includes('inbound') || dir.includes('in')
+          || dir.includes('receiv') || dir.includes('credit') || dir.includes('deposit');
+        const isOutbound = dir.includes('out') || dir.includes('debit') || dir.includes('withdraw')
+          || dir.includes('refund') || dir.includes('payout') || dir.includes('expense');
+        if (isInbound && !isOutbound) {
           candidates.push({ row: i, amt, direction: dir, summary: hdrs.slice(0, 6).map(h => `${h}=${String(rec[h]).slice(0,20)}`).join(' | ') });
         }
       }
