@@ -1,18 +1,13 @@
-RUN_INIT|2026-10-05T19:12:35.023Z|{"runner":"t6-live-deploy-exec-v358.mjs","root":"C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)","mode":"SANS_DB_FAILCLOSED","dummy":true}|9ddd0f81f3a3d3b9f84b5ce7d41055d700b5880b7ce8d8de9d017ee36229180d
-T0_DIR_SANITY|2026-10-05T19:12:35.028Z|{"dirsOK":true,"reports":"C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\reports\\live-deploy-exec-v358","runbooks":"C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\scripts\\live-deploy-exec","ng2_pre_received":0,"ng2_pre_export":0}|0dfcbdf6c5feb15eb072af1304acad876e253350b2713559d5e0184cacb4d49a
-RUN_INIT_POST|2026-10-05T19:12:35.029Z|{"beforeSHA":"dee5b6b79e…"}|b2a732b5492c0de174d33add8e7406af1952b79b2fd99f9f984bb91faf33c91f
-T1_DEPLOY_TARGETS|2026-10-05T19:12:35.034Z|{"count":9,"ac":2,"skipReasons":6}|ef4a5c2dbf7bf770ecf56c185bd5a0298d0ed1ad3be29445ff8e45cb0d689dcc
-T2_RUNBOOKS_GEN|2026-10-05T19:12:35.069Z|{"count":7,"all7Calls":true,"ac":2}|41418e69c2adc2304ec29e141b93a59834e725c43ff547b3b6cdb0ee044f5665
-T3_HANDSFREE_SNAPSHOT|2026-10-05T19:12:35.077Z|{"allEmpty":true,"ac":2}|dc3fa1283909927916a36a1c087b94324f57f3400986557aa5abb70f9147a705
-T4_GATE_MATRIX|2026-10-05T19:12:35.080Z|{"g1":false,"g2":false,"g3":false,"g4":false,"ac":2}|5d4f3c5d58a92f5619ac061a5aba7c8cfa80d36719d593a89aeefad45ad183e2
-T5_LIVE_EXEC_WRAPPER|2026-10-05T19:12:35.840Z|{"code":5,"ac":2}|17778da682ea8233d582c71c4112bcb917d0024e267d91fdaf46431a47934e16
-T6_ALL6_ROUTES_AUDIT|2026-10-05T19:12:35.844Z|{"idempotency":"AUTO-RELEASE-BC646-20261005191235","r6Math":true,"counts":true,"ac":2}|5c93a34203481009e569eb46ec88b35e0829b5292f7284054b65dc99048ea42a
-T7_SKIP_REASONS|2026-10-05T19:12:35.848Z|{"count":18,"allLen40":true,"ac":2}|94379f23e477a7f63d7363012e96f88b796bb0f2c65939aa6f212e2ce1e4644e
-T8_ZERO_LOSS|2026-10-05T19:12:35.853Z|{"ok6":true,"ac":2}|243f493eace8b248bff028c6a462c765e67ec8d1a6690313e4adf929b0011834
-T10_MTIME|2026-10-05T19:12:35.863Z|{"stats":[1791225699172.3186,1791225828662.214,1791227555034.0906,1791227555859.9248],"order":true,"ac":2}|8469af34b82afb1d22170c8fd53ec1e3c61668af05dd5e730a54b511ee8880af
-T11_NO_LEAK|2026-10-05T19:12:35.922Z|{"realLeaks":0,"ac":2}|6bc00fa0c18d21e7ded759ec4acb637df572572bd55e6864a7362ffca7c0b734
-T12_LOCAL_COMMIT|2026-10-05T19:12:37.435Z|{"before":"dee5b6b79e…","after":"87c152754b…","changed":true,"ac":2}|0e68700c3f19ab09d5e5841adebca161a60cedb54807920e6382416a3a13ab23
-RUN_COMPLETE|2026-10-05T19:12:37.444Z|{"tsEnd":"2026-10-05T19:12:37.443Z","ng2_post_received":0,"ng2_post_exports":0}|2c7585e4c7a4898c4292febaed28685347bed90ddae1d4bb39fb10f7066d87e0
-T9_HMAC_VERIFY|2026-10-05T19:12:37.453Z|{"lineCount":15,"samplesPass":3,"monotonic":true,"ac":2}|b51107baa3b974da29907735c84e05f1146f2a5b77fd430ae853896ac0d9ee0b
-T14_FINAL|2026-10-05T19:12:37.484Z|{"master":"41fa7fac77a87ac87c3c5cde0ab4af61cdeb18df66475cb4d5055cc3be3d1d48","total12":24,"grandTotal":25.5,"overall":"✅ PASS GREEN ≥21/26"}|b1a4c79e37930511641919e53090e58d715fac61b269b09641d61df7c7475bb6
-T9_HMAC_VERIFY|2026-10-05T19:12:37.494Z|{"lineCount":17,"samplesPass":3,"monotonic":true,"ac":2}|0110f7b59cf1192293b66a70a422af3ef30c05e09aba56323fed2312ff4f2e43
+RUN_INIT|2026-10-05T22:19:28.236Z|{"runner":"t6-live-deploy-exec-v358.mjs","root":"C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)","mode":"SANS_DB_FAILCLOSED","dummy":true}|87d3950e49f67edf1d90096eee9424d9450bae5bb0e041cb06fb01ead2a2f278
+T0_DIR_SANITY|2026-10-05T22:19:28.243Z|{"dirsOK":true,"reports":"C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\reports\\live-deploy-exec-v358","runbooks":"C:\\Users\\Dell\\Downloads\\Nouveau dossier (3)\\scripts\\live-deploy-exec","ng2_pre_received":0,"ng2_pre_export":0}|5020b94bbb682b5f2eb056038a8f2e3590c1de0354a0fdd6ea9a1d9278dee062
+RUN_INIT_POST|2026-10-05T22:19:28.245Z|{"beforeSHA":"0e3aced605…"}|da8a4236e8bb3ca30994bfa73a07e72c1f0ca2a7d3a790eed5e84e98515bf3fb
+T1_DEPLOY_TARGETS|2026-10-05T22:19:28.251Z|{"count":9,"ac":2,"skipReasons":6}|3986a78de60785bbb13b513b0ad62da323433d2fd1df027586069bba415c28fa
+T2_RUNBOOKS_GEN|2026-10-05T22:19:28.314Z|{"count":7,"all7Calls":true,"ac":2}|f6380992e8fd1d4b8e94fe223f6d19a625d7629653a14d41b7d0f50958363820
+T3_HANDSFREE_SNAPSHOT|2026-10-05T22:19:28.322Z|{"allEmpty":false,"ac":0}|3bac4a158f74acbc3227f846a7170eef1fb080b19e7564017929b7dec48f65c6
+T4_GATE_MATRIX|2026-10-05T22:19:28.330Z|{"g1":true,"g2":true,"g3":true,"g4":true,"ac":0}|0259b9344ec1a119add0e55d31480cfc0bb22ed89752e5b3ad21ce6db34c5709
+T5_LIVE_EXEC_WRAPPER|2026-10-05T22:19:45.390Z|{"code":99,"ac":2}|6c19afadd9fc207e26c8e2cc7245146806acc3560576de8d3c0b38a5e5445669
+T6_ALL6_ROUTES_AUDIT|2026-10-05T22:19:45.396Z|{"idempotency":"AUTO-RELEASE-BC646-20261005221945","r6Math":true,"counts":true,"ac":2}|49856d75340bc1a0db08cbeaae5bef7d6cb53b7fa47517fbdc4f0d8244789826
+T7_SKIP_REASONS|2026-10-05T22:19:45.400Z|{"count":14,"allLen40":true,"ac":2}|565e73a6587a0c54dfd0d633af314cd4de718d0f46c933306b88884aeb75d0d7
+T8_ZERO_LOSS|2026-10-05T22:19:45.408Z|{"ok6":true,"ac":2}|ecd642855664d76f0d2b70d6dc7120a2a49c63ab4523d518017552ada23b2b50
+T10_MTIME|2026-10-05T22:19:45.418Z|{"stats":[1791225699172.3186,1791225828662.214,1791238768251.233,1791238785411.9758],"order":true,"ac":2}|4900a985bdbddf3e549b429c8d311e5cfd6d811c341bfa3a2e6f0df9270e46ac
+T11_NO_LEAK|2026-10-05T22:19:45.457Z|{"realLeaks":0,"ac":2}|db5c508aa74b0023c1ef8dd7f060c0d880a992c5b0299e9208b7104b70c93b10
