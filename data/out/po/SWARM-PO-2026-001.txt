@@ -1,6 +1,6 @@
 PURCHASE ORDER — SWARM-PO-2026-001
 ═══════════════════════════════════════════════════
-Issued:     2026-08-31T11:13:15.273Z
+Issued:     2026-10-05T16:17:28.236Z
 Issuer:     SWARM Autonomous Procurement Engine
 Algorithm:  SHA-256
 RECIPIENT:  Mrs. Hind Tsouli
@@ -38,9 +38,9 @@ Pre-paid:   YES — SWARM treasury
 CRYPTOGRAPHIC VERIFICATION
 ───────────────────────────────────────────────────
 Algorithm:    SHA-256
-Integrity:    f92be5305e2e8f07b781d8593733883d2980196a5849b92e19237fe5f2bfae18
+Integrity:    148712d41ff4d9b67a7fcc9116952dc2de8f267dc959f3e49b47e24881222195
 Prev Hash:    GENESIS
 Chain Index:  1/3
 Verify:       echo -n '<canonicalPayload>' | sha256sum
 This PO is cryptographically immutable. Any modification changes the hash.
-Generated: 2026-08-31T11:13:15.273Z
+Generated: 2026-10-05T16:17:28.236Z

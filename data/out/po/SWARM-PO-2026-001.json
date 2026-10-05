@@ -1,6 +1,6 @@
 {
   "poNumber": "SWARM-PO-2026-001",
-  "issuedAt": "2026-08-31T11:13:15.273Z",
+  "issuedAt": "2026-10-05T16:17:28.236Z",
   "issuer": "SWARM Autonomous Procurement Engine",
   "issuerSignatureAlgorithm": "SHA-256",
   "recipient": {
@@ -75,12 +75,12 @@
     "sequenceIndex": 1,
     "totalPOs": 3
   },
-  "integrityHash": "f92be5305e2e8f07b781d8593733883d2980196a5849b92e19237fe5f2bfae18",
+  "integrityHash": "148712d41ff4d9b67a7fcc9116952dc2de8f267dc959f3e49b47e24881222195",
   "verification": {
     "algorithm": "SHA-256",
-    "hash": "f92be5305e2e8f07b781d8593733883d2980196a5849b92e19237fe5f2bfae18",
+    "hash": "148712d41ff4d9b67a7fcc9116952dc2de8f267dc959f3e49b47e24881222195",
     "previousHash": "GENESIS",
     "chainValid": true,
-    "canonicalPayload": "{\"currency\":\"MAD\",\"exchangeRateUSD\":0.1,\"integrityChain\":{},\"issuedAt\":\"2026-08-31T11:13:15.273Z\",\"issuer\":\"SWARM Autonomous Procurement Engine\",\"issuerSignatureAlgorithm\":\"SHA-256\",\"lineItemCount\":5,\"lineItems\":[{\"prePaidBySwarm\":true,\"totalMAD\":3179},{\"prePaidBySwarm\":true,\"totalMAD\":899},{\"prePaidBySwarm\":true,\"totalMAD\":199},{\"prePaidBySwarm\":true,\"totalMAD\":60},{\"prePaidBySwarm\":true,\"totalMAD\":210}],\"paymentStatus\":\"pre_paid\",\"poNumber\":\"SWARM-PO-2026-001\",\"prePaidBySwarm\":true,\"recipient\":{},\"subtotalMAD\":4547,\"subtotalUSD\":454.7,\"totalMAD\":4547,\"totalUSD\":454.7}"
+    "canonicalPayload": "{\"currency\":\"MAD\",\"exchangeRateUSD\":0.1,\"integrityChain\":{},\"issuedAt\":\"2026-10-05T16:17:28.236Z\",\"issuer\":\"SWARM Autonomous Procurement Engine\",\"issuerSignatureAlgorithm\":\"SHA-256\",\"lineItemCount\":5,\"lineItems\":[{\"prePaidBySwarm\":true,\"totalMAD\":3179},{\"prePaidBySwarm\":true,\"totalMAD\":899},{\"prePaidBySwarm\":true,\"totalMAD\":199},{\"prePaidBySwarm\":true,\"totalMAD\":60},{\"prePaidBySwarm\":true,\"totalMAD\":210}],\"paymentStatus\":\"pre_paid\",\"poNumber\":\"SWARM-PO-2026-001\",\"prePaidBySwarm\":true,\"recipient\":{},\"subtotalMAD\":4547,\"subtotalUSD\":454.7,\"totalMAD\":4547,\"totalUSD\":454.7}"
   }
 }

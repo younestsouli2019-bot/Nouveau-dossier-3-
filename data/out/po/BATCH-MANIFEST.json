@@ -1,32 +1,32 @@
 {
-  "generatedAt": "2026-08-31T11:13:15.273Z",
+  "generatedAt": "2026-10-05T16:17:28.236Z",
   "sourceFile": "data/procurement-requests.json",
   "algorithm": "SHA-256",
   "chainType": "hash-chained",
   "totalPOs": 3,
   "totalMAD": 25914,
   "totalUSD": 2591,
-  "batchIntegrityHash": "a99e482d040a879dc481cccff6deee8b1c891f38ea73c1c4969895ed64f4a52f",
+  "batchIntegrityHash": "792439507abe3a1c15e1ab58fbdaa6d68d51c913bf2c546fb5d62603bdc52747",
   "poManifest": [
     {
       "poNumber": "SWARM-PO-2026-001",
       "recipient": "Mrs. Hind Tsouli",
       "totalMAD": 4547,
-      "integrityHash": "f92be5305e2e8f07b781d8593733883d2980196a5849b92e19237fe5f2bfae18"
+      "integrityHash": "148712d41ff4d9b67a7fcc9116952dc2de8f267dc959f3e49b47e24881222195"
     },
     {
       "poNumber": "SWARM-PO-2026-002",
       "recipient": "Mr Younes Tsouli",
       "totalMAD": 18065,
-      "integrityHash": "170adf2085f78ef14e9efa231eb1159185b4d1e94dc47267abd661bd8a53e93c"
+      "integrityHash": "ef7321bfe73da94c1263bdeb79461f98a1f5e494de51951ff8b4d0cb84d9c06d"
     },
     {
       "poNumber": "SWARM-PO-2026-003",
       "recipient": "M Bachir Tsouli",
       "totalMAD": 3302,
-      "integrityHash": "cf49f221186b6c07a3876f46d4cb7950b3568219827c1541740b4d794cd4971f"
+      "integrityHash": "50f305e2b78501a25717b7bb303713bbe27e10915648e7eb7aa7672c70534693"
     }
   ],
   "chainGenesis": "GENESIS",
-  "chainTip": "cf49f221186b6c07a3876f46d4cb7950b3568219827c1541740b4d794cd4971f"
+  "chainTip": "50f305e2b78501a25717b7bb303713bbe27e10915648e7eb7aa7672c70534693"
 }

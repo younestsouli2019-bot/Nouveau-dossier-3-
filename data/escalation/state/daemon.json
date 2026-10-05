@@ -1,0 +1,19 @@
+{
+  "runs": 1,
+  "lastRunAt": "2026-10-05T16:04:57.633Z",
+  "lastConnectivity": {
+    "online": false,
+    "status": "degraded-smtp-pdfkit-not-installed",
+    "checkedAt": "2026-10-05T16:04:57.633Z",
+    "note": "Mode degraded: pdfkit optional dep missing (tolerated, same pattern as better-sqlite3 audit step2). SMTP non configuré. Connectivity probe: réseau localhost OK. TICK simulé via bootstrap-v358.mjs."
+  },
+  "degradedRuns": 1,
+  "bootstrapNote": "T3 Escalation Daemon cold-started via manual bootstrap 2026-10-05 v3.5.8 because pdfkit optional import chain (src/escalation/comms.mjs) missing package — tolerated fail-gracefully with direct saveCase() API. HUA corpus 3-doc case persisted exactly, NO DEEP UK.",
+  "cases": [
+    {
+      "id": "HUA-2026-RBT-147672146951995880-018",
+      "status": "ESCALATED",
+      "attachments": 3
+    }
+  ]
+}

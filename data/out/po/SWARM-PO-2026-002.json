@@ -1,6 +1,6 @@
 {
   "poNumber": "SWARM-PO-2026-002",
-  "issuedAt": "2026-08-31T11:13:15.273Z",
+  "issuedAt": "2026-10-05T16:17:28.236Z",
   "issuer": "SWARM Autonomous Procurement Engine",
   "issuerSignatureAlgorithm": "SHA-256",
   "recipient": {
@@ -311,16 +311,16 @@
   "prePaidBySwarm": true,
   "paymentStatus": "pre_paid",
   "integrityChain": {
-    "previousHash": "f92be5305e2e8f07b781d8593733883d2980196a5849b92e19237fe5f2bfae18",
+    "previousHash": "148712d41ff4d9b67a7fcc9116952dc2de8f267dc959f3e49b47e24881222195",
     "sequenceIndex": 2,
     "totalPOs": 3
   },
-  "integrityHash": "170adf2085f78ef14e9efa231eb1159185b4d1e94dc47267abd661bd8a53e93c",
+  "integrityHash": "ef7321bfe73da94c1263bdeb79461f98a1f5e494de51951ff8b4d0cb84d9c06d",
   "verification": {
     "algorithm": "SHA-256",
-    "hash": "170adf2085f78ef14e9efa231eb1159185b4d1e94dc47267abd661bd8a53e93c",
-    "previousHash": "f92be5305e2e8f07b781d8593733883d2980196a5849b92e19237fe5f2bfae18",
+    "hash": "ef7321bfe73da94c1263bdeb79461f98a1f5e494de51951ff8b4d0cb84d9c06d",
+    "previousHash": "148712d41ff4d9b67a7fcc9116952dc2de8f267dc959f3e49b47e24881222195",
     "chainValid": true,
-    "canonicalPayload": "{\"currency\":\"MAD\",\"exchangeRateUSD\":0.1,\"integrityChain\":{},\"issuedAt\":\"2026-08-31T11:13:15.273Z\",\"issuer\":\"SWARM Autonomous Procurement Engine\",\"issuerSignatureAlgorithm\":\"SHA-256\",\"lineItemCount\":29,\"lineItems\":[{\"prePaidBySwarm\":true,\"totalMAD\":6500},{\"prePaidBySwarm\":true,\"totalMAD\":740},{\"prePaidBySwarm\":true,\"totalMAD\":450},{\"prePaidBySwarm\":true,\"totalMAD\":350},{\"prePaidBySwarm\":true,\"totalMAD\":180},{\"prePaidBySwarm\":true,\"totalMAD\":507},{\"prePaidBySwarm\":true,\"totalMAD\":600},{\"prePaidBySwarm\":true,\"totalMAD\":1250},{\"prePaidBySwarm\":true,\"totalMAD\":1700},{\"prePaidBySwarm\":true,\"totalMAD\":903},{\"prePaidBySwarm\":true,\"totalMAD\":1199},{\"prePaidBySwarm\":true,\"totalMAD\":350},{\"prePaidBySwarm\":true,\"totalMAD\":1100},{\"prePaidBySwarm\":true,\"totalMAD\":359},{\"prePaidBySwarm\":true,\"totalMAD\":229},{\"prePaidBySwarm\":true,\"totalMAD\":135},{\"prePaidBySwarm\":true,\"totalMAD\":39},{\"prePaidBySwarm\":true,\"totalMAD\":39},{\"prePaidBySwarm\":true,\"totalMAD\":70},{\"prePaidBySwarm\":true,\"totalMAD\":69},{\"prePaidBySwarm\":true,\"totalMAD\":420},{\"prePaidBySwarm\":true,\"totalMAD\":49},{\"prePaidBySwarm\":true,\"totalMAD\":75},{\"prePaidBySwarm\":true,\"totalMAD\":147},{\"prePaidBySwarm\":true,\"totalMAD\":2790},{\"prePaidBySwarm\":true,\"totalMAD\":200},{\"prePaidBySwarm\":true,\"totalMAD\":22},{\"prePaidBySwarm\":true,\"totalMAD\":45},{\"prePaidBySwarm\":true,\"totalMAD\":700}],\"paymentStatus\":\"pre_paid\",\"poNumber\":\"SWARM-PO-2026-002\",\"prePaidBySwarm\":true,\"recipient\":{},\"subtotalMAD\":21217,\"subtotalUSD\":2121.7,\"totalMAD\":18065,\"totalUSD\":1806.5}"
+    "canonicalPayload": "{\"currency\":\"MAD\",\"exchangeRateUSD\":0.1,\"integrityChain\":{},\"issuedAt\":\"2026-10-05T16:17:28.236Z\",\"issuer\":\"SWARM Autonomous Procurement Engine\",\"issuerSignatureAlgorithm\":\"SHA-256\",\"lineItemCount\":29,\"lineItems\":[{\"prePaidBySwarm\":true,\"totalMAD\":6500},{\"prePaidBySwarm\":true,\"totalMAD\":740},{\"prePaidBySwarm\":true,\"totalMAD\":450},{\"prePaidBySwarm\":true,\"totalMAD\":350},{\"prePaidBySwarm\":true,\"totalMAD\":180},{\"prePaidBySwarm\":true,\"totalMAD\":507},{\"prePaidBySwarm\":true,\"totalMAD\":600},{\"prePaidBySwarm\":true,\"totalMAD\":1250},{\"prePaidBySwarm\":true,\"totalMAD\":1700},{\"prePaidBySwarm\":true,\"totalMAD\":903},{\"prePaidBySwarm\":true,\"totalMAD\":1199},{\"prePaidBySwarm\":true,\"totalMAD\":350},{\"prePaidBySwarm\":true,\"totalMAD\":1100},{\"prePaidBySwarm\":true,\"totalMAD\":359},{\"prePaidBySwarm\":true,\"totalMAD\":229},{\"prePaidBySwarm\":true,\"totalMAD\":135},{\"prePaidBySwarm\":true,\"totalMAD\":39},{\"prePaidBySwarm\":true,\"totalMAD\":39},{\"prePaidBySwarm\":true,\"totalMAD\":70},{\"prePaidBySwarm\":true,\"totalMAD\":69},{\"prePaidBySwarm\":true,\"totalMAD\":420},{\"prePaidBySwarm\":true,\"totalMAD\":49},{\"prePaidBySwarm\":true,\"totalMAD\":75},{\"prePaidBySwarm\":true,\"totalMAD\":147},{\"prePaidBySwarm\":true,\"totalMAD\":2790},{\"prePaidBySwarm\":true,\"totalMAD\":200},{\"prePaidBySwarm\":true,\"totalMAD\":22},{\"prePaidBySwarm\":true,\"totalMAD\":45},{\"prePaidBySwarm\":true,\"totalMAD\":700}],\"paymentStatus\":\"pre_paid\",\"poNumber\":\"SWARM-PO-2026-002\",\"prePaidBySwarm\":true,\"recipient\":{},\"subtotalMAD\":21217,\"subtotalUSD\":2121.7,\"totalMAD\":18065,\"totalUSD\":1806.5}"
   }
 }
