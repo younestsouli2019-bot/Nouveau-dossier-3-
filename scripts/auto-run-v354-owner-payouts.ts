@@ -9,12 +9,16 @@ const fmt = (n: number, c = 'USD') => `${r2(n).toFixed(2)} ${c}`;
 
 type OwnerAccountLight = { id: string; label: string; accountNumberLast?: string | null; accountType: string; currency: string; heldBalance: number; spendableBalance: number; totalReceived: number; totalSent: number; };
 
-// Buckets 10/40/30/20 (DisbursementPolicy default in owner-config.ts)
+// Buckets 10/40/30/20 (DisbursementPolicy default in owner-config.ts — v3.5.7 FIX:
+// procurement_buffer was previously 10 and salary_bucket 40 in the autorun —
+// swapped. Real split: salary(10) / debt_repayment(40) / sovereign(30) / runtime(20).
+// procurement_buffer is a runtime-sub-budget NOT a top-level split bucket.
 const BUCKET_PCT: Record<BucketCode, number> = {
   sovereign_reserves: 30,
   runtime_operations: 20,
-  procurement_buffer: 10,
-  salary_bucket: 40,
+  procurement_buffer: 0, // sub-budget of runtime 50% auto-extend
+  salary_bucket: 10,
+  debt_repayment: 40, // new bucket code (runtime check below)
 };
 
 function buildAutoRef(ownerId: string, amount: number, currency: string, bucketCode: string): string {
@@ -24,13 +28,13 @@ function buildAutoRef(ownerId: string, amount: number, currency: string, bucketC
   return `OWNER-AUTO:AUTOMATIC-V354:${sha}`;
 }
 
-function mapBucket(owner: OwnerAccountLight): { bucket: BucketCode; multiplier: number } {
+function mapBucket(owner: OwnerAccountLight): { bucket: BucketCode; multiplier: number; preferredRail?: string } {
   const label = (owner.label || '').toLowerCase();
   const rib = String(owner.accountNumberLast || '');
   if (rib === '182' || label.includes('salary') || label.includes('rib 594182')) return { bucket: 'salary_bucket', multiplier: 10 };
-  if (rib === '372' || label.includes('debt') || label.includes('372')) return { bucket: 'salary_bucket', multiplier: 10 };
+  if (rib === '372' || label.includes('debt') || label.includes('372')) return { bucket: 'debt_repayment', multiplier: 40 };
   if (rib === '646' || label.includes('banking circle')) return { bucket: 'sovereign_reserves', multiplier: 1 };
-  if (owner.accountType === 'l2_crypto' || label.includes('arbitrum') || label.includes('usdc') || label.includes('crypto')) return { bucket: 'sovereign_reserves', multiplier: 1 };
+  if (owner.accountType === 'l2_crypto' || label.includes('arbitrum') || label.includes('usdc') || label.includes('crypto')) return { bucket: 'sovereign_reserves', multiplier: 1, preferredRail: 'arbitrum' };
   if (owner.accountType === 'paypal' || label.includes('paypal')) return { bucket: 'runtime_operations', multiplier: 1 };
   if (owner.accountType === 'payoneer' || label.includes('payoneer')) return { bucket: 'procurement_buffer', multiplier: 1 };
   return { bucket: 'procurement_buffer', multiplier: 1 };

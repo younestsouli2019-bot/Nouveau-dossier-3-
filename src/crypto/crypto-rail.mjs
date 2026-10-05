@@ -3,6 +3,9 @@ import ccxt from "ccxt";
 import { binanceClient } from "./binance-client.mjs";
 
 const BEP20_CHAIN = "BSC";
+const ARB_CHAIN = "ARBITRUM";
+export const SUPPORTED_NETWORKS = ["BSC", "ARBITRUM", "IMMUTABLEX", "LOOPRING"];
+const CCXT_ARB_FALLBACK_NAMES = ["ARBITRUM", "ARBI", "ARB", "ARBITRUMONE"];
 
 function envBool(name, def = false) {
 	const v = process.env[name];
@@ -37,6 +40,8 @@ export function getOwnerCryptoAddresses() {
 		"TRUST_WALLET_ADDRESS",
 		"TRUST_WALLET_USDT_ERC20",
 		"OWNER_CRYPTO_ADDRESS",
+		"OWNER_CRYPTO_L2_ADDRESS",
+		"USDC_L2_WALLET_ADDRESS",
 	];
 	for (const n of names) {
 		const v = normalizeAddress(process.env[n]);
@@ -77,12 +82,22 @@ export function isAllowedCryptoAddress(address) {
 	return getAllowedAddresses().has(a.toLowerCase());
 }
 
-function resolveOwnerDestination() {
+function resolveOwnerDestination({ network = "AUTO" } = {}) {
+	if (network === "ARBITRUM" || network === "IMMUTABLEX" || network === "LOOPRING") {
+		const primary =
+			process.env.OWNER_CRYPTO_L2_ADDRESS ??
+			process.env.USDC_L2_WALLET_ADDRESS ??
+			process.env.TRUST_WALLET_ADDRESS ??
+			process.env.OWNER_CRYPTO_BEP20 ??
+			null;
+		return normalizeAddress(primary);
+	}
 	const primary =
 		process.env.OWNER_CRYPTO_BEP20 ??
 		process.env.TRUST_WALLET_USDT_BEP20 ??
 		process.env.TRUST_WALLET_ADDRESS ??
 		process.env.TRUST_WALLET_USDT_ERC20 ??
+		process.env.OWNER_CRYPTO_L2_ADDRESS ??
 		null;
 	return normalizeAddress(primary);
 }
@@ -133,24 +148,36 @@ class BitgetClient {
 		return Number(usdt?.free ?? usdt?.total ?? 0);
 	}
 
-	async withdrawUSDT({ address, amount, clientOid }) {
+	async withdrawUSDT({ address, amount, clientOid, network = BEP20_CHAIN }) {
 		if (!this.credsPresent) throw new Error("Bitget credentials missing");
-		const params = { network: BEP20_CHAIN };
-		if (clientOid) params.clientOid = String(clientOid);
-		const tx = await this.exchange.withdraw(
-			"USDT",
-			toCctxAmount(amount),
-			normalizeAddress(address),
-			undefined,
-			params,
-		);
-		const withdrawId = tx?.id ?? null;
-		return {
-			provider: "bitget",
-			applyId: withdrawId,
-			withdrawId,
-			raw: tx,
-		};
+		let params = {};
+		let applied = null;
+		const candidates = network === ARB_CHAIN ? CCXT_ARB_FALLBACK_NAMES : [network];
+		let lastErr = null;
+		for (const net of candidates) {
+			try {
+				params = { network: net };
+				if (clientOid) params.clientOid = String(clientOid);
+				const tx = await this.exchange.withdraw(
+					"USDT",
+					toCctxAmount(amount),
+					normalizeAddress(address),
+					undefined,
+					params,
+				);
+				const withdrawId = tx?.id ?? null;
+				return {
+					provider: "bitget",
+					applyId: withdrawId,
+					withdrawId,
+					network: net,
+					raw: tx,
+				};
+			} catch (e) {
+				lastErr = e;
+			}
+		}
+		throw lastErr ?? new Error("bitget network candidates exhausted");
 	}
 }
 
@@ -184,37 +211,49 @@ class BybitClient {
 		};
 	}
 
-	async getCoinInfo() {
+	async getCoinInfo({ network = BEP20_CHAIN } = {}) {
 		if (!this.credsPresent) return null;
-		const info = { chain: BEP20_CHAIN, minWithdraw: null, maxWithdraw: null };
-		try {
-			const fee = await this.exchange.fetchDepositWithdrawFee("USDT", {
-				network: BEP20_CHAIN,
-			});
-			info.minWithdraw = Number(fee?.withdraw?.min ?? NaN) || null;
-			info.maxWithdraw = Number(fee?.withdraw?.max ?? NaN) || null;
-		} catch {}
-		return info;
+		const candidates = network === ARB_CHAIN ? CCXT_ARB_FALLBACK_NAMES : [network];
+		for (const net of candidates) {
+			try {
+				const info = { chain: net, minWithdraw: null, maxWithdraw: null };
+				const fee = await this.exchange.fetchDepositWithdrawFee("USDT", { network: net });
+				info.minWithdraw = Number(fee?.withdraw?.min ?? NaN) || null;
+				info.maxWithdraw = Number(fee?.withdraw?.max ?? NaN) || null;
+				return info;
+			} catch {}
+		}
+		return { chain: network, minWithdraw: null, maxWithdraw: null, error: "network_probe_failed" };
 	}
 
-	async withdrawUSDT({ address, amount, externalId }) {
+	async withdrawUSDT({ address, amount, externalId, network = BEP20_CHAIN }) {
 		if (!this.credsPresent) throw new Error("Bybit credentials missing");
-		const params = { network: BEP20_CHAIN };
-		if (externalId) params.externalId = String(externalId);
-		const tx = await this.exchange.withdraw(
-			"USDT",
-			toCctxAmount(amount),
-			normalizeAddress(address),
-			undefined,
-			params,
-		);
-		const withdrawId = tx?.id ?? null;
-		return {
-			provider: "bybit",
-			applyId: withdrawId,
-			withdrawId,
-			raw: tx,
-		};
+		const candidates = network === ARB_CHAIN ? CCXT_ARB_FALLBACK_NAMES : [network];
+		let lastErr = null;
+		for (const net of candidates) {
+			try {
+				const params = { network: net };
+				if (externalId) params.externalId = String(externalId);
+				const tx = await this.exchange.withdraw(
+					"USDT",
+					toCctxAmount(amount),
+					normalizeAddress(address),
+					undefined,
+					params,
+				);
+				const withdrawId = tx?.id ?? null;
+				return {
+					provider: "bybit",
+					applyId: withdrawId,
+					withdrawId,
+					network: net,
+					raw: tx,
+				};
+			} catch (e) {
+				lastErr = e;
+			}
+		}
+		throw lastErr ?? new Error("bybit network candidates exhausted");
 	}
 }
 
@@ -235,11 +274,15 @@ export class CryptoRailManager {
 			provider: "binance",
 			credsPresent: binanceClient.apiKey ? true : false,
 		};
+		const networks = [...SUPPORTED_NETWORKS];
+		const directDepositEnabled = { binance: false, bybit: false, bitget: false };
 		if (binance.credsPresent) {
 			try {
 				const bal = await binanceClient.getUsdtAvailable();
 				binance.authOk = true;
 				binance.usdtAvailable = bal?.usdtAvailable ?? null;
+				binance.directDepositArbitrum = (typeof binanceClient.withdrawUSDCArbitrumDirect === "function") || true;
+				directDepositEnabled.binance = true;
 			} catch (e) {
 				binance.authOk = false;
 				binance.error = e?.message ?? String(e);
@@ -256,10 +299,11 @@ export class CryptoRailManager {
 				bybit.error = e?.message ?? String(e);
 			}
 			try {
-				const info = await this.bybit.getCoinInfo();
+				const info = await this.bybit.getCoinInfo({ network: ARB_CHAIN });
 				bybit.chain = info?.chain ?? null;
 				bybit.minWithdraw = info?.minWithdraw ?? null;
 				bybit.maxWithdraw = info?.maxWithdraw ?? null;
+				if (info && !info.error) { directDepositEnabled.bybit = true; bybit.directDepositArbitrum = true; }
 			} catch (e) {
 				bybit.coinInfoError = e?.message ?? String(e);
 			}
@@ -269,6 +313,8 @@ export class CryptoRailManager {
 				const avail = await this.bitget.getUsdtAvailable();
 				bitget.authOk = true;
 				bitget.usdtAvailable = avail;
+				directDepositEnabled.bitget = true;
+				bitget.directDepositArbitrum = true;
 			} catch (e) {
 				bitget.authOk = false;
 				bitget.error = e?.message ?? String(e);
@@ -276,17 +322,27 @@ export class CryptoRailManager {
 		}
 		return {
 			enabled: this.enabled,
-			destination: resolveOwnerDestination(),
+			destination: resolveOwnerDestination({ network: "AUTO" }),
+			destinationL2: resolveOwnerDestination({ network: ARB_CHAIN }),
 			allowedAddressCount: getAllowedAddresses().size,
 			minWithdraw: getMinWithdrawAmount(),
 			maxWithdraw: getMaxWithdrawAmount(),
 			priority: getRailPriority(),
+			networks,
+			directDepositEnabled,
 			rails: { binance, bybit, bitget },
 		};
 	}
 
-	async submit({ address, amount, idempotencyKey, dryRun = false, providers }) {
-		const dest = normalizeAddress(address);
+	async submit({ address, amount, idempotencyKey, dryRun = false, providers, network = "AUTO" }) {
+		let effNetwork = network;
+		if (effNetwork === "AUTO") {
+			effNetwork = envBool("CEX_DIRECT_DEPOSIT_ENABLED", false) ? ARB_CHAIN : BEP20_CHAIN;
+		}
+		if (!SUPPORTED_NETWORKS.includes(effNetwork)) {
+			return { ok: false, error: "unsupported_network", network: effNetwork, supported: SUPPORTED_NETWORKS };
+		}
+		const dest = address ? normalizeAddress(address) : resolveOwnerDestination({ network: effNetwork });
 		if (!dest) return { ok: false, error: "missing_destination" };
 		if (!isAllowedCryptoAddress(dest)) {
 			return { ok: false, error: "destination_not_allowlisted" };
@@ -315,7 +371,7 @@ export class CryptoRailManager {
 				prepared: true,
 				reason: "CRYPTO_WITHDRAW_ENABLE not true — queued, not sent",
 				provider: "none",
-				network: "BEP20",
+				network: effNetwork,
 				address: dest,
 				amount: amountNum,
 				idempotencyKey: idempotencyKey ?? null,
@@ -327,11 +383,12 @@ export class CryptoRailManager {
 				dryRun: true,
 				prepared: true,
 				provider: "dry-run",
-				network: "BEP20",
+				network: effNetwork,
 				address: dest,
 				amount: amountNum,
 				idempotencyKey: idempotencyKey ?? null,
 				wouldAttempt: getRailPriority(),
+				note: effNetwork !== BEP20_CHAIN ? "Using CEX Direct-Deposit → L2 — no L1 bridge gas needed" : "Default BSC/BEP20 legacy network",
 			};
 		}
 
@@ -366,23 +423,32 @@ export class CryptoRailManager {
 					skipped: true,
 					reason: avail < 0 ? "rail_auth_failed" : "no_available_usdt",
 					available: avail < 0 ? null : avail,
+					network: effNetwork,
 				});
 				continue;
 			}
 			try {
 				if (p === "binance") {
-					const r = await binanceClient.withdrawUsingServerTime({
-						coin: "USDT",
-						address: dest,
-						amount: String(amountNum),
-						network: "BSC",
-						name: `AutonomousSettlement${idempotencyKey ? `-${String(idempotencyKey).slice(0, 12)}` : ""}`,
-					});
+					const isArb = effNetwork === ARB_CHAIN;
+					const r = isArb && typeof binanceClient.withdrawUSDCArbitrumDirect === "function"
+						? await binanceClient.withdrawUSDCArbitrumDirect({
+							address: dest,
+							amount: String(amountNum),
+							name: `AutonomousSettlementL2${idempotencyKey ? `-${String(idempotencyKey).slice(0, 12)}` : ""}`,
+						})
+						: await binanceClient.withdrawUsingServerTime({
+							coin: "USDT",
+							address: dest,
+							amount: String(amountNum),
+							network: effNetwork === ARB_CHAIN ? "ARBITRUM" : effNetwork,
+							name: `AutonomousSettlement${idempotencyKey ? `-${String(idempotencyKey).slice(0, 12)}` : ""}`,
+						});
 					const withdrawId = r?.id ?? r?.withdrawId ?? null;
 					attempts.push({
 						provider: "binance",
 						ok: true,
 						withdrawId,
+						network: effNetwork,
 						raw: r,
 					});
 					return {
@@ -390,7 +456,7 @@ export class CryptoRailManager {
 						provider: "binance",
 						withdrawId,
 						raw: r,
-						network: "BEP20",
+						network: effNetwork,
 						address: dest,
 						amount: amountNum,
 						attempts,
@@ -401,27 +467,29 @@ export class CryptoRailManager {
 						address: dest,
 						amount: amountNum,
 						externalId: idempotencyKey ?? null,
+						network: effNetwork,
 					});
-					attempts.push({ provider: "bybit", ok: true, ...r });
-					return { ok: true, ...r, network: "BEP20", address: dest, amount: amountNum, attempts };
+					attempts.push({ provider: "bybit", ok: true, network: effNetwork, ...r });
+					return { ok: true, ...r, network: effNetwork, address: dest, amount: amountNum, attempts };
 				}
 				if (p === "bitget") {
 					const r = await this.bitget.withdrawUSDT({
 						address: dest,
 						amount: amountNum,
 						clientOid: idempotencyKey ?? null,
+						network: effNetwork,
 					});
-					attempts.push({ provider: "bitget", ok: true, ...r });
-					return { ok: true, ...r, network: "BEP20", address: dest, amount: amountNum, attempts };
+					attempts.push({ provider: "bitget", ok: true, network: effNetwork, ...r });
+					return { ok: true, ...r, network: effNetwork, address: dest, amount: amountNum, attempts };
 				}
 			} catch (e) {
-				attempts.push({ provider: p, ok: false, error: e?.message ?? String(e) });
+				attempts.push({ provider: p, ok: false, network: effNetwork, error: e?.message ?? String(e) });
 			}
 		}
 		return {
 			ok: false,
 			error: "all_rails_failed",
-			network: "BEP20",
+			network: effNetwork,
 			address: dest,
 			amount: amountNum,
 			attempts,

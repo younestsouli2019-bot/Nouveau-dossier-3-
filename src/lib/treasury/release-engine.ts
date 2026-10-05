@@ -69,6 +69,15 @@ function isRealRef(ref?: string | null): boolean {
 /**
  * Resolve the owner's real external rail readiness. Fail-closed: returns a
  * reason (not the account) when the rail is not properly configured.
+ *
+ * Source of truth for the destination IBAN (AC-10 rule, Task 2 TR-2.1):
+ *   1. `owner.accountNumber` (IBAN stored directly on the preset OwnerAccount
+ *      row in Neon). This is the per-preset IBAN returned by
+ *      `scripts/attijari-address-book-v354.mjs` for the 6 Contentieux-routed
+ *      preset accounts.
+ *   2. Fallback: the global env override OWNER_PAYOUT_IDENTIFIER / OWNER_IBAN
+ *      / IBAN_BC. Used ONLY when the preset row has a NULL/empty
+ *      accountNumber (legacy rows, rare).
  */
 function resolveRail(owner: {
   accountNumber?: string | null;
@@ -76,9 +85,60 @@ function resolveRail(owner: {
   accountHolder?: string | null;
   swiftCode?: string | null;
   countryCode?: string | null;
-}): { iban: string; name: string; error?: string } {
-  const accountIban = owner.accountNumber ? owner.accountNumber.replace(/\s+/g, '').toUpperCase() : '';
-  const iban = accountIban || OWNER_IBAN;
+  accountType?: string | null;
+  label?: string | null;
+  walletAddress?: string | null;
+  network?: string | null;
+}): {
+  iban: string;
+  name: string;
+  error?: string;
+  railClass?: string;
+  preferredNetwork?: string;
+  directDepositHint?: string;
+} {
+  const isL2Crypto =
+    owner.accountType === 'l2_crypto' ||
+    (owner.label?.toLowerCase().includes('arbitrum') ?? false) ||
+    (owner.label?.includes('USDC') ?? false);
+
+  if (isL2Crypto) {
+    const wallet = owner.walletAddress || owner.accountNumber || '';
+    const walletClean = wallet.replace(/\s+/g, '');
+    const preferredNetwork = owner.network || 'arbitrum';
+    if (!LIVE_BANK_API) {
+      return {
+        iban: walletClean,
+        name: owner.accountHolder || OWNER_NAME,
+        error: 'LIVE_BANK_API not configured — release fail-closed',
+      };
+    }
+    if (!isRealRef(walletClean)) {
+      return {
+        iban: walletClean,
+        name: owner.accountHolder || OWNER_NAME,
+        error: 'No real L2 wallet address for owner account — fail-closed',
+      };
+    }
+    // (AC-10 rule, Owner L2 preset routing via CEX direct deposit, no L1 bridge gas cost — TR-4.1)
+    return {
+      iban: walletClean,
+      name: owner.accountHolder || OWNER_NAME,
+      railClass: 'L2_CRYPTO_DIRECT_CEX',
+      preferredNetwork,
+      directDepositHint: 'Use CEX Direct-withdraw to skip L1 bridge gas',
+    };
+  }
+
+  const presetIban = owner.accountNumber
+    ? owner.accountNumber.replace(/\s+/g, '').toUpperCase()
+    : '';
+  const globalFallbackIban =
+    process.env.OWNER_PAYOUT_IDENTIFIER ||
+    process.env.OWNER_IBAN ||
+    process.env.IBAN_BC ||
+    '';
+  const iban = presetIban || globalFallbackIban;
   if (!LIVE_BANK_API) {
     return { iban, name: owner.accountHolder || OWNER_NAME, error: 'LIVE_BANK_API not configured — release fail-closed' };
   }

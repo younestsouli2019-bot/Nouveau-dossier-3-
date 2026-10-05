@@ -56,6 +56,16 @@ export class BinanceClient {
 		});
 	}
 
+	async withdrawUSDCArbitrumDirect({ address, amount, name = "OwnerL2DirectDeposit" }) {
+		return this.withdrawUsingServerTime({
+			coin: "USDC",
+			address,
+			amount,
+			network: "ARBITRUM",
+			name,
+		});
+	}
+
 	async withdraw({ coin, address, amount, network, name }) {
 		await this.ensureTimeOffset();
 		const params = {

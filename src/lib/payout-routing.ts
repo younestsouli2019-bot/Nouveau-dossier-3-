@@ -63,6 +63,7 @@ export async function settleAndPayout(req: SettleAndPayoutRequest): Promise<Sett
       procurement_buffer: policy.bucketPct.procurementBuffer,
       runtime_operations: policy.bucketPct.runtimeOperations,
       salary_bucket: policy.bucketPct.salary,
+      debt_repayment: (policy.bucketPct as any).debtRepayment ?? 40,
     };
     splits = computeBucketSplit(netAmount, pct).map((b) => ({ bucketCode: b.code, pct: b.pct }));
   }

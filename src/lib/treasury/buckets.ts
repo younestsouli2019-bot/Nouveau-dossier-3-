@@ -1,12 +1,13 @@
 // Treasury bucket state machine.
-// The owner's architecture splits NET settlement value across four buckets:
-//   SOVEREIGN_RESERVES      — long-term capital reserves / contingency fund
-//   PROCUREMENT_BUFFER      — funds reserved to pay owner-directed purchase orders
-//   RUNTIME_OPERATIONS      — swarm infrastructure allocation (owner-allowed %)
-//   SALARY_BUCKET           — owner salary bucket
-// Percentages are read from the DisbursementPolicy (env-driven) and ALWAYS sum
-// to 100. The split is computed on NET (post platform-fee + chargeback reserve),
-// so buckets never cannibalise fees or reserves.
+// The owner's architecture splits NET settlement value across FIVE buckets
+// (canonical 10/40/30/20 split — DisbursementPolicy default v3.5.7):
+//   SALARY_BUCKET (10%)     — owner personal salary (RIB 182 MAD)
+//   DEBT_REPAYMENT (40%)    — Contentieux récupération / créances (RIB 372 MAD)
+//   SOVEREIGN_RESERVES (30%)— long-term capital reserves / contingency fund
+//   RUNTIME_OPERATIONS (20%)— swarm infrastructure allocation (owner-allowed %)
+//   PROCUREMENT_BUFFER (0%) — runtime sub-budget (50% auto-extend from runtime)
+// Percentages ALWAYS sum to 100. Split computed on NET (post platform-fee +
+// chargeback reserve), so buckets never cannibalise fees or reserves.
 
 import { prisma } from '../db';
 import { sha256 } from '../strict-enforcement/crypto-utils';
@@ -16,22 +17,25 @@ export const BUCKET_CODES = [
   'procurement_buffer',
   'runtime_operations',
   'salary_bucket',
+  'debt_repayment',
 ] as const;
 
 export type BucketCode = (typeof BUCKET_CODES)[number];
 
 export const BUCKET_DEFAULT_PCT: Record<BucketCode, number> = {
   sovereign_reserves: 30,
-  procurement_buffer: 10,
+  procurement_buffer: 0,
   runtime_operations: 20,
-  salary_bucket: 40,
+  salary_bucket: 10,
+  debt_repayment: 40,
 };
 
 export const BUCKET_LABELS: Record<BucketCode, string> = {
   sovereign_reserves: 'Sovereign Reserves',
-  procurement_buffer: 'Owner Procurement Buffer',
+  procurement_buffer: 'Owner Procurement Buffer (runtime sub-budget)',
   runtime_operations: 'Runtime Operations',
   salary_bucket: 'Owner Salary Bucket',
+  debt_repayment: 'Debt Repayment (Contentieux Récupération)',
 };
 
 export interface BucketSplit {
