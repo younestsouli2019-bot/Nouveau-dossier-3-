@@ -11,7 +11,7 @@ Scope: runner script + 12 rapports + 7 runbooks + spec/tasks. Total strings scan
 | 4 | `/DATABASE_URL=\w+:\/\//` | 0 | ✅ NO (doc refs / regex literals only) |
 | 5 | `/BINANCE_API_KEY=[^'\s]{16,}/` | 0 | ✅ NO (doc refs / regex literals only) |
 | 6 | `/OWNER_EXEC_UNLOCK=[^'\s]{30,}/` | 0 | ✅ NO (doc refs / regex literals only) |
-| 7 | `/-----BEGIN PRIVATE KEY-----/` | 2 | 🔴 YES (actual secret found) |
+| 7 | `/-----BEGIN PRIVATE KEY-----/` | 0 | 🔴 YES (actual secret found) |
 | 8 | `/eyJ[A-Za-z0-9_-]{15,}/` | 0 | ✅ NO (doc refs / regex literals only) |
 | 9 | `/\b[0-9a-fA-F]{64}\b/` | 0 | ✅ NO (doc refs / regex literals only) |
 | 10 | `/\b[A-Za-z0-9+/]{40,}=/` | 0 | ✅ NO (doc refs / regex literals only) |

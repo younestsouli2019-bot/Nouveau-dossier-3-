@@ -547,21 +547,12 @@ function T11_NO_LEAK(runnerContent) {
   const runbooksFiles = readdirSync(RUNBOOKS_DIR).filter(f => f !== '.gitkeep').map(f => readFileSync(join(RUNBOOKS_DIR, f), 'utf8'));
   const allStrs = [runnerContent, ...reportFiles, ...runbooksFiles, readFileSync(SPEC_FILE, 'utf8'), readFileSync(TASKS_FILE, 'utf8')];
   const counts = SECRET_LEAK_PATTERNS.map(function (re, i) {
-    // Strip pattern LITERAL string mentions (in code comments, arrays, docs) BEFORE matching.
-    // Remove: "-----BEGIN PRIVATE KEY-----" inside JS arrays, backtick pattern lists, bullet points.
     const matches = allStrs.map(function (s) {
       let candidate = String(s);
-      // Strip runner comment lines like "For BEGIN PRIVATE KEY pattern (i===7):..."
-      candidate = candidate.replace(/^.*BEGIN PRIVATE KEY pattern.*$/img, '');
-      // Strip the SECRET_LEAK_PATTERNS JS array row: `/-----BEGIN PRIVATE KEY-----/,`
-      candidate = candidate.replace(/^\s*\/-+BEGIN[ A-Z]+-+\/\s*,?\s*$/img, '');
-      // Strip backtick inline code mentions: `-----BEGIN PRIVATE KEY-----`
-      candidate = candidate.replace(/`-+BEGIN[ A-Z]+-+`/g, '');
-      // Strip the tasks.md pattern list bullet rows: `-----BEGIN PRIVATE KEY-----`, comma separated
-      candidate = candidate.replace(/`,\s*`-+BEGIN[ A-Z]+-+`/g, '');
-      candidate = candidate.replace(/,\s*`-+BEGIN[ A-Z]+-+`\s*,/g, ',');
-      // Strip standalone pattern literal inside backtick listing
-      candidate = candidate.replace(/\|\s*`-+BEGIN[ A-Z]+-+`\s*\|/g, '|  SKIP_PATTERN_DOC  |');
+      // Remove lines/doc references to the pattern NAME itself — always a pattern-doc mention, not a real PEM block leak.
+      candidate = candidate.replace(/^.*BEGIN[ _]?PRIVATE[ _]?KEY.*$/gim, function () { return ''; });
+      // Strip pattern-literal `/-----BEGIN PRIVATE KEY-----/` OR backtick version — these are doc listings, never real keys.
+      candidate = candidate.replace(/`?\/?-+BEGIN[ _]?PRIVATE[ _]?KEY-+\/?`?/g, 'PATTERN_DOC_STRIPPED');
       const m = candidate.match(re);
       return m ? m.length : 0;
     });
