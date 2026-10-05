@@ -6,6 +6,14 @@ settlements/payoneer/receipts/*.json
 data/swarm/**
 data/notifications/**
 data/base44/**
+data/generated/
+# SPEC8 v3.58: swarm revenues auto-route artifacts
+data/ingest/**
+data/out/swarm-revenues-idempotence-set.txt
+data/out/swarm-revenues-plan.json
+data/out/swarm-route-quarantine.ndjson
+data/out/swarm-revenues-route-v358.ndjson
+data/out/swarm-revenues-prev-state.json
 reports/historic/**
 rank/swarm
 *.log

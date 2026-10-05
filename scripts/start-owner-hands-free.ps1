@@ -8,13 +8,14 @@ $ErrorActionPreference = 'Stop'
 # ============================================================
 #  OWNER HANDS-FREE v3.5.8 Companion Runner (Admin PS)
 #  Purpose:
-#    0. Autorotate pre-hook: rotate UNBLOCK8 keys fresh via custom local KMS (git-secrets-autorotate-v358)
-#    1. Dot-source .swarm/owner-hands-free.config.ps1 (36 keys)
-#    2. Count 8 minimal unblock set — if <8 → FAIL-CLOSED exit 5
-#    3. Structural checks G2/G3/G4 lengths — if bad → exit 5
-#    4. Inject 36 secrets into Process scope only (NFR-5)
-#    5. Call scripts/run-live-crypto-po.ps1 -Verbose
-#    6. Propagate LASTEXITCODE
+#    T-0:   Autorotate pre-hook: rotate UNBLOCK8 keys fresh via custom local KMS (SPEC7 git-secrets-autorotate-v358)
+#    T-0.5: SPEC8 SWARM REVENUES AUTO-ROUTE: collect all sources → BUCKET_PCT 10/40/30/20 → bucket-ordered dispatch SAL→DEBT→SOV→OPS → HMAC chain
+#    T-1:   Dot-source .swarm/owner-hands-free.config.ps1 (36 keys)
+#    T-2:   Count 8 minimal unblock set — if <8 → FAIL-CLOSED exit 5
+#    T-3:   Structural checks G2/G3/G4 lengths — if bad → exit 5
+#    T-4:   Inject 36 secrets into Process scope only (NFR-5)
+#    T-5:   Call scripts/run-live-crypto-po.ps1 -Verbose
+#    T-6:   Propagate LASTEXITCODE
 # ============================================================
 
 # Autorotate Pre-Wrapper Hook (security-class SPEC git-secrets-autorotate-v358)
@@ -27,6 +28,29 @@ if (Test-Path $AUTOROTATE_PRE -ErrorAction SilentlyContinue) {
     Write-Host "[HANDS-FREE] autorotate FAIL exit=$autoExit (>=2 and !=3 LOCK_BUSY) → failclosed exit5 before any rails"
     if (Test-Path function:failClosedExit5) { failClosedExit5 "Autorotate pre-hook exit=$autoExit abort before rails" } else { exit 5 }
   }
+}
+
+# ================================================================
+# PHASE 0.5: SWARM REVENUES AUTO-ROUTE (SPEC MODE #8 v3.5.8)
+# Order enforced by design: autorotate (DPAPI fresh) → swarm route
+#   → inject + gates → live-crypto wrapper.
+# Tolerate exit code 0 (success) OR exit 3 (LOCK BUSY).
+# Exit code >= 7 → Hard fail-closed → abort wrapper exit 5
+# (forensic marker: cross-bucket diversion / zero-loss Δ > 1 cent)
+# ================================================================
+$SWARM_ROUTE_SCRIPT = Join-Path $PSScriptRoot 'swarm-revenues-auto-route-v358.mjs'
+if (Test-Path $SWARM_ROUTE_SCRIPT -ErrorAction SilentlyContinue) {
+  Write-Host '[HANDS-FREE] T-0.5: swarm-revenues-auto-route (SPEC8) collect → split → bucket order → HMAC chain'
+  & node $SWARM_ROUTE_SCRIPT --owner-hands-free-mode
+  $swarmExit = $LASTEXITCODE
+  if ($swarmExit -ge 7) {
+    Write-Host "[HANDS-FREE] swarm route FAILCLOSED exit=$swarmExit (>=7 = forensic marker: zero-loss Δ or cross-bucket fraud) → abort wrapper exit=5"
+    if (Test-Path function:failClosedExit5) { failClosedExit5 "SPEC8 swarm-route hard exit=$swarmExit — manual investigation required" } else { exit 5 }
+  }
+  if ($swarmExit -ne 0 -and $swarmExit -ne 3) {
+    Write-Warning "[HANDS-FREE] swarm route exit=$swarmExit (tolerated: NOT in {0,3}, but <7 — continuing; check data/out/swarm-revenues-plan.json)"
+  }
+  Write-Host "[HANDS-FREE] T-0.5 completed exit=$swarmExit"
 }
 
 # ------------------------------------------------------------
