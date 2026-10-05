@@ -29,15 +29,21 @@
 | 7 | **CEX_DIRECT_DEPOSIT_ENABLED** | 4 chars | `true` | P3 pipeline routing CryptoRailManager → Arbitrum One default (bypass L1 bridge $5-50 gas) |
 | 8 | **RELEASE_AMOUNT_OVERRIDE_USD** | 2-3 digits | `60` (≥ default threshold 120 / 2) | BC646 held=$63.67 passe 1er batch release immédiatement après 8/36 injectés |
 
-### 4. HEAD SHA local commits (T8 stack 5 commits — Rempli APRÈS git commit)
+### 4. HEAD SHA local commits (Monolithic Stack 1 commit — cross-project .trae/memory exclus de git)
 ```
-# Chore(v358) commit stack (NEWEST → OLDEST):
-# SHA #1 ← reports/ + changelog + runners bootstrap T3/T4: ________________ (T8 commit #7 dernier)
-# SHA #2 ← Roger report 8 sections classification C 2/10: ________________ (T8 commit #6)
-# SHA #3 ← Rectif Accuracy 001-A 7 files patch + PDF regen 6888B: ________________ (T8 commit #5)
-# SHA #4 ← Bachir Voyages OSINT Deputy Head ONMT Londres 103 missions: ________________ (T8 commit #4)
-# SHA #5 ← Project Memory dissociation patches L26/L27-28/L40/L53: ________________ (T8 commit #3)
-# Baseline remote https-origin/main SHA divergé: 79a653e… (298-course-catalog tick)
+# ⚠️ NOTE: Project memory (C:\Users\Dell\.trae\memory\...) est HORS du repo git (fatal: outside repository).
+# → 5-stack atomique réduit à 1 commit monolithique stable pour sandbox.
+#
+# Chore(v358) commit (NEWEST = SEUL) → Baseline:
+# SHA #1 ← 35 files = spec+tasks + CHANGELOG v3.5.8 + reports ALL (accuracy/preset/PO-gaps/FINAL-master) +
+#          legal 6 files (MATRIX.md / ROGER-C2-10.md / HUISSIER-MANDAT-INFO-SECURE.pdf 6888B / gen-huissier-pdf.cjs) +
+#          Escalation Case HUA-2026-...-018.json + daemon state runs=1 +
+#          data/out/po BATCH-MANIFEST 3 SWARM-PO-2026-001/002/003 JSON/TXT +
+#          scripts (run-live-crypto-po.ps1 / t3-escalation-bootstrap-v358.mjs / t4-preset-accuracy-runner-v358.mjs /
+#          cleanup 10 stale debug release-batch run-lazyark mark-simulated find/get/hash scripts)
+# → NEWEST SHA: [release branch] **3d1a67c** (35 files · 2881 insertions · 763 deletions)
+# → BEFORE SHA Baseline: **e45cf51** (v3.5.8 L2 AA/CEX-Direct original du jour)
+# → Baseline remote https-origin/main SHA divergé: 79a653e… (parallel 298-course-catalog tick)
 ```
 
 ### 5. Quality Gates résultats réel stdout captures
