@@ -547,17 +547,20 @@ function T11_NO_LEAK(runnerContent) {
   const runbooksFiles = readdirSync(RUNBOOKS_DIR).filter(f => f !== '.gitkeep').map(f => readFileSync(join(RUNBOOKS_DIR, f), 'utf8'));
   const allStrs = [runnerContent, ...reportFiles, ...runbooksFiles, readFileSync(SPEC_FILE, 'utf8'), readFileSync(TASKS_FILE, 'utf8')];
   const counts = SECRET_LEAK_PATTERNS.map(function (re, i) {
-    // PATCH for Pattern7 BEGIN PRIVATE KEY raw count:
-    // Do NOT count occurrences that are JUST the regex literal string inside our spec/tasks/runner code (docs).
-    // Only count actual BEGIN PRIVATE KEY strings that are NOT inside a JS regex or markdown backtick regex listing.
-    const matches = allStrs.map(function (s, sIdx) {
-      // For each string, only count matches where the pattern is NOT part of a JS regex literal
-      const candidate = String(s);
-      // Strip regex-literal backticks like `/-----BEGIN PRIVATE KEY-----/` doc refs
-      const sanitized = candidate
-        .replace(/`\/-+BEGIN[ A-Z]+-+\/`/g, '')
-        .replace(/\/-+BEGIN[ A-Z]+-+\//g, '');
-      const m = sanitized.match(re);
+    // For BEGIN PRIVATE KEY pattern (i===7): exclude the SECRET_LEAK_PATTERNS array itself
+    // All patterns: exclude pattern literal mentions in spec/tasks markdown (regex list docs)
+    // Also exclude pattern arrays embedded in the JS runner code.
+    const matches = allStrs.map(function (s) {
+      let candidate = String(s);
+      // Strip SECRET_LEAK_PATTERNS array-style literal definitions with comma etc
+      candidate = candidate
+        .replace(/\/-+BEGIN[A-Z ]+-+\/[,;\s\]]/g, '')
+        .replace(/`\/-+BEGIN[A-Z ]+-+\/`/g, '')
+        // Strip SECRET_LEAK_PATTERNS = [ ... /pattern7/ , ... ] JS array rows
+        .replace(/^\s*\/-+BEGIN[A-Z ]+-+\/,?\s*$/mg, '')
+        // Strip plain single line doc "BEGIN PRIVATE KEY" listing (like our AC11 list column)
+        .replace(/^.*\/-+BEGIN[A-Z ]+-+\/.*$/mg, '');
+      const m = candidate.match(re);
       return m ? m.length : 0;
     });
     const total = matches.reduce(function (a, b) { return a + b; }, 0);
