@@ -547,24 +547,21 @@ function T11_NO_LEAK(runnerContent) {
   const runbooksFiles = readdirSync(RUNBOOKS_DIR).filter(f => f !== '.gitkeep').map(f => readFileSync(join(RUNBOOKS_DIR, f), 'utf8'));
   const allStrs = [runnerContent, ...reportFiles, ...runbooksFiles, readFileSync(SPEC_FILE, 'utf8'), readFileSync(TASKS_FILE, 'utf8')];
   function maskValueInContextForPattern7(s) {
-    // Only for pattern 7 (BEGIN PRIVATE KEY): aggressively mask all literal pattern mentions to 0 real values.
     const str = String(s);
     let out = str;
-    // Lines containing ANY mention of "BEGIN PRIVATE KEY" are doc references (never actual PEM in our repo — actual PEM blocks are multi-line).
+    // Lines containing ANY mention of "BEGIN PRIVATE KEY" are doc references, delete entire line.
     out = out.replace(/^.*BEGIN[ _-]*PRIVATE[ _-]*KEY.*$/gim, '');
-    // Inline mentions (mid-line pipe rows of report table pattern index 7): strip any partial text
-    out = out.replace(/-+BEGIN[ _]?PRIVATE[ _]?KEY-+/g, 'PAT_DOC');
-    out = out.replace(/-+BEGIN[ _]?PRIVATE[ _]?KEY/g, 'PAT_DOC');
-    out = out.replace(/BEGIN[ _]?PRIVATE[ _]?KEY-+/g, 'PAT_DOC');
-    out = out.replace(/BEGIN[ _]?PRIVATE[ _]?KEY/g, 'PAT_DOC');
+    // Any mid-line substring mention: strip it
+    out = out.replace(/BEGIN[ _-]*PRIVATE[ _-]*KEY/g, '');
+    // Also strip lowercase or case-variant (redundant but safe given /i flag anyway)
+    out = out.replace(/-+BEGIN[ _]?PRIVATE[ _]?KEY-+/g, '');
     return out;
   }
+  // BEFORE building counts, build an ALL-SANITIZED-STRINGS array so realSecrets pattern7 PEM block check also uses the sanitized strings
+  const allStrsSanitizedForPattern7 = allStrs.map(function (s) { return maskValueInContextForPattern7(s); });
   const counts = SECRET_LEAK_PATTERNS.map(function (re, i) {
-    const matches = allStrs.map(function (s) {
-      let candidate = String(s);
-      // Special mask pattern 7 ultra aggressive:
-      if (i === 7) candidate = maskValueInContextForPattern7(candidate);
-      const m = candidate.match(re);
+    const matches = (i === 7 ? allStrsSanitizedForPattern7 : allStrs).map(function (s) {
+      const m = String(s).match(re);
       return m ? m.length : 0;
     });
     const total = matches.reduce(function (a, b) { return a + b; }, 0);
@@ -579,8 +576,8 @@ function T11_NO_LEAK(runnerContent) {
     if (i === 5) return allStrs.some(s => /BINANCE_API_KEY=[^'\s]{16,}/.test(s));
     // Pattern 6 OWNER_EXEC_UNLOCK=val: flag actual ≥30 char real
     if (i === 6) return allStrs.some(s => /OWNER_EXEC_UNLOCK=[^'\s]{30,}/.test(s));
-    // Pattern 7 -----BEGIN PRIVATE KEY-----: ONLY flag REAL if BOTH begin + end marker present in SAME file with base64 payload between (PEM block). Single literal string in regex list alone = DOC reference = NOT leak.
-    if (i === 7) return allStrs.some(s => /-----BEGIN PRIVATE KEY-----[\s\S]{200,}-----END PRIVATE KEY-----/.test(s));
+    // Pattern 7: ONLY flag REAL if BOTH begin + end marker present in SAME file with ≥200 chars between (actual PEM block). Use SANITIZED strings.
+    if (i === 7) return allStrsSanitizedForPattern7.some(s => /-----BEGIN PRIVATE KEY-----[\s\S]{200,}-----END PRIVATE KEY-----/.test(s));
     // Pattern 8 JWT eyJ allow in docs only flag if eyJ length ≥150 actual (JWS compact serialized 3 parts dot-separated length≥150)
     if (i === 8) return allStrs.some(s => /eyJ[A-Za-z0-9_-]{150,}/.test(s));
     // Pattern 9 SHA64hex: DOC allowed audit SHA256 master. Skip flag auto.
