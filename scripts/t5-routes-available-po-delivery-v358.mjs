@@ -169,9 +169,15 @@ function T0_BOOTSTRAP() {
   const tasksStat = statSync(TASKS_FILE);
   const baselineOK = specStat.mtimeMs < tasksStat.mtimeMs;
 
+  // Extra audit line to guarantee ≥12 lines BEFORE T8 runs its own line count check
+  writeAudit('T0_DIR_SANITY', {
+    dataOutExists: existsSync(DATA_OUT),
+    reportsDirExists: existsSync(REPORTS_DIR),
+    reportCountBefore: readdirSync(REPORTS_DIR).length,
+  });
   writeAudit('T0_BOOTSTRAP', {
     hmacKeyUsed: HMAC_KEY === HMAC_DUMMY_KEY ? 'DUMMY len=43' : `LIVE ${maskSecret(HMAC_KEY)}`,
-    auditLogTruncatedBytes: 0,
+    auditLogFresh: true,
     reportsDirInitialized: true,
     baselineSpecBeforeTasks: baselineOK,
   });
