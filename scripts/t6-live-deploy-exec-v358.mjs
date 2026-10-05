@@ -546,9 +546,22 @@ function T11_NO_LEAK(runnerContent) {
   const reportFiles = CANONICAL_REPORTS_ORDER.map(n => readFileSync(join(REPORTS_DIR, n), 'utf8'));
   const runbooksFiles = readdirSync(RUNBOOKS_DIR).filter(f => f !== '.gitkeep').map(f => readFileSync(join(RUNBOOKS_DIR, f), 'utf8'));
   const allStrs = [runnerContent, ...reportFiles, ...runbooksFiles, readFileSync(SPEC_FILE, 'utf8'), readFileSync(TASKS_FILE, 'utf8')];
-  const counts = SECRET_LEAK_PATTERNS.map((re, i) => {
-    const matches = allStrs.map(s => s.match(re)).filter(Boolean);
-    return [i, re.toString(), matches.length];
+  const counts = SECRET_LEAK_PATTERNS.map(function (re, i) {
+    // PATCH for Pattern7 BEGIN PRIVATE KEY raw count:
+    // Do NOT count occurrences that are JUST the regex literal string inside our spec/tasks/runner code (docs).
+    // Only count actual BEGIN PRIVATE KEY strings that are NOT inside a JS regex or markdown backtick regex listing.
+    const matches = allStrs.map(function (s, sIdx) {
+      // For each string, only count matches where the pattern is NOT part of a JS regex literal
+      const candidate = String(s);
+      // Strip regex-literal backticks like `/-----BEGIN PRIVATE KEY-----/` doc refs
+      const sanitized = candidate
+        .replace(/`\/-+BEGIN[ A-Z]+-+\/`/g, '')
+        .replace(/\/-+BEGIN[ A-Z]+-+\//g, '');
+      const m = sanitized.match(re);
+      return m ? m.length : 0;
+    });
+    const total = matches.reduce(function (a, b) { return a + b; }, 0);
+    return [i, re.toString(), total];
   });
   const realSecrets = counts.filter(([i, , n]) => {
     // Pattern 0-3: AKIA / sk_live / api_key= / secret_key= — any actual match >0 = REAL (doc refs never use these literals actual values)
