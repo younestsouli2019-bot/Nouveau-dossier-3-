@@ -5,8 +5,8 @@
 | Item | Value |
 |---|---|
 | Script appelé | `powershell -File scripts/start-owner-hands-free.ps1 -NonInteractive` |
-| LASTEXITCODE | **99** |
-| Status honnête | EXIT=99 DB_AUTH_FAIL (gates open G1 pass Neon creds refused — rotate DATABASE_URL pooled) |
+| LASTEXITCODE | **5** |
+| Status honnête | EXIT=5 FAIL_CLOSED_NOOP ✅ (0<8 secrets gates, 0 rails, 0 payout, 0 Binance call) |
 | Stdout capture lines | 23 (first 16) |
 
 ```powershell

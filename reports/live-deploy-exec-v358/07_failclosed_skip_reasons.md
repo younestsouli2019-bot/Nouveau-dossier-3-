@@ -12,7 +12,7 @@ Total Skip cells count = **14**
 | 6 | ❌ SKIP (3/3 mandatory SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY + MIRROR_SUPABASE_BUCKET envs ABSENTS 0/3) | 105 |
 | 7 | ❌ SKIP (DOOMSDAY_ARCHIVE_PASSPHRASE env absent + .keys/doomsday-passphrase.txt file NOT found 0/2) | 98 |
 | 8 | ❌ SKIP (BASE44_APP_ID + BASE44_SERVICE_TOKEN env vars 0/2 missing Base44 RevenueEvents cache) | 93 |
-| 9 | ❌ SKIP wrapper exec (LASTEXITCODE=99) — 0 real rails exécutés: EXIT=99 DB_AUTH_FAIL (gates open G1 pass Neon creds refused — rotate DATABASE_URL pooled) | 152 |
+| 9 | ❌ SKIP wrapper exec (LASTEXITCODE=5) — 0 real rails exécutés: EXIT=5 FAIL_CLOSED_NOOP ✅ (0<8 secrets gates, 0 rails, 0 payout, 0 Binance call) | 142 |
 | 10 | ❌ SKIP (Attijari PSD2 OAuth2 + G2 DATABASE_URL Neon — 4/4 creds missing 0 rails réel aujourd'hui) | 97 |
 | 11 | ❌ SKIP (Same 4 creds Attijari PSD2 + DATABASE_URL missing — SKIP cause R1 parent credential set absent) | 103 |
 | 12 | ❌ SKIP (BC SDK user/pass/endpoint/PSK + G2 DATABASE_URL BIC routing 5/5 missing total) | 86 |

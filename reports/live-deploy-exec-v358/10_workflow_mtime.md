@@ -6,7 +6,7 @@
 |---|---:|
 | spec.md | 1791225699172.3186 |
 | tasks.md | 1791225828662.214 |
-| 01_deploy_targets_status.md | 1791238768251.233 |
-| 12_ac_synopsis_verdict.md (pré-écrit placeholder) | 1791238785411.9758 |
+| 01_deploy_targets_status.md | 1791238800357.9453 |
+| 12_ac_synopsis_verdict.md (pré-écrit placeholder) | 1791238815072.2307 |
 
 Order strict 4/4 success? ✅ YES strict 4/4 → 2/2 AC10.
