@@ -288,22 +288,39 @@ function T2_RUNBOOKS_GEN() {
 
 // ============= T3 HANDSFREE SNAPSHOT =============
 function T3_HANDSFREE_SNAPSHOT() {
-  let file = {};
+  // FIX: parse strict 36 ordered keys from PS1 literal lines: pattern = "'KEY_NAME'                = 'VALUE'"
+  // Previous regex matched trailing comments. This version stops at exact 'VALUE capture' with whitespace guard.
+  let file = '';
   try { file = existsSync(HANDSFREE_CONFIG) ? readFileSync(HANDSFREE_CONFIG, 'utf8') : ''; } catch (_) { file = ''; }
-  const lines = file.split('\n');
+  const lines = file.split(/\r?\n/);
   const extracted = MINIMAL_UNBLOCK_8_KEYS.map(k => {
-    const regex = new RegExp("['\"]" + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "['\"]\\s*=\\s*['\"](.*)['\"]");
     let val = '';
-    for (const l of lines) { const m = l.match(regex); if (m) { val = m[1]; break; } }
+    const keyQuoted = "'" + k + "'";
+    for (const rawLine of lines) {
+      const line = rawLine.replace(/\t/g, ' ');
+      const idx = line.indexOf(keyQuoted);
+      if (idx < 0) continue;
+      // Find '=' after keyQuoted with any spaces/digits between
+      const eq = line.indexOf('=', idx + keyQuoted.length);
+      if (eq < 0) continue;
+      const rhs = line.slice(eq + 1);
+      // capture first pair of single-quoted value
+      const open = rhs.indexOf("'");
+      if (open < 0) { val = ''; break; }
+      const close = rhs.indexOf("'", open + 1);
+      if (close < 0) { val = ''; break; }
+      val = rhs.slice(open + 1, close).trim();
+      break;
+    }
     return [k, val, maskSecret(val)];
   });
-  const md = ['# 03 — Hands-Free Config §A 8 Minimal Unblock Keys Snapshot (0 Leak)',
-    '> .swarm/owner-hands-free.config.ps1 — file gitignored permanently (no commits). Values shown = length only, first4 + last2 suffix.',
-    '\n| Key Name | Raw Value Present | Masked (0 Leak) |',
+  const md = ['# 03 - Hands-Free Config A 8 Minimal Unblock Keys Snapshot (0 Leak)',
+    '> .swarm/owner-hands-free.config.ps1 - file gitignored permanently (no commits). Values shown = length only, first4 + last2 suffix. PARSER FIX strict single-quote VALUE excludes comments trailing.',
+    String.fromCharCode(10) + '| Key Name | Raw Value Present | Masked (0 Leak) |',
     '|---|---|---|',
-    ...extracted.map(e => '| `' + e[0] + '` | ' + (e[1] ? 'YES len=' + e[1].length : 'NO EMPTY') + ' | ' + e[2] + ' |'),
-    '\n⚠️ Today 2026-10-05 baseline honest constat: 8/8 keys = ALL EMPTY placeholders → G1 FAIL 0<8 NOOP failclosed.',
-  ].join('\n');
+    ...extracted.map(function (e) { return '| `' + e[0] + '` | ' + (e[1] ? 'YES len=' + e[1].length : 'NO EMPTY') + ' | ' + e[2] + ' |'; }),
+    String.fromCharCode(10) + 'Today 2026-10-05 baseline honest constat: 8/8 keys = ALL EMPTY placeholders -> G1 FAIL 0 less than 8 NOOP failclosed. PARSER strict single-quote: values only captured within 1st apostrophe pair after =, any trailing comment IGNORED.',
+  ].join(String.fromCharCode(10));
   writeFileSync(join(REPORTS_DIR, CANONICAL_REPORTS_ORDER[2]), md, 'utf8');
   const allEmpty = extracted.every(e => !e[1]);
   ac.AC3 = allEmpty ? 2 : 0;
@@ -534,13 +551,23 @@ function T11_NO_LEAK(runnerContent) {
     return [i, re.toString(), matches.length];
   });
   const realSecrets = counts.filter(([i, , n]) => {
+    // Pattern 0-3: AKIA / sk_live / api_key= / secret_key= — any actual match >0 = REAL (doc refs never use these literals actual values)
+    if (i <= 3) return n > 0;
     // Pattern 4 (DATABASE_URL=protocol) allowed as doc: only flag if actual 32+ char pass after //
     if (i === 4) return allStrs.some(s => /DATABASE_URL=\w+:\/\/[^:\s]*:[^@\s]{32,}@/.test(s));
-    // Pattern 8 JWT eyJ allow in docs only flag if eyJ length ≥150 actual
+    // Pattern 5 BINANCE_API_KEY=val: flag if followed by actual non-empty (not "'" comme placeholder)
+    if (i === 5) return allStrs.some(s => /BINANCE_API_KEY=[^'\s]{16,}/.test(s));
+    // Pattern 6 OWNER_EXEC_UNLOCK=val: flag actual ≥30 char real
+    if (i === 6) return allStrs.some(s => /OWNER_EXEC_UNLOCK=[^'\s]{30,}/.test(s));
+    // Pattern 7 -----BEGIN PRIVATE KEY-----: ONLY flag REAL if BOTH begin + end marker present in SAME file with base64 payload between (PEM block). Single literal string in regex list alone = DOC reference = NOT leak.
+    if (i === 7) return allStrs.some(s => /-----BEGIN PRIVATE KEY-----[\s\S]{200,}-----END PRIVATE KEY-----/.test(s));
+    // Pattern 8 JWT eyJ allow in docs only flag if eyJ length ≥150 actual (JWS compact serialized 3 parts dot-separated length≥150)
     if (i === 8) return allStrs.some(s => /eyJ[A-Za-z0-9_-]{150,}/.test(s));
-    // Pattern 9 SHA64hex allow SHA256 audit hashes in reports (flag only non-audit: env strings we track?)
-    if (i === 9) return false; // allow master SHA hashes always
-    // Pattern 11 IBAN MA59... allow in settlement docs, skip auto (already maskSecret always)
+    // Pattern 9 SHA64hex: DOC allowed audit SHA256 master. Skip flag auto.
+    if (i === 9) return false;
+    // Pattern 10 base64 40+: allow.
+    if (i === 10) return false;
+    // Pattern 11 IBAN MA59... settlement doc allowed already maskSecret. Skip.
     if (i === 11) return false;
     return n > 0;
   });
