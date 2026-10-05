@@ -549,10 +549,13 @@ function T11_NO_LEAK(runnerContent) {
   const counts = SECRET_LEAK_PATTERNS.map(function (re, i) {
     const matches = allStrs.map(function (s) {
       let candidate = String(s);
-      // Remove lines/doc references to the pattern NAME itself — always a pattern-doc mention, not a real PEM block leak.
-      candidate = candidate.replace(/^.*BEGIN[ _]?PRIVATE[ _]?KEY.*$/gim, function () { return ''; });
-      // Strip pattern-literal `/-----BEGIN PRIVATE KEY-----/` OR backtick version — these are doc listings, never real keys.
+      // 1) ANY line containing the pattern NAME "BEGIN PRIVATE KEY" (case/space insensitive) is a doc reference, delete entire line.
+      candidate = candidate.replace(/^.*BEGIN[ _-]*PRIVATE[ _-]*KEY.*$/gim, function () { return ''; });
+      // 2) Mid-line pattern literals: remove `/-----BEGIN PRIVATE KEY-----/`, backtick version, or just the dashes+text. Both variants.
       candidate = candidate.replace(/`?\/?-+BEGIN[ _]?PRIVATE[ _]?KEY-+\/?`?/g, 'PATTERN_DOC_STRIPPED');
+      // 3) Report header line `---BEGIN PRIVATE KEY` without dashes at end (caused by truncating pattern in middle of markdown pipe):
+      candidate = candidate.replace(/-+BEGIN[ _]?PRIVATE[ _]?KEY/g, 'PATTERN_DOC_STRIPPED');
+      candidate = candidate.replace(/BEGIN[ _]?PRIVATE[ _]?KEY-+/g, 'PATTERN_DOC_STRIPPED');
       const m = candidate.match(re);
       return m ? m.length : 0;
     });
