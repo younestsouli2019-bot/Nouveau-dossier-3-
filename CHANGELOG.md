@@ -46,21 +46,22 @@
 - **Release real external conditions (fail-closed doctrine) :** ≥ 8/23 secrets chargés + BC646 held ≥ ($120 OU RELEASE_AMOUNT_OVERRIDE_USD) + withdrawId Binance réel ≥6 chars non-placeholder REGEX.
 
 ### Push status (TRAE sandbox — PERMANENT CONNU, runbook outside-sandbox VERBATIM en-tête)
-- Local commits stack v3.5.4 f87e126335 → v3.5.5 4d195be295 → v3.5.6 0481adfce1 → v3.5.7 4215e96d27 → **v3.5.8 WIP STEP7 DONE** (Step8 gates pending, ensuite commit local). Remote main SHA toujours `79a653e…` divergé (parallel 298-course-catalog tick).
-- Push 3 blocages permanents documentés v3.5.4/5/6/7 : (1) TRAE Sandbox `C:\Users\Dell\.git-credentials.lock` "hit restricted: Not allow operate files" → no-op push "Everything up-to-date" mensonger; (2) MSYS2 `askpass.sh` dofork crash 0xC0000142 STATUS_DLL_INIT_FAILED errno 11 Resource temporarily unavailable → fatal could not read Username exit 128; (3) remote divergé → rebase obligatoire avant force-with-lease push.
-- **Runbook outside-sandbox (PERMANENT VERBATIM — appliquer pour SHA HEAD égal remote) :**
-  1. Reboot machine 1× (résout crash MSYS2 fork historique).
-  2. Ouvrir **PowerShell Administrateur HORS Trae IDE** (pas sandbox).
-  3. Exécuter VERBATIM :
-     ```
-     Set-Location "C:\Users\Dell\Downloads\Nouveau dossier (3)"
-     git -c credential.helper=manager-core fetch https-origin main
-     git rebase https-origin/main
-     git push --force-with-lease https-origin main
-     git rev-parse HEAD
-     git ls-remote https-origin main
-     ```
-  4. Comparer les 2 SHA finaux : identiques = push réussi. Sinon retry rebase puis push.
+- **Local commit stack 2026-10-05 (TOUS LOCAL SEULEMENT, push jamais reussi depuis v3.5.4) :**
+  - v3.5.4 baseline SHA `f87e126335` → v3.5.5 SHA `4d195be295` → v3.5.6 SHA `0481adfce1` → v3.5.7 SHA `4215e96d27` → **v3.5.8 COMMIT 1 LOCAL SHA `ef1397f1197cfd4ee00c406d7a716285b757ddcb`** (19 files 976+ 130- gates 7/7 ✅ 193/0 vitest) → **v3.5.8 COMMIT 2 LOCAL (push-outside runbook PS1 + SHA maj ci-dessus)**.
+  - Remote https-origin/main SHA toujours **`79a653e…`** divergé (parallel 298-course-catalog tick).
+- **Push 3 blocages permanents CONFIRMÉS VERBATIM dans sandbox ce jour 2026-10-05 :**
+  1. **TRAE Sandbox `C:\Users\Dell\.git-credentials.lock`** : Output exact "TRAE Sandbox Error: hit restricted: Not allow operate files: C:\\Users\\Dell\\.git-credentials.lock" → echo mensonger "fatal: unable to write credential store: Permission denied" → rejet NON-FAST-FORWARD.
+  2. **MSYS2 dofork crash `0xC0000142 STATUS_DLL_INIT_FAILED errno=11 Resource temporarily unavailable`** sur `c:\Users\Dell\AppData\Local\Programs\Trae\resources\app\extensions\git\dist\askpass.sh` (5 retry × dofork child died → exit 128 "fatal: could not read Username for 'https://github.com': terminal prompts disabled").
+  3. **Remote divergé** : Block #1 montre `! [rejected] main -> main (non-fast-forward)` → rebase obligatoire AVANT push --force-with-lease.
+- **Runbook outside-sandbox (PERMANENT VERBATIM script `scripts/push-outside-sandbox-v358.ps1`) :**
+  - Prérequis 1 : Reboot machine 1× (résout crash MSYS2 fork historique).
+  - Prérequis 2 : Ouvrir **PowerShell Administrateur HORS Trae IDE** (pas sandbox).
+  - Exécution automatique script :
+    ```
+    powershell -ExecutionPolicy Bypass -NoProfile -File "C:\Users\Dell\Downloads\Nouveau dossier (3)\scripts\push-outside-sandbox-v358.ps1"
+    ```
+  - Etapes exécutées par le PS1 : (0) Preflight path + elevation warning → (1) SHA local/remote BEFORE snapshot → (2) `git -c credential.helper=manager-core fetch https-origin main` (credential manager Windows évite askpass.sh Trae) → (3) `git rebase https-origin/main` auto-conflit zero attendu (fichiers disjoints) → (4) `git -c credential.helper=manager-core push --force-with-lease https-origin main` (JAMAIS --force nu !) → (5) VERIFICATION FINALE `git rev-parse HEAD` == colonne-1 `git ls-remote https-origin refs/heads/main` : EGAL = PUSH REUSSI.
+  - Copie audit Contentieux rapport : Snapshot SHA BEFORE/AFTER + RESULTAT EGALITE + TOPIC COMMIT v3.5.8 L2 AA Direct Deposit imprimés en fin de script.
 
 ---
 
