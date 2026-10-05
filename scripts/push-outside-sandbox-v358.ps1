@@ -24,14 +24,18 @@
 #   - FIN: comparer rev-parse HEAD vs ls-remote 1ere colonne SHA main — IDENTIQUE = SUCCES.
 
 $ErrorActionPreference = "Stop"
+param(
+  [string]$Branch = "main"
+)
 $RepoDir = "C:\Users\Dell\Downloads\Nouveau dossier (3)"
 $RemoteName = "https-origin"
-$BranchName = "main"
+$BranchName = $Branch
 $PushScriptStart = Get-Date -Format o
 
 Write-Host "=== push-outside-sandbox v3.5.8 RUNBOOK START [$PushScriptStart] ===" -ForegroundColor Cyan
 Write-Host "REPO: $RepoDir"
 Write-Host "REMOTE: $RemoteName / BRANCH: $BranchName"
+Write-Host "NOTE: Use -Branch release to push current SPEC7 f0de0f6 stack directly."
 Write-Host ""
 
 # --- 0. Preflight: path + admin elevation check (recommandé)
@@ -113,7 +117,7 @@ Write-Host "  HEAD BEFORE REMOTE: $RemoteShaBefore"
 Write-Host "  HEAD FINAL LOCAL  : $LocalFinal"
 Write-Host "  HEAD FINAL REMOTE : $RemoteFinal"
 Write-Host "  SHA MATCH         : $($LocalFinal -eq $RemoteFinal)"
-Write-Host "  COMMIT TOPIC      : v3.5.8 ef1397f L2 Account Abstraction + Direct Deposit + 7/7 gates"
+Write-Host "  COMMIT TOPIC      : v3.5.8 f0de0f6 SPEC7 git-secrets-autorotate custom KMS (UNBLOCK8 23/26 GREEN) + Account Abstraction + Direct Deposit + 7/7 gates"
 Write-Host "  PREV STACK CARRY  : v3.5.4 f87e126 -> v3.5.5 4d195be -> v3.5.6 0481adf -> v3.5.7 4215e96"
 Write-Host ""
 exit 0
