@@ -31,6 +31,9 @@ swarm-ops-project/
 # encrypted doomsday backup vault (contains encrypted archives + passphrase file)
 doomsday-vault/
 
+# custom KMS autoRotate lockbox + DPAPI encrypted seeds (security; NEVER commit)
+.keys/**
+
 # generated stub project (unrelated; keep out of typecheck/git)
 autopublisher-v3-*/
 
@@ -49,3 +52,10 @@ exports/recon/raw/
 
 # Watchdog tick reports contain finding details (ids/amounts) — never public
 reports/watchdog/
+
+# ============================================================
+# OWNER HANDS-FREE v3.5.8 Private Local Config (Signataire ONLY)
+# 100% EXCLUDED from git. NEVER commit these files.
+# ============================================================
+.swarm/**
+!.swarm/.gitkeep
