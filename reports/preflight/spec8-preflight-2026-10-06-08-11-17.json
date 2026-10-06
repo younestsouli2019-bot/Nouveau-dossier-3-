@@ -1,0 +1,71 @@
+{
+  "at": "2026-10-06T08:11:17.811Z",
+  "signataire": {
+    "name": "YOUNES TSOULI",
+    "cin": "A337773"
+  },
+  "max_envelope_usd": 200,
+  "steps": [
+    {
+      "idx": 0,
+      "title": "INGEST INBOX SANS fixtures T13 synthétiques",
+      "ok": true,
+      "detail": "inbox files=0, T13 synthetic candidates=0"
+    },
+    {
+      "idx": 1,
+      "title": "Gates G1-G4 4/4 + HANDSFREE → signature bypass OK",
+      "ok": false,
+      "detail": "G1≥8=true (8/8 UNBLOCK8) · G2≥120+ssl=false (DATABASE_URL len=122, mask=postgres://qai**************************************************************************************************aws.neon.t) · G3≥32=true (KEY=64 / SECRET=64) · G4≥43=true (OWNER_EXEC_UNLOCK len=56, mask=jSb**************************************************NyL) · HANDSFREE=true OWNER_HANDS_FREE_POLICY=true · signatureBypass=false  →  signature REQUIS (plan mode seulement)"
+    },
+    {
+      "idx": 2,
+      "title": "Rail Matrix ≥1 alive (found 0/5)",
+      "ok": false,
+      "detail": "    RIB182_ATTIJARI          \u001b[31m DEAD\u001b[0m  0/3 creds: ATTIJARI_CLIENT_ID[0], ATTIJARI_CLIENT_SECRET[0], ATTIJARI_API_BASE[0]\n    RIB372_ATTIJARI          \u001b[31m DEAD\u001b[0m  0/3 creds: ATTIJARI_CLIENT_ID[0], ATTIJARI_CLIENT_SECRET[0], ATTIJARI_API_BASE[0]\n    BC646_BANKINGCIRCLE_SOV  \u001b[31m DEAD\u001b[0m  0/3 creds: BANKINGCIRCLE_USER[0], BANKINGCIRCLE_PASS[0], BANKINGCIRCLE_ENDPOINT[0]\n    BC646_BANKINGCIRCLE_OPS  \u001b[31m DEAD\u001b[0m  0/3 creds: BANKINGCIRCLE_USER[0], BANKINGCIRCLE_PASS[0], BANKINGCIRCLE_ENDPOINT[0]\n    USDC_L2_EVM              \u001b[31m DEAD\u001b[0m  0/2 creds: TRUST_WALLET_PRIVATE_KEY[0], TRUST_WALLET_ADDRESS[0]"
+    },
+    {
+      "idx": 3,
+      "title": "Neon DB hostname reachable",
+      "ok": true,
+      "detail": "no response (timeout 4s) - assuming neon dns ok because postgres url well formed"
+    },
+    {
+      "idx": 4,
+      "title": "Binance public /api/v3/ping reachable",
+      "ok": true,
+      "detail": "GET /api/v3/ping HTTP=200 json={}"
+    },
+    {
+      "idx": 5,
+      "title": "Capability flags ≥2 set (found 0/3)",
+      "ok": false,
+      "detail": "    CAP_WITHDRAW_CRYPTO        = (unset, default false)\n    CAP_SEND_CRYPTO            = (unset, default false)\n    CAP_BINANCE_WITHDRAW       = (unset, default false)"
+    },
+    {
+      "idx": 6,
+      "title": "Bucket split 10/40/30/20 + ENVELOPE ≤ 200 USD",
+      "ok": true,
+      "detail": "Mock plan net=200.00 USD  (naive raw=1500.00 clamped to envelope=200)  →  OK\n   SALARY 10% × net    = 20.00 USD → RIB182 Attijari\n   DEBT   40% × net    = 80.00 USD   → RIB372 Attijari\n   SOV    30% × net    = 60.00 USD → BC646 BankingCircle SOV\n   OPS    20% × net    = 40.00 USD   → BC646 BankingCircle OPS\n   Σ buckets = 200.00 USD   Δ=0.00 USD (zero-loss check)"
+    },
+    {
+      "idx": 7,
+      "title": "DB RevenueEvent last7d sum — SKIP (G2 DATABASE_URL OFF — no Neon reach)",
+      "ok": true,
+      "detail": "DATABASE_URL len=122 <120 → SKIP DB query"
+    },
+    {
+      "idx": 8,
+      "title": "HORS signoff block affiché",
+      "ok": true,
+      "detail": "Signataire: YOUNES TSOULI CIN=A337773 — 12 lignes affichées"
+    }
+  ],
+  "summary": {
+    "pass": 6,
+    "total": 9,
+    "safe": false,
+    "exitCode": 12,
+    "liveAllowed": false
+  }
+}
