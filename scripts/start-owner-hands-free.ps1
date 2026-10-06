@@ -9,10 +9,10 @@ $ErrorActionPreference = 'Stop'
 #  OWNER HANDS-FREE v3.5.8 Companion Runner (Admin PS)
 #  Purpose:
 #    T-0:   Autorotate pre-hook: rotate UNBLOCK8 keys fresh via custom local KMS (SPEC7 git-secrets-autorotate-v358)
-#    T-0.5: SPEC8 SWARM REVENUES AUTO-ROUTE: collect all sources → BUCKET_PCT 10/40/30/20 → bucket-ordered dispatch SAL→DEBT→SOV→OPS → HMAC chain
+#    T-0.5: SPEC8 SWARM REVENUES AUTO-ROUTE: collect all sources -> BUCKET_PCT 10/40/30/20 -> bucket-ordered dispatch SAL->DEBT->SOV->OPS -> HMAC chain
 #    T-1:   Dot-source .swarm/owner-hands-free.config.ps1 (36 keys)
-#    T-2:   Count 8 minimal unblock set — if <8 → FAIL-CLOSED exit 5
-#    T-3:   Structural checks G2/G3/G4 lengths — if bad → exit 5
+#    T-2:   Count 8 minimal unblock set -- if <8 -> FAIL-CLOSED exit 5
+#    T-3:   Structural checks G2/G3/G4 lengths -- if bad -> exit 5
 #    T-4:   Inject 36 secrets into Process scope only (NFR-5)
 #    T-5:   Call scripts/run-live-crypto-po.ps1 -Verbose
 #    T-6:   Propagate LASTEXITCODE
@@ -25,32 +25,74 @@ if (Test-Path $AUTOROTATE_PRE -ErrorAction SilentlyContinue) {
   . $AUTOROTATE_PRE
   $autoExit = $LASTEXITCODE
   if ($autoExit -ge 2 -and $autoExit -ne 3) {
-    Write-Host "[HANDS-FREE] autorotate FAIL exit=$autoExit (>=2 and !=3 LOCK_BUSY) → failclosed exit5 before any rails"
+    Write-Host "[HANDS-FREE] autorotate FAIL exit=$autoExit (>=2 and !=3 LOCK_BUSY) -> failclosed exit5 before any rails"
     if (Test-Path function:failClosedExit5) { failClosedExit5 "Autorotate pre-hook exit=$autoExit abort before rails" } else { exit 5 }
   }
 }
 
 # ================================================================
+# PHASE 0.4: SPEC8 PREFLIGHT VALIDATOR (0 sends, external audit)
+#   S0 → fixtures T13 / inbox clean
+#   S1 → G1-G4 4/4
+#   S2 → 5/5 rail matrix alive ≥ 1
+#   S3 → Neon DB reachable
+#   S4 → Binance /api/v3/ping reachable
+#   S5 → Capability flags ≥ 2
+#   S6 → Bucket split + envelope ≤ 200 USD (MAX)
+#   S7 → DB RevenueEvent sum query (manual neon SQL editor)
+#   S8 → HORS 12 signoff lines print
+# Exit: 0 ok / 12 NEED CONFIG / 13 HARD PREFLIGHT FAIL
+# ================================================================
+$PREFLIGHT_SCRIPT = Join-Path $PSScriptRoot 'spec8-preflight-v358.mjs'
+$SPEC8_WET_RUN_WANTED = $false
+$SCRIPT:PREFLIGHT_EXIT = -1
+if (Test-Path $PREFLIGHT_SCRIPT) {
+  Write-Host '[HANDS-FREE] T-0.4: spec8-preflight-v358 (0 sends, 9 checks green/red)' -ForegroundColor Cyan
+  & node $PREFLIGHT_SCRIPT
+  $SCRIPT:PREFLIGHT_EXIT = [int]$LASTEXITCODE
+  if ($SCRIPT:PREFLIGHT_EXIT -ge 13) {
+    failClosedExit5 ("SPEC8 PREFLIGHT HARD FAIL exit={0} -> NE PAS lancer LIVE. Corriger infra/creds avant reprise." -f $SCRIPT:PREFLIGHT_EXIT)
+  } elseif ($SCRIPT:PREFLIGHT_EXIT -eq 12) {
+    Write-Warning '[HANDS-FREE] preflight exit=12 NEED CONFIG -> running PLAN MODE ONLY (0 sends, 0 DB writes). Live wet-run desactive.'
+    $SPEC8_WET_RUN_WANTED = $false
+  } elseif ($SCRIPT:PREFLIGHT_EXIT -eq 0) {
+    Write-Host '[HANDS-FREE] preflight exit=0 ALLOWS live -> ask signataire wet-run confirmation (default N -> plan)' -ForegroundColor Green
+    $confirmation = Read-Host '  ATTENTION: EXECUTION WET-RUN REELLE (argent reel possible). Continuer ? [O/N] (defaut=N)'
+    if ($confirmation -match '^[oOyY]$') { $SPEC8_WET_RUN_WANTED = $true } else { $SPEC8_WET_RUN_WANTED = $false }
+  } else {
+    Write-Warning ("[HANDS-FREE] preflight exit={0} unmapped -> plan mode only." -f $SCRIPT:PREFLIGHT_EXIT)
+  }
+}
+$env:SPEC8_WET_RUN_CONFIRMED_AT = if ($SPEC8_WET_RUN_WANTED) { (Get-Date -Format o) } else { '' }
+
+# ================================================================
 # PHASE 0.5: SWARM REVENUES AUTO-ROUTE (SPEC MODE #8 v3.5.8)
-# Order enforced by design: autorotate (DPAPI fresh) → swarm route
-#   → inject + gates → live-crypto wrapper.
+# Order enforced by design: autorotate (DPAPI fresh) -> preflight -> swarm route
+#   -> inject + gates -> live-crypto wrapper.
 # Tolerate exit code 0 (success) OR exit 3 (LOCK BUSY).
-# Exit code >= 7 → Hard fail-closed → abort wrapper exit 5
-# (forensic marker: cross-bucket diversion / zero-loss Δ > 1 cent)
+# Exit code >= 7 -> Hard fail-closed -> abort wrapper exit 5
+# (forensic marker: cross-bucket diversion / zero-loss delta > 1 cent)
 # ================================================================
 $SWARM_ROUTE_SCRIPT = Join-Path $PSScriptRoot 'swarm-revenues-auto-route-v358.mjs'
 if (Test-Path $SWARM_ROUTE_SCRIPT -ErrorAction SilentlyContinue) {
-  Write-Host '[HANDS-FREE] T-0.5: swarm-revenues-auto-route (SPEC8) collect → split → bucket order → HMAC chain'
-  & node $SWARM_ROUTE_SCRIPT --owner-hands-free-mode
+  if ($SPEC8_WET_RUN_WANTED) {
+    $modeLabel = '--WET-RUN (EXPLICIT LIVE, requires HORS signoff interactif + TTY + capability flags per rail)'
+    $swarmArgs = @($SWARM_ROUTE_SCRIPT, '--WET-RUN')
+  } else {
+    $modeLabel = 'PLAN ONLY (0 sends, 0 DB writes, owner hands-free signature bypass NOT used for sends)'
+    $swarmArgs = @($SWARM_ROUTE_SCRIPT, '--owner-hands-free-mode')
+  }
+  Write-Host ('[HANDS-FREE] T-0.5: swarm-revenues-auto-route (SPEC8) collect -> split -> bucket order -> HMAC chain  [{0}]' -f $modeLabel)
+  & node @swarmArgs
   $swarmExit = $LASTEXITCODE
   if ($swarmExit -ge 7) {
-    Write-Host "[HANDS-FREE] swarm route FAILCLOSED exit=$swarmExit (>=7 = forensic marker: zero-loss Δ or cross-bucket fraud) → abort wrapper exit=5"
-    if (Test-Path function:failClosedExit5) { failClosedExit5 "SPEC8 swarm-route hard exit=$swarmExit — manual investigation required" } else { exit 5 }
+    Write-Host ("[HANDS-FREE] swarm route FAILCLOSED exit={0} (>=7 = forensic marker: zero-loss delta or cross-bucket fraud) -> abort wrapper exit=5" -f $swarmExit)
+    if (Test-Path function:failClosedExit5) { & failClosedExit5 ("SPEC8 swarm-route hard exit={0} -- manual investigation required" -f $swarmExit) } else { exit 5 }
   }
-  if ($swarmExit -ne 0 -and $swarmExit -ne 3) {
-    Write-Warning "[HANDS-FREE] swarm route exit=$swarmExit (tolerated: NOT in {0,3}, but <7 — continuing; check data/out/swarm-revenues-plan.json)"
+  if (($swarmExit -ne 0) -and ($swarmExit -ne 3)) {
+    Write-Warning ("[HANDS-FREE] swarm route exit={0} (tolerated: NOT in set 0 or 3, but <7 -- continuing; check data/out/swarm-revenues-plan.json)" -f $swarmExit)
   }
-  Write-Host "[HANDS-FREE] T-0.5 completed exit=$swarmExit"
+  Write-Host ("[HANDS-FREE] T-0.5 completed exit={0}  wet_run_active={1}" -f $swarmExit, $SPEC8_WET_RUN_WANTED)
 }
 
 # ------------------------------------------------------------
@@ -91,13 +133,46 @@ if (-not (Test-Path -LiteralPath $CONFIG_PATH -PathType Leaf)) {
 }
 
 # ------------------------------------------------------------
+# T2-6b: SANITIZE CONFIG (PERMANENT BOM/INVISIBLE FIX)
+#   - PowerShell 5.0 parser chokes on multiple leading U+FEFF (UTF-8 BOM)
+#     glued to the first '#' comment line. Reproducible symptom:
+#     "Le terme << <U+FEFF><U+FEFF>...# >> n'est pas reconnu..."
+#   - Normalize file IN PLACE ONCE per wrapper invocation:
+#       * strip U+FEFF / U+200B (ZWSP) / U+00A0 (NBSP) / U+202E (RLO) / U+202D (LRO)
+#       * normalize CRLF line endings
+#       * write back with UTF-8 WITHOUT BOM (Encoding.UTF8 w/ emitBOM=$false PS6+)
+#   - Idempotent (no-op if already clean), safe for secrets (no changes to VALUES),
+#     zero risk because comments are re-prefix '#' standard.
+# ------------------------------------------------------------
+try {
+    $rawBytes = [System.IO.File]::ReadAllBytes($CONFIG_PATH)
+    $cfgText  = [System.Text.Encoding]::UTF8.GetString($rawBytes)
+    $bomsBefore = ([regex]::Matches($cfgText, "`u{FEFF}")).Count
+    if ($bomsBefore -gt 0 -or $cfgText -match "`u{200B}|`u{00A0}|`u{202E}|`u{202D}") {
+        $cfgText = $cfgText -replace "`u{FEFF}", ''
+        $cfgText = $cfgText -replace "`u{200B}", ''
+        $cfgText = $cfgText -replace "`u{202E}", ''
+        $cfgText = $cfgText -replace "`u{202D}", ''
+        $cfgText = $cfgText -replace "`u{00A0}", ' '
+        $cfgText = $cfgText -replace "`r?`n", "`r`n"
+        $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+        [System.IO.File]::WriteAllText($CONFIG_PATH, $cfgText, $utf8NoBom)
+        Write-Host ("[HANDS-FREE] T2-6b Config sanitized: removed BOMs={0}, invisible chars, wrote UTF-8 NO-BOM idempotent." -f $bomsBefore) -ForegroundColor DarkYellow
+    } else {
+        Write-Host '[HANDS-FREE] T2-6b Config clean (0 BOMs, 0 invisible chars) — skip.' -ForegroundColor Gray
+    }
+} catch {
+    failClosedExit5 "[T2-6b] Config sanitize FAIL (read/write access?): $_"
+}
+
+# ------------------------------------------------------------
 # T2-7: Dot-source + sanity count=36
 # ------------------------------------------------------------
 try {
     $Global:OWNER_HANDSFREE_SKIP_VALIDATION_ON_LOAD = $true
     . $CONFIG_PATH
 } catch {
-    failClosedExit5 "[T2-7a] Config parse FAIL: $_"
+    failClosedExit5 "[T2-7a] Config parse FAIL (after T2-6b sanitize): $_"
 }
 
 if ($null -eq $OWNER_HANDSFREE_SECRETS) {
@@ -182,10 +257,10 @@ try {
     if ($nv -match '^v(\d+)\.') {
         $major = [int]$Matches[1]
         if ($major -eq 24) { Write-Host "[HANDS-FREE] T2-11 node.js OK: $nv" }
-        else { Write-Warning "[HANDS-FREE] T2-11 node.js=$nv, attendu v24.x (some downstream tools v358 nécessitent Node 24 LTS)." }
+        else { Write-Warning "[HANDS-FREE] T2-11 node.js=$nv, attendu v24.x (necessitent Node 24 LTS pour outils v358 en aval)." }
     } else { Write-Warning '[HANDS-FREE] T2-11 node -v non interpretable.' }
 } catch {
-    Write-Warning '[HANDS-FREE] T2-11 node.js introuvable (run-live-crypto-po.ps1 PS-seulement OK; payout/ledger TS tools en ont besoin).'
+    Write-Warning '[HANDS-FREE] T2-11 node.js introuvable (run-live-crypto-po.ps1 PS-only OK; outils paiement/ledger TypeScript en ont besoin).'
 }
 
 # ------------------------------------------------------------

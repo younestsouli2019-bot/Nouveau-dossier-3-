@@ -7,13 +7,24 @@ data/swarm/**
 data/notifications/**
 data/base44/**
 data/generated/
-# SPEC8 v3.58: swarm revenues auto-route artifacts
+# SPEC8 v3.5.8/v3.5.9: swarm revenues auto-route artifacts + WET-RUN private data + preflight
 data/ingest/**
 data/out/swarm-revenues-idempotence-set.txt
 data/out/swarm-revenues-plan.json
 data/out/swarm-route-quarantine.ndjson
 data/out/swarm-revenues-route-v358.ndjson
 data/out/swarm-revenues-prev-state.json
+data/out/swarm-revenues-live-sends.ndjson
+reports/preflight/
+reports/wet-run/
+#
+# ── DEFENSE-IN-DEPTH: NEVER commit synthetic test fixtures ──────────────────
+#   Any residual t13-synthetic-*.ndjson / T13 sandbox fixture / sandbox mock
+#   revenue events MUST NEVER be committed (could cause fake bucket splits PROD).
+.trae/fixtures/
+t13-synthetic-*.ndjson
+t13-synthetic-*.json
+
 reports/historic/**
 rank/swarm
 *.log

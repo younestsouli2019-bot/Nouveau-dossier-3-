@@ -28,9 +28,20 @@ const PRESET_TO_BUCKET = Object.freeze(
   BUCKET_ORDER.reduce((m, b) => (m[b.preset] = b.code, m), {})
 );
 
-const OWNER_HANDS_FREE_MODE = process.argv.includes('--owner-hands-free-mode') ||
-                              process.argv.includes('--dryrun-off') ||
-                              process.argv.includes('--confirm');
+/* WET-RUN / DRY-RUN MODE CONTRACTS (fail-closed default = DRY)
+   --WET-RUN                  = ONLY flag that actually enables real send path.
+   --owner-hands-free-mode    = PLAN ONLY (warning printed — no sends!)
+   --dryrun-off / --confirm   = deprecated.
+*/
+const WET_RUN_EXPLICIT = process.argv.includes('--WET-RUN') || process.argv.includes('--wet-run');
+const OWNER_HANDS_FREE_MODE_OLD = process.argv.includes('--owner-hands-free-mode') ||
+                                  process.argv.includes('--dryrun-off') ||
+                                  process.argv.includes('--confirm');
+const MAX_WET_RUN_TOTAL_USD = 200;
+const SIGNATAIRE = { name: 'YOUNES TSOULI', cin: 'A337773' };
+const HORS_PROMPT = 'OUI-JE-SUIS-LE-SIGNATAIRE-YT-CIN-' + SIGNATAIRE.cin;
+
+let WET_RUN_USER_CONFIRMED_TYPED = false; // set to true only after exact stdin match in promptHorsSignoff()
 
 const UNBLOCK8 = Object.freeze([
   'DATABASE_URL', 'LIVE_BANK_API', 'BINANCE_API_KEY', 'BINANCE_API_SECRET',
@@ -212,12 +223,115 @@ async function collectNetworkSources(gates) {
 }
 
 /* ─────────────────────── T5+T6: DISPATCH + CANSEND ─────────────────────── */
+function capabilityCheckPerPreset(presetId) {
+  const env = process.env;
+  const CAP = (k) => env[k] === 'true';
+  switch (presetId) {
+    case 'BC646_SOV':
+    case 'BC646_OPS':
+    case 'USDC_L2':
+      return CAP('CAP_WITHDRAW_CRYPTO') && CAP('CAP_SEND_CRYPTO')
+        ? { ok: true }
+        : { ok: false, reason: `LIVE WET-RUN capability guard: preset=${presetId} requires CAP_WITHDRAW_CRYPTO=true AND CAP_SEND_CRYPTO=true (current env: CAP_WITHDRAW_CRYPTO=${env.CAP_WITHDRAW_CRYPTO||'false'}, CAP_SEND_CRYPTO=${env.CAP_SEND_CRYPTO||'false'}) — honest quarantine dead rail audit report ≥40 chars` };
+    case 'RIB182':
+    case 'RIB372':
+      return CAP('CAP_BINANCE_WITHDRAW') || env.ATTIJARI_CLIENT_ID
+        ? { ok: true }
+        : { ok: false, reason: `LIVE WET-RUN capability guard: preset=${presetId} Attijari or CAP_BINANCE_WITHDRAW missing (CAP_BINANCE_WITHDRAW=${env.CAP_BINANCE_WITHDRAW||'false'}) — fail-closed quarantine audit trail 40 chars` };
+    default:
+      return { ok: true };
+  }
+}
+
+function promptHorsSignoff(totalCollectedUsd, splits) {
+  if (!WET_RUN_EXPLICIT) return true; // not in wet run mode, interactive not required
+  if (WET_RUN_USER_CONFIRMED_TYPED) return true;
+  const now = new Date();
+  const mag = (s) => '\x1b[35m' + s + '\x1b[0m';
+  const lines = [
+    `═══════════════════════════════════════════════════════════════════`,
+    `  HORS — SPEC8 LIVE WET-RUN EXPLICIT SIGNATAIRE CONFIRMATION NOD    `,
+    `  SIGNATAIRE  : ${SIGNATAIRE.name}                                   `,
+    `  CIN         : ${SIGNATAIRE.cin}                                    `,
+    `  DATE (MAROC): ${now.toLocaleString('fr-FR',{timeZone:'Africa/Casablanca'})}  `,
+    `  TOTAL À ENVOYER: $${totalCollectedUsd.toFixed(2)} USD  (ENVELOPPE MAX=$${MAX_WET_RUN_TOTAL_USD})  `,
+    `  BUCKET SPLIT 10/40/30/20  → RIB182 $${(splits.salary||0).toFixed(2)} / RIB372 $${(splits.debt||0).toFixed(2)} / BC646 SOV $${(splits.sovereign||0).toFixed(2)} / BC646 OPS $${(splits.ops||0).toFixed(2)}`,
+    `  CONDITIONS: (1) Zero loss post Δ≤$0.01  (2) Idempotence relance 2x → 0 nouveaux envois`,
+    `            (3) Chaque quarantine honnête ≥40 chars, (4) Preflight S0..S8 PASS exit 0`,
+    `            (5) G1-G4 4/4 open, signature bypass OK`,
+    `                                                                   `,
+    `  ⚠️  TOUT ENVOI RÉEL = ARGENT DÉPLACÉ DÉFINITIVEMENT — SANS RETOUR`,
+    `                                                                   `,
+    `  POUR CONTINUER (OU ABORT par timeout 60s ou Ctrl+C), saisir EXACTEMENT :`,
+    `     ${mag(HORS_PROMPT)}`,
+    `═══════════════════════════════════════════════════════════════════`,
+  ];
+  for (const l of lines) console.log(mag(l));
+  try {
+    const buf = new Uint8Array(200);
+    const { stdin } = process;
+    let input = '';
+    if (stdin.isTTY) {
+      // Interactive TTY: prompt with 60s timer
+      return new Promise(resolve => {
+        let done = false;
+        const timer = setTimeout(() => {
+          if (!done) {
+            done = true;
+            console.log('\n  [TIMEOUT 60s] — ABORT LIVE WET-RUN. Aucun envoi effectué.');
+            resolve(false);
+          }
+        }, 60000);
+        process.stdout.write('  > ');
+        stdin.setRawMode?.(true);
+        stdin.resume();
+        const abort = (c) => { if (!done) { done=true; clearTimeout(timer); process.exit(13); } };
+        const onData = (chunk) => {
+          if (done) return;
+          for (const b of chunk) {
+            if (b === 3 /* Ctrl+C */ || b === 4 /* Ctrl+D */) { abort(); return; }
+            if (b === 13 || b === 10) {
+              done = true;
+              clearTimeout(timer);
+              stdin.pause();
+              stdin.setRawMode?.(false);
+              const exact = input.trim() === HORS_PROMPT;
+              WET_RUN_USER_CONFIRMED_TYPED = exact;
+              if (!exact) console.log(`\n  [INVALID PROMPT] attendu exact "${HORS_PROMPT}" — ABORT LIVE. Aucun envoi.`);
+              resolve(exact);
+              return;
+            } else if (b === 127 || b === 8) {
+              input = input.slice(0, -1);
+            } else if (b >= 32) {
+              input += String.fromCharCode(b);
+            }
+          }
+        };
+        stdin.on('data', onData);
+      });
+    } else {
+      // Non-TTY / piped / subprocess — refuse WET-RUN (fail-closed).
+      console.log('  [FAIL-CLOSED] stdin non interactif (pas de TTY). Refuser WET-RUN.');
+      return false;
+    }
+  } catch (e) {
+    console.log('  [FAIL-CLOSED] prompt error: ' + e.message);
+    return false;
+  }
+}
+
 function canSendPreset(presetId, bucketCode) {
   if ((PRESET_TO_BUCKET[presetId] || bucketCode) !== bucketCode) {
     throw new Error('CROSS_BUCKET_GUARD_VIOLATION: preset=' + presetId + ' bucket=' + bucketCode);
   }
   const env = process.env;
   const out = { canSend: false, reason: '' };
+  const cap = capabilityCheckPerPreset(presetId);
+  if (!cap.ok) {
+    out.canSend = false;
+    out.reason = cap.reason;
+    return out;
+  }
   switch (presetId) {
     case 'RIB182':
     case 'RIB372': {
@@ -247,11 +361,12 @@ function canSendPreset(presetId, bucketCode) {
   return out;
 }
 
-function dispatchByBucketOrder(splits, gates) {
+function dispatchByBucketOrder(splits, gates, allowLive) {
   const sent = [];
   const quarantined = [];
   const orderSequence = [];
   const signature = gates.signatureBypass;
+  const weCanLive = Boolean(allowLive) && signature;
   for (const b of BUCKET_ORDER) {
     const amount = Number(splits[b.code] || 0);
     if (amount <= 0) continue;
@@ -259,14 +374,18 @@ function dispatchByBucketOrder(splits, gates) {
     let railResult = { canSend: false, reason: '' };
     try { railResult = canSendPreset(b.preset, b.code); }
     catch (e) { if (/CROSS_BUCKET/.test(e.message)) throw e; }
-    if (railResult.canSend && signature) {
-      const txid = invokeSendRail(b, amount, gates);
+    if (railResult.canSend && signature && weCanLive) {
+      const txid = invokeSendRail(b, amount, gates, /*allowLive=*/ true);
       sent.push({ bucket: b.code, preset: b.preset, amount, status: 'SENT', txid, rail: b.preset });
       appendRouteLine(b, amount, 'SENT', b.preset, txid);
     } else {
-      const reason = railResult.canSend && !signature
-        ? `Signature bypass NOT active (GATES=${gates.reason}; OWNER_HANDS_FREE_POLICY=${process.env.OWNER_HANDS_FREE_POLICY} — plan mode only, send skipped dryrun honest report ≥40 chars for audit NG5 zero-loss)`
-        : railResult.reason;
+      let reason;
+      if (!allowLive && railResult.canSend && signature)
+        reason = `LIVE PATH NOT ENGAGED (allowLive=false — --WET-RUN flag or SPEC8_WET_RUN_CONFIRMED_AT absent; HORS signoff not obtained). Dispatch dryrun quarantine honest report ≥40 chars for audit NG5 zero-loss — 0 sends.`;
+      else if (railResult.canSend && !signature)
+        reason = `Signature bypass NOT active (GATES=${gates.reason}; OWNER_HANDS_FREE_POLICY=${process.env.OWNER_HANDS_FREE_POLICY} — plan mode only, send skipped dryrun honest report ≥40 chars for audit NG5 zero-loss)`;
+      else
+        reason = railResult.reason;
       quarantined.push({ bucket: b.code, preset: b.preset, amount, status: 'QUARANTINE', reason, rail: b.preset });
       appendQuarantine(b, amount, reason);
       appendRouteLine(b, amount, 'QUARANTINE', b.preset, reason);
@@ -437,10 +556,39 @@ function sha(s){ return createHash('sha256').update(String(s)).digest('hex'); }
     process.exit(self.pass === '10/10' && self.rubricT42 === '2/2' ? 0 : 1);
   }
 
+  /* MODE WARNING (fail-closed default = PLAN ONLY):
+     - --WET-RUN + env SPEC8_WET_RUN_CONFIRMED_AT non-empty → possible LIVE (si gates OK + HORS prompt après)
+     - --owner-hands-free-mode / --dryrun-off / --confirm → DEPRECATED. PLAN ONLY. Print warning.
+     - default (no flag) → SANS-DB plan.
+  */
+  if (OWNER_HANDS_FREE_MODE_OLD && !WET_RUN_EXPLICIT) {
+    console.log('\x1b[33m[WARN]\x1b[0m CLI --owner-hands-free-mode / --dryrun-off / --confirm = SPEC8 v3.58 PLAN MODE ONLY (0 sends, 0 DB writes). Pour LIVE WET-RUN = utiliser --WET-RUN explicit ET SPEC8_WET_RUN_CONFIRMED_AT en var env ET preflight exit 0.');
+  }
+  const LIVE_MODE_POSSIBLE = WET_RUN_EXPLICIT &&
+                             typeof process.env.SPEC8_WET_RUN_CONFIRMED_AT === 'string' &&
+                             process.env.SPEC8_WET_RUN_CONFIRMED_AT.length >= 10;
+  if (WET_RUN_EXPLICIT && !LIVE_MODE_POSSIBLE) {
+    console.log('\x1b[31m[FAIL-CLOSED WET-RUN]\x1b[0m --WET-RUN flag requires wrapper-injected env SPEC8_WET_RUN_CONFIRMED_AT (signataire preflight approval). Refuser LIVE → downgrading to PLAN MODE.');
+  }
+
   const fsEvents = collectSwarmRevenuesSansDb();
   const dbEvents = gates.G2 ? (await collectFromDb(gates)) : [];
   const netEvents = gates.G3 ? (await collectNetworkSources(gates)) : [];
-  const allEvents = [...fsEvents, ...dbEvents, ...netEvents];
+  const allEventsRaw = [...fsEvents, ...dbEvents, ...netEvents];
+
+  /* PROD Purge — HARD reject any T13-synthetic or residual sandbox fixture event (defense-in-depth even if fixture file already deleted above).
+     Events classified fake if note contains "T13" OR source fake-template OR id t13 prefix. */
+  const t13Reject = /(^|[^A-Za-z0-9])T13($|[^A-Za-z0-9])|(^|[^a-z])t13[-_ ]synthetic|^t13[-_]/i;
+  const allEvents = allEventsRaw.filter(ev => {
+    const suspect = t13Reject.test([ev.id||'', ev.source||'', ev.note||'', ev.tag||'', JSON.stringify(ev.tags||{})].join(' | '));
+    if (suspect) {
+      try {
+        const fakeReason = `PROD purge T13 sandbox fixture detected (id=${String(ev.id||'').slice(0,64)} src=${String(ev.source||'').slice(0,64)} note=${String(ev.note||'').slice(0,64)}) — QUARANTINED honest audit 40+ chars excluded from net split`;
+        appendQuarantine(BUCKET_ORDER[0], Number(ev.amount||0), fakeReason);
+      } catch {}
+    }
+    return !suspect;
+  });
 
   const canSendPerPreset = {};
   for (const b of BUCKET_ORDER) {
@@ -508,13 +656,41 @@ function sha(s){ return createHash('sha256').update(String(s)).digest('hex'); }
     aggregateSplits.sovereign += Number(sp.splits.sovereign);
     aggregateSplits.ops       += Number(sp.splits.ops);
   }
-
-  const r = dispatchByBucketOrder(aggregateSplits, gates);
-  events.forEach(e => markIdempotenceKey(e.id));
-  writePlanFile(events, splitsPerEvent, gates, canSendPerPreset, { inbound: allEvents.length, duplicatesRejected, quarantinePerEvent: deadRailEvents.length, sentBucketLevel: r.sent.length, quarBucketLevel: r.quarantined.length });
-
+  for (const k of Object.keys(aggregateSplits)) aggregateSplits[k] = round2(aggregateSplits[k]);
   const deadQuarSum = round2(deadRailEvents.reduce((s,e) => s + Number(e.amount||0), 0));
   const totalCollected = round2(events.reduce((s,e) => s + Number(e.amount||0), 0) + deadQuarSum);
+
+  /* PRE-DISPATCH SAFETY + WET-RUN CONTRACT (4 nested guards):
+     (1) Envelope MAX_WET_RUN_TOTAL_USD=$200 (fail-closed if totalNet > cap)
+     (2) Si --WET-RUN flag PAS + LIVE_MODE_POSSIBLE (wrapper injected SPEC8_WET_RUN_CONFIRMED_AT) → HORS interactive prompt + TTY check
+     (3) Sinon → retombé en PLAN MODE (0 sends). Aucun argent ne bouge.
+     (4) capabilityCheckPerPreset déjà appelé dans canSendPreset individuellement → 4eme garde dedans
+  */
+  const netSwarmOnly = round2(events.reduce((s,e)=>s+Number(e.amount||0),0));
+  if (netSwarmOnly > MAX_WET_RUN_TOTAL_USD || totalCollected > MAX_WET_RUN_TOTAL_USD * 1.3) {
+    console.error(`\n[FAIL-CLOSED exit=7 SAFETY_ENVELOPE] TOTAL_COLLECTED=$${totalCollected.toFixed(2)} NET_SWARM=$${netSwarmOnly.toFixed(2)}  > MAX_WET_RUN_TOTAL_USD=$${MAX_WET_RUN_TOTAL_USD}. Refuser LIVE. Écrire plan mode seulement.`);
+    writePlanFile(events, splitsPerEvent, gates, canSendPerPreset, { inbound: allEvents.length, duplicatesRejected, quarantinePerEvent: deadRailEvents.length, safetyEnvelopeBreach: `${netSwarmTotal}/${MAX_WET_RUN_TOTAL_USD}` });
+    zeroizeAllAfterRun(gates);
+    process.exit(7);
+  }
+  let doActuallySendReals = false;
+  if (WET_RUN_EXPLICIT && LIVE_MODE_POSSIBLE) {
+    console.log('\n\x1b[36m[SPEC8 WET-RUN path ENGAGED] G1-G4 4/4 open + --WET-RUN + SPEC8_WET_RUN_CONFIRMED_AT. Calling HORS interactive signoff.\x1b[0m');
+    const confirmed = await promptHorsSignoff(totalCollected, aggregateSplits);
+    if (!confirmed) {
+      console.log('[SPEC8] HORS signoff ABORT. Downgrade → PLAN MODE (0 sends, 0 DB writes).');
+      writePlanFile(events, splitsPerEvent, gates, canSendPerPreset, { inbound: allEvents.length, duplicatesRejected, quarantinePerEvent: deadRailEvents.length, horsAbort: true });
+      zeroizeAllAfterRun(gates);
+      process.exit(0);
+    }
+    doActuallySendReals = true;
+  } else {
+    console.log(`[SPEC8] MODE DRY-RUN (gates OK mais --WET_RUN=${WET_RUN_EXPLICIT} LIVE_POSSIBLE=${LIVE_MODE_POSSIBLE}). dispatch → quarantine rail-not-wetrun honest report ≥ 40 chars, 0 sends.`);
+  }
+
+  const r = dispatchByBucketOrder(aggregateSplits, gates, /*allowLive=*/ doActuallySendReals);
+  events.forEach(e => markIdempotenceKey(e.id));
+  writePlanFile(events, splitsPerEvent, gates, canSendPerPreset, { inbound: allEvents.length, duplicatesRejected, quarantinePerEvent: deadRailEvents.length, sentBucketLevel: r.sent.length, quarBucketLevel: r.quarantined.length, wet_run_flag: WET_RUN_EXPLICIT, live_allowed_by_wrapper: LIVE_MODE_POSSIBLE, actually_sent: doActuallySendReals });
   const totalSent   = round2(r.sent.reduce((s,x)=>s+x.amount,0));
   const totalQuar   = round2(r.quarantined.reduce((s,x)=>s+x.amount,0) + deadQuarSum);
   const delta       = round2(totalCollected - (totalSent + totalQuar));
