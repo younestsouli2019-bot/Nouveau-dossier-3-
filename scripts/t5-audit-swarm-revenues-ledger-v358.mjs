@@ -193,7 +193,7 @@ const sources = [];
   // 6 canonique presets (spécifié projet mémoire)
   src5.presets = [
     { label: 'ATTIJARI_RIB182_SALAIRE', rail: 'attijariwafa_mad', destination: 'MA59007810000448500030594180', kycVerified: true, active: true, purpose: '10% salaire signataire' },
-    { label: 'ATTIJARI_RIB372_DETTE', rail: 'attijariwafa_mad', destination: 'MA820007810000448200061321392', kycVerified: true, active: true, purpose: '40% remboursement dette' },
+    { label: 'ATTIJARI_RIB372_DETTE', rail: 'attijariwafa_mad', destination: 'MA820007810000448200061321392', kycVerified: true, active: true, purpose: '40% Contentieux ATTIJARI BANQUE 018 · SOLE OWNER YOUNES TSOULI CIN A337773 · Compte exclusif · Famille = destinataires colis SEULEMENT, pas propriétaires' },
     { label: 'BC_LU24_RIB646_SOUVERAIN', rail: 'banking_circle_sepa', destination: 'LU2440800000041265646', kycVerified: true, active: true, purpose: '30% réserves souveraines' },
     { label: 'PAYPAL_BUFFER_OPS', rail: 'paypal_ppp2', destination: 'younestsouli2019@gmail.com', kycVerified: true, active: true, purpose: 'tampon 20% opérations' },
     { label: 'PAYONEER_B2B_FREELANCE', rail: 'payoneer', destination: 'younestsouli2019@gmail.com', kycVerified: true, active: true, purpose: 'tampon B2B freelance réception' },
@@ -518,7 +518,7 @@ console.log(`[T2] Ledger OK. Entries=${entries.length}, 6×4 matrix, Σ avail=$$
 const bucketsCalcul = [];
 const bucketDefs = [
   { bucket_label: 'SALAIRE_SIGNAIRE_10PCT', owner_account_label: 'ATTIJARI_RIB182_SALAIRE', pct: 0.10 },
-  { bucket_label: 'DETTE_REMBOURSEMENT_40PCT', owner_account_label: 'ATTIJARI_RIB372_DETTE', pct: 0.40 },
+  { bucket_label: 'DETTE_REMBOURSEMENT_40PCT_CONTENTIEUX_BANQUE_ATTIJARI_018_SOLE_OWNER_YT', owner_account_label: 'ATTIJARI_RIB372_DETTE', pct: 0.40 },
   { bucket_label: 'SOUVERAIN_RESERVE_30PCT', owner_account_label: 'BC_LU24_RIB646_SOUVERAIN', pct: 0.30 },
   { bucket_label: 'OPS_EXECUTION_20PCT', owner_account_label: 'BC_LU24_RIB646_SOUVERAIN', pct: 0.20 },
   { bucket_label: 'TAMPON_PAYPAL_OPS', owner_account_label: 'PAYPAL_BUFFER_OPS', pct: 0.00 },

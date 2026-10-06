@@ -233,8 +233,8 @@ function computeMockSplitFromEnvPlan(env) {
   const envelopeOK = s.netCollected <= MAX_WET_RUN_TOTAL_USD;
   const splitDetail = [
     `Mock plan net=${s.netCollected.toFixed(2)} USD  (naive raw=${(s.naiveHintBeforeClamp||0).toFixed(2)} clamped to envelope=${MAX_WET_RUN_TOTAL_USD})  →  ${envelopeOK?'OK':'SAFETY OVER'}`,
-    `   SALARY 10% × net    = ${s.salary.toFixed(2)} USD → RIB182 Attijari`,
-    `   DEBT   40% × net    = ${s.debt.toFixed(2)} USD   → RIB372 Attijari`,
+    `   SALARY 10% × net    = ${s.salary.toFixed(2)} USD → RIB182 Attijari (Salaire YOUNES TSOULI CIN A337773)`,
+    `   DEBT   40% × net    = ${s.debt.toFixed(2)} USD   → RIB372 Attijari · Contentieux ATTIJARI BANQUE 018 SEULEMENT · SOLE OWNER YOUNES TSOULI CIN A337773 · famille = destinataires colis procurement SEULEMENT, AUCUNE cible contentieux`,
     `   SOV    30% × net    = ${s.sovereign.toFixed(2)} USD → BC646 BankingCircle SOV`,
     `   OPS    20% × net    = ${s.ops.toFixed(2)} USD   → BC646 BankingCircle OPS`,
     `   Σ buckets = ${s.total.toFixed(2)} USD   Δ=${s.delta.toFixed(2)} USD (zero-loss check)`,

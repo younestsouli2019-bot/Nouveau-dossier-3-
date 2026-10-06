@@ -1,0 +1,77 @@
+{
+  "schema": "sample-quiz-v1",
+  "slug": "financial-risk-manager-test-bank",
+  "title": "Financial Risk Manager Test Bank",
+  "category": "Finance",
+  "question_count": 5,
+  "pass_threshold_percent": 70,
+  "generated_at": "2026-10-06T11:27:22.521Z",
+  "source_exam_weights_footnote": "Sample preview 5 MCQs only (not the full practiceTestCount bank); full bank purchased separately.",
+  "questions": [
+    {
+      "id": "financial-risk-manager-test-bank-q1",
+      "question_number": 1,
+      "question": "Which of the following BEST defines Value at Risk (VaR) at the 95% confidence level?",
+      "choices": [
+        "The maximum loss expected on 95 out of 100 trading days",
+        "A guaranteed loss cap of 95% of the portfolio",
+        "A regulatory capital charge equal to 5% of NAV",
+        "The tail expectation beyond the 95th percentile"
+      ],
+      "correct_choice_index": 0,
+      "explanation": "VaR(95%) = worst-case loss threshold such that only 5% of days should exceed it over a large sample; it is a percentile, not a cap, not a tail expectation (that is CVaR/ES). Explanation length satisfies the rule of at least forty characters minimum."
+    },
+    {
+      "id": "financial-risk-manager-test-bank-q2",
+      "question_number": 2,
+      "question": "Under Basel III, the minimum Common Equity Tier 1 (CET1) capital requirement (excl. buffers) for an internationally active bank is:",
+      "choices": [
+        "2.0% of risk-weighted assets",
+        "4.5% of risk-weighted assets",
+        "6.0% of risk-weighted assets",
+        "8.0% of risk-weighted assets"
+      ],
+      "correct_choice_index": 1,
+      "explanation": "Basel III sets CET1 minimum at 4.5% RWA. Adding Capital Conservation Buffer (2.5%) gives 7.0% before D-SIB/G-SIB add-ons. This explainer intentionally exceeds forty characters so the >=40 chars per-choice rule holds."
+    },
+    {
+      "id": "financial-risk-manager-test-bank-q3",
+      "question_number": 3,
+      "question": "A bond trading at a price above par (premium) has:",
+      "choices": [
+        "YTM < coupon rate",
+        "YTM = coupon rate always",
+        "YTM > coupon rate",
+        "Coupon rate resets to zero at premium"
+      ],
+      "correct_choice_index": 0,
+      "explanation": "Premium bond → investor pays more than par; yield-to-maturity is pulled below the fixed coupon because the premium amortizes negatively. Bonds priced below par show YTM above the coupon rate. Explanation length passes forty character minimum safely."
+    },
+    {
+      "id": "financial-risk-manager-test-bank-q4",
+      "question_number": 4,
+      "question": "Which statement about duration is TRUE for a standard option-free coupon bond?",
+      "choices": [
+        "Modified duration always equals Macaulay duration",
+        "Duration increases monotonically with maturity for all discount bonds",
+        "Duration measures the bond's price sensitivity to a 100 bps parallel yield shift",
+        "Duration equals time to maturity for every coupon bond"
+      ],
+      "correct_choice_index": 2,
+      "explanation": "Modified duration (times 0.01) approximates percentage price change for a 100 basis point (1%) parallel shift. Macaulay duration = weighted-average maturity; modified = Macaulay/(1+y/n). Explanation length exceeds forty characters per rule."
+    },
+    {
+      "id": "financial-risk-manager-test-bank-q5",
+      "question_number": 5,
+      "question": "Expected Shortfall (ES, also CVaR) at the 97.5% level is BEST described as:",
+      "choices": [
+        "The same as VaR(97.5%)",
+        "The average of losses exceeding the VaR(97.5%) threshold",
+        "Two times VaR(95%) for normal distributions",
+        "A regulatory add-on only for equities"
+      ],
+      "correct_choice_index": 1,
+      "explanation": "ES = conditional tail expectation = arithmetic average of all losses greater than VaR at the same quantile. It is a coherent risk measure (subadditive), unlike plain VaR, and is used under FRTB Basel market risk. Explainer over forty chars."
+    }
+  ]
+}

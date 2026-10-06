@@ -1,0 +1,240 @@
+name: ci-deterministic-checks
+run-name: CI lint/typecheck/test/prisma/build/smoke — ${{ github.sha }} @ ${{ github.ref_name }}
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - release/**
+      - develop
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  ci:
+    name: ci (install deps)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    outputs:
+      node_version: ${{ steps.node.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Setup Node.js
+        id: node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          check-latest: true
+          cache: "npm"
+
+      - name: Cache node_modules
+        id: cache_nm
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            .prisma
+          key: ${{ runner.os }}-nm-${{ hashFiles('package-lock.json') }}-${{ hashFiles('prisma/schema.prisma') }}
+          restore-keys: |
+            ${{ runner.os }}-nm-${{ hashFiles('package-lock.json') }}-
+            ${{ runner.os }}-nm-
+
+      - name: Install dependencies
+        if: steps.cache_nm.outputs.cache-hit != 'true'
+        run: |
+          npm ci --no-audit --no-fund --ignore-scripts
+          npx prisma generate
+
+      - name: Upload workspace artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: ci-workspace
+          path: |
+            .
+          include-hidden-files: true
+          retention-days: 2
+          if-no-files-found: error
+
+  lint:
+    name: lint
+    needs: [ci]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Download workspace
+        uses: actions/download-artifact@v5
+        with:
+          name: ci-workspace
+          path: .
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: run lint
+        run: npm run lint --if-present
+
+  typecheck:
+    name: typecheck
+    needs: [ci]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Download workspace
+        uses: actions/download-artifact@v5
+        with:
+          name: ci-workspace
+          path: .
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: run typecheck
+        run: npm run typecheck --if-present
+
+  test:
+    name: test (vitest)
+    needs: [ci]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Download workspace
+        uses: actions/download-artifact@v5
+        with:
+          name: ci-workspace
+          path: .
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: run vitest
+        run: npm test -- --reporter=default --no-color
+
+  prisma:
+    name: prisma validate + generate
+    needs: [ci]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Download workspace
+        uses: actions/download-artifact@v5
+        with:
+          name: ci-workspace
+          path: .
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: prisma validate
+        run: npx prisma validate && npx prisma generate
+
+  build:
+    name: next build
+    needs: [lint, typecheck, test, prisma]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      BUILT_AT: ${{ github.event.head_commit.timestamp }}
+      GITHUB_SHA: ${{ github.sha }}
+      VERCEL_GIT_COMMIT_SHA: ${{ github.sha }}
+    steps:
+      - name: Download workspace
+        uses: actions/download-artifact@v5
+        with:
+          name: ci-workspace
+          path: .
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: next build
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: next-build
+          path: |
+            .next
+            .vercel
+          retention-days: 2
+          if-no-files-found: warn
+
+  smoke:
+    name: smoke healthz probes (local dev server)
+    needs: [build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Download workspace
+        uses: actions/download-artifact@v5
+        with:
+          name: ci-workspace
+          path: .
+
+      - name: Download build
+        uses: actions/download-artifact@v5
+        with:
+          name: next-build
+          path: .
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: start prod server & probe
+        shell: bash
+        run: |
+          (npm run start -- -p 3456 > /tmp/nstart.log 2>&1 &)
+          sleep 6
+          H=0
+          for i in 1 2 3 4 5; do
+            code=$(curl -sS -o /tmp/h.json -w "%{http_code}" http://127.0.0.1:3456/api/health || true)
+            echo "probe $i code=$code"
+            if [ "$code" = "200" ]; then
+              H=$((H+1))
+              cat /tmp/h.json | head -c 400; echo
+            fi
+            sleep 2
+          done
+          echo "health_200_count=$H"
+          # ≥2 non-5xx (S4-T02 AC-16 smoke gate: ≥2/3 non-5xx considered passing; absolute min 1/5 non-5xx else fail)
+          if [ "$H" -lt 1 ]; then
+            echo "FAIL smoke: no 200 responses from /api/health"
+            tail -n 60 /tmp/nstart.log
+            exit 66
+          fi

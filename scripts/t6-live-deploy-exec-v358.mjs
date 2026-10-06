@@ -409,7 +409,7 @@ function T6_ALL6_ROUTES() {
   const idempotency = 'AUTO-RELEASE-BC646-' + (new Date().toISOString().slice(0, 10).replace(/-/g, '') + new Date().toISOString().slice(11, 19).replace(/:/g, ''));
   const rows = [
     ['R1 ATTIJARI_RIB182_SALAIRE (10% bucket)', 'Attijari Wafa PSD2 CIB SEPA Direct', 4, '❌ SKIP (Attijari PSD2 OAuth2 + G2 DATABASE_URL Neon — 4/4 creds missing 0 rails réel aujourd\'hui)'],
-    ['R2 ATTIJARI_RIB372_DETTE_CONTENTIEUX_018 (40% · 149k$)', 'Attijari Wafa PSD2 CIB virement', 4, '❌ SKIP (Same 4 creds Attijari PSD2 + DATABASE_URL missing — SKIP cause R1 parent credential set absent)'],
+    ['R2 ATTIJARI_RIB372_DETTE_CONTENTIEUX_018 (40% · 149k$ · SOLE OWNER YOUNES CIN A337773 · CONTENTIEUX BANQUE SEULEMENT · famille = colis recipients)', 'Attijari Wafa PSD2 CIB virement', 4, '❌ SKIP (Same 4 creds Attijari PSD2 + DATABASE_URL missing — SKIP cause R1 parent credential set absent. RIB372 = propriété exclusive Younes Tsouli CIN A337773 — AUCUN titulaire famille, pas de cible familiale contentieux)'],
     ['R3 BC_LU24_RIB646_SOUVERAIN (30% bucket)', 'Banking Circle SDK SEPA-Instant EUR', 5, '❌ SKIP (BC SDK user/pass/endpoint/PSK + G2 DATABASE_URL BIC routing 5/5 missing total)'],
     ['R4 BC_LU24_RIB646_OPS (20% bucket)', 'Banking Circle SDK SEPA Standard', 5, '❌ SKIP (Same 5 Banking Circle SDK secrets as R3 — shared 5/5 missing)'],
     ['R5 PAYONEER_B2B_BUFFER', 'Payoneer B2B OAuth2 Mass Payout', 4, '❌ SKIP (Payoneer client/id/secret/token 3/3 + PayPal CIP case ouvert MA-147672146951995880 total 4/4 missing)'],

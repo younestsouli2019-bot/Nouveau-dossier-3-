@@ -20,6 +20,8 @@ $ErrorActionPreference = 'Stop'
 
 # Autorotate Pre-Wrapper Hook (security-class SPEC git-secrets-autorotate-v358)
 $AUTOROTATE_PRE = Join-Path $PSScriptRoot 'autorotate-pre-wrapper.ps1'
+# Pre-declare ROOT for S0.5/S9 gates (referenced before T2-5 explicit $ROOT assignment):
+$ROOT = Split-Path -Parent $PSScriptRoot
 if (Test-Path $AUTOROTATE_PRE -ErrorAction SilentlyContinue) {
   Write-Host '[HANDS-FREE] T-0: autorotate pre-hook'
   . $AUTOROTATE_PRE
@@ -64,6 +66,80 @@ if (Test-Path $PREFLIGHT_SCRIPT) {
   }
 }
 $env:SPEC8_WET_RUN_CONFIRMED_AT = if ($SPEC8_WET_RUN_WANTED) { (Get-Date -Format o) } else { '' }
+
+# ================================================================
+# PHASE 0.42: S0.5 GIT LEAK SCANNER (S3-T07 P0 security, exit code = 13 UNIQUE)
+# Allow-list: known .ps1 scripts. Any ≥32char base64 outside comments = FAIL EXIT 13.
+# ================================================================
+Write-Host '[HANDS-FREE] S0.5 GATE: git ls-files allow-list scanner (bank refs / signatures / secrets fail closed exit=13)' -ForegroundColor DarkCyan
+$ALLOWED_PS1_NAMES = @(
+  'start-owner-hands-free.ps1','run-live-crypto-po.ps1','autorotate-pre-wrapper.ps1',
+  'scrub-history.ps1','redact-changelog.ps1','wrap-private-asset.ps1',
+  'audit-tracked-sensitive.ps1','build-rotation-receipts.ps1','deploy-rollback.ps1',
+  'backup-doomsday-vault.ps1','secure-cloud-upload.cmd','sync-mirrors.cmd',
+  'apply-attrib-readonly.ps1','install-core-protect-hook.ps1','verify-core.ps1',
+  'gh-sync-org-secrets.ps1','push-outside-sandbox-v358.ps1'
+)
+$leakFails = 0
+$tracked = git -C $ROOT ls-files 2>$null
+$B64_LONG = [regex]::new('[A-Za-z0-9+/=]{40,}')
+foreach ($f in $tracked) {
+  if ($f -match '\.(pdf|pfx|p12|key|pem)$') {
+    Write-Warning "[S0.5 FAIL LEAVE-REPO] tracked binary PDF/key file: $f"
+    $leakFails++
+    continue
+  }
+  if ($f -match '\.ps1$') {
+    $base = Split-Path $f -Leaf
+    if ($ALLOWED_PS1_NAMES -notcontains $base) {
+      Write-Warning "[S0.5 FAIL PS1 NOT-ON-ALLOW-LIST] $f (name='$base' not in allow list count=$($ALLOWED_PS1_NAMES.Count))"
+      $leakFails++
+    }
+  }
+  if ($f -match '\.(ps1|md|txt|env|yml|yaml|json|jsonc)$' -and (Test-Path (Join-Path $ROOT $f))) {
+    $lines = Get-Content (Join-Path $ROOT $f) -Encoding UTF8
+    $lineno = 0
+    foreach ($line in $lines) {
+      $lineno++
+      if ($line -match '^\s*[#;\/]') { continue }
+      if ($B64_LONG.IsMatch($line)) {
+        $hit = $B64_LONG.Match($line).Value
+        if ($hit -match '^[A-Fa-f0-9]{8,}$') { <# pure hex short is ok in tests #> continue }
+        Write-Warning ("[S0.5 FAIL LONG-B64] {0}:{1} len={2} -> {3}…{4}" -f $f,$lineno,$hit.Length,$hit.Substring(0,6),$hit.Substring($hit.Length-3))
+        $leakFails++
+        if ($leakFails -ge 20) { break }
+      }
+    }
+  }
+}
+if ($leakFails -gt 0) {
+  Write-Error "[S0.5 GATE FAIL] $leakFails leak scanner violation(s). Exit code = 13 UNIQUE (S0.5 GATE). Run (a) redact-changelog.ps1, (b) scrub-history.ps1 -Force outside sandbox, (c) rotate creds, (d) move PDFs out-of-tree via wrap-private-asset.ps1."
+  exit 13
+}
+Write-Host ('[HANDS-FREE] S0.5 GATE OK: {0} tracked files scanned, 0 violations exit13=not triggered.' -f @($tracked).Count) -ForegroundColor DarkGreen
+
+# ================================================================
+# PHASE 0.43: S9 AUTHORITATIVE LEDGER INTEGRITY VERIFY (S7-T05, exit code = 17 UNIQUE)
+# Runs AFTER all S0-S8 preflights but BEFORE the HORS prompt / live-crypto wrapper.
+# Chain tamper -> exit17 IMMEDIATELY; no signataire prompt shown so user sees exact exit code.
+# ================================================================
+Write-Host '[HANDS-FREE] S9 GATE: Authoritative ledger HMAC chain verify (exit=17 UNIQUE on tamper)' -ForegroundColor DarkCyan
+$VERIFY_LEDGER = Join-Path $PSScriptRoot 'verify-authoritative-ledger.mjs'
+if (-not (Test-Path $VERIFY_LEDGER)) {
+  Write-Warning '[HANDS-FREE] S9 verify-authoritative-ledger.mjs missing — creating data/out/authoritative-ledger.ndjson via bootstrap step (plan-only).'
+} else {
+  & node $VERIFY_LEDGER --plan-only
+  $s9exit = [int]$LASTEXITCODE
+  if ($s9exit -eq 17) {
+    Write-Error "[HANDS-FREE] S9 GATE FAIL: authoritative ledger chain TAMPER DETECTED (exit=17 UNIQUE). Signataire manual delta_cleared event required BEFORE any HORS prompt display. ABORT now."
+    exit 17
+  } elseif ($s9exit -ne 0) {
+    Write-Warning ("[HANDS-FREE] S9 exit={0} (non-17, non-0 — continuing plan-mode only; no real sends)." -f $s9exit)
+    $SPEC8_WET_RUN_WANTED = $false
+  } else {
+    Write-Host '[HANDS-FREE] S9 GATE OK: ledger HMAC chain verified. exit17=not triggered.' -ForegroundColor DarkGreen
+  }
+}
 
 # ================================================================
 # PHASE 0.5: SWARM REVENUES AUTO-ROUTE (SPEC MODE #8 v3.5.8)
@@ -148,7 +224,8 @@ try {
     $rawBytes = [System.IO.File]::ReadAllBytes($CONFIG_PATH)
     $cfgText  = [System.Text.Encoding]::UTF8.GetString($rawBytes)
     $bomsBefore = ([regex]::Matches($cfgText, "`u{FEFF}")).Count
-    if ($bomsBefore -gt 0 -or $cfgText -match "`u{200B}|`u{00A0}|`u{202E}|`u{202D}") {
+    $anyInvis = [bool]($cfgText -match "`u{200B}|`u{00A0}|`u{202E}|`u{202D}")
+    if ($bomsBefore -gt 0 -or $anyInvis) {
         $cfgText = $cfgText -replace "`u{FEFF}", ''
         $cfgText = $cfgText -replace "`u{200B}", ''
         $cfgText = $cfgText -replace "`u{202E}", ''
@@ -157,9 +234,46 @@ try {
         $cfgText = $cfgText -replace "`r?`n", "`r`n"
         $utf8NoBom = New-Object System.Text.UTF8Encoding $false
         [System.IO.File]::WriteAllText($CONFIG_PATH, $cfgText, $utf8NoBom)
-        Write-Host ("[HANDS-FREE] T2-6b Config sanitized: removed BOMs={0}, invisible chars, wrote UTF-8 NO-BOM idempotent." -f $bomsBefore) -ForegroundColor DarkYellow
+        Write-Host ("[HANDS-FREE] T2-6b Pass1 sanitized: removed BOMs={0}, invisible chars, wrote UTF-8 NO-BOM idempotent." -f $bomsBefore) -ForegroundColor DarkYellow
     } else {
-        Write-Host '[HANDS-FREE] T2-6b Config clean (0 BOMs, 0 invisible chars) — skip.' -ForegroundColor Gray
+        Write-Host '[HANDS-FREE] T2-6b Pass1 Unicode clean (0 BOMs, 0 invisible chars) — skip.' -ForegroundColor Gray
+    }
+
+    # -----------------------------------------------------------------
+    # T2-6b Pass2: BRUTE-FORCE ASCII 7-bit BYTE WHITELIST (PERMANENT)
+    #   - Raison: stacked U+FEFF en bytes bruts (0xEF 0xBB 0xBF x N),
+    #     caractères de remplacement 0x3F collés, ou autres déchets
+    #     d'encodage multi-octets rendent le parser PowerShell 5 fou
+    #     même si UTF8 decode ne voit rien (cas de regression 2026-10-06
+    #     exit=5 T2-7a "Le terme << <FEFFx6># >> n'est pas reconnu").
+    #   - SÉCURITÉ: tous les secrets légitimes stockés ici sont
+    #     imprimables ASCII 0x20..0x7E (URL Postgres, API keys,
+    #     adresses 0x, clés privées hex, tokens JWT, bool true/false
+    #     numériques, commentaires). Whitelist seulement :
+    #       * 0x09 HT, 0x0A LF, 0x0D CR (espaces blancs légaux)
+    #       * 0x20..0x7E (tous ASCII imprimables + espace)
+    #     Tout autre octet → jeté.
+    #   - Idempotent, zéro perte de valeur, exécuté CHAQUE invocation.
+    # -----------------------------------------------------------------
+    try {
+        $raw2 = [System.IO.File]::ReadAllBytes($CONFIG_PATH)
+        $filtered = New-Object System.Collections.Generic.List[byte]
+        $strippedCount = 0
+        foreach ($b in $raw2) {
+            if ($b -eq 0x09 -or $b -eq 0x0A -or $b -eq 0x0D -or ($b -ge 0x20 -and $b -le 0x7E)) {
+                [void]$filtered.Add($b)
+            } else {
+                $strippedCount++
+            }
+        }
+        if ($strippedCount -gt 0) {
+            [System.IO.File]::WriteAllBytes($CONFIG_PATH, $filtered.ToArray())
+            Write-Host ("[HANDS-FREE] T2-6b Pass2 ASCII-7bit filter removed {0} non-whitelisted bytes (0x09/0A/0D + 0x20..7E kept). Permanent." -f $strippedCount) -ForegroundColor DarkYellow
+        } else {
+            Write-Host "[HANDS-FREE] T2-6b Pass2 ASCII-7bit filter clean (0 bytes stripped)." -ForegroundColor Gray
+        }
+    } catch {
+        failClosedExit5 "[T2-6b Pass2] ASCII-7bit byte filter FAIL (read/write?): $_"
     }
 } catch {
     failClosedExit5 "[T2-6b] Config sanitize FAIL (read/write access?): $_"

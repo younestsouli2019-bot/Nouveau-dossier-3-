@@ -86,6 +86,14 @@ runStatic('payment-routing-table', 'scripts/payment-routing-table.mjs');
 runStatic('po-fulfillment-orchestrator', 'scripts/po-fulfillment-orchestrator.mjs');
 runStatic('evm-wallet-balance', 'scripts/evm-wallet-rail.mjs', ['--action', 'balance']);
 
+// ── Phase 3.7: R2/R3/R4 hardening directives (2026-10-06, read-only) ───────
+// R2 double cross-audit (official registry + certified signature, fail-closed),
+// R3 legal-directory quarantine sweep (DRY inside the tick; --apply is
+// operator-only), R4 provider metadata fraud scan (spoofing + geo).
+runStatic('legal-entity-audit', 'scripts/legal-entity-audit.mjs');
+runStatic('legal-quarantine-sweep', 'scripts/legal-quarantine-sweep.mjs');
+runStatic('provider-fraud-scan', 'scripts/provider-metadata-fraud-scan.mjs');
+
 // ── Phase 4: journal stamp ───────────────────────────────────────────────────
 const report = {
   at: new Date().toISOString(),

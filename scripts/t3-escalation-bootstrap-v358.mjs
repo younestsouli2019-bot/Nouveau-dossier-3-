@@ -41,9 +41,9 @@ const corpus3 = [
     order: 3,
     probityScore: "7/10",
     type: "MARKDOWN",
-    label: "DEPP_RESEARCH_HISTORICAL_FRAUD_RISK_MATRIX.md (Famille Bachir/Wafae/Hind/Yacine — SANS AUCUN LIEN UK)",
+    label: "DEPP_RESEARCH_PROCUREMENT_RECIPIENTS.md (Famille Bachir/Wafae/Hind/Yacine — DESTINATAIRES COLIS SEULEMENT · SANS AUCUN LIEN CONTENTIEUX BANCAIRE)",
     file: "audit/legal/DEPP_RESEARCH_HISTORICAL_FRAUD_RISK_MATRIX.md",
-    note: "⚠️ MATRICE FRAUDE FAMILIALE. Classification OSINT A/B/C, cibles fraud probables 7/10 corrélations hôtellerie tourisme + CB. CORPUS EXCLUS FORMELLEMENT TOUT RAPPORT UK DEEP."
+    note: "⚠️ DOCUMENT RÉFÉRENCE DESTINATAIRES PROCUREMENT UNIQUEMENT. Famille Bachir/Hind/Wafae/Yacine = destinataires colis SEULEMENT — AUCUN titulaire de compte bancaire, AUCUNE cible contentieux. Contentieux = UNIQUEMENT Attijari Banque Affaire 018. CORRECTION SIGNATAIRE 6 OCT 2026 PRIME SUR TOUTE ANNOTATION ANTÉRIEURE."
   }
 ];
 
@@ -60,7 +60,7 @@ const caseData = {
     { from: null, to: STATUS.DRAFT, reason: "Ingestion Contentieux 018 Attijariwafa Rabat Agdal", actor: SIGNATAIRE, at: ts },
     { from: STATUS.DRAFT, to: STATUS.FORENSIC_REVIEW, reason: "Forensic review DEPP FRAUD MATRIX 7/10 + DISS-FORMAL 9/10 corpus 3 docs", actor: "AuditEngine-v358", at: ts },
     { from: STATUS.FORENSIC_REVIEW, to: STATUS.VERIFIED_OUTBOUND, reason: "Corpus vérifié: exact 3 docs, DEEP UK EXCLU, rectificatif accuracy 001-A conforme 17/17", actor: "Accuracy001A-Validator", at: now },
-    { from: STATUS.VERIFIED_OUTBOUND, to: STATUS.ESCALATED, reason: "Phase 2 contentieux reprise 149.000 USD — Attijariwafa + PayP al CIP parallèle. User instruction: 100% autonomie, PAS D'ENVOI OFFICIEL TIERS HUISSIER, signataire gère contentieux seul.", actor: SIGNATAIRE, at: now }
+    { from: STATUS.VERIFIED_OUTBOUND, to: STATUS.ESCALATED, reason: "Phase 2 contentieux reprise 149.000 USD — Affaire UNIQUEMENT Attijariwafa Banque Agdal 018 + PayPal CIP parallèle. Contentieux FAMILLE = AUCUN (famille = destinataires colis procurement SEULEMENT). User instruction: 100% autonomie, PAS D'ENVOI OFFICIEL TIERS HUISSIER, signataire gère contentieux seul.", actor: SIGNATAIRE, at: now }
   ],
   trigger: "JUD-CONTENTIEUX-REPRISE-PHASE2-149K-USD",
   internalRef: "DOSSIER-CONTENTIEUX-ATTIJARI-018-2026-149K-USD",
@@ -82,13 +82,13 @@ const caseData = {
     ownerContact: "+212 600 000 000 (SIGNATAIRE)",
     bankContact: "contentieux@agdal018.attijariwafa.ma (présumé)",
     ownerAddress: "45 Av Ibn Sina Appt 4, Rabat Agdal",
-    description: "Phase 2 recouvrement contentieux 149 000 USD Attijariwafa Agdal 018. DISSOCIATION FORMELLE SIGNATAIRE vs homonyme UK Irhabi 007 OBLIGATOIRE. Signataire Younes Tsouli CIN A337773 = PERSONNE TOTALEMENT DISTINCTE. FRAUDE FAMILIALE BACHIR TSOULI (Deputy Head ONMT Londres 1992-2002) / Wafae Rais / Hind Tsouli / Yacine Tsouli CIBLÉES Probité 7/10 Matrice DEPP. ⚠️ RECTIFICATIF ACCURACY 001-A: coordonnées huissier présumées FAIL-CLOSED — USER INSTRUCTION PERMANENTE: PAS D'ENVOI OFFICIEL DOCUMENT À ÉTUDE HUISSIER, SIGNATAIRE GÈRE CONTENTIEUX SEUL 100% AUTONOME.",
+    description: "Phase 2 recouvrement contentieux 149 000 USD Attijariwafa Banque Agdal 018. Contentieux = UNIQUEMENT ATTIJARI BANQUE. Dissociation formelle signataire vs homonyme UK Irhabi 007 OBLIGATOIRE. Signataire Younes Tsouli CIN A337773 = PERSONNE TOTALEMENT DISTINCTE, PROPRIÉTAIRE EXCLUSIF RIB372. RÉFÉRENCE DESTINATAIRES PROCUREMENT (PAS CIBLES CONTENTIEUX): famille Bachir/Hind/Wafae/Yacine = destinataires colis SEULEMENT, N'ONT AUCUN COMPTE BANCAIRE DANS CETTE AFFAIRE. ⚠️ RECTIFICATIF ACCURACY 001-A: coordonnées huissier présumées FAIL-CLOSED — USER INSTRUCTION PERMANENTE: PAS D'ENVOI OFFICIEL DOCUMENT À ÉTUDE HUISSIER, SIGNATAIRE GÈRE CONTENTIEUX SEUL 100% AUTONOME.",
     triggers: [
-      "TITULAIRE CORRECTION FORMELLE 28 SEPT 2026 BACHIR→YOUNES",
+      "TITULAIRE CORRECTION FORMELLE DÉFINITIVE 6 OCT 2026 RIB372 PROPRIÉTAIRE YOUNES CIN A337773",
       "DISS-FORMAL-ATT-018-2026-1005 SIGNÉE 9/10",
-      "MATRICE FRAUDE FAMILIALE 7/10 CORRÉLATIONS",
+      "CONTENTIEUX = UNIQUEMENT ATTIJARI BANQUE 018 · 149 000 USD · PAS DE CIBLE FAMILIALE",
       "RECTIFICATIF ACCURACY-001-A DOCTRINE FAIL-CLOSED 17/17",
-      "PHASE 2 JUGE: REPRISE OFFENSIVE RECOUVREMENT 149 000 USD"
+      "PHASE 2 JUGE: REPRISE OFFENSIVE RECOUVREMENT BANCAIRE 149 000 USD"
     ]
   },
   forensic: {
@@ -100,8 +100,8 @@ const caseData = {
     deepUkExcluded: true,
     accuracy001A: { pass: true, total: 17, qualified: 17, checksum: "e469506c75cacad4201bd16dbb80516e31b2a19c723d8a5b744a4e07552e79af" },
     dissociationFormal: { pass: true, ref: "DISS-FORMAL-ATT-018-2026-1005-YT-CIN-A337773", score: "9/10" },
-    familyFraudMatrix: { pass: true, score: "7/10", targets: ["Bachir Tsouli","Wafae Rais","Hind Tsouli","Yacine Tsouli"] },
-    rogerVincent: { classification: "C", score: "2/10", note: "HYPOTHÈSE LIEN ROGER VINCENT UK HMP BELMARSH × BACHIR NON RETENUE. 0 PREUVE NOMINALE. 4 REQUÊTES HMCTS/INSIDETIME/AL-DAOOR/COMPANIES HOUSE = 0 HIT. 7 PROFILS NON INCARCÉRÉS." }
+    familyFraudMatrix: { pass: true, score: "7/10 (DOCUMENT RÉFÉRENCE DESTINATAIRES PROCUREMENT UNIQUEMENT · PAS DE CIBLES CONTENTIEUX)", targets: [] },
+    rogerVincent: { classification: "C", score: "2/10", note: "HYPOTHÈSE LIEN ROGER VINCENT UK HMP BELMARSH × BACHIR NON RETENUE · 0 PREUVE NOMINALE · 4 REQUÊTES HMCTS = 0 HIT · FAMILLE = DESTINATAIRES COLIS SEULEMENT." }
   },
   dueActions: [
     { step: "FOLLOW_UP_1", dueInHours: computeBusinessHours(ts, now), reason: "72h ouvrées après signification — auto-rappel Attijari relation manager", dispatch: "degraded-queued (SMTP non configuré)" },

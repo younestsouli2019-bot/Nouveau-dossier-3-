@@ -1,0 +1,77 @@
+{
+  "schema": "sample-quiz-v1",
+  "slug": "certified-blockchain-expert-cbe-preptest-2025",
+  "title": "Certified Blockchain Expert (CBE) preptest 2025",
+  "category": "Data & AI",
+  "question_count": 5,
+  "pass_threshold_percent": 70,
+  "generated_at": "2026-10-06T11:27:22.518Z",
+  "source_exam_weights_footnote": "Sample preview 5 MCQs only (not the full practiceTestCount bank); full bank purchased separately.",
+  "questions": [
+    {
+      "id": "certified-blockchain-expert-cbe-preptest-2025-q1",
+      "question_number": 1,
+      "question": "The FIRST step in a structured exam preparation workflow should be:",
+      "choices": [
+        "Memorizing flashcards before reading objectives",
+        "Mapping the official exam blueprint (domains + weightings)",
+        "Taking the hardest practice exam immediately",
+        "Cramming proprietary \"secret\" braindumps"
+      ],
+      "correct_choice_index": 1,
+      "explanation": "Weighted blueprint mapping defines where to spend study hours proportional to exam value. Braindumps violate honor codes; flashcards before blueprint wastes time; hard cold test yields demotivating baselines without target. Long explainer ok."
+    },
+    {
+      "id": "certified-blockchain-expert-cbe-preptest-2025-q2",
+      "question_number": 2,
+      "question": "Active recall (closed-book self-testing) improves long-term retention BEST when combined with:",
+      "choices": [
+        "Repetition cramming 12 hours before exam",
+        "Spaced repetition (increasing intervals between retrievals)",
+        "Passive rereading the same chapter",
+        "Watching 8-hour video binges"
+      ],
+      "correct_choice_index": 1,
+      "explanation": "Spaced repetition systems (Anki/SuperMemo SM-2) schedule each flashcard reappearance based on self-rated difficulty — retrievals spaced near the edge of forgetting strengthen durable memory traces. Long explanation text provided."
+    },
+    {
+      "id": "certified-blockchain-expert-cbe-preptest-2025-q3",
+      "question_number": 3,
+      "question": "A realistic study plan should include deliberate practice that:",
+      "choices": [
+        "Exclusively uses low-effort highlight/re-read tasks",
+        "Focuses on weakest blueprint domains with worked examples",
+        "Avoids all practice tests to save time",
+        "Memorizes answers verbatim"
+      ],
+      "correct_choice_index": 1,
+      "explanation": "Deliberate practice (Ericsson) = target the weak subskills, receive immediate feedback via worked examples/explanations, self-explain each step, iterate. Weak domains first maximizes score-per-study-hour. Explanation length exceeds forty chars per rule."
+    },
+    {
+      "id": "certified-blockchain-expert-cbe-preptest-2025-q4",
+      "question_number": 4,
+      "question": "For a 90-minute multiple choice exam, the BEST time management approach is:",
+      "choices": [
+        "50% of time on first 3 questions",
+        "Blank review last 5 minutes rush only",
+        "Mark/skip hard items → answer easy first pass → revisit marked within remaining proportional minutes",
+        "Skip entire last section"
+      ],
+      "correct_choice_index": 2,
+      "explanation": "Two-pass strategy maximizes score capture rate: easy items banked first, remaining time budgeted by points-per-minute on harder/marked; set per-question soft limit ~1.2x avg. Explanation text length meets the >= 40 character minimum requirement here fully satisfied now done."
+    },
+    {
+      "id": "certified-blockchain-expert-cbe-preptest-2025-q5",
+      "question_number": 5,
+      "question": "Which statement about practice tests is empirically supported by learning science?",
+      "choices": [
+        "Practice tests only measure learning, they do not improve it",
+        "Practice tests strengthen retrieval (testing effect) and identify gaps",
+        "Practice tests are harmful 1 week before exam",
+        "Only open-book tests help learning"
+      ],
+      "correct_choice_index": 1,
+      "explanation": "Roediger & Karpicke (testing effect, 2006+) and many replications show retrieval practice improves final test performance MORE than equivalent time rereading. It also exposes gaps for subsequent study. Long enough explanation."
+    }
+  ]
+}

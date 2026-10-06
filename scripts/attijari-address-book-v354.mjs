@@ -39,25 +39,35 @@ function parseProcurementTXT(raw) {
     branchCode: '045', branch: 'Attijari Settat — Bouznika',
     city: 'Bouznika', postal: '13100',
   });
-  // Bachir L9 (procurement recipient only — NOT owner of Agdal Contentieux account)
+  // Bachir L9 (CORRECTION 2026-10-06 SIGNATAIRE VERBATIM:
+  //   - Bachir Tsouli = UNIQUEMENT destinataire PHYSIQUE de COLIS / PROCUREMENT ITEMS
+  //     à l'adresse 45 Av Ibn Sina Appt 4 Agdal (livraison colis uniquement)
+  //   - BACHIR TSOULI N'EST PROPRIÉTAIRE D'AUCUN COMPTE BANCAIRE (ni RIB 182, ni RIB 372, ni RIB 646)
+  //   - AUCUN "debt_repayment proxy" / AUCUN compte à son nom — correction définitive
   const bR = /delivery address:for M Bachir Tsouli address:\s*(\d+ Avenue Ibn Sina[^H]*?)\s*Tablette CR/i;
   const mB = raw.match(bR);
   if (mB) out.push({
-    ownerLabel: 'Bachir Tsouli — RIB 372 (debt_repayment proxy, recipient Procurement Agdal 45 Av Ibn Sina Appt 4)',
-    ribLast: '372', ribFull: '00781 00004 482000613213 72',
+    ownerLabel: 'Bachir Tsouli — DESTINATAIRE PHYSIQUE UNIQUEMENT (livraison colis Procurement) 45 Av Ibn Sina Appt 4 Agdal — AUCUN COMPTE BANCAIRE PROPRIÉTÉ BACHIR (RIB 182/372/646 = propriété exclusive YOUNES TSOULI CIN A337773)',
+    ribLast: '', ribFull: '',
     address: mB[1].trim().replace(/\s+/g, ' '), tel: '—',
-    branchCode: '018', branch: 'Attijari Rabat Agdal — Agdal client counter (NOT Contentieux / Traitement — owner is Younes Tsouli CIN A337773)',
+    branchCode: '018', branch: 'Attijari Rabat Agdal — Agdal client counter (Bachir = PHYSICAL RECIPIENT ONLY — TITULAIRE COMPTES = Younes Tsouli CIN A337773)',
     city: 'Rabat', postal: '10090',
   });
-  // OWNER of Contentieux / Traitement Agdal (VERBATIM correction 2026-09-28):
-  //   Branch 018 Rabat Agdal Contentieux / Traitement — 45 Av Ibn Sina Appt 4 = Younes Tsouli CIN A337773
-  //   (NOT Bachir Tsouli — Bachir is the Procurement recipient there, not the account holder)
+  // OWNER of Contentieux / Traitement Agdal (VERBATIM correction 2026-10-06 SIGNATAIRE YOUNES TSOULI CIN A337773):
+  //   Branch 018 Rabat Agdal Contentieux / Traitement — 45 Av Ibn Sina Appt 4
+  //   COMPTES PROPRIÉTÉ EXCLUSIVE YOUNES TSOULI CIN A337773 (SOLE OWNER):
+  //     - RIB 182 Salaire  : 00888 00018 000000000182 80
+  //     - RIB 372 Contentieux / Traitement Attijariwafa (40% bucket) : 00888 00018 000000000372 41
+  //       ⚠️ AFFAIRE: Contentieux UNIQUEMENT avec ATTIJARIWAFA BANQUE.
+  //          AUCUNE affaire contentieuse / recouvrement avec la "famille".
+  //          La famille (Bachir / Hind / Wafae / Yacine) = destinataires colis UNIQUEMENT.
+  //     - RIB 646 Banking Circle LU (30% SOV + 20% OPS)
   out.push({
-    ownerLabel: 'OWNER Younes Tsouli CIN A337773 — Contentieux / Traitement Rabat Agdal (018) — RIB 646 (Banking Circle primary + domestic MAD mirror)',
-    ribLast: '646', ribFull: 'LU 646 BANKING CIRCLE 001 (MAD mirror 018 / Agdal Contentieux / Traitement — signataire titulaire)',
+    ownerLabel: 'OWNER Younes Tsouli CIN A337773 — SOLE OWNER Contentieux / Traitement Rabat Agdal (018) — COMPTES: RIB 182 Salaire · RIB 372 Contentieux Attijari · RIB 646 Banking Circle LU (S/O)',
+    ribLast: '182/372/646', ribFull: 'RIB 182 : 00888 00018 000000000182 80 — RIB 372 : 00888 00018 000000000372 41 (Contentieux Attijari BANQUE UNIQUEMENT) — RIB 646 Banking Circle LU : LU 646 BANKING CIRCLE 001',
     address: '45 Avenue Ibn Sina, Appartement 4, Agdal, Rabat, Maroc',
     tel: '+212639158209', cin: 'A337773',
-    branchCode: '018', branch: 'Attijari Rabat Agdal — Contentieux / Traitement (45 Av. Ibn Sina Appt 4 — TITULAIRE Younes Tsouli CIN A337773)',
+    branchCode: '018', branch: 'Attijari Rabat Agdal — Contentieux / Traitement (45 Av. Ibn Sina Appt 4 — TITULAIRE UNIQUE = Younes Tsouli CIN A337773 — Contentieux = AFFAIRE BANCAIRE ATTIJARI UNIQUEMENT, pas avec la famille)',
     city: 'Rabat', postal: '10090',
   });
   return out;

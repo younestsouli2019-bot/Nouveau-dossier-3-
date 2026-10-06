@@ -1,0 +1,5 @@
+{
+  "at": "2026-10-06",
+  "purpose": "R2/R3 trust anchor — pinned certificate fingerprints. Only fingerprints listed here validate an entity's certified electronic signature (step 2) or a compliance certificate (quarantine sweep). Empty allowlist = everything fails closed until the owner pins real certificates.",
+  "certificates": []
+}

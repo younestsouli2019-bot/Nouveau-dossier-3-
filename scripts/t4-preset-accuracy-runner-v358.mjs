@@ -22,14 +22,14 @@ const PRESETS = [
   },
   {
     id: "preset_attijari_rib372_debt",
-    bucket: "DEBT_REPAYMENT (40% — remboursement créances fournisseurs contentieux Bachir/Wafae/Hind/Yacine cibles)",
+    bucket: "DEBT_REPAYMENT (40% — pécule Contentieux ATTIJARI BANQUE Affaire 018 149 000$ · SOLE OWNER YOUNES TSOULI CIN A337773)",
     rail: "bank_wire_attijari_agdal_018",
     destination: "00888 00018 000000000372 92",
     ribParts: { codeBanque: "00888", codeGuichet: "00018", numCompte: "000000000372", cle: "92" },
-    label: "Attijariwafa RABAT AGDAL CONTENTIEUX 018 — RIB 372 Dette/Remboursement contentieux — signataire Younes Tsouli CIN A337773 (⚠️ BACHIR TSOULI = destinataire procurement 45 Av Ibn Sina Appt4 SEULEMENT, PAS le titulaire du compte)",
+    label: "Attijariwafa RABAT AGDAL CONTENTIEUX 018 — RIB 372 Contentieux / Traitement — COMPTE EXCLUSIF Younes Tsouli CIN A337773 — (Famille Bachir/Hind/Wafae/Yacine = destinataires colis procurement SEULEMENT. Bachir N'EST PROPRIÉTAIRE D'AUCUN COMPTE)",
     currency: "MAD",
     kyc: "manual",
-    addressBookSrc: "scripts/attijari-address-book-v354.mjs L45-51 (recipient proxy Bachir RIB372) + correction 28 SEPT 2026 titulaire=Younes",
+    addressBookSrc: "scripts/attijari-address-book-v354.mjs L56-72 (SOLE OWNER RIB182+372+646 propriété Younes CIN A337773 correction 6 oct 2026)",
     neonTable: "OwnerAccount.accountId = owner_attijari_debt_372",
     neonHoldField: "heldDebtMAD",
     neonSpendableField: "spendableDebtMAD"

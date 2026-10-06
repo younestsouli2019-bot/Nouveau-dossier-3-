@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://realworldcerts.com/schemas/authoritative-ledger-event-v1.schema.json",
+  "title": "Authoritative Ledger Event V1",
+  "description": "Single append-only HMAC-chained authoritative ledger event line envelope (NDJSON per line).",
+  "type": "object",
+  "required": ["event", "prevHash", "hash", "sig"],
+  "additionalProperties": false,
+  "properties": {
+    "event": {
+      "type": "object",
+      "required": ["schema", "id", "type", "ts", "payload"],
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "type": "string",
+          "const": "authoritative-ledger-event-v1"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[a-fA-F0-9]+$"
+        },
+        "type": {
+          "type": "string",
+          "pattern": "^[a-z]+\\.[a-z_]+\\.[a-z_]+$",
+          "enum": [
+            "sales.order.created",
+            "sales.payment.verified",
+            "sales.delivery.completed",
+            "sales.refund.issued",
+            "sales.order.abandoned",
+            "payout.initiated",
+            "payout.pending_provider",
+            "payout.completed",
+            "payout.failed",
+            "payout.needs_manual_proof",
+            "reconciliation.discrepancy.opened",
+            "reconciliation.discrepancy.resolved",
+            "system.ledger.bootstrapped",
+            "system.ledger.checksum_mismatch"
+          ]
+        },
+        "ts": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "payload": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": true
+        }
+      }
+    },
+    "prevHash": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "hash": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "sig": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

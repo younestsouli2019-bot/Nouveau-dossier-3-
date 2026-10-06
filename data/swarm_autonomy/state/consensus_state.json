@@ -1,36 +1,7 @@
 {
-  "at": 1791014726625,
-  "iso": "2026-10-03T08:05:26.625Z",
-  "holiday": {
-    "active": false,
-    "ok": true,
-    "proposalType": "HOLIDAY_NON_ESSENTIALS",
-    "label": "Pause non-essential swarm work up to 6h",
-    "windowHours": 6,
-    "ballotsCounted": 0,
-    "expiredBallots": 0,
-    "quorumPct": 0.67,
-    "requiresWeight": true,
-    "ballotsAfterDedup": 0,
-    "duplicateBallotsIgnored": 0,
-    "approvalPct": 0,
-    "approvalByVotes": 0,
-    "approvalByWeight": 0,
-    "yesWeighted": 0,
-    "noWeighted": 0,
-    "yesCount": 0,
-    "noCount": 0,
-    "distinctVoters": 0,
-    "yesVoters": 0,
-    "voters": [],
-    "minVotersRequired": 2,
-    "passes": false,
-    "failsBecause": [
-      "approval 0.0% < quorum 67.0%",
-      "only 0 distinct voter(s); 2 required"
-    ],
-    "_now": 1791014726625
-  },
+  "at": 1791282642213,
+  "iso": "2026-10-06T10:30:42.213Z",
+  "holiday": false,
   "selfAuditPasses": false,
   "deepAuditPasses": false,
   "moneyOverridePasses": false,
@@ -43,26 +14,25 @@
     "SETTLEMENT_LEDGER_UNBLOCK"
   ],
   "liveness": {
-    "checkedAt": "2026-10-03T08:05:26.575Z",
+    "checkedAt": "2026-10-06T10:30:42.178Z",
     "processesTracked": 1,
-    "processesAlive": 1,
-    "processesDown": false,
-    "stateAgeMs": 6.648193359375,
-    "stateStale": false,
+    "processesAlive": 0,
+    "processesDown": true,
+    "stateAgeMs": 267915551.6599121,
+    "stateStale": true,
     "noState": false,
-    "stale": false,
+    "stale": true,
     "staleAfterMs": 900000
   },
   "tallies": {
     "selfAudit": {
       "passes": false,
-      "distinctVoters": 1,
-      "yesVoters": 1,
-      "voters": [
-        "swarm-improve-loop"
-      ],
+      "distinctVoters": 0,
+      "yesVoters": 0,
+      "voters": [],
       "failsBecause": [
-        "only 1 distinct voter(s); 2 required"
+        "approval 0.0% < quorum 50.0%",
+        "only 0 distinct voter(s); 2 required"
       ]
     },
     "deepAudit": {
@@ -77,13 +47,12 @@
     },
     "moneyOverride": {
       "passes": false,
-      "distinctVoters": 1,
-      "yesVoters": 1,
-      "voters": [
-        "swarm-improve-loop"
-      ],
+      "distinctVoters": 0,
+      "yesVoters": 0,
+      "voters": [],
       "failsBecause": [
-        "only 1 distinct voter(s); 2 required"
+        "approval 0.0% < quorum 85.0%",
+        "only 0 distinct voter(s); 2 required"
       ]
     }
   }

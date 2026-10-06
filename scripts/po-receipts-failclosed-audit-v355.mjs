@@ -28,7 +28,7 @@ const OWNERS = [
   { label: 'Younes Tsouli Bouznika OWNER (CIN A337773 — Contentieux Agdal 018)',
     matches: [/younes/i, /Bouznika/i, /Lot Rita/i],
     requiredDeliveriesBefore: new Date('2026-09-28T23:59:59Z') },
-  { label: 'Bachir Tsouli — Agdal 45 Av Ibn Sina Appt 4 (RECIPIENT only — NOT owner)',
+  { label: 'Bachir Tsouli — Agdal 45 Av Ibn Sina Appt 4 (RECIPIENT only — NOT owner · CORRECTION SIGNATAIRE 6 OCT 2026: SOLE OWNER comptes bancaires Agdal 018 = YOUNES TSOULI CIN A337773. Bachir = exclusivement destinataire physique de colis, N\'EST PROPRIÉTAIRE D\'AUCUN COMPTE BANCAIRE RIB182/372/646)',
     matches: [/bachir/i, /Agdal/i, /Ibn Sina/i] },
   { label: 'Hind Tsouli — Casablanca Sidi Yahya Centre',
     matches: [/hind/i, /Sidi Yahya/i, /JASMIN/i, /12150/i] },

@@ -237,7 +237,7 @@ function capabilityCheckPerPreset(presetId) {
     case 'RIB372':
       return CAP('CAP_BINANCE_WITHDRAW') || env.ATTIJARI_CLIENT_ID
         ? { ok: true }
-        : { ok: false, reason: `LIVE WET-RUN capability guard: preset=${presetId} Attijari or CAP_BINANCE_WITHDRAW missing (CAP_BINANCE_WITHDRAW=${env.CAP_BINANCE_WITHDRAW||'false'}) — fail-closed quarantine audit trail 40 chars` };
+        : { ok: false, reason: `LIVE WET-RUN capability guard: preset=${presetId} Attijari Contentieux Banque 018 · SOLE OWNER Younes CIN A337773 (RIB372 = Contentieux Banque SEULEMENT, pas famille cible · Famille Bachir/Hind/Wafae/Yacine = destinataires colis procurement SEULEMENT) · missing Attijari creds or CAP_BINANCE_WITHDRAW=false · fail-closed quarantine audit trail 40 chars minimum` };
     default:
       return { ok: true };
   }

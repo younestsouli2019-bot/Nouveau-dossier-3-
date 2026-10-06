@@ -928,3 +928,123 @@ model PayoutHold {
 
   @@index([nextReviewAt])
 }
+
+// ── S6-T01: PHYSICAL Sales/Payout table split + traceable join ────────────────
+// Rule: SalesLedger is WRITABLE ONLY by sales_writer DB role (web /api/orders + webhook receivers)
+//       PayoutLedger is WRITABLE ONLY by payout_writer DB role (signataire HORS hands-free PS1 ONLY)
+//       marketing_agent role can READ SalesLedger BUT NEVER UPDATE status
+//       Join: PayoutLedger.covered_set = JSONB array of SalesLedger.order_reference
+//
+// Bucket codes (CHECK enforced — no arbitrary strings, prevents family-name destinations):
+//   SALARY_RIB182 | DEBT_RIB372 | SOVEREIGN_RIB646 | OPS_RIB646 | L2_USDC_ARBITRUM
+
+enum SalesStatus {
+  ordered
+  awaiting_payment
+  paid
+  delivered
+  refunded
+  abandoned
+}
+
+model SalesLedger {
+  id                    String      @id @default(cuid())
+  order_reference       String      @unique // RWC-XXXXXXXXXX-XXXXXXXXXX-XXXXXXXXXX-XXXXXXXXXX exact mint
+  product_slug          String
+  buyer_email_hash      String?     // sha256(raw lowercased email) -> 64 hex, NO PII PLAIN
+  price_amount_cents    Int         // positive integer minor units (never float)
+  currency              String      @default("USD")
+  payment_method        String      // paypal | payoneer | crypto | bank
+  status                SalesStatus @default(ordered)
+  payment_provider_txid String?     @unique
+  access_token_hash     String?     // sha256(random32hex) for temp delivery cookie (24hr)
+  abandoned_seconds     Int?        // how long buyer was idle before sweep classified abandoned
+  approved_by           String?
+  approved_at           DateTime?
+  createdAt             DateTime    @default(now())
+  paidAt                DateTime?
+  deliveredAt           DateTime?
+  refundedAt            DateTime?
+  abandonedAt           DateTime?
+
+  @@index([status, createdAt])
+  @@index([product_slug, createdAt])
+  @@index([payment_provider_txid])
+}
+
+enum PayoutLStatus {
+  initiated
+  pending_provider
+  completed
+  failed
+  needs_manual_proof
+}
+
+model PayoutLedger {
+  id                     String         @id @default(cuid())
+  batch_id               String?
+  payout_destination_code String        // CHECK: IN(SALARY_RIB182,DEBT_RIB372,SOVEREIGN_RIB646,OPS_RIB646,L2_USDC_ARBITRUM)
+  amount_cents           Int            // CHECK: >0
+  currency               String         @default("USD")
+  initiated_by           String         // CHECK: STARTS WITH 'signataire-hors-tty:' — web NEVER writes this table
+  status                 PayoutLStatus  @default(initiated)
+  provider_txid          String?        @unique
+  initiated_at           DateTime       @default(now())
+  provider_submitted_at  DateTime?
+  provider_completed_at  DateTime?
+  failed_at              DateTime?
+  provider_raw_payload   Json?          // DB trigger forbids completed without this JSONB OBJECT
+  provider_signature     String?        // DB trigger: >=16 chars required when completed
+  covered_set            Json?          // Array of SalesLedger.order_reference this payout covers
+  failure_reason         String?
+
+  @@index([payout_destination_code, status])
+  @@index([status, initiated_at])
+  @@index([covered_set])
+}
+
+model InboundLead {
+  id         String   @id @default(cuid())
+  campaign   String
+  source     String
+  product_slug String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([campaign, createdAt])
+  @@index([source, createdAt])
+}
+
+model CatalogEvent {
+  id           String   @id @default(cuid())
+  event_type   String   // catalog_view | course_page_view | cta_click_preview | cta_click_quiz | cta_click_checkout
+  product_slug String
+  session_id   String   // UUID v4 (no PII)
+  ip_hash      String?  // sha256(ip + daily salt)
+  referer_host String?
+  user_agent   String?
+  createdAt    DateTime @default(now())
+
+  @@index([product_slug, event_type, createdAt])
+  @@index([session_id, createdAt])
+}
+
+model ReconciliationDiscrepancy {
+  id                 String   @id @default(cuid())
+  discrepancy_type   String   // provider_tx_missing | amount_mismatch | status_mismatch | duplicate_txid
+  status             String   @default("OPEN") // OPEN | INVESTIGATING | RESOLVED_CONFIRMED | RESOLVED_WRITES_OFF | CLOSED_FALSE_POSITIVE
+  provider           String
+  provider_txid      String?
+  internal_reference String
+  expected_amount_cents BigInt?
+  actual_amount_cents   BigInt?
+  expected_status    String?
+  actual_status      String?
+  detected_at        DateTime @default(now())
+  resolved_at        DateTime?
+  resolution_notes   String?  // CHECK: >=40chars when status!='OPEN' (enforced SQL side)
+  payload_snapshot   Json?
+
+  @@index([provider, status])
+  @@index([detected_at])
+}
