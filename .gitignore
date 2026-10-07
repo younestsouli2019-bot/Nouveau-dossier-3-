@@ -49,3 +49,9 @@ exports/recon/raw/
 
 # Watchdog tick reports contain finding details (ids/amounts) — never public
 reports/watchdog/
+
+# Owner hands-free runtime config holds LIVE credentials (Neon DATABASE_URL,
+# BINANCE_API_KEY/SECRET, OWNER_EXEC_UNLOCK). Committed 9ad2972 and pushed to
+# the PUBLIC remote on 2026-10-07 — untracked same day, values must be rotated.
+# Never re-add. Local copy stays on disk for the scheduled-task wrappers.
+.swarm/

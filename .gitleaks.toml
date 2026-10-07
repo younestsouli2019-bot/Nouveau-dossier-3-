@@ -7,6 +7,45 @@ title = "Nouveau-dossier-3 secret-scan config"
 # Use the default rules bundled with gitleaks; add repo-specific rules below.
 useDefault = true
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Repo-specific rules — added 2026-10-07 after .swarm/owner-hands-free.config.ps1
+# shipped 7 live credentials (Neon DATABASE_URL + password, BINANCE_API_KEY/SECRET,
+# OWNER_EXEC_UNLOCK) to the PUBLIC remote while `Secret Scan (gitleaks)` reported
+# success. Root cause: the upstream default ruleset has no rule for database
+# connection strings or bare exchange-API keys, so nothing matched.
+#
+# Both rules are keyword-anchored so they do not fire on hashes/base64 blobs.
+# ─────────────────────────────────────────────────────────────────────────────
+
+[[rules]]
+id = "db-connection-string"
+description = "Database connection string embedding a password (Postgres/MySQL/Mongo/Redis)"
+# Schemes seen in this repo: postgres:// (Neon pooled + direct), postgresql://,
+# mysql://, mongodb://, rediss://. Requires user:password@ so plain URLs pass.
+regex = '''(?:postgres|postgresql|mysql|mongodb|rediss|amqp)://[^\s'"<>/]+:[^\s'"<>/]+@[^\s'"<>/]+'''
+keywords = [
+  "postgres://",
+  "postgresql://",
+  "mysql://",
+  "mongodb://",
+  "rediss://",
+]
+
+[[rules]]
+id = "assigned-secret-known-key"
+description = "Credential-shaped value assigned to a sensitive variable name"
+# Targets the exact key names used by .swarm/owner-hands-free.config.ps1 and
+# equivalents: 'BINANCE_API_KEY' = '...'. Requires >=16 chars so empty '' and
+# boolean flags ('true') do not fire.
+regex = '''(?i)['"]?(?:BINANCE|BYBIT|BITGET|OKX|KRAKEN|COINBASE)_(?:API_KEY|API_SECRET|API_PASSPHRASE|API_PASSWORD)['"]?\s*[:=]\s*['"][^'"]{16,}['"]'''
+keywords = ["BINANCE_API_KEY", "BINANCE_API_SECRET", "BYBIT_API_KEY", "BITGET_API_KEY"]
+
+[[rules]]
+id = "assigned-secret-owner-unlock"
+description = "Owner execution-unlock token assigned in plaintext"
+regex = '''(?i)['"]?OWNER_EXEC_UNLOCK['"]?\s*[:=]\s*['"][^'"]{16,}['"]'''
+keywords = ["OWNER_EXEC_UNLOCK"]
+
 # Never scan throwaway keys minted at runtime by the I8 gate self-test —
 # they are generated in-memory, never printed, never persisted (verify-i8-gates).
 [allowlist]

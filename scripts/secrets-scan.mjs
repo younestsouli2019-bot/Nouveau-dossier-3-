@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { execSync } from "child_process";
 
 const IGNORE_DIRS = new Set([
 	"node_modules",
@@ -62,6 +63,10 @@ function scanFile(file) {
 				re: /-----BEGIN (?:RSA|EC|OPENSSH) PRIVATE KEY-----/,
 			},
 			{
+				name: "db_connection",
+				re: /(?:postgres|postgresql|mysql|mongodb|rediss|amqp):\/\/[^\s'"<>/]+:[^\s'"<>/]+@[^\s'"<>/]+/g,
+			},
+			{
 				name: "prose_secret_label",
 				keyGroup: 1,
 				re: /\b(?:api[_-]?key|secret|token|service[_-]?token|passphrase|password|access[_-]?key|private[_-]?key)\b[\s]*[:=][\s]*["']?([A-Za-z0-9_\-]{20,})/gi,
@@ -93,14 +98,57 @@ function scanFile(file) {
 	}
 }
 
+// High-signal patterns that gate the exit code.
+//
+//   api_key_like    excluded — bare 32+ alnum match, 9392 hits on hashes/base64/ids
+//   key_assign      excluded — matches `${{ secrets.FOO }}` in workflows,
+//                   `__SWARM_*` sentinels and connector name strings (20 hits, 0 real)
+//   secret_assign   excluded — same class of false positive
+//
+// The four below are credential-shaped and produced zero false positives across
+// 4514 files on 2026-10-07. Add here only when a pattern is unambiguous.
+const GATING_PATTERNS = new Set([
+	"private_key",
+	"db_connection",
+	"known_compromised",
+	"prose_secret_label",
+]);
+
+function trackedFiles() {
+	try {
+		const out = execSync("git ls-files", {
+			encoding: "utf8",
+			maxBuffer: 64 * 1024 * 1024,
+		});
+		return new Set(
+			out
+				.split("\n")
+				.filter(Boolean)
+				.map((p) => path.resolve(p)),
+		);
+	} catch {
+		// Fail closed: if we cannot read the index we cannot scope the gate.
+		return null;
+	}
+}
+
 function main() {
 	const root = process.cwd();
 	const files = walk(root);
+	const tracked = trackedFiles();
 	const report = [];
+	const violations = [];
 	for (const f of files) {
 		const findings = scanFile(f);
 		if (findings.length) {
 			report.push({ file: f, findings });
+			const isTracked = tracked ? tracked.has(path.resolve(f)) : true;
+			if (!isTracked) continue;
+			for (const d of findings) {
+				if (GATING_PATTERNS.has(d.pattern)) {
+					violations.push({ file: f, pattern: d.pattern });
+				}
+			}
 		}
 	}
 	const outDir = path.resolve("data/security");
@@ -109,19 +157,42 @@ function main() {
 	fs.writeFileSync(
 		outFile,
 		JSON.stringify(
-			{ created_at: new Date().toISOString(), items: report },
+			{
+				created_at: new Date().toISOString(),
+				items: report,
+				tracked_scoped: tracked !== null,
+				gating_violations: violations,
+			},
 			null,
 			2,
 		),
 	);
+	const ok = violations.length === 0;
 	console.log(
 		JSON.stringify({
-			ok: true,
+			ok,
 			file: outFile,
 			total_files: files.length,
 			findings_files: report.length,
+			gating_violations: violations.length,
+			tracked_scoped: tracked !== null,
 		}),
 	);
+	if (tracked === null) {
+		console.error(
+			"secrets-scan: FATAL cannot read git index — refusing to report a clean result.",
+		);
+		process.exit(2);
+	}
+	if (!ok) {
+		for (const v of violations.slice(0, 50)) {
+			console.error(
+				`secrets-scan: VIOLATION ${v.pattern} in ${path.relative(root, v.file)}`,
+			);
+		}
+		process.exit(1);
+	}
+	process.exit(0);
 }
 
 main();
