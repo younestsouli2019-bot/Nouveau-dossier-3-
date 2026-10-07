@@ -55,3 +55,72 @@ reports/watchdog/
 # the PUBLIC remote on 2026-10-07 — untracked same day, values must be rotated.
 # Never re-add. Local copy stays on disk for the scheduled-task wrappers.
 .swarm/
+
+# ==============================================================================
+# P0 PERMANENT PUBLIC REPO SANITIZATION RULES (added 2026-10-07 after 9ad2972)
+# ==============================================================================
+# 0. IDE transient / sandbox caches (.trae/ contained 37 LIVE creds + 2.5MB
+#    offline store + 14MB PII CSVs on 2026-10-07). NEVER allow under any git
+#    operation, not just sub-rules.
+.trae/
+.trae/**
+
+# 1. Quarantine directory: extracted sensitive files, never public.
+.quarantine/
+.quarantine/**
+
+# 2. All env-style configs / machine-bound private material.
+.env
+.env.*
+.creds
+.credential-store
+.keys/
+.keybox/
+.lockbox/
+
+# 3. PowerShell credential / DPAPI / security output artifacts.
+*.ps1.xml
+*_cred.xml
+*.dpapi
+*.aesgcm
+*.aesgcm.dat
+*_wrap_*.bin
+autorotate.lockbox.*
+
+# 4. PDF / scans / PII / delivery proofs that can contain IBAN / private keys
+#    or customer data. Never commit physical document artifacts to a public
+#    repo; move to user profile private assets folder.
+**/*.pdf
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.tiff
+!rank/**/*.svg
+!public/**/*.svg
+!assets/**/*.svg
+
+# 5. Offline stores / materialized caches derived from base44 or Neon.
+**/*-offline-store.json
+**/*-materialized.csv
+
+# 6. Standalone owner-run scripts live ONLY locally, never pushed. They
+#    declare the OWNER_EXEC_UNLOCK handshake and shell history can leak.
+START-OWNER-HANDS-FREE.cmd
+*start-owner-hands-free*
+*run-live-crypto-po*
+
+# 7. Crash dumps / IDE xml (can contain env snapshots) — already seen 11.
+*.dmp
+*.crash
+*.hdmp
+*.mdmp
+__pycache__/
+
+# 8. Nested local swarm-runner clone (scheduled task local wrappers).
+swarm-runner-repo/
+swarm-runner-repo/**
+
+# 9. Runtime logs from scheduled-task wrappers, can contain gate status and
+#    injected env presence hints (even if values never printed).
+logs/
+logs/**
