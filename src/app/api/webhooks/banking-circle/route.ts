@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createHmac, timingSafeEqual } from 'crypto';
 import { db } from '@/lib/db';
 import { sha256 } from '@/lib/strict-enforcement/crypto-utils';
 
@@ -20,11 +21,42 @@ type WebhookPayload = {
 
 const BANKING_CIRCLE_SECRET = process.env.BANKING_CIRCLE_WEBHOOK_SECRET ?? '';
 
+function safeEqual(a: Buffer, b: Buffer): boolean {
+  if (a.length !== b.length) return false;
+  try {
+    return timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
+}
+
 function verifySignature(payload: string, signature: string): boolean {
-  if (!BANKING_CIRCLE_SECRET) return true;
-  const crypto = require('crypto') as typeof import('crypto');
-  const expected = crypto.createHmac('sha256', BANKING_CIRCLE_SECRET).update(payload).digest('hex');
-  return expected === signature;
+  if (!BANKING_CIRCLE_SECRET) return false;
+  if (!/^[0-9a-f]{64}$/i.test(signature)) return false;
+  const expected = createHmac('sha256', BANKING_CIRCLE_SECRET).update(payload).digest('hex');
+  const expectedBuf = Buffer.from(expected, 'hex');
+  const receivedBuf = Buffer.from(signature, 'hex');
+  return safeEqual(expectedBuf, receivedBuf);
+}
+
+function hashPayload(rawBody: string): string {
+  return sha256(rawBody);
+}
+
+function maskIban(iban: string | undefined): string | undefined {
+  if (!iban) return undefined;
+  const s = iban.replace(/\s+/g, '').toUpperCase();
+  if (s.length <= 8) return '***';
+  return s.slice(0, 4) + '***' + s.slice(-4);
+}
+
+function maskName(name: string | undefined): string | undefined {
+  if (!name) return undefined;
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) {
+    return parts[0].length <= 3 ? '***' : parts[0][0] + '***' + parts[0].slice(-1);
+  }
+  return parts.map((p) => p[0] + '***').join(' ');
 }
 
 export async function POST(request: NextRequest) {
@@ -32,8 +64,8 @@ export async function POST(request: NextRequest) {
     const rawBody = await request.text();
     const signature = request.headers.get('x-banking-circle-signature') ?? '';
 
-    if (BANKING_CIRCLE_SECRET && !verifySignature(rawBody, signature)) {
-      console.warn('[Webhook/BankingCircle] Invalid signature');
+    if (!verifySignature(rawBody, signature)) {
+      console.warn('[Webhook/BankingCircle] Invalid or missing signature');
       return NextResponse.json({ success: false, error: 'Invalid signature' }, { status: 401 });
     }
 
@@ -52,6 +84,9 @@ export async function POST(request: NextRequest) {
 
     const now = new Date();
 
+    const maskedIban = payload.iban ? maskIban(payload.iban) : undefined;
+    const maskedCounterparty = payload.counterparty ? maskName(payload.counterparty) : undefined;
+
     await db.transactionLog.create({
       data: {
         category: 'bank_webhook',
@@ -65,10 +100,10 @@ export async function POST(request: NextRequest) {
         providerTxId: payload.transactionId,
         metadata: JSON.stringify({
           event: payload.event,
-          counterparty: payload.counterparty,
-          iban: payload.iban,
+          counterparty: maskedCounterparty,
+          iban: maskedIban,
           bic: payload.bic,
-          rawPayload: payload,
+          rawPayloadHash: hashPayload(rawBody),
         }),
       },
     });

@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
   const source = req.headers.get('x-source') || 'github-app';
 
   // Verify authenticity before trusting the payload.
-  if (WEBHOOK_SECRET && !verifyHMAC(rawBody, signature)) {
+  if (!verifyHMAC(rawBody, signature)) {
     await prisma.auditLedger.create({
       data: {
         entityType: 'github_app_webhook',
