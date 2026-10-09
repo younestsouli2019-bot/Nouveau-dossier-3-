@@ -8,6 +8,7 @@ import {
   getProviderConfig,
 } from '@/lib/payment-providers';
 import type { PaymentProvider } from '@/lib/payment-providers';
+import { requireOpsAuth } from '@/lib/api-auth';
 
 interface TestConnectionBody {
   provider?: PaymentProvider;
@@ -23,6 +24,9 @@ interface ProviderStatus {
 }
 
 export async function POST(request: NextRequest) {
+  const denied = requireOpsAuth(request);
+  if (denied) return denied;
+
   try {
     const body: TestConnectionBody = await request.json();
     const providers: PaymentProvider[] = ['paypal', 'payoneer', 'bank_transfer'];

@@ -1,7 +1,11 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireOpsAuth } from '@/lib/api-auth';
 
 export async function GET(request: NextRequest) {
+  const denied = requireOpsAuth(request);
+  if (denied) return denied;
+
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');

@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { requireOpsAuth } from '@/lib/api-auth'
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const denied = requireOpsAuth(request)
+  if (denied) return denied
+
   try {
     const { id } = await params
+    const actor = resolveOpsIdentity(request)
 
     const purchaseOrder = await db.purchaseOrder.findUnique({ where: { id } })
     if (!purchaseOrder) {
@@ -30,7 +35,8 @@ export async function POST(
         where: { id },
         data: {
           status: 'approved',
-          approvedBy: 'user',
+          // @ts-ignore
+          approvedBy: actor,
           approvedAt: new Date(),
         },
       }),
@@ -38,14 +44,14 @@ export async function POST(
         data: {
           purchaseOrderId: id,
           action: 'approved',
-          performedBy: 'user',
+          performedBy: actor,
           fromStatus,
           toStatus: 'approved',
         },
       }),
     ])
 
-    return NextResponse.json({ success: true, data: updated })
+    return NextResponse.json({ success: true, data: updated, approvedBy: actor })
   } catch (error) {
     console.error('Error approving purchase order:', error)
     return NextResponse.json(
@@ -53,4 +59,12 @@ export async function POST(
       { status: 500 }
     )
   }
+}
+
+function resolveOpsIdentity(request: NextRequest): string {
+  const header = request.headers.get('x-ops-identity')
+  if (header && header.trim().length >= 3) return header.trim().slice(0, 64)
+  const opsSecret = request.headers.get('x-ops-secret')
+  if (opsSecret) return 'ops-secret-authenticated'
+  return 'same-origin-operator'
 }

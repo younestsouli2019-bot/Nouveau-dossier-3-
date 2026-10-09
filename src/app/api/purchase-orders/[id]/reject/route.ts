@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { requireOpsAuth } from '@/lib/api-auth'
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const denied = requireOpsAuth(request)
+  if (denied) return denied
+
   try {
     const { id } = await params
+    const actor = resolveOpsIdentity(request)
     const body = await request.json()
     const { reason } = body
 
@@ -39,7 +44,8 @@ export async function POST(
         where: { id },
         data: {
           status: 'rejected',
-          rejectedBy: 'user',
+          // @ts-ignore
+          rejectedBy: actor,
           rejectedAt: new Date(),
           rejectionReason: reason,
         },
@@ -48,7 +54,7 @@ export async function POST(
         data: {
           purchaseOrderId: id,
           action: 'rejected',
-          performedBy: 'user',
+          performedBy: actor,
           reason,
           fromStatus,
           toStatus: 'rejected',
@@ -56,7 +62,7 @@ export async function POST(
       }),
     ])
 
-    return NextResponse.json({ success: true, data: updated })
+    return NextResponse.json({ success: true, data: updated, rejectedBy: actor })
   } catch (error) {
     console.error('Error rejecting purchase order:', error)
     return NextResponse.json(
@@ -64,4 +70,12 @@ export async function POST(
       { status: 500 }
     )
   }
+}
+
+function resolveOpsIdentity(request: NextRequest): string {
+  const header = request.headers.get('x-ops-identity')
+  if (header && header.trim().length >= 3) return header.trim().slice(0, 64)
+  const opsSecret = request.headers.get('x-ops-secret')
+  if (opsSecret) return 'ops-secret-authenticated'
+  return 'same-origin-operator'
 }
