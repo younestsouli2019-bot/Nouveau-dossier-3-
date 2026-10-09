@@ -229,7 +229,9 @@ model PurchaseOrder {
   currency        String    @default("USD")
   lineItemCount   Int       @default(0)
   totalAmount     Float     @default(0)
+  createdBy       String?   @db.VarChar(64) // P6: identité vérifiée (requireOpsAuth) - plus "user" littéral
   submittedAt     DateTime?
+  submittedBy     String?   @db.VarChar(64) // P6: identité vérifiée (requireOpsAuth)
   approvedBy      String?
   approvedAt      DateTime?
   rejectedBy      String?
@@ -377,40 +379,43 @@ model OwnerSettlement {
 }
 
 model OwnerPaymentConfig {
-  id              String         @id @default(cuid())
-  label           String         @unique // e.g. "Salary", "Debts", "Emergency", "Infrastructure"
-  splitPercentage Float // e.g. 10.0 for 10%
-  ribLabel        String?
-  ribNumber       String? // full RIB or last digits
-  swiftCode       String?
-  bankName        String?
-  isActive        Boolean        @default(true)
-  routingFixed    Boolean        @default(false) // whether routing to external account was fixed
-  routingFixedAt  DateTime?
-  notes           String?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  ownerAccounts   OwnerAccount[]
+  id                   String         @id @default(cuid())
+  label                String         @unique // e.g. "Salary", "Debts", "Emergency", "Infrastructure"
+  splitPercentage      Float // e.g. 10.0 for 10%
+  ribLabel             String?
+  ribNumber            String? // deprecated (backward compat 90d) — use ribFingerprintSha256 instead
+  ribFingerprintSha256 String?        @db.VarChar(64) // P5: sha256(rib) hex 64 — source de vérité future
+  swiftCode            String?
+  bankName             String?
+  isActive             Boolean        @default(true)
+  routingFixed         Boolean        @default(false) // whether routing to external account was fixed
+  routingFixedAt       DateTime?
+  notes                String?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  ownerAccounts        OwnerAccount[]
 }
 
 model OwnerPayment {
-  id               String    @id @default(cuid())
-  configId         String?
-  configLabel      String // denormalized label for queries
-  amount           Float
-  currency         String    @default("USD")
-  sourceTxRef      String? // reference to source transaction
-  status           String    @default("pending") // pending, routed, processing, completed, failed, stuck_in_transition
-  destinationType  String    @default("external_bank") // external_bank, transition_pool, banking_circle, operational_pool
-  destinationLabel String? // e.g. "RIB ...594182" or "Banking Circle Internal"
-  ribNumber        String?
-  failureReason    String?
-  recovered        Boolean   @default(false)
-  recoveredAt      DateTime?
-  recoveryAmount   Float?
-  recoveryTxRef    String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id                   String    @id @default(cuid())
+  configId             String?
+  configLabel          String // denormalized label for queries
+  amount               Float
+  currency             String    @default("USD")
+  sourceTxRef          String? // reference to source transaction
+  status               String    @default("pending") // pending, routed, processing, completed, failed, stuck_in_transition
+  destinationType      String    @default("external_bank") // external_bank, transition_pool, banking_circle, operational_pool
+  destinationLabel     String? // e.g. "RIB ...594182" or "Banking Circle Internal"
+  ribNumber            String?   // deprecated (90d backward compat) — P5 use ribFingerprintSha256 + ribDisplayMasked
+  ribFingerprintSha256 String?   @db.VarChar(64) // P5: sha256(rib) hex 64 — résolution DB OwnerAccount
+  ribDisplayMasked     String?   @db.VarChar(24) // P5: cache affichage "***last6" seulement, jamais rib full
+  failureReason        String?
+  recovered            Boolean   @default(false)
+  recoveredAt          DateTime?
+  recoveryAmount       Float?
+  recoveryTxRef        String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 }
 
 model Shipment {

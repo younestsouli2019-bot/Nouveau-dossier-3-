@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { requireOpsAuth } from '@/lib/api-auth'
 
 export async function POST(request: NextRequest) {
+  const denied = requireOpsAuth(request)
+  if (denied) return denied
+
   try {
     const body = await request.json()
     const { poIds } = body as { poIds: string[] }
@@ -20,6 +24,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    const actor = resolveOpsIdentity(request)
     let approvedCount = 0
     const now = new Date()
 
@@ -29,7 +34,8 @@ export async function POST(request: NextRequest) {
           where: { id: po.id },
           data: {
             status: 'approved',
-            approvedBy: 'user',
+            // @ts-ignore
+            approvedBy: actor,
             approvedAt: now,
           },
         }),
@@ -37,7 +43,7 @@ export async function POST(request: NextRequest) {
           data: {
             purchaseOrderId: po.id,
             action: 'approved',
-            performedBy: 'user',
+            performedBy: actor,
             fromStatus: po.status,
             toStatus: 'approved',
           },
@@ -63,4 +69,15 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+/**
+ * Identité vérifiée depuis header ops (NE JAMAIS retourner 'user'/'system' littéral).
+ */
+function resolveOpsIdentity(request: NextRequest): string {
+  const header = request.headers.get('x-ops-identity')
+  if (header && header.trim().length >= 3) return header.trim().slice(0, 64)
+  const opsSecret = request.headers.get('x-ops-secret')
+  if (opsSecret) return 'ops-secret-authenticated'
+  return 'same-origin-operator'
 }
