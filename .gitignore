@@ -59,6 +59,11 @@ autopublisher-v3-*/
 # Quarantined foreign/decompiled clone (contains fake creds + leaked-secret history). Never commit.
 workspace-*.tar
 
+# Swarm Audit Bot local artifacts — NEVER commit (extracted from .trae/ 2026-10-07)
+.quarantine/
+push-to-github.bundle
+/*.pdf
+
 # transient hook/session tooling state (never commit)
 .mimosa/
 
