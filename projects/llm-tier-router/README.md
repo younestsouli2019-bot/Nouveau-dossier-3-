@@ -138,3 +138,7 @@ logs (see the design doc, §10). Open levers to improve beyond the bench:
 ## License
 
 MIT
+
+---
+
+made by https://metiu.xyz/
