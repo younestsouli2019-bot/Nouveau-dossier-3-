@@ -2,7 +2,7 @@
 
 ## INPUT (abridged)
 > "We have 3,685 rows in reconciliation_report.csv.  We bucket by amount/channel/destination/1h-window.
-> One bucket has size = **9 rows × $150 × Payoneer × younestsouli2019@gmail.com** in a 12-minute window
+> One bucket has size = **9 rows × $150 × Payoneer × owner@example.com** in a 12-minute window
 > 2026-05-30 between 14:00 and 14:12 UTC.  Five of the 9 rows share externalRef = `mg5ikgvtp`; the
 > remaining four have refs `PA123456789012345`, `PAY_9A8B7C6D5E4F3G`, `7JURR3NM2G5K6P`, and `FAKE_PAYOUT_DO_NOT_TRUST`."
 

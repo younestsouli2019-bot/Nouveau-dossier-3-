@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { requireOpsAuth } from '@/lib/api-auth'
 
+/**
+ * POST /api/purchase-orders/bulk-approve
+ * 🚧 PROTÉGÉ: requireOpsAuth en tête.
+ */
 export async function POST(request: NextRequest) {
   const denied = requireOpsAuth(request)
   if (denied) return denied
@@ -9,6 +13,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { poIds } = body as { poIds: string[] }
+    const actor = resolveOpsIdentity(request)
 
     if (!poIds || !Array.isArray(poIds) || poIds.length === 0) {
       return NextResponse.json(
@@ -24,7 +29,6 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    const actor = resolveOpsIdentity(request)
     let approvedCount = 0
     const now = new Date()
 
@@ -34,7 +38,6 @@ export async function POST(request: NextRequest) {
           where: { id: po.id },
           data: {
             status: 'approved',
-            // @ts-ignore
             approvedBy: actor,
             approvedAt: now,
           },
@@ -56,6 +59,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      approvedBy: actor,
       data: {
         approvedCount,
         skippedCount,
@@ -71,9 +75,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-/**
- * Identité vérifiée depuis header ops (NE JAMAIS retourner 'user'/'system' littéral).
- */
 function resolveOpsIdentity(request: NextRequest): string {
   const header = request.headers.get('x-ops-identity')
   if (header && header.trim().length >= 3) return header.trim().slice(0, 64)

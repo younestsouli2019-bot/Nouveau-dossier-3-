@@ -10,10 +10,10 @@ When invoking the `load_evidence_csv` tool the agent appends this hidden tool-pr
 > 1. If `entity_type in ('OwnerSettlement','CryptoSettlement')` and `status=='COMPLETED'`:
 >    — if `to` is NOT in the OWNER CANONICAL ACCOUNT SET (see owner-routes.json) then flag MISROUTE-002 HIGH.
 >    Owner canonical accounts =
->       PayPal:    younestsouli2019@gmail.com
->       Payoneer:  younestsouli2019@gmail.com
->       BEP20:     0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7
->       RIB:       007810000448500030594182
+>       PayPal:    (OWNER_PAYPAL_EMAIL from env)
+>       Payoneer:  (OWNER_PAYONEER_ID from env)
+>       BEP20:     (TRUST_WALLET_ADDRESS from env)
+>       RIB:       (OWNER_ATTIJARI_SALARY_RIB from env)
 >       IBAN:      LU774080000041265646
 >       SWIFT:     BCIRLULL
 > 2. If `status` is neither COMPLETED nor FAILED → treat as STUCK. Stuck > 24h → STUCK-004 MEDIUM; stuck >500h → STUCK-004 HIGH + ledger annotate `_autoNote:REQUEST_OWNER_CONFIRM`.

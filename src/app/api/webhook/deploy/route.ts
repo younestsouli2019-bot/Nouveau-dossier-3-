@@ -3,9 +3,16 @@ import { createHmac, timingSafeEqual } from 'crypto';
 import { prisma } from '@/lib/db';
 import { sha256 } from '@/lib/strict-enforcement/crypto-utils';
 
-// GitHub App webhook secret — set via env, never hardcoded/committed.
+/**
+ * GitHub App deploy / repository events webhook.
+ *
+ * 🚧 FAIL-CLOSED (P7):
+ *   - GITHUB_APP_WEBHOOK_SECRET OU GITHUB_WEBHOOK_SECRET DOIT être défini.
+ *   - Absence → 401 immédiat.
+ *   - HMAC x-hub-signature-256 obligatoire, timingSafeEqual.
+ */
 const WEBHOOK_SECRET =
-  process.env.GITHUB_APP_WEBHOOK_SECRET || process.env.GITHUB_WEBHOOK_SECRET || '';
+  process.env.GITHUB_APP_WEBHOOK_SECRET || process.env.GITHUB_WEBHOOK_SECRET;
 
 // Events we can act on. Everything else is acknowledged but not processed.
 const HANDLED_EVENTS = new Set([
@@ -24,15 +31,17 @@ const HANDLED_EVENTS = new Set([
 
 function safeEqual(a: Buffer, b: Buffer): boolean {
   if (a.length !== b.length) return false;
-  try {
-    return timingSafeEqual(a, b);
-  } catch {
-    return false;
-  }
+  try { return timingSafeEqual(a, b); } catch { return false; }
 }
 
+/**
+ * FAIL-CLOSED verify:
+ *   - Si WEBHOOK_SECRET undefined → return false.
+ *   - Format signature obligatoire sha256=64hexa.
+ *   - Compare timingSafeEqual buffers (contre timing attack).
+ */
 function verifyHMAC(payload: string, signature: string): boolean {
-  if (!WEBHOOK_SECRET) return false;
+  if (!WEBHOOK_SECRET) return false;                       // P7: FAIL-CLOSED
   if (!/^sha256=([0-9a-f]{64})$/i.test(signature)) return false;
   const expected = createHmac('sha256', WEBHOOK_SECRET)
     .update(payload)
@@ -72,24 +81,39 @@ async function recordEvent(opts: {
 }
 
 export async function POST(req: NextRequest) {
-  const rawBody = await req.text();
+  // P7 GATE FAIL-CLOSED: secret doit être présent (tester AVANT read body)
+  if (!WEBHOOK_SECRET) {
+    return NextResponse.json(
+      { error: 'Deploy webhook secret not configured — fail-closed 401 (GITHUB_APP_WEBHOOK_SECRET || GITHUB_WEBHOOK_SECRET env required)' },
+      { status: 401 }
+    );
+  }
+
+  let rawBody: string;
+  try {
+    rawBody = await req.text();
+  } catch {
+    return NextResponse.json({ error: 'Unreadable body' }, { status: 400 });
+  }
   const signature = req.headers.get('x-hub-signature-256') || '';
   const event = req.headers.get('x-github-event') || '';
   const delimiter = req.headers.get('x-github-delivery') || 'unknown';
   const source = req.headers.get('x-source') || 'github-app';
 
-  // Verify authenticity before trusting the payload.
+  // P7: gate FAIL-CLOSED (double)
   if (!verifyHMAC(rawBody, signature)) {
-    await prisma.auditLedger.create({
-      data: {
-        entityType: 'github_app_webhook',
-        entityId: 'rejected',
-        action: 'hmac_verification_failed',
-        entryHash: await sha256(`github-app:rejected:${Date.now()}`),
-        performedBy: source,
-        discrepancyNote: 'GitHub App HMAC signature mismatch',
-      },
-    });
+    try {
+      await prisma.auditLedger.create({
+        data: {
+          entityType: 'github_app_webhook',
+          entityId: 'rejected',
+          action: 'hmac_verification_failed',
+          entryHash: await sha256(`github-app:rejected:${Date.now()}`),
+          performedBy: source,
+          discrepancyNote: 'Deploy webhook HMAC mismatch or missing env (P7 fail-closed gate)',
+        },
+      });
+    } catch { /* DB non dispo sur rejet = OK. 401 reste garanti. */ }
     return NextResponse.json({ error: 'Invalid HMAC signature' }, { status: 401 });
   }
 
@@ -136,6 +160,7 @@ export async function GET() {
     status: 'active',
     endpoint: 'POST /api/webhook/deploy',
     handledEvents: Array.from(HANDLED_EVENTS),
-    verification: 'X-Hub-Signature-256 (HMAC-SHA256, GITHUB_APP_WEBHOOK_SECRET)',
+    verification:
+      'X-Hub-Signature-256 HMAC-SHA256, timingSafeEqual compare, FAIL-CLOSED if secret env missing.',
   });
 }

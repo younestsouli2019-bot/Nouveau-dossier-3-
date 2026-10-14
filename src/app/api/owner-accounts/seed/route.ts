@@ -1,119 +1,30 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { createHash } from 'node:crypto'
 import { db } from '@/lib/db'
+import { requireOpsAuth } from '@/lib/api-auth'
 
-const SEED_ACCOUNTS = [
-  // === Bank Wire Accounts (2 real) ===
-  {
-    label: 'Moroccan Bank — RIB 372',
-    accountType: 'bank_wire',
-    isActive: true,
-    isPrimary: true,
-    sortOrder: 1,
-    purposes: 'salary,settlements,reconciliation',
-    accountHolder: 'Younes Tsouli',
-    accountNumber: '007810000448200061321372',
-    accountNumberLast: '372',
-    bankName: 'Attijariwafa Bank',
-    bankCode: '00781',
-    swiftCode: 'BCMAMAMC',
-    countryCode: 'MA',
-    currency: 'MAD',
-  },
-  {
-    label: 'Banking Circle — Primary',
-    accountType: 'bank_wire',
-    isActive: true,
-    isPrimary: true,
-    sortOrder: 5,
-    purposes: 'settlements,general',
-    accountHolder: 'Younes Tsouli',
-    accountNumberLast: '646',
-    bankName: 'Banking Circle S.A.',
-    swiftCode: 'BCIRLULL',
-    countryCode: 'LU',
-    currency: 'USD',
-  },
-  {
-    label: 'Moroccan Bank — RIB 594182',
-    accountType: 'bank_wire',
-    isActive: true,
-    isPrimary: false,
-    sortOrder: 6,
-    purposes: 'debt_repayment,wire',
-    accountHolder: 'Younes Tsouli',
-    accountNumber: '007810000448500030594182',
-    accountNumberLast: '182',
-    bankName: 'Attijariwafa Bank',
-    bankCode: '00781',
-    swiftCode: 'BCMAMAMC',
-    countryCode: 'MA',
-    currency: 'MAD',
-  },
+/**
+ * POST /api/owner-accounts/seed
+ *
+ * 🚧 PROTÉGÉ: requireOpsAuth + NODE_ENV !== 'production' guard.
+ *    Seeds sont des opérations de maintenance, jamais en production.
+ * 🚧 RIB literals supprimés: les comptes bancaires Attijari sont résolus
+ *    depuis les variables d'env (OWNER_RIB_SALARY / OWNER_RIB_DEBTS) OU
+ *    sont créés avec ribNumber=null (à remplir manuellement via admin panel
+ *    ou psql). Zéro RIB en source.
+ */
+export async function POST(request: NextRequest) {
+  const denied = requireOpsAuth(request)
+  if (denied) return denied
 
-  // === Crypto Wallet (1 real) ===
-  {
-    label: 'USDC on Arbitrum',
-    accountType: 'l2_crypto',
-    isActive: true,
-    isPrimary: false,
-    sortOrder: 3,
-    purposes: 'crypto_settlement,settlements',
-    network: 'Arbitrum',
-    walletAddress: '0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7',
-    walletAddressShort: '0xA462...Efe7',
-    preferredToken: 'USDC',
-    chainId: 42161,
-    currency: 'USD',
-  },
+  // Seed interdit en production
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { success: false, error: 'Seed endpoint disabled in production (NODE_ENV=production).' },
+      { status: 403 }
+    )
+  }
 
-  // === PayPal (1 real) ===
-  {
-    label: 'PayPal Business',
-    accountType: 'paypal',
-    isActive: true,
-    isPrimary: false,
-    sortOrder: 2,
-    purposes: 'settlements,general',
-    paypalEmail: 'younestsouli2019@gmail.com',
-    paypalType: 'business',
-    paypalCountry: 'MA',
-    currency: 'USD',
-  },
-
-  // === Payoneer (1 real) ===
-  {
-    label: 'Payoneer — Supplier Payments',
-    accountType: 'payoneer',
-    isActive: true,
-    isPrimary: false,
-    sortOrder: 4,
-    purposes: 'vendor_payments',
-    payoneerId: 'younestsouli2019@gmail.com',
-    currency: 'USD',
-  },
-]
-
-interface SeedSettlement {
-  ownerAccountIdx: number
-  referenceId: string
-  amount: number
-  currency: string
-  status: string
-  direction: string
-  purpose: string
-  description: string
-  sourceLabel: string
-  destinationLabel: string
-  fee: number
-  netAmount: number
-  exchangeRate: number | null
-  settledAt: Date | null
-  createdAt: Date
-}
-
-const SEED_SETTLEMENTS: SeedSettlement[] = []
-
-export async function POST() {
   try {
     // Check for existing data
     const existingCount = await db.ownerAccount.count()
@@ -125,10 +36,127 @@ export async function POST() {
       })
     }
 
+    // RIB source: env vars (injectées 120s scope) OU null (admin fills later).
+    // Jamais de RIB littéral dans ce fichier.
+    const ribSalary = process.env.OWNER_RIB_SALARY || null
+    const ribDebts = process.env.OWNER_RIB_DEBTS || null
+
+    const SEED_ACCOUNTS = [
+      // === Bank Wire Accounts (2 real — RIB from env only) ===
+      {
+        label: 'Moroccan Bank — RIB 372',
+        accountType: 'bank_wire',
+        isActive: true,
+        isPrimary: true,
+        sortOrder: 1,
+        purposes: 'salary,settlements,reconciliation',
+        accountHolder: process.env.OWNER_ACCOUNT_HOLDER || 'Owner',
+        accountNumber: ribDebts,
+        accountNumberLast: ribDebts ? ribDebts.slice(-3) : null,
+        bankName: 'Attijariwafa Bank',
+        bankCode: '00781',
+        swiftCode: 'BCMAMAMC',
+        countryCode: 'MA',
+        currency: 'MAD',
+      },
+      {
+        label: 'Banking Circle — Primary',
+        accountType: 'bank_wire',
+        isActive: true,
+        isPrimary: true,
+        sortOrder: 5,
+        purposes: 'settlements,general',
+        accountHolder: process.env.OWNER_ACCOUNT_HOLDER || 'Owner',
+        accountNumberLast: '646',
+        bankName: 'Banking Circle S.A.',
+        swiftCode: 'BCIRLULL',
+        countryCode: 'LU',
+        currency: 'USD',
+      },
+      {
+        label: 'Moroccan Bank — RIB 594182',
+        accountType: 'bank_wire',
+        isActive: true,
+        isPrimary: false,
+        sortOrder: 6,
+        purposes: 'debt_repayment,wire',
+        accountHolder: process.env.OWNER_ACCOUNT_HOLDER || 'Owner',
+        accountNumber: ribSalary,
+        accountNumberLast: ribSalary ? ribSalary.slice(-3) : null,
+        bankName: 'Attijariwafa Bank',
+        bankCode: '00781',
+        swiftCode: 'BCMAMAMC',
+        countryCode: 'MA',
+        currency: 'MAD',
+      },
+
+      // === Crypto Wallet (1 real — address from env) ===
+      {
+        label: 'USDC on Arbitrum',
+        accountType: 'l2_crypto',
+        isActive: true,
+        isPrimary: false,
+        sortOrder: 3,
+        purposes: 'crypto_settlement,settlements',
+        network: 'Arbitrum',
+        walletAddress: process.env.TRUST_WALLET_ADDRESS || null,
+        walletAddressShort: process.env.TRUST_WALLET_ADDRESS ? process.env.TRUST_WALLET_ADDRESS.slice(0, 6) + '...' + process.env.TRUST_WALLET_ADDRESS.slice(-4) : null,
+        preferredToken: 'USDC',
+        chainId: 42161,
+        currency: 'USD',
+      },
+
+      // === PayPal (1 real — email from env) ===
+      {
+        label: 'PayPal Business',
+        accountType: 'paypal',
+        isActive: true,
+        isPrimary: false,
+        sortOrder: 2,
+        purposes: 'settlements,general',
+        paypalEmail: process.env.PAYPAL_OWNER_EMAIL || null,
+        paypalType: 'business',
+        paypalCountry: 'MA',
+        currency: 'USD',
+      },
+
+      // === Payoneer (1 real — id from env) ===
+      {
+        label: 'Payoneer — Supplier Payments',
+        accountType: 'payoneer',
+        isActive: true,
+        isPrimary: false,
+        sortOrder: 4,
+        purposes: 'vendor_payments',
+        payoneerId: process.env.PAYONEER_OWNER_ID || null,
+        currency: 'USD',
+      },
+    ]
+
+    interface SeedSettlement {
+      ownerAccountIdx: number
+      referenceId: string
+      amount: number
+      currency: string
+      status: string
+      direction: string
+      purpose: string
+      description: string
+      sourceLabel: string
+      destinationLabel: string
+      fee: number
+      netAmount: number
+      exchangeRate: number | null
+      settledAt: Date | null
+      createdAt: Date
+    }
+
+    const SEED_SETTLEMENTS: SeedSettlement[] = []
+
     // Create all accounts
     const accounts = []
     for (const acc of SEED_ACCOUNTS) {
-      const created = await db.ownerAccount.create({ data: acc })
+      const created = await db.ownerAccount.create({ data: acc as any })
       accounts.push(created)
     }
 
@@ -184,9 +212,14 @@ export async function POST() {
 
     return NextResponse.json({
       success: true,
-      message: `Seeded ${accounts.length} owner accounts and ${settlements.length} settlements`,
+      message: `Seeded ${accounts.length} owner accounts and ${settlements.length} settlements (RIB/wallet/emails from env vars only — zero literals in source).`,
       accountsSeeded: accounts.length,
       settlementsSeeded: settlements.length,
+      notes: [
+        'OWNER_RIB_SALARY / OWNER_RIB_DEBTS from env (or null for admin fill)',
+        'TRUST_WALLET_ADDRESS from env',
+        'PAYPAL_OWNER_EMAIL / PAYONEER_OWNER_ID from env',
+      ],
     })
   } catch (error) {
     console.error('Error seeding owner accounts:', error)
@@ -195,4 +228,9 @@ export async function POST() {
       { status: 500 }
     )
   }
+}
+
+/** Util: sha256 (réservation future pour fingerprint). Non utilisé ici mais importé pour cohérence. */
+function sha256Hex(s: string): string {
+  return createHash('sha256').update(s).digest('hex')
 }

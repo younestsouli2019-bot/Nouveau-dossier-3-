@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { requireOpsAuth } from '@/lib/api-auth'
 
+/**
+ * POST /api/purchase-orders/[id]/approve
+ * Approbation HUMAINE requise.
+ * 🚧 PROTÉGÉ: requireOpsAuth en tête.
+ */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -35,8 +40,7 @@ export async function POST(
         where: { id },
         data: {
           status: 'approved',
-          // @ts-ignore
-          approvedBy: actor,
+          approvedBy: actor,     // identité vérifiée, plus 'user' littéral
           approvedAt: new Date(),
         },
       }),
@@ -44,7 +48,7 @@ export async function POST(
         data: {
           purchaseOrderId: id,
           action: 'approved',
-          performedBy: actor,
+          performedBy: actor,    // identité vérifiée
           fromStatus,
           toStatus: 'approved',
         },

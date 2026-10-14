@@ -1,6 +1,8 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { createHash } from 'node:crypto'
 import { db } from '@/lib/db'
 import { seedProcurement, getDestinationInfo } from '@/lib/procurement/seed-data'
+import { requireOpsAuth } from '@/lib/api-auth'
 
 const CARRIERS = [
   'DHL Express',
@@ -226,7 +228,18 @@ function getPurposeForItem(itemName: string, recipientName: string): string {
 }
 
 // POST /api/supply-chain/seed
-export async function POST() {
+export async function POST(request: NextRequest) {
+  const denied = requireOpsAuth(request)
+  if (denied) return denied
+
+  // Seed interdit en production
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { success: false, error: 'Seed endpoint disabled in production (NODE_ENV=production).' },
+      { status: 403 }
+    )
+  }
+
   try {
     // Guard: check if data already exists
     const existingItems = await db.procurementItem.count()
@@ -316,6 +329,9 @@ export async function POST() {
     }
 
     // Step 4: Create 4 stuck MT103 payment records
+    // RIB source: DB OwnerAccount label='Debts' → sha256 fingerprint. Zéro littéral.
+    const debtsFp = await fingerprintOfActiveLabel('Debts')
+    const debtsDisplay = debtsFp ? await resolveDisplayRibByFingerprint(debtsFp) : '***'
     const mt103Payments = [
       {
         configLabel: 'Debts',
@@ -324,7 +340,8 @@ export async function POST() {
         status: 'stuck_in_transition',
         destinationType: 'banking_circle',
         destinationLabel: 'Banking Circle - MT103 Pending',
-        ribNumber: '007810000448200061321372',
+        ribFingerprintSha256: debtsFp,
+        ribDisplayMasked: debtsDisplay,
         failureReason: 'MT103 SWIFT transfer stuck in Banking Circle transition pool - RIB routing not configured for Attijariwafa Compte sur Carnet',
       },
       {
@@ -334,7 +351,8 @@ export async function POST() {
         status: 'stuck_in_transition',
         destinationType: 'banking_circle',
         destinationLabel: 'Banking Circle - MT103 Pending',
-        ribNumber: '007810000448200061321372',
+        ribFingerprintSha256: debtsFp,
+        ribDisplayMasked: debtsDisplay,
         failureReason: 'MT103 SWIFT transfer stuck in Banking Circle - intermediary bank returned funds',
       },
       {
@@ -344,7 +362,8 @@ export async function POST() {
         status: 'stuck_in_transition',
         destinationType: 'banking_circle',
         destinationLabel: 'Banking Circle - MT103 Pending',
-        ribNumber: '007810000448200061321372',
+        ribFingerprintSha256: debtsFp,
+        ribDisplayMasked: debtsDisplay,
         failureReason: 'MT103 SWIFT transfer stuck - recipient bank (BCMAMAMC) not responding to compliance query',
       },
       {
@@ -354,7 +373,8 @@ export async function POST() {
         status: 'stuck_in_transition',
         destinationType: 'banking_circle',
         destinationLabel: 'Banking Circle - MT103 Pending',
-        ribNumber: '007810000448200061321372',
+        ribFingerprintSha256: debtsFp,
+        ribDisplayMasked: debtsDisplay,
         failureReason: 'MT103 SWIFT transfer stuck in Banking Circle - AML flag triggered, awaiting manual review',
       },
     ]
@@ -386,7 +406,10 @@ export async function POST() {
           status: mt.status,
           destinationType: mt.destinationType,
           destinationLabel: mt.destinationLabel,
-          ribNumber: mt.ribNumber,
+          // @ts-ignore
+          ribFingerprintSha256: mt.ribFingerprintSha256,
+          // @ts-ignore
+          ribDisplayMasked: mt.ribDisplayMasked,
           failureReason: mt.failureReason,
           recovered: false,
         },
@@ -415,4 +438,35 @@ export async function POST() {
       { status: 500 }
     )
   }
+}
+
+/** sha256(rib) fingerprint depuis DB OwnerAccount (label). Runtime only, zero littéral. */
+async function fingerprintOfActiveLabel(label: string): Promise<string | null> {
+  const rows = await db.ownerAccount.findMany({
+    where: { isActive: true, label },
+    select: { accountNumber: true },
+  })
+  for (const r of rows) {
+    if (!r.accountNumber) continue
+    return createHash('sha256').update(String(r.accountNumber).trim().toLowerCase()).digest('hex')
+  }
+  return null
+}
+
+/** Résout fingerprint → affichage ***last6 (jamais rib full retourné). */
+async function resolveDisplayRibByFingerprint(fp: string): Promise<string | null> {
+  if (!fp || fp.length !== 64) return null
+  const accounts = await db.ownerAccount.findMany({
+    where: { isActive: true, NOT: { accountNumber: null } },
+    select: { accountNumber: true },
+  })
+  for (const a of accounts) {
+    if (!a.accountNumber) continue
+    const hex = createHash('sha256').update(String(a.accountNumber).trim().toLowerCase()).digest('hex')
+    if (hex === fp) {
+      const s = String(a.accountNumber)
+      return s.length >= 6 ? '***' + s.slice(-6) : '***'
+    }
+  }
+  return null
 }

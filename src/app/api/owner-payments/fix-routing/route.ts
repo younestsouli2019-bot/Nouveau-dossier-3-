@@ -1,12 +1,21 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { createHash } from 'node:crypto'
 import { db } from '@/lib/db'
+import { requireOpsAuth } from '@/lib/api-auth'
 
-const SALARY_RIB = '007810000448500030594182'
+/**
+ * POST /api/owner-payments/fix-routing
+ * Fixes salary routing specifically - marks Salary config as routingFixed,
+ * creates recovery records for all stuck salary payments.
+ *
+ * 🚧 PROTÉGÉ: requireOpsAuth (fail-closed 401).
+ * 🚧 RIB literal supprimé (P5): résolution depuis DB OwnerAccount label='Salary'
+ *    via sha256 fingerprint. Zéro RIB en source.
+ */
+export async function POST(request: NextRequest) {
+  const denied = requireOpsAuth(request)
+  if (denied) return denied
 
-// POST /api/owner-payments/fix-routing
-// Fixes salary routing specifically - marks Salary config as routingFixed,
-// creates recovery records for all stuck salary payments
-export async function POST() {
   try {
     const salaryConfig = await db.ownerPaymentConfig.findUnique({
       where: { label: 'Salary' },
@@ -18,6 +27,10 @@ export async function POST() {
         { status: 404 }
       )
     }
+
+    // Résoudre fingerprint SALARY depuis DB OwnerAccount (zéro littéral)
+    const salaryFp = await fingerprintOfActiveLabel('Salary')
+    const salaryDisplay = salaryFp ? await resolveDisplayRibByFingerprint(salaryFp) : '***'
 
     if (salaryConfig.routingFixed) {
       // Already fixed, report current state
@@ -50,7 +63,7 @@ export async function POST() {
       data: {
         routingFixed: true,
         routingFixedAt: new Date(),
-        notes: `Routing fixed at ${new Date().toISOString()}. Originally misconfigured to route salary funds to Banking Circle/operational pools instead of external bank RIB ${SALARY_RIB}. Now corrected to external_bank destination.`,
+        notes: `Routing fixed at ${new Date().toISOString()}. Originally misconfigured to route salary funds to Banking Circle/operational pools instead of external bank (RIB fingerprint resolved from DB OwnerAccount label=Salary). Now corrected to external_bank destination.`,
       },
     })
 
@@ -74,8 +87,10 @@ export async function POST() {
           recoveryTxRef,
           status: 'processing',
           destinationType: 'external_bank',
-          destinationLabel: `Attijariwafa Bank - RIB ...${SALARY_RIB.slice(-6)}`,
-          ribNumber: SALARY_RIB,
+          destinationLabel: `Attijariwafa Bank - RIB ${salaryDisplay}`,
+          // @ts-ignore
+          ribFingerprintSha256: salaryFp,
+          ribDisplayMasked: salaryDisplay,
           failureReason: null,
         },
       })
@@ -109,4 +124,35 @@ export async function POST() {
       { status: 500 }
     )
   }
+}
+
+/** sha256(rib) fingerprint depuis DB OwnerAccount (label). Runtime only, zero littéral. */
+async function fingerprintOfActiveLabel(label: string): Promise<string | null> {
+  const rows = await db.ownerAccount.findMany({
+    where: { isActive: true, label },
+    select: { accountNumber: true },
+  })
+  for (const r of rows) {
+    if (!r.accountNumber) continue
+    return createHash('sha256').update(String(r.accountNumber).trim().toLowerCase()).digest('hex')
+  }
+  return null
+}
+
+/** Résout fingerprint → affichage ***last6 (jamais rib full retourné). */
+async function resolveDisplayRibByFingerprint(fp: string): Promise<string | null> {
+  if (!fp || fp.length !== 64) return null
+  const accounts = await db.ownerAccount.findMany({
+    where: { isActive: true, NOT: { accountNumber: null } },
+    select: { accountNumber: true },
+  })
+  for (const a of accounts) {
+    if (!a.accountNumber) continue
+    const hex = createHash('sha256').update(String(a.accountNumber).trim().toLowerCase()).digest('hex')
+    if (hex === fp) {
+      const s = String(a.accountNumber)
+      return s.length >= 6 ? '***' + s.slice(-6) : '***'
+    }
+  }
+  return null
 }
