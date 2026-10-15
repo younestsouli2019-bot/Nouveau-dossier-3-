@@ -1,16 +1,16 @@
 {
-  "runs": 2,
-  "lastRunAt": "2026-10-15T14:16:39.821Z",
+  "runs": 3,
+  "lastRunAt": "2026-10-15T14:52:52.689Z",
   "lastConnectivity": {
     "online": true,
     "status": "online",
     "lastOnlineAt": "2026-10-15T14:16:39.719Z",
     "lastOfflineAt": null,
     "offlineSince": null,
-    "lastProbedAt": "2026-10-15T14:16:39.719Z",
+    "lastProbedAt": "2026-10-15T14:52:52.680Z",
     "lastProbe": {
       "online": true,
-      "probedAt": "2026-10-15T14:16:39.718Z",
+      "probedAt": "2026-10-15T14:52:52.680Z",
       "results": [
         {
           "name": "dns",
@@ -31,10 +31,14 @@
       {
         "at": "2026-10-15T14:16:39.719Z",
         "status": "online"
+      },
+      {
+        "at": "2026-10-15T14:52:52.680Z",
+        "status": "online"
       }
     ]
   },
-  "degradedRuns": 2,
+  "degradedRuns": 3,
   "bootstrapNote": "T3 Escalation Daemon cold-started via manual bootstrap 2026-10-05 v3.5.8 because pdfkit optional import chain (src/escalation/comms.mjs) missing package — tolerated fail-gracefully with direct saveCase() API. HUA corpus 3-doc case persisted exactly, NO DEEP UK.",
   "cases": [
     {

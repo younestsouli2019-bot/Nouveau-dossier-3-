@@ -3,6 +3,8 @@
   "createdAt": "2026-10-05T08:00:00.000Z",
   "updatedAt": "2026-10-05T16:04:57.633Z",
   "status": "ESCALATED",
+  "hold": true,
+  "holdReason": "Instruction utilisateur PERMANENTE 2026-10-05 : signataire Younes Tsouli CIN A337773 gère le contentieux et la correspondance officielle 100% seul. Aucun envoi officiel automatique. Hold signataire — le daemon ne doit jamais auto-avancer cette affaire.",
   "statusHistory": [
     {
       "from": null,

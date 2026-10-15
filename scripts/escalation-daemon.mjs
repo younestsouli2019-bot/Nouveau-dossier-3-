@@ -71,10 +71,46 @@ async function dispatchFollowUp({ caseData, action, live, online }) {
 	return draft;
 }
 
+/**
+ * Signatory hold: some cases are managed directly by the signataire (contentieux
+ * doctrine) and must NEVER auto-advance or auto-dispatch. Honor, in order:
+ *   1. an explicit `hold: true` flag on the case,
+ *   2. a `SignataireDirectJudicialManagement` HITL marker,
+ *   3. a permanent no-dispatch instruction in `dueActions`.
+ * Returns the hold reason, or null when the case may be processed normally.
+ */
+function signatoryHoldReason(caseData) {
+	if (caseData.hold === true) {
+		return caseData.holdReason || "hold=true";
+	}
+	if (caseData.hitl && caseData.hitl.type === "SignataireDirectJudicialManagement") {
+		return "HITL SignataireDirectJudicialManagement";
+	}
+	const permanent = (caseData.dueActions || []).find(
+		(a) =>
+			a.step === "USER-INSTRUCTION-PERMANENT" ||
+			/NO EXTERNAL DISPATCH/i.test(a.dispatch || ""),
+	);
+	return permanent ? permanent.reason : null;
+}
+
 async function handleCase({ caseData, now, live, online }) {
 	const eligible = [STATUS.ESCALATED, STATUS.FOLLOW_UP_1, STATUS.FOLLOW_UP_2];
 	const summary = { caseId: caseData.id, status: caseData.status, actionsDispatched: 0 };
 	if (!eligible.includes(caseData.status)) return summary;
+
+	const holdReason = signatoryHoldReason(caseData);
+	if (holdReason) {
+		summary.held = true;
+		summary.holdReason = holdReason;
+		appendAudit({
+			action: "CASE_HELD_SIGNATORY",
+			entityId: caseData.id,
+			actor: "EscalationDaemon",
+			changes: { reason: holdReason, status: caseData.status },
+		});
+		return summary;
+	}
 
 	const hours = businessHoursElapsed(caseData.escrowTimestamp || caseData.dispatchedAt || caseData.updatedAt, now);
 	const actions = dueActions({ caseData, now });

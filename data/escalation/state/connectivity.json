@@ -4,10 +4,10 @@
   "lastOnlineAt": "2026-10-15T14:16:39.719Z",
   "lastOfflineAt": null,
   "offlineSince": null,
-  "lastProbedAt": "2026-10-15T14:16:39.719Z",
+  "lastProbedAt": "2026-10-15T14:52:52.680Z",
   "lastProbe": {
     "online": true,
-    "probedAt": "2026-10-15T14:16:39.718Z",
+    "probedAt": "2026-10-15T14:52:52.680Z",
     "results": [
       {
         "name": "dns",
@@ -27,6 +27,10 @@
   "probeHistory": [
     {
       "at": "2026-10-15T14:16:39.719Z",
+      "status": "online"
+    },
+    {
+      "at": "2026-10-15T14:52:52.680Z",
       "status": "online"
     }
   ]
