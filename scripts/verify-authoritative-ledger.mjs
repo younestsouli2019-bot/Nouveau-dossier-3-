@@ -129,8 +129,12 @@ if (!content.trim()) {
   if (planOnly) {
     // --plan-only is idempotent: an empty (unbootstrapped) ledger gets its genesis
     // line, so a failed first bootstrap is retryable without deleting the file.
+    // Derive the owner-bound key BEFORE logging or appending: a missing/short
+    // OWNER_EXEC_UNLOCK must fail closed (exit 17) without announcing a bootstrap
+    // that never happens.
+    const bootstrapKey = deriveChainKey();
     console.log("[verify-authoritative-ledger] Ledger file empty; plan-only bootstrap: appending genesis line (system.ledger.bootstrapped).");
-    bootstrapGenesis(deriveChainKey());
+    bootstrapGenesis(bootstrapKey);
     process.exit(0);
   }
   console.log("[verify-authoritative-ledger] Ledger file empty = PASS 0 lines. exit=0");
