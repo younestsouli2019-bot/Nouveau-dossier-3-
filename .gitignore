@@ -21,7 +21,9 @@ reports/wet-run/
 # ── DEFENSE-IN-DEPTH: NEVER commit synthetic test fixtures ──────────────────
 #   Any residual t13-synthetic-*.ndjson / T13 sandbox fixture / sandbox mock
 #   revenue events MUST NEVER be committed (could cause fake bucket splits PROD).
-.trae/fixtures/
+# Whole .trae/ is IDE-local workspace state — forbidden in the repo
+# (Workspace Decontamination rule). Supersedes the narrower .trae/fixtures/ rule.
+.trae/
 t13-synthetic-*.ndjson
 t13-synthetic-*.json
 
