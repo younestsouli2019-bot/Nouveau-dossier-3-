@@ -37,6 +37,12 @@ autopublisher-v3-*/
 # Quarantined foreign/decompiled clone (contains fake creds + leaked-secret history). Never commit.
 workspace-*.tar
 
+# git bundle transport artifacts carry FOREIGN commit history (off-machine refs
+# + their blobs, incl. pre-scrub ones). They are a push/transfer vehicle, never
+# repo content — a 39MB push-to-github.bundle was swept into 62d3a92 (local
+# only, never pushed). Never commit.
+*.bundle
+
 # transient hook/session tooling state (never commit)
 .mimosa/
 
