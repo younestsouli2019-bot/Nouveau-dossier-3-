@@ -61,8 +61,62 @@ jobs:
       - name: Vitest
         run: npm test
 
+  # G1-G4 release gates. Authoritative definitions live in
+  # scripts/spec8-preflight-v358.mjs (S1) and scripts/start-owner-hands-free.ps1
+  # (T2-8 / T2-9). Until now they existed only in local scripts and blocked
+  # nothing in CI (Groupe#5 finding M-1). Fail-closed, exit 5 (matches
+  # failClosedExit5 in the PowerShell runner).
+  release-gates:
+    name: release gates G1-G4
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify G1-G4 + hands-free gates (fail-closed)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          LIVE_BANK_API: ${{ secrets.LIVE_BANK_API }}
+          BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
+          BINANCE_API_SECRET: ${{ secrets.BINANCE_API_SECRET }}
+          OWNER_EXEC_UNLOCK: ${{ secrets.OWNER_EXEC_UNLOCK }}
+          OWNER_HANDS_FREE_POLICY: ${{ secrets.OWNER_HANDS_FREE_POLICY }}
+          CEX_DIRECT_DEPOSIT_ENABLED: ${{ secrets.CEX_DIRECT_DEPOSIT_ENABLED }}
+          RELEASE_AMOUNT_OVERRIDE_USD: ${{ secrets.RELEASE_AMOUNT_OVERRIDE_USD }}
+        run: |
+          set -euo pipefail
+          fail() { echo "::error::$1"; exit 5; }
+
+          DB="${DATABASE_URL:-}"; LB="${LIVE_BANK_API:-}"; BK="${BINANCE_API_KEY:-}"; BS="${BINANCE_API_SECRET:-}"
+          UN="${OWNER_EXEC_UNLOCK:-}"; HF="${OWNER_HANDS_FREE_POLICY:-}"; CX="${CEX_DIRECT_DEPOSIT_ENABLED:-}"; RE="${RELEASE_AMOUNT_OVERRIDE_USD:-}"
+
+          # G1 — at least 8 of the 8 minimal unblock keys must be populated.
+          present=0; missing=""
+          for pair in "DATABASE_URL=$DB" "LIVE_BANK_API=$LB" "BINANCE_API_KEY=$BK" "BINANCE_API_SECRET=$BS" "OWNER_EXEC_UNLOCK=$UN" "OWNER_HANDS_FREE_POLICY=$HF" "CEX_DIRECT_DEPOSIT_ENABLED=$CX" "RELEASE_AMOUNT_OVERRIDE_USD=$RE"; do
+            k="${pair%%=*}"; v="${pair#*=}"
+            if [ -n "$v" ]; then present=$((present+1)); else missing="$missing $k"; fi
+          done
+          echo "G1 unblock8: present=$present/8"
+          [ "$present" -ge 8 ] || fail "G1 FAIL: only $present/8 unblock keys set (missing:${missing:- none})."
+
+          # G2 — Neon PROD pooled URL, >= 120 chars, sslmode=require.
+          echo "G2 DATABASE_URL len=${#DB}"
+          [ "${#DB}" -ge 120 ] || fail "G2 FAIL: DATABASE_URL len=${#DB} < 120."
+          case "$DB" in *sslmode=require*) ;; *) fail "G2 FAIL: DATABASE_URL is missing sslmode=require.";; esac
+
+          # G3 — Binance Spot withdraw dual-scope credentials, >= 32 chars each.
+          echo "G3 BINANCE_API_KEY len=${#BK} / BINANCE_API_SECRET len=${#BS}"
+          { [ "${#BK}" -ge 32 ] && [ "${#BS}" -ge 32 ]; } || fail "G3 FAIL: BINANCE_API_KEY len=${#BK} / BINANCE_API_SECRET len=${#BS} (both must be >= 32)."
+
+          # G4 — owner-bound ledger chain key, >= 43 chars.
+          echo "G4 OWNER_EXEC_UNLOCK len=${#UN}"
+          [ "${#UN}" -ge 43 ] || fail "G4 FAIL: OWNER_EXEC_UNLOCK len=${#UN} < 43."
+
+          # Hands-free policy flag.
+          [ "$HF" = "true" ] || fail "HANDS-FREE FAIL: OWNER_HANDS_FREE_POLICY != 'true'."
+
+          echo "OK G1-G4 + OWNER_HANDS_FREE_POLICY all open."
+
   build-and-deploy:
-    needs: [test]
+    needs: [test, release-gates]
     runs-on: ubuntu-latest
     environment:
       name: ${{ github.event.inputs.environment || 'production' }}
