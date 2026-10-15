@@ -32,7 +32,11 @@ export type AuthoritativeEventType =
   | "system.ledger.bootstrapped"
   | "system.ledger.checksum_mismatch";
 
-const TYPE_REGEX = /^[a-z]+\.[a-z_]+\.[a-z_]+$/;
+// Shape guard for <namespace>.<entity>.<action>. Accepts 2 OR 3 segments so that
+// every value declared in the union/enum is actually reachable — the 5 payout
+// types are 2-segment (e.g. payout.completed). The KNOWN_EVENT_TYPES whitelist
+// below remains the authoritative gate; this regex is only defense-in-depth.
+const TYPE_REGEX = /^[a-z]+(?:\.[a-z_]+){1,2}$/;
 
 /**
  * STRICT EVENT ENUM. FIX RM-5 (regex-only check accepted custom types

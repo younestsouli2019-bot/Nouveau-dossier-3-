@@ -221,9 +221,12 @@ describe("AuthoritativeLedger S7-T01 (6 unit tests)", () => {
       lg.append("unknown.operation.test", { anything: 1 });
     }).toThrow(/AUTHORITATIVE_UNKNOWN_EVENT_TYPE/i);
 
-    // Valid enum type that ALSO satisfies the 3-segment TYPE_REGEX still passes.
-    const valid = lg.append("sales.order.created", { idempotency_key: "abc" });
-    expect(valid.event.type).toBe("sales.order.created");
+    // Decision (a): the 2-segment `payout.*` enum values must be reachable
+    // (TYPE_REGEX now allows 2-or-3 segments), and 3-segment types still work.
+    const two = lg.append("payout.completed", { idempotency_key: "abc", amount_cents: 1 });
+    expect(two.event.type).toBe("payout.completed");
+    const three = lg.append("sales.order.created", { idempotency_key: "abc" });
+    expect(three.event.type).toBe("sales.order.created");
     expect(lg.verify().valid).toBe(true);
   });
 });

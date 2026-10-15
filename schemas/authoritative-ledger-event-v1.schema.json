@@ -24,7 +24,7 @@
         },
         "type": {
           "type": "string",
-          "pattern": "^[a-z]+\\.[a-z_]+\\.[a-z_]+$",
+          "pattern": "^[a-z]+(?:\\.[a-z_]+){1,2}$",
           "enum": [
             "sales.order.created",
             "sales.payment.verified",
