@@ -12,10 +12,9 @@ on:
         required: false
         default: BEP20
       address:
-        description: Recipient wallet address
+        description: Recipient wallet address (must be supplied at dispatch — no hardcoded default)
         type: string
-        required: false
-        default: "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7"
+        required: true
       audit_only:
         description: Run validation without submitting withdrawal
         type: boolean
@@ -67,6 +66,11 @@ jobs:
             echo "::error::address looks too short"
             exit 1
           fi
+          # Live-submission eligibility, computed BEFORE the allowlist gate so the
+          # gate can be fail-closed for live runs only (dry-runs stay usable).
+          LIVE=false
+          if [ "${WITHDRAW_ENABLE}" = "true" ] && [ "${{ inputs.audit_only }}" != "true" ]; then LIVE=true; fi
+          echo "live=$LIVE"
           ALLOWED_RAW="${ALLOWED_WITHDRAW_ADDRESSES}"
           if [ -n "$ALLOWED_RAW" ]; then
             MATCH=0
@@ -80,8 +84,11 @@ jobs:
               exit 1
             fi
             echo "✓ Address allowlisted"
+          elif [ "$LIVE" = "true" ]; then
+            echo "::error::CRYPTO_ALLOWED_ADDRESSES is not set — FAIL-CLOSED: a live withdrawal may not proceed without an address allowlist."
+            exit 1
           else
-            echo "::warning::CRYPTO_ALLOWED_ADDRESSES not set — skipping allowlist check (danger zone)"
+            echo "::warning::CRYPTO_ALLOWED_ADDRESSES not set — allowlist check skipped (dry-run only; live submission disabled)."
           fi
           if [ "${WITHDRAW_ENABLE}" != "true" ]; then
             echo "::warning::CRYPTO_WITHDRAW_ENABLE != true — will still build payload but skip submission (audit-only semantics)"

@@ -67,6 +67,13 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
+      # Gate: a green `next build` alone is not a correctness gate (see G5 C-3).
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Vitest
+        run: npm test
+
       - name: Build Next.js
         run: npx next build
         env:

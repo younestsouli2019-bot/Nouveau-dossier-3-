@@ -27,7 +27,42 @@ permissions:
   deployments: write
 
 jobs:
+  # Gate: typecheck + the full vitest suite must pass before anything deploys.
+  # Previously this workflow had NO test step at all — a push to main went
+  # straight to production.
+  test:
+    name: test (typecheck + vitest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install project dependencies
+        run: npm ci || npm install
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Vitest
+        run: npm test
+
   build-and-deploy:
+    needs: [test]
     runs-on: ubuntu-latest
     environment:
       name: ${{ github.event.inputs.environment || 'production' }}
@@ -62,8 +97,15 @@ jobs:
         run: |
           set -euo pipefail
           _provision() {
-            local key="$1" val="${2:-}"
+            local key="$1" val="${2:-}" minlen="${3:-1}"
             [ -n "$val" ] || { echo "skip $key (secret unset)"; return 0; }
+            # FAIL-CLOSED (G1-G4): a secret that IS set must meet its minimum
+            # length. A sub-minimum value means an unpopulated placeholder or a
+            # truncated paste — never ship it to production.
+            if [ "${#val}" -lt "$minlen" ]; then
+              echo "::error::$key is set but only ${#val} chars (< required ${minlen}) — refusing to provision (FAIL-CLOSED)."
+              exit 1
+            fi
             # idempotent: if the var already exists, remove then re-add (env add errors on existing)
             vercel env rm "$key" production --yes --token="${{ secrets.VERCEL_TOKEN }}" 2>/dev/null || true
             printf '%s' "$val" | vercel env add "$key" production --yes --token="${{ secrets.VERCEL_TOKEN }}" 2>/dev/null \
@@ -73,7 +115,9 @@ jobs:
           _provision OWNER_PAYOUT_CURRENCY   "${{ secrets.OWNER_PAYOUT_CURRENCY }}"
           _provision OWNER_KYC_STATUS        "${{ secrets.OWNER_KYC_STATUS }}"
           _provision PLAN_TRANSITION_MODE    "${{ secrets.PLAN_TRANSITION_MODE }}"
-          _provision OWNER_EXEC_UNLOCK       "${{ secrets.OWNER_EXEC_UNLOCK }}"
+          # G4: the ledger chain key is HKDF-derived from this value and must be
+          # >= 43 chars (see AuthoritativeLedger v2 / verify-authoritative-ledger.mjs).
+          _provision OWNER_EXEC_UNLOCK       "${{ secrets.OWNER_EXEC_UNLOCK }}" 43
           _provision OWNER_PAYOUT_IDENTIFIER "${{ secrets.OWNER_PAYOUT_IDENTIFIER }}"
           _provision OWNER_PAYOUT_COUNTRY    "${{ secrets.OWNER_PAYOUT_COUNTRY }}"
           _provision OWNER_PAYOUT_HOLDER_NAME "${{ secrets.OWNER_PAYOUT_HOLDER_NAME }}"
@@ -89,14 +133,13 @@ jobs:
           NEXT_TELEMETRY_DISABLED: 1
 
       - name: Apply database migrations (Neon)
-        continue-on-error: true
         run: |
           set +euo pipefail
           if [ -z "${DATABASE_URL:-}" ]; then
-            echo "::warning::DATABASE_URL secret empty — skip prisma migrate deploy. Neon columns (ownerInitiated etc.) must be applied manually or on next run."
-            exit 0
+            echo "::error::DATABASE_URL secret empty — refusing to deploy (G2). A deploy without migrations can ship code whose columns do not exist in Neon."
+            exit 1
           fi
-          RETRIES=0; MAX=3
+          RETRIES=0; MAX=5
           while [ "$RETRIES" -lt "$MAX" ]; do
             npx prisma migrate deploy
             RC=$?
@@ -105,11 +148,11 @@ jobs:
               exit 0
             fi
             RETRIES=$((RETRIES+1))
-            echo "::warning::Prisma migrate deploy failed (rc=$RC) on attempt $RETRIES/$MAX — Neon might be waking from autosuspend. Waiting 4s and retrying..."
-            sleep 4
+            echo "::warning::Prisma migrate deploy failed (rc=$RC) on attempt $RETRIES/$MAX — Neon might be waking from autosuspend. Waiting 6s and retrying..."
+            sleep 6
           done
-          echo "::warning::Prisma migrate deploy failed all $MAX attempts — build continues without Neon migration. Apply ownerInitiated SQL manually via Neon console (see P0.2 docs)."
-          exit 0
+          echo "::error::Prisma migrate deploy failed all $MAX attempts — FAIL-CLOSED: aborting deploy so production keeps the old (schema-compatible) build. Apply the migration manually via the Neon console, then re-run."
+          exit 1
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NEXT_TELEMETRY_DISABLED: 1
@@ -142,7 +185,8 @@ jobs:
             if [ "$CODE" = "200" ]; then exit 0; fi
             sleep 5
           done
-          echo "WARNING: healthz did not return 200 after 5 attempts; deployment may still be warming up"
+          echo "::error::healthz did not return 200 after 5 attempts — FAIL-CLOSED (exit 66). The deployment did not become healthy."
+          exit 66
 
       - name: Write deployment summary
         run: |

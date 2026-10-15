@@ -193,7 +193,7 @@ jobs:
           if-no-files-found: warn
 
   smoke:
-    name: smoke healthz probes (local dev server)
+    name: smoke /api/health probes (local prod server)
     needs: [build]
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -232,9 +232,11 @@ jobs:
             sleep 2
           done
           echo "health_200_count=$H"
-          # ≥2 non-5xx (S4-T02 AC-16 smoke gate: ≥2/3 non-5xx considered passing; absolute min 1/5 non-5xx else fail)
-          if [ "$H" -lt 1 ]; then
-            echo "FAIL smoke: no 200 responses from /api/health"
+          # Smoke gate (S4-T02 AC-16): at least 2 of the 5 probes must return a
+          # real 200 on /api/health. Previously the check was `-lt 1`, i.e. it
+          # passed with a single 200 — materially weaker than the documented bar.
+          if [ "$H" -lt 2 ]; then
+            echo "FAIL smoke: fewer than 2 of 5 probes returned 200 from /api/health (got $H)"
             tail -n 60 /tmp/nstart.log
             exit 66
           fi
