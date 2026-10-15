@@ -1,16 +1,38 @@
+/**
+ * Canonical display resolver for a case complaint.
+ * Different case ingestion paths use different field names (e.g. the Attijari
+ * Contentieux 018 case stores `holder`/`ribDebt`/`ribSalary`, while the MT103
+ * template payload uses `beneficiary`/`rib`). Without this resolver the letters
+ * rendered the literal string "undefined". Resolve once, never interpolate
+ * a missing field.
+ */
+export function caseDisplay(c = {}) {
+	const beneficiary =
+		c.holder || c.beneficiary || c.beneficiaryName || c.ownerName || "Younes Tsouli";
+	const rib = c.rib || c.ribDebt || c.ribSalary || c.iban || "(RIB non renseigné)";
+	const cin = c.cin || "A337773";
+	const bank = c.bank || "Attijariwafa Bank";
+	const currency = c.currency || "USD";
+	const valueDate = c.valueDate || "(date de valeur non renseignée)";
+	const batches = Array.isArray(c.batches) ? c.batches : [];
+	const ownerContact = c.ownerContact || c.bankContact || "(contact non renseigné)";
+	return { beneficiary, rib, cin, bank, currency, valueDate, batches, ownerContact };
+}
+
 export function escalationEmail({ caseData }) {
 	const c = caseData.complaint;
-	const batches = (c.batches || []).map((b) => b.id).join("\n");
+	const d = caseDisplay(c);
+	const batches = d.batches.map((b) => b.id).join("\n");
 	return {
 		subject: "[URGENT REGULATORY TRACKING] Missing Inbound MT103 Wires - USD " + c.totalAmount.toLocaleString("en-US") + " - Ref: TSOULI YOUNES",
 		body: [
 			"Dear Rim Guedira,",
 			"",
-			`Acting on behalf of our client, M. Younes Tsouli (CIN: ${c.cin || "A337773"}), our automated treasury tracking networks have flagged a structural delay concerning four (4) international wire transfers directed to account RIB: ${c.rib}.`,
+			`Acting on behalf of our client, M. Younes Tsouli (CIN: ${d.cin}), our automated treasury tracking networks have flagged a structural delay concerning four (4) international wire transfers directed to account RIB: ${d.rib}.`,
 			"",
 			"Transaction Details:",
-			`* Value Date: ${c.valueDate}`,
-			`* Total Sum: ${c.totalAmount.toLocaleString("en-US")} ${c.currency} (split into ${(c.batches || []).length} batches)`,
+			`* Value Date: ${d.valueDate}`,
+			`* Total Sum: ${c.totalAmount.toLocaleString("en-US")} ${d.currency} (split into ${d.batches.length} batches)`,
 			`* Batch Trackers:`,
 			batches,
 			"",
@@ -20,7 +42,7 @@ export function escalationEmail({ caseData }) {
 			"",
 			"Sincerely,",
 			"Treasury Automation Agent",
-			`On behalf of ${c.beneficiary}`,
+			`On behalf of ${d.beneficiary}`,
 			"",
 			`Case reference: ${caseData.id}`,
 		].join("\r\n"),
@@ -29,45 +51,47 @@ export function escalationEmail({ caseData }) {
 
 export function followUpEmail({ caseData, stage }) {
 	const c = caseData.complaint;
+	const d = caseDisplay(c);
 	const subject =
 		stage === "FOLLOW_UP_2"
-			? `RAPPEL URGENT - Escalade : Virements MT103 non reçus - ${c.beneficiary}`
+			? `RAPPEL URGENT - Escalade : Virements MT103 non reçus - ${d.beneficiary}`
 			: `FOLLOW-UP (${stage}) - Missing Inbound MT103 Wires - USD ${c.totalAmount.toLocaleString("en-US")} - ${caseData.id}`;
 	return {
 		subject,
 		body: [
 			`${stage} automated reminder for case ${caseData.id}.`,
 			"",
-			`Reference: ${(c.batches || []).map((b) => b.id).join(", ")}`,
-			`Beneficiary RIB: ${c.rib}`,
-			`Total: ${c.totalAmount.toLocaleString("en-US")} ${c.currency}`,
+			`Reference: ${d.batches.map((b) => b.id).join(", ")}`,
+			`Beneficiary RIB: ${d.rib}`,
+			`Total: ${c.totalAmount.toLocaleString("en-US")} ${d.currency}`,
 			"",
 			stage === "FOLLOW_UP_2"
 				? "No response has been received to date. This query is now also routed to the general corporate desk."
 				: "We request a status confirmation within 24 business hours.",
 			"",
 			"Treasury Automation Agent",
-			`On behalf of ${c.beneficiary}`,
+			`On behalf of ${d.beneficiary}`,
 		].join("\r\n"),
 	};
 }
 
 export function escalationLetterSections({ caseData, forensic }) {
 	const c = caseData.complaint;
+	const d = caseDisplay(c);
 	return [
 		{
 			heading: "Case Summary",
 			body: [
 				`Case: ${caseData.id}`,
-				`Beneficiary: ${c.beneficiary} (CIN: ${c.cin || "A337773"})`,
-				`Bank: ${c.bank} - RIB: ${c.rib}`,
-				`Value Date: ${c.valueDate}`,
-				`Total: ${c.totalAmount.toLocaleString("en-US")} ${c.currency}`,
+				`Beneficiary: ${d.beneficiary} (CIN: ${d.cin})`,
+				`Bank: ${d.bank} - RIB: ${d.rib}`,
+				`Value Date: ${d.valueDate}`,
+				`Total: ${c.totalAmount.toLocaleString("en-US")} ${d.currency}`,
 			].join("\n"),
 		},
 		{
 			heading: "Batches",
-			body: (c.batches || []).map((b) => `${b.id} - ${b.amount.toLocaleString("en-US")} ${b.currency}`).join("\n"),
+			body: d.batches.map((b) => `${b.id} - ${b.amount.toLocaleString("en-US")} ${b.currency}`).join("\n"),
 		},
 		{
 			heading: "Forensic Validation",
