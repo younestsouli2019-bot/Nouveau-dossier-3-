@@ -57,25 +57,34 @@ const GENESIS_PREV = sha256Hex("authoritative-ledger-genesis-v1|" + CHAIN_SALT_H
 
 let ledgerPath = process.env.AUTHORITATIVE_LEDGER_PATH || DEFAULT_LEDGER;
 
+function bootstrapGenesis(chainKey) {
+  const ts = new Date().toISOString();
+  const event = {
+    schema: "authoritative-ledger-event-v1",
+    id: crypto.randomBytes(16).toString("hex"),
+    type: "system.ledger.bootstrapped",
+    ts,
+    payload: { bootstrapped_at: ts, reason: "verify-authoritative-ledger plan-only first run" }
+  };
+  const eventStr = sortedStringify(event);
+  const prevHash = GENESIS_PREV;
+  const hash = sha256Hex(prevHash + "|" + eventStr);
+  const sig = hmacSha256Hex(chainKey, hash);
+  fs.appendFileSync(ledgerPath, JSON.stringify({ event, prevHash, hash, sig }) + "\n");
+}
+
 if (!fs.existsSync(ledgerPath)) {
+  // Derive the owner-bound key BEFORE any side effect: a missing/short
+  // OWNER_EXEC_UNLOCK must fail closed (exit 17) without creating a file or
+  // printing a bootstrap that never happens.
+  const bootstrapKey = planOnly ? deriveChainKey() : null;
   const dir = path.dirname(ledgerPath);
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(ledgerPath, "");
   console.log("[verify-authoritative-ledger] Ledger file did not exist; created empty at", ledgerPath);
   if (planOnly) {
     console.log("[verify-authoritative-ledger] plan-only bootstrap: appending genesis line (system.ledger.bootstrapped).");
-    const event = {
-      schema: "authoritative-ledger-event-v1",
-      id: crypto.randomBytes(16).toString("hex"),
-      type: "system.ledger.bootstrapped",
-      ts: new Date().toISOString(),
-      payload: { bootstrapped_at: new Date().toISOString(), reason: "verify-authoritative-ledger plan-only first run" }
-    };
-    const eventStr = sortedStringify(event);
-    const prevHash = GENESIS_PREV;
-    const hash = sha256Hex(prevHash + "|" + eventStr);
-    const sig = hmacSha256Hex(deriveChainKey(), hash);
-    fs.appendFileSync(ledgerPath, JSON.stringify({ event, prevHash, hash, sig }) + "\n");
+    bootstrapGenesis(bootstrapKey);
     process.exit(0);
   }
   console.log("[verify-authoritative-ledger] Empty ledger = valid (no data yet). exit=0");
@@ -110,6 +119,13 @@ function validateAgainstSchema(line) {
 
 const content = fs.readFileSync(ledgerPath, "utf8");
 if (!content.trim()) {
+  if (planOnly) {
+    // --plan-only is idempotent: an empty (unbootstrapped) ledger gets its genesis
+    // line, so a failed first bootstrap is retryable without deleting the file.
+    console.log("[verify-authoritative-ledger] Ledger file empty; plan-only bootstrap: appending genesis line (system.ledger.bootstrapped).");
+    bootstrapGenesis(deriveChainKey());
+    process.exit(0);
+  }
   console.log("[verify-authoritative-ledger] Ledger file empty = PASS 0 lines. exit=0");
   process.exit(0);
 }
