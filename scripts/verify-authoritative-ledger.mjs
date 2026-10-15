@@ -21,8 +21,24 @@ const CHAIN_SALT_HEX = crypto
 
 function sha256Hex(s) { return crypto.createHash("sha256").update(s).digest("hex"); }
 function hmacSha256Hex(keyBuf, data) { return crypto.createHmac("sha256", keyBuf).update(data).digest("hex"); }
-function chainKeyStatic() {
-  return crypto.createHash("sha256").update("HKDF|authoritative-ledger|" + CHAIN_SALT_HEX).digest();
+
+// RM-1: the chain key is OWNER-bound (HKDF over OWNER_EXEC_UNLOCK), not a public
+// constant. Must mirror AuthoritativeLedger.deriveChainKeyFromOwner EXACTLY, or
+// every line fails the HMAC check. Fail-closed (exit 17) when the secret is absent.
+const MIN_UNLOCK_LEN = 43;
+const HKDF_SALT = "authoritative-ledger-v1-salt-202610";
+const HKDF_INFO = "authoritative-ledger-chainkey/v2";
+function deriveChainKey() {
+  const unlock = process.env.OWNER_EXEC_UNLOCK || "";
+  if (unlock.length < MIN_UNLOCK_LEN) {
+    console.log(
+      `[verify-authoritative-ledger] FAIL: OWNER_EXEC_UNLOCK missing or too short (< ${MIN_UNLOCK_LEN} chars). ` +
+        "Cannot derive the v2 owner-bound chain key. exit=17"
+    );
+    process.exit(17);
+  }
+  const ikm = crypto.createHash("sha256").update("owner-exec-unlock-ikm/v1|" + unlock).digest();
+  return Buffer.from(crypto.hkdfSync("sha256", ikm, HKDF_SALT, HKDF_INFO, 32));
 }
 function sortedReplacer(_k, v) {
   if (v && typeof v === "object" && !Array.isArray(v)) {
@@ -58,7 +74,7 @@ if (!fs.existsSync(ledgerPath)) {
     const eventStr = sortedStringify(event);
     const prevHash = GENESIS_PREV;
     const hash = sha256Hex(prevHash + "|" + eventStr);
-    const sig = hmacSha256Hex(chainKeyStatic(), hash);
+    const sig = hmacSha256Hex(deriveChainKey(), hash);
     fs.appendFileSync(ledgerPath, JSON.stringify({ event, prevHash, hash, sig }) + "\n");
     process.exit(0);
   }
@@ -100,7 +116,7 @@ if (!content.trim()) {
 
 const lines = content.split(/\r?\n/).filter(l => l.trim().length > 0);
 let prevHash = null;
-const CK = chainKeyStatic();
+const CK = deriveChainKey();
 
 for (let i = 0; i < lines.length; i++) {
   const raw = lines[i];
