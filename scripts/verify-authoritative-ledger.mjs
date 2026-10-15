@@ -35,6 +35,13 @@ function deriveChainKey() {
       `[verify-authoritative-ledger] FAIL: OWNER_EXEC_UNLOCK missing or too short (< ${MIN_UNLOCK_LEN} chars). ` +
         "Cannot derive the v2 owner-bound chain key. exit=17"
     );
+    console.log(
+      "[verify-authoritative-ledger] hint: this is a signataire secret, dot-sourced from " +
+        ".swarm/owner-hands-free.config.ps1 — run  . .\\.swarm\\owner-hands-free.config.ps1  THEN  " +
+        "$env:OWNER_EXEC_UNLOCK = [string]$OWNER_HANDSFREE_SECRETS['OWNER_EXEC_UNLOCK']. " +
+        "If the config is unpopulated (all 36 values empty) this cannot succeed, and " +
+        '$env:X = "" deletes the variable in PowerShell rather than setting it.'
+    );
     process.exit(17);
   }
   const ikm = crypto.createHash("sha256").update("owner-exec-unlock-ikm/v1|" + unlock).digest();
