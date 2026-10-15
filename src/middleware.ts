@@ -46,7 +46,10 @@ export function middleware(request: NextRequest) {
   response.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
   response.headers.set('Cross-Origin-Resource-Policy', 'same-origin')
 
-  const isDev = process.env.NODE_ENV !== 'production'
+  // Fail-closed: ONLY an explicit development/test marker counts as dev mode.
+  // An unset NODE_ENV must not relax the CSP, and above all must not bypass the
+  // OPERATOR_TOKEN check on protected money POSTs (see the `if (isDev)` branch).
+  const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'
   const csp = [
     "default-src 'self'",
     "script-src 'self'" + (isDev ? " 'unsafe-eval' 'unsafe-inline'" : ''),
