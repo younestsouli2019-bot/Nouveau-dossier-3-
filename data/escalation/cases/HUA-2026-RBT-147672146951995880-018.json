@@ -2,7 +2,7 @@
   "id": "HUA-2026-RBT-147672146951995880-018",
   "createdAt": "2026-10-05T08:00:00.000Z",
   "updatedAt": "2026-10-05T16:04:57.633Z",
-  "status": "FOLLOW_UP_2",
+  "status": "ESCALATED",
   "statusHistory": [
     {
       "from": null,
@@ -31,20 +31,6 @@
       "reason": "Phase 2 contentieux reprise 149.000 USD — Attijariwafa + PayP al CIP parallèle. User instruction: 100% autonomie, PAS D'ENVOI OFFICIEL TIERS HUISSIER, signataire gère contentieux seul.",
       "actor": "Younes Tsouli CIN A337773 — Attijari Contentieux 018 Rabat Agdal",
       "at": "2026-10-05T16:04:57.633Z"
-    },
-    {
-      "from": "ESCALATED",
-      "to": "FOLLOW_UP_1",
-      "reason": "T+71h elapsed, no response",
-      "actor": "EscalationDaemon",
-      "at": "2026-10-15T14:16:39.778Z"
-    },
-    {
-      "from": "FOLLOW_UP_1",
-      "to": "FOLLOW_UP_2",
-      "reason": "T+71h elapsed, still no response",
-      "actor": "EscalationDaemon",
-      "at": "2026-10-15T14:16:39.792Z"
     }
   ],
   "trigger": "JUD-CONTENTIEUX-REPRISE-PHASE2-149K-USD",
@@ -171,49 +157,8 @@
       "dispatch": "ACTIVE DOCTRINE — NO EXTERNAL DISPATCH"
     }
   ],
-  "dispatches": [
-    {
-      "channel": "sms_whatsapp",
-      "status": "not_integrated",
-      "note": "No SMS/WhatsApp provider credentials configured; update logged for manual dispatch.",
-      "to": "+212 600 000 000 (SIGNATAIRE)",
-      "message": "Mise à jour: escalade MT103 case HUA-2026-RBT-147672146951995880-018 - $149000",
-      "caseId": "HUA-2026-RBT-147672146951995880-018",
-      "step": "FOLLOW_UP_2",
-      "requestedAt": "2026-10-15T14:16:39.792Z"
-    }
-  ],
-  "followups": [
-    {
-      "kind": "chaser",
-      "step": "FOLLOW_UP_1",
-      "reason": "T+71h elapsed, no response",
-      "dispatchedAt": "2026-10-15T14:16:39.778Z",
-      "dispatch": {
-        "channel": "email",
-        "mode": "draft",
-        "to": "contentieux@agdal018.attijariwafa.ma (présumé)",
-        "subject": "FOLLOW-UP (FOLLOW_UP_1) - Missing Inbound MT103 Wires - USD 149,000 - HUA-2026-RBT-147672146951995880-018",
-        "file": "data\\escalation\\outbox\\HUA-2026-RBT-147672146951995880-018-followup-1.eml",
-        "sentAt": "2026-10-15T14:16:39.777Z"
-      }
-    },
-    {
-      "kind": "chaser",
-      "step": "FOLLOW_UP_2",
-      "reason": "T+71h elapsed, still no response",
-      "dispatchedAt": "2026-10-15T14:16:39.792Z",
-      "dispatch": {
-        "channel": "email",
-        "mode": "draft",
-        "to": "contentieux@agdal018.attijariwafa.ma (présumé)",
-        "cc": "reclamation@attijariwafa.com",
-        "subject": "RAPPEL URGENT - Escalade : Virements MT103 non reçus - undefined",
-        "file": "data\\escalation\\outbox\\HUA-2026-RBT-147672146951995880-018-followup-2.eml",
-        "sentAt": "2026-10-15T14:16:39.792Z"
-      }
-    }
-  ],
+  "dispatches": [],
+  "followups": [],
   "responses": [],
   "complianceFlags": [],
   "hitl": {
