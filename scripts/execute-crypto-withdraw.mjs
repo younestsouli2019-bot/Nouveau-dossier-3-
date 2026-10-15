@@ -17,6 +17,31 @@ function mapNetwork(v) {
 	return "BSC";
 }
 
+function envIsTrue(v) {
+	return /^(1|true|yes|on)$/i.test(String(v ?? "").trim());
+}
+
+function isDryRun() {
+	return (
+		process.argv.includes("--dry-run") ||
+		process.env.CRYPTO_WITHDRAW_DRY_RUN === "true"
+	);
+}
+
+// Defence in depth: the workflow checks CRYPTO_ALLOWED_ADDRESSES, but this script
+// is also runnable directly, so it must enforce the allowlist itself.
+function addressIsAllowlisted(address) {
+	const raw = process.env.CRYPTO_ALLOWED_ADDRESSES ?? process.env.ALLOWED_WITHDRAW_ADDRESSES;
+	if (!String(raw ?? "").trim()) return null; // null = not configured
+	const wanted = String(address).trim().toLowerCase();
+	for (const part of String(raw).split(",")) {
+		const clean = part.trim().replace(/\r/g, "");
+		if (!clean) continue;
+		if (clean.toLowerCase() === wanted) return true;
+	}
+	return false;
+}
+
 async function main() {
 	const amountStr = getArg(
 		"--amount",
@@ -32,6 +57,36 @@ async function main() {
 		throw new Error("Missing TRUST_WALLET address");
 	if (!Number.isFinite(amount) || amount <= 0)
 		throw new Error("Invalid amount");
+
+	const dryRun = isDryRun();
+	const withdrawEnabled = envIsTrue(
+		process.env.CRYPTO_WITHDRAW_ENABLE ?? process.env.WITHDRAW_ENABLE,
+	);
+
+	const allowlisted = addressIsAllowlisted(address);
+	if (allowlisted === false)
+		throw new Error(
+			`Address not in CRYPTO_ALLOWED_ADDRESSES: ${String(address).slice(0, 6)}…${String(address).slice(-4)}`,
+		);
+
+	// Fail closed: anything other than an explicit --dry-run with live
+	// withdrawal enabled must NOT submit. Previously these flags were accepted
+	// and ignored, so "audit only" and "withdraw disabled" both moved real funds.
+	if (dryRun || !withdrawEnabled) {
+		const payload = {
+			ok: true,
+			submitted: false,
+			reason: dryRun ? "DRY_RUN" : "WITHDRAW_DISABLED",
+			network,
+			amount,
+			address,
+			allowlistEnforced: allowlisted !== null,
+			at: new Date().toISOString(),
+		};
+		console.log(JSON.stringify(payload, null, 2));
+		return;
+	}
+
 	const outDir = path.resolve("out", "crypto");
 	fs.mkdirSync(outDir, { recursive: true });
 	let result;

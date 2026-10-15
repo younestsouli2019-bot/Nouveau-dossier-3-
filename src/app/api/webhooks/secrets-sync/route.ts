@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createHmac } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 import { prisma } from '@/lib/db';
 import { sha256 } from '@/lib/strict-enforcement/crypto-utils';
 
@@ -16,8 +16,11 @@ interface SecretSyncPayload {
 
 function verifyHMAC(payload: string, signature: string): boolean {
   if (!WEBHOOK_SECRET) return false;
+  if (!/^sha256=([0-9a-f]{64})$/i.test(signature)) return false;
   const expected = createHmac('sha256', WEBHOOK_SECRET).update(payload).digest('hex');
-  return `sha256=${expected}` === signature;
+  const expectedBuf = Buffer.from(expected, 'hex');
+  const receivedBuf = Buffer.from(signature.slice('sha256='.length), 'hex');
+  return timingSafeEqual(expectedBuf, receivedBuf);
 }
 
 function maskValue(val: string): string {
@@ -31,7 +34,7 @@ export async function POST(req: NextRequest) {
     const signature = req.headers.get('x-hub-signature-256') || '';
     const source = req.headers.get('x-source') || 'unknown';
 
-    if (WEBHOOK_SECRET && !verifyHMAC(rawBody, signature)) {
+    if (!verifyHMAC(rawBody, signature)) {
       await prisma.auditLedger.create({
         data: {
           entityType: 'secrets_sync',

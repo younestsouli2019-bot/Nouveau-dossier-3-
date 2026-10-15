@@ -27,7 +27,96 @@ permissions:
   deployments: write
 
 jobs:
+  # Gate: typecheck + the full vitest suite must pass before anything deploys.
+  # Previously this workflow had NO test step at all — a push to main went
+  # straight to production.
+  test:
+    name: test (typecheck + vitest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install project dependencies
+        run: npm ci || npm install
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Vitest
+        run: npm test
+
+  # G1-G4 release gates. Authoritative definitions live in
+  # scripts/spec8-preflight-v358.mjs (S1) and scripts/start-owner-hands-free.ps1
+  # (T2-8 / T2-9). Until now they existed only in local scripts and blocked
+  # nothing in CI (Groupe#5 finding M-1). Fail-closed, exit 5 (matches
+  # failClosedExit5 in the PowerShell runner).
+  release-gates:
+    name: release gates G1-G4
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify G1-G4 + hands-free gates (fail-closed)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          LIVE_BANK_API: ${{ secrets.LIVE_BANK_API }}
+          BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
+          BINANCE_API_SECRET: ${{ secrets.BINANCE_API_SECRET }}
+          OWNER_EXEC_UNLOCK: ${{ secrets.OWNER_EXEC_UNLOCK }}
+          OWNER_HANDS_FREE_POLICY: ${{ secrets.OWNER_HANDS_FREE_POLICY }}
+          CEX_DIRECT_DEPOSIT_ENABLED: ${{ secrets.CEX_DIRECT_DEPOSIT_ENABLED }}
+          RELEASE_AMOUNT_OVERRIDE_USD: ${{ secrets.RELEASE_AMOUNT_OVERRIDE_USD }}
+        run: |
+          set -euo pipefail
+          fail() { echo "::error::$1"; exit 5; }
+
+          DB="${DATABASE_URL:-}"; LB="${LIVE_BANK_API:-}"; BK="${BINANCE_API_KEY:-}"; BS="${BINANCE_API_SECRET:-}"
+          UN="${OWNER_EXEC_UNLOCK:-}"; HF="${OWNER_HANDS_FREE_POLICY:-}"; CX="${CEX_DIRECT_DEPOSIT_ENABLED:-}"; RE="${RELEASE_AMOUNT_OVERRIDE_USD:-}"
+
+          # G1 — at least 8 of the 8 minimal unblock keys must be populated.
+          present=0; missing=""
+          for pair in "DATABASE_URL=$DB" "LIVE_BANK_API=$LB" "BINANCE_API_KEY=$BK" "BINANCE_API_SECRET=$BS" "OWNER_EXEC_UNLOCK=$UN" "OWNER_HANDS_FREE_POLICY=$HF" "CEX_DIRECT_DEPOSIT_ENABLED=$CX" "RELEASE_AMOUNT_OVERRIDE_USD=$RE"; do
+            k="${pair%%=*}"; v="${pair#*=}"
+            if [ -n "$v" ]; then present=$((present+1)); else missing="$missing $k"; fi
+          done
+          echo "G1 unblock8: present=$present/8"
+          [ "$present" -ge 8 ] || fail "G1 FAIL: only $present/8 unblock keys set (missing:${missing:- none})."
+
+          # G2 — Neon PROD pooled URL, >= 120 chars, sslmode=require.
+          echo "G2 DATABASE_URL len=${#DB}"
+          [ "${#DB}" -ge 120 ] || fail "G2 FAIL: DATABASE_URL len=${#DB} < 120."
+          case "$DB" in *sslmode=require*) ;; *) fail "G2 FAIL: DATABASE_URL is missing sslmode=require.";; esac
+
+          # G3 — Binance Spot withdraw dual-scope credentials, >= 32 chars each.
+          echo "G3 BINANCE_API_KEY len=${#BK} / BINANCE_API_SECRET len=${#BS}"
+          { [ "${#BK}" -ge 32 ] && [ "${#BS}" -ge 32 ]; } || fail "G3 FAIL: BINANCE_API_KEY len=${#BK} / BINANCE_API_SECRET len=${#BS} (both must be >= 32)."
+
+          # G4 — owner-bound ledger chain key, >= 43 chars.
+          echo "G4 OWNER_EXEC_UNLOCK len=${#UN}"
+          [ "${#UN}" -ge 43 ] || fail "G4 FAIL: OWNER_EXEC_UNLOCK len=${#UN} < 43."
+
+          # Hands-free policy flag.
+          [ "$HF" = "true" ] || fail "HANDS-FREE FAIL: OWNER_HANDS_FREE_POLICY != 'true'."
+
+          echo "OK G1-G4 + OWNER_HANDS_FREE_POLICY all open."
+
   build-and-deploy:
+    needs: [test, release-gates]
     runs-on: ubuntu-latest
     environment:
       name: ${{ github.event.inputs.environment || 'production' }}
@@ -62,8 +151,15 @@ jobs:
         run: |
           set -euo pipefail
           _provision() {
-            local key="$1" val="${2:-}"
+            local key="$1" val="${2:-}" minlen="${3:-1}"
             [ -n "$val" ] || { echo "skip $key (secret unset)"; return 0; }
+            # FAIL-CLOSED (G1-G4): a secret that IS set must meet its minimum
+            # length. A sub-minimum value means an unpopulated placeholder or a
+            # truncated paste — never ship it to production.
+            if [ "${#val}" -lt "$minlen" ]; then
+              echo "::error::$key is set but only ${#val} chars (< required ${minlen}) — refusing to provision (FAIL-CLOSED)."
+              exit 1
+            fi
             # idempotent: if the var already exists, remove then re-add (env add errors on existing)
             vercel env rm "$key" production --yes --token="${{ secrets.VERCEL_TOKEN }}" 2>/dev/null || true
             printf '%s' "$val" | vercel env add "$key" production --yes --token="${{ secrets.VERCEL_TOKEN }}" 2>/dev/null \
@@ -73,7 +169,9 @@ jobs:
           _provision OWNER_PAYOUT_CURRENCY   "${{ secrets.OWNER_PAYOUT_CURRENCY }}"
           _provision OWNER_KYC_STATUS        "${{ secrets.OWNER_KYC_STATUS }}"
           _provision PLAN_TRANSITION_MODE    "${{ secrets.PLAN_TRANSITION_MODE }}"
-          _provision OWNER_EXEC_UNLOCK       "${{ secrets.OWNER_EXEC_UNLOCK }}"
+          # G4: the ledger chain key is HKDF-derived from this value and must be
+          # >= 43 chars (see AuthoritativeLedger v2 / verify-authoritative-ledger.mjs).
+          _provision OWNER_EXEC_UNLOCK       "${{ secrets.OWNER_EXEC_UNLOCK }}" 43
           _provision OWNER_PAYOUT_IDENTIFIER "${{ secrets.OWNER_PAYOUT_IDENTIFIER }}"
           _provision OWNER_PAYOUT_COUNTRY    "${{ secrets.OWNER_PAYOUT_COUNTRY }}"
           _provision OWNER_PAYOUT_HOLDER_NAME "${{ secrets.OWNER_PAYOUT_HOLDER_NAME }}"
@@ -89,14 +187,13 @@ jobs:
           NEXT_TELEMETRY_DISABLED: 1
 
       - name: Apply database migrations (Neon)
-        continue-on-error: true
         run: |
           set +euo pipefail
           if [ -z "${DATABASE_URL:-}" ]; then
-            echo "::warning::DATABASE_URL secret empty — skip prisma migrate deploy. Neon columns (ownerInitiated etc.) must be applied manually or on next run."
-            exit 0
+            echo "::error::DATABASE_URL secret empty — refusing to deploy (G2). A deploy without migrations can ship code whose columns do not exist in Neon."
+            exit 1
           fi
-          RETRIES=0; MAX=3
+          RETRIES=0; MAX=5
           while [ "$RETRIES" -lt "$MAX" ]; do
             npx prisma migrate deploy
             RC=$?
@@ -105,11 +202,11 @@ jobs:
               exit 0
             fi
             RETRIES=$((RETRIES+1))
-            echo "::warning::Prisma migrate deploy failed (rc=$RC) on attempt $RETRIES/$MAX — Neon might be waking from autosuspend. Waiting 4s and retrying..."
-            sleep 4
+            echo "::warning::Prisma migrate deploy failed (rc=$RC) on attempt $RETRIES/$MAX — Neon might be waking from autosuspend. Waiting 6s and retrying..."
+            sleep 6
           done
-          echo "::warning::Prisma migrate deploy failed all $MAX attempts — build continues without Neon migration. Apply ownerInitiated SQL manually via Neon console (see P0.2 docs)."
-          exit 0
+          echo "::error::Prisma migrate deploy failed all $MAX attempts — FAIL-CLOSED: aborting deploy so production keeps the old (schema-compatible) build. Apply the migration manually via the Neon console, then re-run."
+          exit 1
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NEXT_TELEMETRY_DISABLED: 1
@@ -142,7 +239,8 @@ jobs:
             if [ "$CODE" = "200" ]; then exit 0; fi
             sleep 5
           done
-          echo "WARNING: healthz did not return 200 after 5 attempts; deployment may still be warming up"
+          echo "::error::healthz did not return 200 after 5 attempts — FAIL-CLOSED (exit 66). The deployment did not become healthy."
+          exit 66
 
       - name: Write deployment summary
         run: |

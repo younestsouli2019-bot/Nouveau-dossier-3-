@@ -1,16 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { approvePurchaseOrderWithBudgetCheck } from '@/lib/strict-enforcement/strict-procurement'
+import { requireOpsAuth } from '@/lib/api-auth'
 
-function extractApprover(request: NextRequest): string {
-  const h = request.headers.get('x-performed-by') || request.headers.get('x-approver') || request.headers.get('x-ops-secret')
-  if (h && h.length > 0) return h.length > 8 ? `${h.slice(0,8)}…${h.slice(-4)}` : h
-  return 'bulk-user'
-}
-
+/**
+ * POST /api/purchase-orders/bulk-approve
+ * 🚧 PROTÉGÉ: requireOpsAuth en tête.
+ */
 export async function POST(request: NextRequest) {
+  const denied = requireOpsAuth(request)
+  if (denied) return denied
+
   try {
     const body = await request.json()
     const { poIds } = body as { poIds: string[] }
+    const actor = resolveOpsIdentity(request)
 
     if (!poIds || !Array.isArray(poIds) || poIds.length === 0) {
       return NextResponse.json(
@@ -19,13 +22,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const approver = extractApprover(request)
     const results: Record<string, unknown>[] = []
     let approvedCount = 0
     let skippedOrFailed = 0
     for (const id of poIds) {
       try {
-        const r = await approvePurchaseOrderWithBudgetCheck(id, approver)
+        const r = await approvePurchaseOrderWithBudgetCheck(id, actor)
         if (r.approved) { approvedCount++; results.push({ poId: id, approved: true, code: r.code, receipt: r.receipt }) }
         else { skippedOrFailed++; results.push({ poId: id, approved: false, code: r.code, error: r.error }) }
       } catch (e: any) {
@@ -36,6 +38,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      approvedBy: actor,
       data: {
         approvedCount,
         skippedCount: skippedOrFailed,
@@ -50,4 +53,12 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+function resolveOpsIdentity(request: NextRequest): string {
+  const header = request.headers.get('x-ops-identity')
+  if (header && header.trim().length >= 3) return header.trim().slice(0, 64)
+  const opsSecret = request.headers.get('x-ops-secret')
+  if (opsSecret) return 'ops-secret-authenticated'
+  return 'same-origin-operator'
 }

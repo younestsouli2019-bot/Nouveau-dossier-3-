@@ -1,5 +1,4 @@
 import "dotenv/config";
-import { CryptoRailManager } from "../src/crypto/crypto-rail.mjs";
 
 function hasEnv(name) {
   const v = process.env[name];
@@ -12,19 +11,38 @@ function mask(value, keep = 4) {
   return `${s.slice(0, keep)}...${s.slice(-2)} (len=${s.length})`;
 }
 
+async function fetchWithBackoff(url, opts = {}, { timeouts = [25000, 40000, 60000], retries = 2 } = {}) {
+  let lastErr = null;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const ctl = new AbortController();
+    const ms = timeouts[attempt] ?? timeouts[timeouts.length - 1];
+    const timer = setTimeout(() => ctl.abort(new Error(`fetch timeout after ${ms}ms (attempt ${attempt + 1}/${retries + 1})`)), ms);
+    try {
+      const resp = await fetch(url, { ...opts, signal: ctl.signal });
+      clearTimeout(timer);
+      return { resp, attempt, timeoutMs: ms };
+    } catch (e) {
+      clearTimeout(timer);
+      lastErr = e;
+      if (attempt < retries) {
+        const backoffMs = 200 * Math.pow(2, attempt);
+        await new Promise((r) => setTimeout(r, backoffMs));
+        continue;
+      }
+    }
+  }
+  throw lastErr ?? new Error("fetchWithBackoff exhausted");
+}
+
 async function probeWise() {
   const token = process.env.OWNER_WISE_API_TOKEN || process.env.WISE_API_TOKEN || "";
   if (!hasEnv("OWNER_WISE_API_TOKEN") && !hasEnv("WISE_API_TOKEN")) {
     return { rail: "wise", ok: false, reason: "no token configured" };
   }
   try {
-    const ctl = new AbortController();
-    const timer = setTimeout(() => ctl.abort(), 25000);
-    const resp = await fetch("https://api.transferwise.com/v1/profiles", {
+    const { resp } = await fetchWithBackoff("https://api.transferwise.com/v1/profiles", {
       headers: { Authorization: `Bearer ${token}` },
-      signal: ctl.signal,
     });
-    clearTimeout(timer);
     if (resp.ok) {
       const profiles = await resp.json();
       return { rail: "wise", ok: true, token: mask(token), profiles: profiles.length };
@@ -37,19 +55,35 @@ async function probeWise() {
 }
 
 async function probeCrypto() {
-  const manager = new CryptoRailManager();
-  const result = await manager.checkRails();
-  return {
-    rail: "crypto",
-    enabled: result.enabled,
-    destination: result.destination,
-    allowedAddressCount: result.allowedAddressCount,
-    minWithdraw: result.minWithdraw,
-    maxWithdraw: result.maxWithdraw,
-    priority: result.priority,
-    bybit: result.rails.bybit,
-    bitget: result.rails.bitget,
-  };
+  try {
+    const { CryptoRailManager } = await import("../src/crypto/crypto-rail.mjs").catch(() => ({ CryptoRailManager: null }));
+    if (!CryptoRailManager) {
+      return {
+        rail: "crypto",
+        ok: false,
+        error: "CryptoRailManager unavailable: @binance/connector or crypto-rail module missing (fail-soft, other probes preserved)",
+      };
+    }
+    const manager = new CryptoRailManager();
+    const result = await manager.checkRails();
+    return {
+      rail: "crypto",
+      ok: true,
+      enabled: result.enabled,
+      destination: result.destination,
+      allowedAddressCount: result.allowedAddressCount,
+      minWithdraw: result.minWithdraw,
+      maxWithdraw: result.maxWithdraw,
+      priority: result.priority,
+      networks: result.networks,
+      directDepositEnabled: result.directDepositEnabled,
+      destinationL2: result.destinationL2,
+      bybit: result.rails.bybit,
+      bitget: result.rails.bitget,
+    };
+  } catch (e) {
+    return { rail: "crypto", ok: false, error: e?.message ?? String(e) };
+  }
 }
 
 async function probePayPal() {
@@ -60,9 +94,7 @@ async function probePayPal() {
   const base = String(process.env.PAYPAL_API_BASE_URL || "").replace(/\/+$/, "") || "https://api-m.paypal.com";
   const basic = Buffer.from(`${cid}:${process.env.PAYPAL_CLIENT_SECRET}`).toString("base64");
   try {
-    const ctl = new AbortController();
-    const timer = setTimeout(() => ctl.abort(), 25000);
-    const resp = await fetch(`${base}/v1/oauth2/token`, {
+    const { resp } = await fetchWithBackoff(`${base}/v1/oauth2/token`, {
       method: "POST",
       headers: {
         Authorization: `Basic ${basic}`,
@@ -70,9 +102,7 @@ async function probePayPal() {
         Accept: "application/json",
       },
       body: "grant_type=client_credentials",
-      signal: ctl.signal,
     });
-    clearTimeout(timer);
     if (resp.ok) {
       const j = await resp.json();
       const scopes = (j.scope ?? "").split(" ");
@@ -91,8 +121,17 @@ async function probePayPal() {
   }
 }
 
+function unwrapSettled(settled, railName) {
+  if (settled.status === "fulfilled") return settled.value;
+  const reason = settled.reason;
+  return { rail: railName, ok: false, error: reason?.message ?? String(reason) };
+}
+
 async function main() {
-  const [wise, crypto, paypal] = await Promise.all([probeWise(), probeCrypto(), probePayPal()]);
+  const [wiseS, cryptoS, paypalS] = await Promise.allSettled([probeWise(), probeCrypto(), probePayPal()]);
+  const wise = unwrapSettled(wiseS, "wise");
+  const crypto = unwrapSettled(cryptoS, "crypto");
+  const paypal = unwrapSettled(paypalS, "paypal");
   const all = [wise, crypto, paypal];
   const ok = all.every((r) => r.ok !== false);
   process.stdout.write(JSON.stringify({ ok, checkedAt: new Date().toISOString(), rails: all }, null, 2) + "\n");

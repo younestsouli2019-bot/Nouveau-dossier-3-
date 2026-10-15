@@ -1,21 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { approvePurchaseOrderWithBudgetCheck } from '@/lib/strict-enforcement/strict-procurement'
+import { requireOpsAuth } from '@/lib/api-auth'
 
-function extractApprover(request: NextRequest): string {
-  const h = request.headers.get('x-performed-by') || request.headers.get('x-approver') || request.headers.get('x-ops-secret')
-  if (h && h.length > 0) return h.length > 8 ? `${h.slice(0,8)}…${h.slice(-4)}` : h
-  return 'user'
-}
-
+/**
+ * POST /api/purchase-orders/[id]/approve
+ * Approbation HUMAINE requise.
+ * 🚧 PROTÉGÉ: requireOpsAuth en tête.
+ */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const denied = requireOpsAuth(request)
+  if (denied) return denied
+
   try {
     const { id } = await params
-    const approver = extractApprover(request)
+    const actor = resolveOpsIdentity(request)
 
-    const result = await approvePurchaseOrderWithBudgetCheck(id, approver)
+    const result = await approvePurchaseOrderWithBudgetCheck(id, actor)
     if (!result.approved) {
       return NextResponse.json(
         {
@@ -32,6 +35,7 @@ export async function POST(
       success: true,
       approved: true,
       data: result.receipt,
+      approvedBy: actor,
     })
   } catch (error) {
     console.error('Error approving purchase order (budget-gated):', error)
@@ -40,4 +44,12 @@ export async function POST(
       { status: 500 }
     )
   }
+}
+
+function resolveOpsIdentity(request: NextRequest): string {
+  const header = request.headers.get('x-ops-identity')
+  if (header && header.trim().length >= 3) return header.trim().slice(0, 64)
+  const opsSecret = request.headers.get('x-ops-secret')
+  if (opsSecret) return 'ops-secret-authenticated'
+  return 'same-origin-operator'
 }

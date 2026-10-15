@@ -56,16 +56,22 @@ const CONSTANT_TIME_COMPARE = (a: string, b: string) => {
   return result === 0;
 };
 
-const isDev = process.env.NODE_ENV !== 'production';
+// Fail-closed: ONLY an explicit development/test marker counts as dev mode.
+// An unset NODE_ENV must not relax the CSP, and above all must not bypass the
+// OPERATOR_TOKEN check on protected money POSTs (see the `if (isProtected)` branch).
+// Read per-call (never cached at module load) so a runtime/test env change is honoured.
+function isDevEnv(): boolean {
+  return process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
+}
 
 function buildCsp(nonce: string): string {
   const parts = [
     "default-src 'self'",
-    `script-src 'nonce-${nonce}' 'strict-dynamic' https: 'self'` + (isDev ? " 'unsafe-eval'" : ''),
+    `script-src 'nonce-${nonce}' 'strict-dynamic' https: 'self'` + (isDevEnv() ? " 'unsafe-eval'" : ''),
     "style-src 'self'",
     "img-src 'self' data: blob:",
     "font-src 'self'",
-    "connect-src 'self' https://www.realworldcerts.com https://api.realworldcerts.com https://payment.cmi.co.ma https://testpayment.cmi.co.ma https://*.space-z.ai" + (isDev ? ' ws:' : ''),
+    "connect-src 'self' https://www.realworldcerts.com https://api.realworldcerts.com https://payment.cmi.co.ma https://testpayment.cmi.co.ma https://*.space-z.ai" + (isDevEnv() ? ' ws:' : ''),
     "frame-ancestors 'none'",
     "object-src 'none'",
     "form-action 'self'",
@@ -75,19 +81,11 @@ function buildCsp(nonce: string): string {
 }
 
 function applySecureCookie(response: NextResponse, name: string, value: string) {
-  const attrs = [
-    `HttpOnly`,
-    `SameSite=Strict`,
-    `Path=/`,
-  ];
-  if (!isDev) {
-    attrs.push('Secure');
-  }
   response.cookies.set(name, value, {
     httpOnly: true,
     sameSite: 'strict',
     path: '/',
-    secure: !isDev,
+    secure: !isDevEnv(),
   });
 }
 
@@ -115,21 +113,6 @@ async function extractSubmittedCsrf(request: NextRequest): Promise<string | null
   } catch {
   }
   return null;
-}
-
-function isBrowserNavigation(headers: Headers): boolean {
-  const secFetchDest = headers.get('sec-fetch-dest');
-  return secFetchDest === 'document' || secFetchDest === 'iframe' || secFetchDest === 'frame';
-}
-
-function isBrowserPost(headers: Headers): boolean {
-  const secFetchDest = headers.get('sec-fetch-dest');
-  const secFetchMode = headers.get('sec-fetch-mode');
-  const secFetchSite = headers.get('sec-fetch-site');
-  if (!secFetchDest && !secFetchMode && !secFetchSite) {
-    return false;
-  }
-  return secFetchDest === 'empty' || secFetchMode === 'cors' || secFetchMode === 'navigate' || secFetchMode === 'same-origin' || secFetchMode === 'no-cors';
 }
 
 export async function middleware(request: NextRequest) {
@@ -171,7 +154,7 @@ export async function middleware(request: NextRequest) {
   const csp = buildCsp(nonce);
   response.headers.set('Content-Security-Policy', csp);
 
-  if (!isDev) {
+  if (!isDevEnv()) {
     response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
   }
 
@@ -184,6 +167,29 @@ export async function middleware(request: NextRequest) {
   const existingSessionCookie = request.cookies.get('operator_session');
   if (existingSessionCookie?.value) {
     applySecureCookie(response, 'operator_session', existingSessionCookie.value);
+  }
+
+  // Admin-only reads: order lookup, payment config. The route also
+  // authenticates internally, but reject unauthenticated calls here so
+  // they never reach the handler.
+  if (request.method === 'GET') {
+    const ADMIN_READ_PATHS = ['/api/orders', '/api/owner-payments'];
+    const path = request.nextUrl.pathname;
+    if (ADMIN_READ_PATHS.some(p => path === p || path.startsWith(`${p}/`))) {
+      const operatorToken = process.env.OPERATOR_TOKEN;
+      if (!operatorToken) {
+        if (!isDevEnv()) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      } else {
+        const authHeader = request.headers.get('authorization');
+        const sessionCookie = request.cookies.get('operator_session')?.value;
+        const provided = authHeader?.startsWith('Bearer ')
+          ? authHeader.slice(7)
+          : sessionCookie ?? '';
+        if (!provided || !CONSTANT_TIME_COMPARE(provided, operatorToken)) {
+          return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 });
+        }
+      }
+    }
   }
 
   if (request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE' || request.method === 'PATCH') {
@@ -211,7 +217,7 @@ export async function middleware(request: NextRequest) {
     if (isProtected) {
       const operatorToken = process.env.OPERATOR_TOKEN;
       if (!operatorToken) {
-        if (isDev) {
+        if (isDevEnv()) {
           console.warn(`[Middleware] OPERATOR_TOKEN not set — allowing ${request.method} ${path} in dev mode`);
           return response;
         }

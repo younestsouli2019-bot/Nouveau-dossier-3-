@@ -9,8 +9,8 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['src/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'scripts/**/*.test.mjs'],
     globals: true,
-    exclude: ['node_modules/**', '.trunk/**', 'src/lib/procurement/tracking-fraud-guard.d.ts'],
+    exclude: ['node_modules/**', '.trunk/**', 'src/lib/procurement/tracking-fraud-guard.d.ts', 'scripts/test/**'],
   },
 })

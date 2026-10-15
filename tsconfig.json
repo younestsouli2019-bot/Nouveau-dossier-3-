@@ -31,14 +31,13 @@
   "include": [
     "next-env.d.ts",
     "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    "**/*.tsx"
   ],
   "exclude": [
     "node_modules",
     "swarm-ops-project",
     "autopublisher-v3-*",
+    ".next",
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.spec.ts",

@@ -380,11 +380,25 @@ describe('T10 — TERMINAL states cannot transition (valid transitions matrix fa
     }
   });
 
-  // T10b — QUARANTINED is deliberately NOT terminal (no-held-forever doctrine):
-  // it has exactly two sanctioned escape routes and nothing else.
-  it('QUARANTINED has exactly the two sanctioned escape routes', () => {
-    expect(VALID_TRANSITIONS[SettlementState.QUARANTINED]).toEqual(
-      new Set([SettlementState.PROVIDER_RECONCILED, SettlementState.REJECTED])
-    );
+  // QUARANTINED is a hold, not a dead end: an operator releases it back into
+  // reconciliation or rejects it. See SettlementEngine.pure.test.ts T9, which
+  // asserts these two edges. Listing it as zero-outgoing here contradicted
+  // that test and blocked any quarantine recovery.
+  it('QUARANTINED releases to PROVIDER_RECONCILED or REJECTED only', () => {
+    expect(VALID_TRANSITIONS[SettlementState.QUARANTINED].size).toBe(2);
+    expect(VALID_TRANSITIONS[SettlementState.QUARANTINED].has(SettlementState.PROVIDER_RECONCILED)).toBe(true);
+    expect(VALID_TRANSITIONS[SettlementState.QUARANTINED].has(SettlementState.REJECTED)).toBe(true);
+  });
+
+  it('no terminal state can reach SETTLED after the fact', () => {
+    for (const term of [
+      SettlementState.SETTLED,
+      SettlementState.REJECTED,
+      SettlementState.CANCELLED,
+      SettlementState.QUARANTINED,
+      SettlementState.EXPIRED,
+    ]) {
+      expect(VALID_TRANSITIONS[term].has(SettlementState.SETTLED)).toBe(false);
+    }
   });
 });

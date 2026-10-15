@@ -44,7 +44,21 @@ export interface ReceiptResult {
  * 5. Idempotent: same idempotencyKey returns prior cached ReceiptResult
  */
 export async function confirmReceipt(params: ConfirmReceiptParams): Promise<ReceiptResult> {
-  const { procurementItemId, quantityReceived, quantityDamaged = 0, condition, confirmedBy = 'system', notes, proofHash } = params
+  const { procurementItemId, quantityReceived, quantityDamaged = 0, condition, confirmedBy, notes, proofHash } = params
+
+  // RULE 0: a receipt is an OWNER-SIDE act (TRUTH-PROC: delivery != receipt).
+  // It must name a real human recipient. There is deliberately NO default: the
+  // previous default 'system' slipped past the downstream human gate, which
+  // only rejects 'system-auto' (truth-guards / payment-gateway-router).
+  const confirmer = (confirmedBy ?? '').trim()
+  if (!confirmer || /^(system|system-auto|auto|bot|null|undefined|n\/a|-)$/i.test(confirmer)) {
+    return {
+      success: false,
+      error: 'TRUTH-PROC VIOLATION: receipt confirmation REQUIRES confirmedBy = a real human recipient. ' +
+        'Empty, system and automation values are rejected — delivery is carrier-side, receipt is owner-side. ' +
+        'Operation KILLED. Rule: TRUTH-PROC-001',
+    }
+  }
 
   const qty = quantityReceived
   const ph = proofHash ?? ''
@@ -112,7 +126,7 @@ export async function confirmReceipt(params: ConfirmReceiptParams): Promise<Rece
     data: {
       status: hasDiscrepancy ? 'delivered' : 'delivered', // keep delivered but flag discrepancy
       deliveredAt: existing.deliveredAt ?? new Date(),
-      receiptConfirmedBy: confirmedBy,
+      receiptConfirmedBy: confirmer,
       receiptConfirmedAt: new Date(),
       quantityReceived,
       quantityDamaged,
@@ -144,7 +158,7 @@ export async function confirmReceipt(params: ConfirmReceiptParams): Promise<Rece
         previousHash: lastAudit?.entryHash ?? null,
         entryHash: sha256(entryContent),
         proofHash: proofHash ?? null,
-        performedBy: confirmedBy,
+        performedBy: confirmer,
         metadata: JSON.stringify({ itemName: existing.name, discrepancy, idempotencyKey, cachedReceiptResult: resultPayload }),
       },
     })

@@ -1,51 +1,87 @@
 #!/usr/bin/env node
-// verify-secret-scope.mjs — DRY-RUN by default.
-//
-// Verifie que les 7 SECRETS WEB SCOPE (GitHub Env production/preview
-// + repo vars) sont BIEN listes, et QUE LES 5 SECRETS DE PAYOUT
-// RAIL (BINANCE_API_KEY, BYBIT_API_KEY, BITGET_API_KEY,
-// OWNER_PRIVATE_KEY_USDC, ATTIJARI_CLIENT_SECRET) NE SONT PAS
-// CONFIGURES DANS GITHUB (la console administrateur doit echouer).
-//
-// Mode DRY-RUN: aucune API GitHub n'est appelee sans
-// process.env.GITHUB_TOKEN. Imprime juste la structure attendue.
-//
-const EXPECTED_WEB_SCOPED_SECRETS = [
-    'REVALIDATE_TOKEN',
-    'DATABASE_URL_PREVIEW',
-    'DATABASE_URL_PRODUCTION',
-    'VERCEL_TOKEN',
-    'RESEND_API_KEY',
-    'STRIPE_SECRET_KEY',
-    'OWNER_CONTACT_HMAC_SALT',
+// S3-T04: verify-secret-scope.mjs — assert 7 web-tier scoped secrets in GH Environments (production/preview)
+// AND assert payout_writer DB cred NOT in GitHub Env AT ALL (404 check).
+// Exit 0 PASS. Exit 8 FAIL.
+import process from "node:process";
+import https from "node:https";
+
+const OWNER = process.env.GH_OWNER || process.env.GITHUB_REPOSITORY_OWNER || "<FILL-SIGNATAIRE-OWNER-NAME>";
+const REPO  = process.env.GH_REPO  || (process.env.GITHUB_REPOSITORY ? process.env.GITHUB_REPOSITORY.split("/")[1] : "supply-chain-swarm");
+const TOKEN = process.env.GITHUB_TOKEN || "";
+
+const REQUIRED_WEB_SECRETS = [
+  "OPERATOR_TOKEN",
+  "NEXT_PUBLIC_SITE_NAME",
+  "NEXT_PUBLIC_SITE_URL",
+  "DATABASE_URL_RO_SALES_WRITER",
+  "PAYPAL_WEBHOOK_SECRET",
+  "PAYONEER_WEBHOOK_SECRET",
+  "CRYPTO_CALLBACK_VERIFY_TOKEN"
+];
+const FORBIDDEN_PAYOUT_SECRETS = [
+  "PAYOUT_WRITER_PG_PASS",
+  "OWNER_PAYOUT_RAIL",
+  "OWNER_EXEC_UNLOCK",
+  "BANKINGCIRCLE_PASS",
+  "USDC_L2_WALLET_KEY"
 ];
 
-const FORBIDDEN_GITHUB_RAIL_SECRETS = [
-    'BINANCE_API_KEY',
-    'BINANCE_API_SECRET',
-    'BYBIT_API_KEY',
-    'BYBIT_API_SECRET',
-    'BITGET_API_KEY',
-    'BITGET_API_SECRET',
-    'OWNER_PRIVATE_KEY_USDC',
-    'ATTIJARI_CLIENT_SECRET',
-    'USDC_SENDER_PRIVATE_KEY',
-];
-
-function main() {
-    const tok = process.env.GITHUB_TOKEN || '';
-    const report = {
-        run_at: new Date().toISOString(),
-        mode: tok ? 'LIVE_API_SCOPED_VERIFY' : 'DRY_RUN_STRUCTURE_PRINTED_NO_TOKEN',
-        expected_web_scoped_present: EXPECTED_WEB_SCOPED_SECRETS,
-        web_present: tok ? null : EXPECTED_WEB_SCOPED_SECRETS.map(k => ({ name: k, required: true, value_mask: 'NEED_GITHUB_TOKEN_TO_VERIFY' })),
-        forbidden_rail_secrets_404_expected: FORBIDDEN_GITHUB_RAIL_SECRETS,
-        rail_present_results: tok ? null : FORBIDDEN_GITHUB_RAIL_SECRETS.map(k => ({ name: k, expected_status_code: 404, status: 'FOUR_OH_FOUR_NOT_FOUND_GITHUB_SCOPE_EXPECTED', actual: 'NEED_TOKEN_TO_VERIFY' })),
-        conclusion: tok
-            ? 'Run avec GITHUB_TOKEN — relancer avec un token ayant acces aux repo/org secrets pour verifier 7 PRESENT vs 9 404.'
-            : ('DRY-RUN OK. Structure: ' + EXPECTED_WEB_SCOPED_SECRETS.length + ' web secretes attendues, ' + FORBIDDEN_GITHUB_RAIL_SECRETS.length + ' payout rails doivent retourner 404 depuis toute console repo/org.'),
+function ghGET(path) {
+  return new Promise((resolve, reject) => {
+    const opts = {
+      hostname: "api.github.com",
+      path, method: "GET",
+      headers: {
+        "User-Agent": "rwc-s3-secret-scope",
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        ...(TOKEN ? { Authorization: "Bearer " + TOKEN } : {})
+      }
     };
-    console.log(JSON.stringify(report, null, 2));
-    process.exit(0);
+    https.get(opts, (res) => {
+      let data = "";
+      res.on("data", (c) => (data += c));
+      res.on("end", () => {
+        try {
+          resolve({ status: res.statusCode, body: JSON.parse(data) });
+        } catch (e) {
+          resolve({ status: res.statusCode, raw: data });
+        }
+      });
+    }).on("error", reject);
+  });
 }
-main();
+
+async function main() {
+  const dry = !TOKEN || OWNER.startsWith("<FILL");
+  let fails = 0;
+  if (dry) {
+    console.log("[DRY RUN] GITHUB_TOKEN/GH_OWNER not set by signataire. Print structure only. PASS locally.");
+    console.log("7 REQUIRED_ENV_WEB_SECRETS scope: GitHub Environments (production, preview) scoped per environment not repo-wide.");
+    REQUIRED_WEB_SECRETS.forEach((n) => console.log("  [web-tier expected present]  " + n));
+    FORBIDDEN_PAYOUT_SECRETS.forEach((n) => console.log("  [payout-tier MUST be 404] " + n));
+    console.log("Signataire: run with GITHUB_TOKEN=repo_scope_pat GH_OWNER=you node scripts/security/verify-secret-scope.mjs  -> expect exit 0.");
+    process.exit(0);
+  }
+  for (const env of ["production", "preview"]) {
+    for (const name of REQUIRED_WEB_SECRETS) {
+      const r = await ghGET(`/repos/${OWNER}/${REPO}/environments/${encodeURIComponent(env)}/secrets/${encodeURIComponent(name)}`);
+      if (r.status === 200) console.log(`[OK]  ${env}/${name}  status=${r.status}`);
+      else { console.log(`[FAIL] ${env}/${name}  status=${r.status} expected 200`); fails++; }
+    }
+  }
+  for (const env of ["production", "preview"]) {
+    for (const name of FORBIDDEN_PAYOUT_SECRETS) {
+      const r = await ghGET(`/repos/${OWNER}/${REPO}/environments/${encodeURIComponent(env)}/secrets/${encodeURIComponent(name)}`);
+      if (r.status === 404) console.log(`[OK]  ${env}/${name}  status=${r.status} (404 = GOOD payout scopes NOT present)`);
+      else { console.log(`[FAIL] ${env}/${name}  status=${r.status} expected 404 (FORBIDDEN PAYOUT SECRET!)`); fails++; }
+    }
+  }
+  if (fails > 0) {
+    console.log(`FAIL: ${fails} scope violations. S3-T04 exit=8`);
+    process.exit(8);
+  }
+  console.log("ALL secret-scope checks PASS (7 web scoped per env + 5 payout 404). exit=0");
+  process.exit(0);
+}
+main().catch((e) => { console.error(e); process.exit(99); });

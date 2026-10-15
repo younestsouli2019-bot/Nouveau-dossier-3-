@@ -113,7 +113,7 @@ def test_quorum_acquire_release_owner_only() -> None:
 
 def test_state_collision_anti_cannibal() -> None:
     engine, _ = build_engine(3)
-    state = RedlockEngine.state_hash(["150.00", "Payoneer", "younestsouli2019@gmail.com", "20260820T14"])
+    state = RedlockEngine.state_hash(["150.00", "Payoneer", "owner@example.com", "20260820T14"])
     with engine("x", state_sha256=state):
         try:
             engine.try_lock("x", state_sha256=state)

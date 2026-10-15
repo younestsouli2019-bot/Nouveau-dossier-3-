@@ -1,0 +1,82 @@
+CREDS.txt
+exports/
+settlements/payoneer/*.csv
+settlements/payoneer/*.xls
+settlements/payoneer/receipts/*.json
+data/swarm/**
+data/notifications/**
+data/base44/**
+reports/historic/**
+rank/swarm
+*.log
+*.tmp
+node_modules/
+.env
+.env.*
+.keys/
+*.pem
+opencode.json
+.vercel
+.env*
+.next/
+out/
+*.zip
+data/generated/
+tsconfig.tsbuildinfo
+tmp_proc_*.cjs
+
+# separate nested git repo (own remote, own Vercel app) — managed independently
+swarm-ops-project/
+
+# encrypted doomsday backup vault (contains encrypted archives + passphrase file)
+doomsday-vault/
+
+# generated stub project (unrelated; keep out of typecheck/git)
+autopublisher-v3-*/
+
+# Quarantined foreign/decompiled clone (contains fake creds + leaked-secret history). Never commit.
+workspace-*.tar
+
+# transient hook/session tooling state (never commit)
+.mimosa/
+
+# Payment artifacts live in private storage, never in Git (settlement-gap P0 2026-09-07)
+settlements/
+exports/recon/raw/
+
+# Sanitized, machine-readable audit summaries stay public (P0 2026-09-07)
+!exports/recon/AUDIT_L2_REPORT.json
+
+# Watchdog tick reports contain finding details (ids/amounts) — never public
+reports/watchdog/
+
+# ===== ↑ 以上同步自 .gitignore（「从 .gitignore 同步」只重写以上部分）=====
+.git/
+.hg/
+.svn/
+bower_components/
+jspm_packages/
+__pycache__/
+site-packages/
+venv/
+coverage/
+htmlcov/
+lcov-report/
+cmakefiles/
+cmake-build-*/
+bazel-*/
+pods/
+deriveddata/
+storybook-static/
+playwright-report/
+test-results/
+allure-results/
+allure-report/
+cdk.out/
+*.egg-info/
+*.dist-info/
+eggs/
+pip-wheel-metadata/
+wheels/
+# ----- ↑ 以上为 ZCode 默认排除规则（自定义规则请写在本行下方，不会被同步/恢复改动）-----
+# 自定义规则写在下方（本行提示可删除）

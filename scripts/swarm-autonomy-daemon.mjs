@@ -66,6 +66,41 @@ function pidIsAlive(pid) {
     }
   } catch { return false; }
 }
+/**
+ * Names this daemon is allowed to resurrect.
+ *
+ * `swarm-autonomy-daemon.mjs` is deliberately absent. This file runs AS
+ * that script, and the only pidfile it owns is `swarm-autonomy.pid`
+ * (DAEMON_NAME). A `swarm-autonomy-daemon.pid` can therefore never be
+ * refreshed by anyone — nothing writes it — so it stays dead forever and
+ * every tick spawned another copy of this daemon. Observed on 2026-09-30:
+ * three generations within 18 minutes, 7 concurrent copies.
+ *
+ * Resurrection must be a CLOSED SET. Anything outside it is reported and
+ * left alone rather than spawned.
+ */
+const RESURRECTIBLE = new Set(['swarm-improve-loop', 'swarm-autonomy', 'swarm-self-launch']);
+
+/** True if some live process already owns this daemon name. */
+function nameHasLiveProcess(name) {
+  // Heartbeat is the authoritative liveness signal: a daemon refreshes its
+  // own heartbeat file, and pidIsAlive() alone is unreliable on Windows
+  // (tasklist can fail transiently and report a live pid as dead).
+  const hb = resolve(HEARTBEAT_DIR, `${name}.json`);
+  try {
+    const o = JSON.parse(readFileSync(hb, 'utf-8'));
+    const age = Date.now() - (o.at || 0);
+    if (age < 60_000 && pidIsAlive(o.pid)) return true;
+  } catch { /* no/unreadable heartbeat => treat as not running */ }
+
+  // Fall back to any pidfile claiming this name.
+  try {
+    const p = readPIDFile(resolve(PID_DIR, `${name}.pid`));
+    if (p && p.pid !== MY_PID && pidIsAlive(p.pid)) return true;
+  } catch { /* ignore */ }
+  return false;
+}
+
 function spotDeadDaemons() {
   const resurrections = [];
   for (const f of readdirSync(PID_DIR).filter(x => x.endsWith('.pid'))) {
@@ -75,12 +110,27 @@ function spotDeadDaemons() {
     const ageMin = (Date.now() - p.startedAt) / 60000;
     const alive = pidIsAlive(p.pid);
     const name = f.replace('.pid', '');
-    if (!alive || ageMin > 120) {
-      logSilent(`DETECTED-DEAD/OLD: ${name} pid=${p.pid} alive=${alive} ageMin=${Math.round(ageMin)} → resurrecting`);
-      resurrections.push({ name, ageMin, alive });
-      resurrect(name);
-      try { unlinkSync(resolve(PID_DIR, f)); } catch {}
+
+    if (alive && ageMin <= 120) continue;
+
+    // The instance already exists and is healthy. Resurrecting here is how
+    // the swarm multiplied: every new copy re-ran this scan, saw a peer it
+    // could not confirm, and spawned another.
+    if (nameHasLiveProcess(name)) {
+      logSilent(`SKIP-RESURRECT: ${name} already has a live instance (pid=${p.pid} alive=${alive} ageMin=${Math.round(ageMin)})`);
+      continue;
     }
+
+    if (!RESURRECTIBLE.has(name)) {
+      // Closed set. An unknown pidfile is not an instruction to spawn.
+      logSilent(`SKIP-RESURRECT: ${name} is not a resurrectible daemon (no owned pidfile); leaving untouched`);
+      continue;
+    }
+
+    logSilent(`DETECTED-DEAD/OLD: ${name} pid=${p.pid} alive=${alive} ageMin=${Math.round(ageMin)} → resurrecting`);
+    resurrections.push({ name, ageMin, alive });
+    resurrect(name);
+    try { unlinkSync(resolve(PID_DIR, f)); } catch {}
   }
   return resurrections;
 }
@@ -122,6 +172,19 @@ function checkHeartbeats() {
     const daemonName = f.replace('.json', '');
     if (daemonName === DAEMON_NAME) continue;
     if (age > MAX_AGE) {
+      // Same closed set as spotDeadDaemons(). An unknown heartbeat file must
+      // not be able to name a script to spawn.
+      if (!RESURRECTIBLE.has(daemonName)) {
+        logSilent(`HEARTBEAT-STALE ignored: ${daemonName} is not resurrectible`);
+        continue;
+      }
+      // Do not resurrect something that is merely slow to write a heartbeat
+      // but is demonstrably still running. Without this check every stale
+      // heartbeat spawns a duplicate on each pass.
+      if (nameHasLiveProcess(daemonName)) {
+        logSilent(`HEARTBEAT-STALE but ${daemonName} still running → not resurrecting`);
+        continue;
+      }
       logSilent(`HEARTBEAT-MISSING: ${daemonName} ageMs=${age} (>${MAX_AGE}) → resurrect`);
       const p = resurrect(daemonName);
       resurrected.push({ daemon: daemonName, ageMs: age, newPid: p });
@@ -209,9 +272,10 @@ const TASK_CATALOG = [
   {
     id: 'RECONCILE_BALANCE_DELTA', category: 'revenue-recovery', roi: 95, estimatedMin: 1,
     runner: () => {
-      // 1) Attempt to auto-tag $33,278.49 uncategorized inflow against most likely rail (settlement_ledger inbound=0 so try to parse CSV for inbound rows flagged as IN)
+      // Attempt to auto-tag uncategorized inflow against the most likely rail.
+      // No target figure: the delta must come from a verified ledger, never a literal.
       const csvPath = resolve(AUDITS_DIR, 'reconciliation_report.csv');
-      if (!existsSync(csvPath)) return { ok: false, reason: 'no-csv' };
+      if (!existsSync(csvPath)) return { ok: false, reason: 'no-csv', note: 'No verified delta to reconcile without reconciliation_report.csv.' };
       const raw = readFileSync(csvPath, 'utf-8');
       const lines = raw.split(/\r?\n/).filter(l => l.trim().length);
       if (lines.length < 2) return { ok: false, reason: 'empty-csv' };
@@ -222,7 +286,14 @@ const TASK_CATALOG = [
         const rec = {}; hdrs.forEach((h, idx) => { rec[h] = parts[idx] ?? ''; });
         const amt = Math.abs(Number(rec.amount || rec.total || rec.value || rec.net || 0));
         const dir = String(rec.direction || rec.type || rec.status || '').toLowerCase();
-        if (dir.includes('in') || dir.includes('receiv') || dir.includes('credit') || amt > 1000) {
+        // Direction is REQUIRED. A large magnitude alone must never imply inbound:
+        // that misclassifies outflows/refunds as money arriving and proposes
+        // "recovering" expenses. Only classify when direction is explicitly positive.
+        const isInbound = dir.includes('inbound') || dir.includes('in')
+          || dir.includes('receiv') || dir.includes('credit') || dir.includes('deposit');
+        const isOutbound = dir.includes('out') || dir.includes('debit') || dir.includes('withdraw')
+          || dir.includes('refund') || dir.includes('payout') || dir.includes('expense');
+        if (isInbound && !isOutbound) {
           candidates.push({ row: i, amt, direction: dir, summary: hdrs.slice(0, 6).map(h => `${h}=${String(rec[h]).slice(0,20)}`).join(' | ') });
         }
       }

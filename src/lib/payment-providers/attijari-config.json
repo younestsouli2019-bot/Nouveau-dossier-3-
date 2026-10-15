@@ -21,11 +21,11 @@
       "rib": {
         "codeBanque": "007",
         "codeVille": "810",
-        "numeroSerie": "0004485000305941",
-        "cleRib": "82",
-        "fullRib": "007810000448500030594182"
+        "numeroSerie": "",
+        "cleRib": "",
+        "fullRib": ""
       },
-      "iban": "MA820007810000448500030594182",
+      "iban": "",
       "accountHolder": "M TSOULI YOUNES",
       "swiftBic": "BCMAMAMC",
       "primary": true,
@@ -40,11 +40,11 @@
       "rib": {
         "codeBanque": "007",
         "codeVille": "810",
-        "numeroSerie": "0004482000613213",
-        "cleRib": "72",
-        "fullRib": "007810000448200061321372"
+        "numeroSerie": "",
+        "cleRib": "",
+        "fullRib": ""
       },
-      "iban": "MA820007810000448200061321372",
+      "iban": "",
       "accountHolder": "M TSOULI YOUNES",
       "swiftBic": "BCMAMAMC",
       "primary": false,
@@ -94,7 +94,7 @@
       {
         "routeId": "attijari-rib-1",
         "accountId": "attijari-mad-001",
-        "rib": "007810000448500030594182",
+        "rib": "",
         "weight": 70,
         "maxAmountPerTransfer": 1000000,
         "maxDailyAmount": 5000000,
@@ -104,7 +104,7 @@
       {
         "routeId": "attijari-rib-2",
         "accountId": "attijari-mad-002",
-        "rib": "007810000448200061321372",
+        "rib": "",
         "weight": 30,
         "maxAmountPerTransfer": 500000,
         "maxDailyAmount": 2000000,

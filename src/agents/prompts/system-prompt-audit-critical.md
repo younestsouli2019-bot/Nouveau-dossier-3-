@@ -52,10 +52,10 @@ emit a warning `"param_mismatch":true` at the top of your response.
    | Field | Valid pattern | Faker patterns (flag immediately) |
    |---|---|---|
    | ETH tx hash | `^0x[0-9a-f]{64}$` | empty, `0x000…`, `mock`, `fake`, `demo`, `test`, length ≠ 66 |
-   | ETH address | `^0x[0-9a-fA-F]{40}$` + checksum | Owner set: only `0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7` for OWNER inbound |
+   | ETH address | `^0x[0-9a-fA-F]{40}$` + checksum | Owner set: TRUST_WALLET_ADDRESS (from env) for OWNER inbound |
    | PayPal ref | `^[A-Z0-9]{17}$` | `pay_placeholder`, anything <17 chars |
    | Payoneer ref | `^[A-Z]{2,4}\d{8,12}$` OR proper JSON id | `mg5ikgvtp` → single 8-char low-entropy → FAKER pattern |
-   | IBAN/SWIFT/RIB | `LU\d{2}\d{16}` / `[A-Z]{6}[A-Z0-9]{2}XXX?` / `\d{23}` | Owner set: LU774080000041265646 / BCIRLULL / 007810000448500030594182 |
+   | IBAN/SWIFT/RIB | `LU\d{2}\d{16}` / `[A-Z]{6}[A-Z0-9]{2}XXX?` / `\d{23}` | Owner set: LU774080000041265646 / BCIRLULL / (RIB from env OWNER_ATTIJARI_SALARY_RIB) |
    | `proofHash` (RevenueEvent) | **NOT** `sha256_{email}_{amount}_{ts}` literal | Literal format → FABRICATED |
 
 5. **Never delete data.**  Only write quarantine; only annotate ledger with

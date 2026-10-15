@@ -38,12 +38,33 @@ if (!(AMOUNT > 0)) { console.error(JSON.stringify({ ok: false, error: 'amount_re
 
 // ── Chain config (same as evm-wallet-rail) ───────────────────────────────
 const CHAINS = {
-  base:     { name: 'Base',            chainId: 8453,   rpc: 'https://mainnet.base.org',             nativeSymbol: 'ETH',  usdt: '0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2', usdtDec: 6,  gasMult: 1.2, priority: 1 },
-  arbitrum: { name: 'Arbitrum One',    chainId: 42161,  rpc: 'https://arb1.arbitrum.io/rpc',         nativeSymbol: 'ETH',  usdt: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', usdtDec: 6,  gasMult: 1.2, priority: 2 },
-  optimism: { name: 'Optimism',        chainId: 10,     rpc: 'https://mainnet.optimism.io',           nativeSymbol: 'ETH',  usdt: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58', usdtDec: 6,  gasMult: 1.2, priority: 3 },
-  polygon:  { name: 'Polygon PoS',     chainId: 137,    rpc: 'https://polygon-bor-rpc.publicnode.com', nativeSymbol: 'MATIC', usdt: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F', usdtDec: 6,  gasMult: 1.5, priority: 4 },
-  bsc:      { name: 'BNB Smart Chain', chainId: 56,     rpc: 'https://bsc-dataseed.binance.org',       nativeSymbol: 'BNB',  usdt: '0x55d398326f99059fF775485246999027B3197955', usdtDec: 18, gasMult: 1.3, priority: 5 },
+  base:        { name: 'Base',            chainId: 8453,   rpc: 'https://mainnet.base.org',             nativeSymbol: 'ETH',  usdt: '0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2', usdtDec: 6,  gasMult: 1.2, priority: 1 },
+  arbitrum:    { name: 'Arbitrum One',    chainId: 42161,  rpc: 'https://arb1.arbitrum.io/rpc',         nativeSymbol: 'ETH',  usdt: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', usdtDec: 6,  gasMult: 1.2, priority: 2 },
+  immutablex:  { name: 'Immutable zkEVM', chainId: 13371,  rpc: 'https://rpc.immutable.com',            nativeSymbol: 'IMX',  usdt: '0x456c3402351e52708Ab9c37aF8D10e5898Bc880e', usdtDec: 6,  gasMult: 1.0, priority: 2, zeroGas: true },
+  loopring:    { name: 'Loopring L2',     chainId: 1101,   rpc: 'https://rpc.loopring.network',         nativeSymbol: 'ETH',  usdt: '0x8995591DeD54A36d6d1f9E366912fC8d491454a2', usdtDec: 6,  gasMult: 1.0, priority: 2, zeroGas: true },
+  optimism:    { name: 'Optimism',        chainId: 10,     rpc: 'https://mainnet.optimism.io',           nativeSymbol: 'ETH',  usdt: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58', usdtDec: 6,  gasMult: 1.2, priority: 3 },
+  polygon:     { name: 'Polygon PoS',     chainId: 137,    rpc: 'https://polygon-bor-rpc.publicnode.com', nativeSymbol: 'MATIC', usdt: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F', usdtDec: 6,  gasMult: 1.5, priority: 4 },
+  bsc:         { name: 'BNB Smart Chain', chainId: 56,     rpc: 'https://bsc-dataseed.binance.org',       nativeSymbol: 'BNB',  usdt: '0x55d398326f99059fF775485246999027B3197955', usdtDec: 18, gasMult: 1.3, priority: 5 },
 };
+
+const USE_ERC4337_PAYMASTER = envBool('USE_ERC4337_PAYMASTER', false);
+const NATIVE_THRESHOLD_ETH = 0.00001;
+
+function envBool(name, def = false) {
+  const v = process.env[name];
+  if (v == null) return def;
+  return String(v).toLowerCase() === 'true';
+}
+
+function buildPaymasterRpc(chainId) {
+  const pimlicoKey = process.env.PIMLICO_API_KEY;
+  const stackupRpc = process.env.STACKUP_PAYMASTER_RPC;
+  if (pimlicoKey) {
+    return `https://api.pimlico.io/v2/${chainId}/rpc?apikey=${pimlicoKey}`;
+  }
+  if (stackupRpc) return stackupRpc;
+  return null;
+}
 
 const ERC20_ABI = [
   'function balanceOf(address) view returns (uint256)',
@@ -52,7 +73,7 @@ const ERC20_ABI = [
 ];
 
 // ── Auto-select cheapest chain with gas + USDT ───────────────────────────
-async function selectChain() {
+async function selectChain({ usePaymaster = USE_ERC4337_PAYMASTER } = {}) {
   if (CHAIN_KEY !== 'auto' && CHAINS[CHAIN_KEY]) return { key: CHAIN_KEY, ...CHAINS[CHAIN_KEY] };
 
   const candidates = Object.entries(CHAINS).sort((a, b) => a[1].priority - b[1].priority);
@@ -63,8 +84,22 @@ async function selectChain() {
       const nativeBal = Number(ethers.formatUnits(native, 18));
       const contract = new ethers.Contract(chain.usdt, ERC20_ABI, provider);
       const usdtBal = Number(ethers.formatUnits(await contract.balanceOf(FROM), chain.usdtDec));
-      if (nativeBal > 0.0001 && usdtBal >= AMOUNT) {
-        return { key, ...chain, nativeBal, usdtBal };
+      if (usdtBal < AMOUNT) continue;
+
+      const hasNative = nativeBal > 0.0001;
+      const isZeroGas = chain.zeroGas === true;
+      const paymasterRpc = usePaymaster ? buildPaymasterRpc(chain.chainId) : null;
+      const canUsePaymaster = !hasNative && nativeBal <= NATIVE_THRESHOLD_ETH && paymasterRpc != null;
+
+      if (hasNative || isZeroGas || canUsePaymaster) {
+        return {
+          key,
+          ...chain,
+          nativeBal,
+          usdtBal,
+          usePaymaster: canUsePaymaster && !hasNative && !isZeroGas,
+          paymasterRpc: canUsePaymaster ? paymasterRpc : null,
+        };
       }
     } catch {}
   }

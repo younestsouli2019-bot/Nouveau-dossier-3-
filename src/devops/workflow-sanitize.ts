@@ -33,15 +33,15 @@ interface ParsedLine {
   raw: string;
 }
 
-function splitLines(text: string): string[] {
-  return text.split(/\r\n|\r|\n/);
-}
-
 function parse(text: string): ParsedLine[] {
-  return splitLines(text).map((raw, i) => {
-    const m = raw.match(/^(\s*)(.*)$/);
+  // Split on \n then strip a trailing \r: a CRLF checkout leaves \r on every
+  // line, and `.` does not match \r, so the indent regex returned null.
+  return text.split('\n').map((raw, i) => {
     void i;
-    return { indent: m[1].replace(/\t/g, '  ').length, text: m[2].trim(), raw };
+    const line = raw.endsWith('\r') ? raw.slice(0, -1) : raw;
+    const m = line.match(/^(\s*)(.*)$/);
+    if (!m) return { indent: 0, text: line.trim(), raw: line };
+    return { indent: m[1].replace(/\t/g, '  ').length, text: m[2].trim(), raw: line };
   });
 }
 
@@ -158,7 +158,7 @@ export function fixWorkflow(text: string): { text: string; fixed: WorkflowOffens
   const offenses = analyzeWorkflow('inline', text);
   if (offenses.length === 0) return { text, fixed: [] };
 
-  const lines = splitLines(text);
+  const lines = text.split('\n');
   // Remove from the HIGHEST line number downward so indices stay valid.
   const sorted = [...offenses].sort((a, b) => b.line - a.line);
   for (const o of sorted) {

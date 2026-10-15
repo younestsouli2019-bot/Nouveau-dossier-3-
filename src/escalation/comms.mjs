@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import PDFDocument from "pdfkit";
 import { sendEmail, isSmtpConfigured, missingSmtpHint } from "./email-sender.mjs";
 
 const OUTBOX = () => path.resolve(process.cwd(), "data", "escalation", "outbox");
@@ -9,13 +8,20 @@ function ensureOutbox() {
 	fs.mkdirSync(OUTBOX(), { recursive: true });
 }
 
+/** Extracts the bare address from a possibly annotated string like "a@b.ma (présumé)". */
+function bareAddress(value) {
+	if (!value) return value;
+	const m = String(value).match(/[^\s<>()]+@[^\s<>()]+/);
+	return m ? m[0] : String(value).trim();
+}
+
 function buildEmail({ to, cc, from, subject, body }) {
 	const date = new Date().toUTCString();
 	const lines = [
 		`Date: ${date}`,
 		`From: ${from}`,
-		`To: ${to}`,
-		cc ? `Cc: ${cc}` : null,
+		`To: ${bareAddress(to)}`,
+		cc ? `Cc: ${bareAddress(cc)}` : null,
 		`Subject: ${subject}`,
 		"MIME-Version: 1.0",
 		'Content-Type: text/plain; charset="utf-8"',
@@ -111,8 +117,23 @@ export function dispatchSmsWhatsApp({ caseId, to, message, step }) {
 	};
 }
 
-export function generatePdfDossier({ caseId, title, sections }) {
+export async function generatePdfDossier({ caseId, title, sections }) {
 	ensureOutbox();
+	// FAIL-CLOSED optional dependency: pdfkit is not a hard requirement to run the
+	// daemon (email drafting / queue ticking work without it). Only PDF generation
+	// needs it. If missing, abort PDF generation explicitly rather than crashing
+	// the whole escalation module import chain.
+	let PDFDocument;
+	try {
+		({ default: PDFDocument } = await import("pdfkit"));
+	} catch {
+		throw Object.assign(
+			new Error(
+				"FAIL-CLOSED PDF: optional dependency 'pdfkit' is not installed. Dossier PDF generation is disabled (no fabrication). Install pdfkit to enable, or handle the dossier offline.",
+			),
+			{ code: "ESCALATION_PDFKIT_MISSING" },
+		);
+	}
 	const file = path.join(OUTBOX(), `${caseId}-dossier.pdf`);
 	const doc = new PDFDocument({ margin: 50 });
 	const stream = fs.createWriteStream(file);

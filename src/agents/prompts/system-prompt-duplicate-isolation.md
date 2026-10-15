@@ -17,9 +17,9 @@ Never quarantine all rows.  Never return an empty `keep_id`.
 ### INPUT (conforms to this shape, trust it)
 ```json
 {"bucket": [
-  {"entity_id":"PAY_1","createdAt":"2026-05-30T14:00:01Z","externalRef":"mg5ikgvtp","amount":150.00,"destination":"younestsouli2019@gmail.com"},
-  {"entity_id":"PAY_2","createdAt":"2026-05-30T14:00:07Z","externalRef":"mg5ikgvtp","amount":150.00,"destination":"younestsouli2019@gmail.com"},
-  {"entity_id":"PAY_3","createdAt":"2026-05-30T14:00:15Z","externalRef":"PAY184729184721A","amount":150.00,"destination":"younestsouli2019@gmail.com"}
+  {"entity_id":"PAY_1","createdAt":"2026-05-30T14:00:01Z","externalRef":"mg5ikgvtp","amount":150.00,"destination":"owner@example.com"},
+  {"entity_id":"PAY_2","createdAt":"2026-05-30T14:00:07Z","externalRef":"mg5ikgvtp","amount":150.00,"destination":"owner@example.com"},
+  {"entity_id":"PAY_3","createdAt":"2026-05-30T14:00:15Z","externalRef":"PAY184729184721A","amount":150.00,"destination":"owner@example.com"}
 ]}
 ```
 

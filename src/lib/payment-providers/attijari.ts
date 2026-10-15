@@ -46,7 +46,7 @@ const routeRuntime = new Map<string, { consecutiveFailures: number; cooldownUnti
 
 function loadConfigJson() {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('./attijari-config.json') as {
+  const raw = require('./attijari-config.json') as {
     bank: { name: string; swiftBic: string; countryCode: string; branch: { name: string; address: string; city: string } }
     accounts: AttijariAccount[]
     api: {
@@ -61,6 +61,54 @@ function loadConfigJson() {
     }
     javascriptOrigins: string[]
   }
+
+  // 🚧 RIB injection from env (zero littéraux dans attijari-config.json).
+  // Attend: OWNER_ATTIJARI_SALARY_RIB (route attijari-rib-1) et OWNER_ATTIJARI_DEBTS_RIB (route attijari-rib-2).
+  // IBANs dérivés: MA + cleRib(2) + RIB. cleRib résolu depuis RIB modulo 97 si RIB fourni.
+  const salaryRib = process.env.OWNER_ATTIJARI_SALARY_RIB || ''
+  const debtsRib = process.env.OWNER_ATTIJARI_DEBTS_RIB || ''
+
+  function fillAccount(acc: AttijariAccount, rib: string): AttijariAccount {
+    if (!rib) return acc
+    const cle = rib.length >= 24 ? computeRibKey(rib.slice(0, 21)) : ''
+    const iban = 'MA' + cle + rib
+    return {
+      ...acc,
+      rib: { ...acc.rib, numeroSerie: rib.slice(5, 21), cleRib: cle, fullRib: rib },
+      iban,
+    }
+  }
+  raw.accounts = raw.accounts.map(a => {
+    if (a.routeId === 'attijari-rib-1') return fillAccount(a, salaryRib)
+    if (a.routeId === 'attijari-rib-2') return fillAccount(a, debtsRib)
+    return a
+  })
+
+  function fillRoute(r: AttijariRoute): AttijariRoute {
+    if (r.routeId === 'attijari-rib-1') return { ...r, rib: salaryRib }
+    if (r.routeId === 'attijari-rib-2') return { ...r, rib: debtsRib }
+    return r
+  }
+  raw.multiRoute.routes = raw.multiRoute.routes.map(fillRoute)
+
+  return raw
+}
+
+/** Calcule la clé RIB (2 derniers chiffres) modulo 97. RIB = codeBanque(5)+codeGuichet(5)+numCompte(11)+clé(2). */
+function computeRibKey(rib21: string): string {
+  // Algo Attijari: convertir lettres en chiffres puis mod 97
+  let n = ''
+  for (const c of rib21.toUpperCase()) {
+    if (c >= '0' && c <= '9') n += c
+    else {
+      const v = c.charCodeAt(0) - 55 // A=10, B=11, ...
+      n += String(v)
+    }
+  }
+  let r = 0
+  for (const c of n) r = (r * 10 + parseInt(c, 10)) % 97
+  const key = (97 - r).toString().padStart(2, '0')
+  return key === '00' ? '97' : key
 }
 
 export function getAttijariConfig(): AttijariApiConfig | null {
@@ -219,13 +267,18 @@ export async function healthCheck(config: AttijariApiConfig) { const start = Dat
 
 function esc(s: string) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') }
 
-export function generateAttijariPain001(recipients: PayoutRecipient[], batchRef: string, debitRib: string = '007810000448500030594182'): string {
+export function generateAttijariPain001(recipients: PayoutRecipient[], batchRef: string, debitRib?: string): string {
+  // RIB source: caller-provided OR env var. Zéro littéral.
+  const rib = debitRib || process.env.OWNER_ATTIJARI_SALARY_RIB || process.env.OWNER_ATTIJARI_DEBTS_RIB || ''
+  if (!rib) {
+    throw new Error('[Attijari generateAttijariPain001] No debit RIB available: caller did not supply one and OWNER_ATTIJARI_SALARY_RIB/OWNER_ATTIJARI_DEBTS_RIB env vars are unset.')
+  }
   const now = new Date(); const date = now.toISOString().slice(0, 10)
   const txns = recipients.map((r, i) => `
       <CdtTrfTxInf><PmtId><InstrId>${batchRef}-${String(i+1).padStart(4,'0')}</InstrId><EndToEndId>E2E-${batchRef}-${String(i+1).padStart(4,'0')}</EndToEndId></PmtId><Amt><InstdAmt Ccy="${r.currency}">${r.amount.toFixed(2)}</InstdAmt></Amt><CdtrAgt><FinInstnId><BIC>BCMAMAMC</BIC></FinInstnId></CdtrAgt><Cdtr><Nm>${esc(r.name)}</Nm></Cdtr><CdtrAcct><Id><Othr><Id>${esc(r.accountId ?? '')}</Id></Othr></Id></CdtrAcct><RmtInf><Ustrd>Payout ${esc(batchRef)} — BCMAMAMC</Ustrd></RmtInf></CdtTrfTxInf>`).join('')
   const total = recipients.reduce((s, r) => s + r.amount, 0).toFixed(2)
   return `<?xml version="1.0" encoding="UTF-8"?>
-<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.09"><CstmrCdtTrfInitn><GrpHdr><MsgId>${batchRef}</MsgId><CreDtTm>${now.toISOString()}</CreDtTm><NbOfTxs>${recipients.length}</NbOfTxs><CtrlSum>${total}</CtrlSum><InitgPty><Nm>M TSOULI YOUNES</Nm></InitgPty></GrpHdr><PmtInf><PmtInfId>PINF-${batchRef}</PmtInfId><PmtMtd>TRF</PmtMtd><NbOfTxs>${recipients.length}</NbOfTxs><CtrlSum>${total}</CtrlSum><PmtTpInf><SvcLvl><Cd>URGP</Cd></SvcLvl></PmtTpInf><ReqdExctnDt>${date}</ReqdExctnDt><Dbtr><Nm>M TSOULI YOUNES</Nm></Dbtr><DbtrAcct><Id><Othr><Id>${debitRib}</Id></Othr></Id></DbtrAcct><DbtrAgt><FinInstnId><BIC>BCMAMAMC</BIC><Nm>Attijariwafa bank</Nm><PstlAdr><StrtNm>83, AV. FAL OULD OUMEIR</StrtNm><TwnNm>Rabat</TwnNm><Ctry>MA</Ctry></PstlAdr></FinInstnId></DbtrAgt><ChrgBr>SHAR</ChrgBr>${txns}</PmtInf></CstmrCdtTrfInitn></Document>`
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.09"><CstmrCdtTrfInitn><GrpHdr><MsgId>${batchRef}</MsgId><CreDtTm>${now.toISOString()}</CreDtTm><NbOfTxs>${recipients.length}</NbOfTxs><CtrlSum>${total}</CtrlSum><InitgPty><Nm>M TSOULI YOUNES</Nm></InitgPty></GrpHdr><PmtInf><PmtInfId>PINF-${batchRef}</PmtInfId><PmtMtd>TRF</PmtMtd><NbOfTxs>${recipients.length}</NbOfTxs><CtrlSum>${total}</CtrlSum><PmtTpInf><SvcLvl><Cd>URGP</Cd></SvcLvl></PmtTpInf><ReqdExctnDt>${date}</ReqdExctnDt><Dbtr><Nm>M TSOULI YOUNES</Nm></Dbtr><DbtrAcct><Id><Othr><Id>${esc(rib)}</Id></Othr></Id></DbtrAcct><DbtrAgt><FinInstnId><BIC>BCMAMAMC</BIC><Nm>Attijariwafa bank</Nm><PstlAdr><StrtNm>83, AV. FAL OULD OUMEIR</StrtNm><TwnNm>Rabat</TwnNm><Ctry>MA</Ctry></PstlAdr></FinInstnId></DbtrAgt><ChrgBr>SHAR</ChrgBr>${txns}</PmtInf></CstmrCdtTrfInitn></Document>`
 }
 
 function mapStatus(s: string): AttijariTransferResult['status'] {

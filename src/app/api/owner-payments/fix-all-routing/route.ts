@@ -1,13 +1,27 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { createHash } from 'node:crypto'
 import { db } from '@/lib/db'
+import { requireOpsAuth } from '@/lib/api-auth'
 
-const SALARY_RIB = '007810000448500030594182'
-const DEBTS_RIB = '007810000448200061321372'
+/**
+ * POST /api/owner-payments/fix-all-routing
+ * Fixes ALL stuck payments by correcting their routing to external bank.
+ *
+ * 🚧 PROTÉGÉ: requireOpsAuth (fail-closed 401).
+ * 🚧 RIB literals supprimés (P5): résolution fingerprints depuis DB OwnerAccount
+ *    par label (Salary/Debts). Zéro RIB en source.
+ */
+export async function POST(request: NextRequest) {
+  const denied = requireOpsAuth(request)
+  if (denied) return denied
 
-// POST /api/owner-payments/fix-all-routing
-// Fixes ALL stuck payments by correcting their routing to external bank
-export async function POST() {
   try {
+    // Résoudre fingerprints depuis DB (zéro littéral)
+    const salaryFp = await fingerprintOfActiveLabel('Salary')
+    const debtsFp = await fingerprintOfActiveLabel('Debts')
+    const salaryDisplay = salaryFp ? await resolveDisplayRibByFingerprint(salaryFp) : '***'
+    const debtsDisplay = debtsFp ? await resolveDisplayRibByFingerprint(debtsFp) : '***'
+
     // Fix all configs that are not yet routing-fixed
     const configs = await db.ownerPaymentConfig.findMany({
       where: { routingFixed: false },
@@ -15,17 +29,16 @@ export async function POST() {
 
     const configUpdates: { label: string; fixed: boolean }[] = []
     for (const config of configs) {
-      const ribNumber = config.label === 'Debts' ? DEBTS_RIB : SALARY_RIB
-      const bankName = config.label === 'Debts'
-        ? 'Attijariwafa Compte sur Carnet'
-        : 'Attijariwafa Bank'
+      const isDebts = config.label === 'Debts'
+      const bankName = isDebts ? 'Attijariwafa Compte sur Carnet' : 'Attijariwafa Bank'
+      const display = isDebts ? debtsDisplay : salaryDisplay
 
       await db.ownerPaymentConfig.update({
         where: { id: config.id },
         data: {
           routingFixed: true,
           routingFixedAt: new Date(),
-          notes: `Routing fixed at ${new Date().toISOString()}. Corrected to route to ${bankName} RIB ...${ribNumber.slice(-6)}`,
+          notes: `Routing fixed at ${new Date().toISOString()}. Corrected to route to ${bankName} RIB ${display} (fingerprint resolved from DB OwnerAccount).`,
         },
       })
       configUpdates.push({ label: config.label, fixed: true })
@@ -51,10 +64,10 @@ export async function POST() {
     let totalRecovered = 0
 
     for (const payment of stuckPayments) {
-      const ribNumber = payment.configLabel === 'Debts' ? DEBTS_RIB : SALARY_RIB
-      const bankLabel = payment.configLabel === 'Debts'
-        ? 'Attijariwafa Compte sur Carnet'
-        : 'Attijariwafa Bank'
+      const isDebts = payment.configLabel === 'Debts'
+      const bankLabel = isDebts ? 'Attijariwafa Compte sur Carnet' : 'Attijariwafa Bank'
+      const fp = isDebts ? debtsFp : salaryFp
+      const display = isDebts ? debtsDisplay : salaryDisplay
       const recoveryTxRef = `REC-${payment.configLabel.replace(/\s+/g, '_').toUpperCase()}-${payment.id.slice(-8).toUpperCase()}`
 
       await db.ownerPayment.update({
@@ -66,8 +79,10 @@ export async function POST() {
           recoveryTxRef,
           status: 'processing',
           destinationType: 'external_bank',
-          destinationLabel: `${bankLabel} - RIB ...${ribNumber.slice(-6)}`,
-          ribNumber,
+          destinationLabel: `${bankLabel} - RIB ${display}`,
+          // @ts-ignore
+          ribFingerprintSha256: fp,
+          ribDisplayMasked: display,
           failureReason: null,
         },
       })
@@ -103,8 +118,10 @@ export async function POST() {
           recoveryTxRef,
           status: 'processing',
           destinationType: 'external_bank',
-          destinationLabel: `Attijariwafa Compte sur Carnet - RIB ...${DEBTS_RIB.slice(-6)}`,
-          ribNumber: DEBTS_RIB,
+          destinationLabel: `Attijariwafa Compte sur Carnet - RIB ${debtsDisplay}`,
+          // @ts-ignore
+          ribFingerprintSha256: debtsFp,
+          ribDisplayMasked: debtsDisplay,
           failureReason: null,
         },
       })
@@ -135,4 +152,33 @@ export async function POST() {
       { status: 500 }
     )
   }
+}
+
+async function fingerprintOfActiveLabel(label: string): Promise<string | null> {
+  const rows = await db.ownerAccount.findMany({
+    where: { isActive: true, label },
+    select: { accountNumber: true },
+  })
+  for (const r of rows) {
+    if (!r.accountNumber) continue
+    return createHash('sha256').update(String(r.accountNumber).trim().toLowerCase()).digest('hex')
+  }
+  return null
+}
+
+async function resolveDisplayRibByFingerprint(fp: string): Promise<string | null> {
+  if (!fp || fp.length !== 64) return null
+  const accounts = await db.ownerAccount.findMany({
+    where: { isActive: true, NOT: { accountNumber: null } },
+    select: { accountNumber: true },
+  })
+  for (const a of accounts) {
+    if (!a.accountNumber) continue
+    const hex = createHash('sha256').update(String(a.accountNumber).trim().toLowerCase()).digest('hex')
+    if (hex === fp) {
+      const s = String(a.accountNumber)
+      return s.length >= 6 ? '***' + s.slice(-6) : '***'
+    }
+  }
+  return null
 }

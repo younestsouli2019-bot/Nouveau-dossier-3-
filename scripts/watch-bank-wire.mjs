@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { maybeSendAlert } from "../src/alerts.mjs";
 
 function parseCsv(file) {
@@ -38,7 +39,32 @@ function parseCsv(file) {
 	return { headers, rows };
 }
 
-function scanWireDirs({ occurredAtMs, expectedTotal, destRib }) {
+async function writeAudit(event, payload) {
+	try {
+		const id =
+			"FINAGENT_" +
+			createHash("sha256")
+				.update(`${event}|${Date.now()}|${Math.random()}`)
+				.digest("hex")
+				.slice(0, 28);
+		const row = {
+			id,
+			event,
+			createdAt: new Date().toISOString(),
+			payload: typeof payload === "string" ? payload : JSON.stringify(payload),
+		};
+		const dir = path.resolve("data/audit");
+		if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+		const p = path.join(dir, `watch-bank-wire.ndjson`);
+		fs.appendFileSync(p, JSON.stringify(row) + "\n", "utf8");
+		return row;
+	} catch (e) {
+		console.error(`[watch-bank-wire] AUDIT WRITE FAIL: ${e?.message ?? String(e)}`);
+		return null;
+	}
+}
+
+async function scanWireDirs({ occurredAtMs, expectedTotal, destRib }) {
 	const dirs = [
 		path.resolve("out/received"),
 		path.resolve("out/submitted"),
@@ -49,9 +75,15 @@ function scanWireDirs({ occurredAtMs, expectedTotal, destRib }) {
 	let found = null;
 	for (const dir of dirs) {
 		if (!fs.existsSync(dir)) continue;
-		const files = fs
-			.readdirSync(dir)
-			.filter((f) => f.toLowerCase().includes("wire"));
+		let files = [];
+		try {
+			files = fs.readdirSync(dir).filter((f) => f.toLowerCase().includes("wire"));
+		} catch (e) {
+			const msg = `[watch-bank-wire] readdir FAIL ${dir}: ${e?.message ?? String(e)}`;
+			console.error(msg);
+			writeAudit("FINAGENT_WATCHBANK_READDIR_FAIL", { dir, error: e?.message ?? String(e) });
+			continue;
+		}
 		for (const f of files) {
 			try {
 				const abs = path.join(dir, f);
@@ -79,7 +111,21 @@ function scanWireDirs({ occurredAtMs, expectedTotal, destRib }) {
 					found = { file: abs, amount, destination, status, ts };
 					break;
 				}
-			} catch {}
+			} catch (e) {
+				const msg = `[watch-bank-wire] PARSE FAIL ${f}: ${e?.message ?? String(e)}`;
+				console.error(msg);
+				writeAudit("FINAGENT_WATCHBANK_PARSE_FAIL", {
+					file: f,
+					dir,
+					error: e?.message ?? String(e),
+				});
+				try {
+					await maybeSendAlert?.({
+						title: "Watch Bank Wire — Parse Fail",
+						message: msg,
+					});
+				} catch {}
+			}
 		}
 		if (found) break;
 	}
@@ -117,7 +163,7 @@ async function main() {
 	);
 
 	async function tick() {
-		const found = scanWireDirs({ occurredAtMs, expectedTotal, destRib });
+		const found = await scanWireDirs({ occurredAtMs, expectedTotal, destRib });
 		if (found) {
 			const msg = `Bank wire receipt artifact detected: ${found.file} — amount=${found.amount}, destination=${found.destination}`;
 			console.log(JSON.stringify({ ok: true, receipt: found }));
@@ -131,7 +177,7 @@ async function main() {
 	}
 
 	tick();
-	setInterval(tick, Number(process.env.WATCH_BANKWIRE_POLL_MS || "20000"));
+	setInterval(tick, Number(process.env.WATCH_BANKWIRE_POLL_MS || "5000"));
 }
 
 main();

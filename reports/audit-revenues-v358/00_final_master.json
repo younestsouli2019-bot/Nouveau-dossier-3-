@@ -1,0 +1,661 @@
+{
+  "audit_version": "3.5.8",
+  "audit_label": "AUDIT_SWARM_REVENUES_LEDGER_PAYOUTS_MIRRORS_ZSPACE_BASE44_v358",
+  "date": "2026-10-05T17:04:51.725Z",
+  "date_yyyymmdd": "2026-10-05",
+  "signataire": "Younes Tsouli CIN A337773 (Attijari Contentieux Rabat Agdal 018 — DISS-FORMAL-018 irrévocable 2026-10-05)",
+  "mode": "SANS_DB",
+  "gates": {
+    "g2_database_url_neon_pooled": false,
+    "g3_binance_spot_withdraw_dual_scope": false,
+    "g4_owner_exec_unlock_len43_hmac": false,
+    "total_gates_open": "0/3"
+  },
+  "hmac_key_used": "DUMMY_FALLBACK_len43",
+  "accuracy_001_a_checksum": "e469506c75cacad4201bd16dbb80516e31b2a19c723d8a5b744a4e07552e79af",
+  "revenue_sources_inventory": {
+    "count": 7,
+    "expected": 7,
+    "per_source": [
+      {
+        "sourceName": "BASE44_REVENUE_EVENTS",
+        "status": "skip_sans_db_no_local_cache",
+        "recordCount": 0,
+        "sampleSourceRefs": []
+      },
+      {
+        "sourceName": "BASE44_EARNINGS_MISSIONS",
+        "status": "present_with_seeded_history",
+        "recordCount": 5,
+        "sampleSourceRefs": [
+          "PB-2026-001:$1250.00",
+          "PB-2026-002:$3500.00",
+          "PB-2026-003:$890.50"
+        ]
+      },
+      {
+        "sourceName": "PAYOUT_BATCHES_ITEMS",
+        "status": "present_via_clickless_tick_readonly",
+        "recordCount": 56,
+        "sampleSourceRefs": [
+          "PayoutBatch=$10851.23×6",
+          "PayoutItem=$10851.23×23",
+          "OwnerSettlement=$13744.11×27"
+        ]
+      },
+      {
+        "sourceName": "REVENUE_CSV",
+        "status": "skip_script_exists_no_csv_yet",
+        "recordCount": 0,
+        "sampleSourceRefs": []
+      },
+      {
+        "sourceName": "PRESET_OWNER_ACCOUNTS",
+        "status": "present_via_manager_fallback",
+        "recordCount": 6,
+        "sampleSourceRefs": [
+          "ATTIJARI_RIB182_SALAIRE:attijariwafa_mad",
+          "ATTIJARI_RIB372_DETTE:attijariwafa_mad",
+          "BC_LU24_RIB646_SOUVERAIN:banking_circle_sepa"
+        ]
+      },
+      {
+        "sourceName": "BANK_WIRE_RECEIPTS",
+        "status": "skip_no_receipts_ng2_phone_rule_166_permanent_no_fabrication",
+        "recordCount": 2,
+        "sampleSourceRefs": []
+      },
+      {
+        "sourceName": "LOCAL_LEDGER_ENTRIES_NDJSON",
+        "status": "skip_sans_db_no_local_ledger_will_seed_from_sources_1_2_3",
+        "recordCount": 0,
+        "sampleSourceRefs": []
+      }
+    ]
+  },
+  "ledger_6x4_matrix": {
+    "deriveBalance_formula": "avail=ΣREV+ΣENT+ΣADJ−ΣPFEE − (ΣRES−ΣREL) − ΣSETTLED",
+    "canReserve_rule": "payoutAmt>0 AND balance.avail−payout≥0 (never negative)",
+    "totals": {
+      "credits": 10526.69,
+      "reservations": 542.56,
+      "settledPayouts": 3255.36,
+      "available": 6728.77
+    },
+    "grand_delta_calc": 0,
+    "per_preset_6": [
+      {
+        "label": "ATTIJARI_RIB182_SALAIRE",
+        "credits": 623.46,
+        "reservations": 0,
+        "settled": 0,
+        "available": 623.46,
+        "delta_calc": 0,
+        "canReserve_half_pass": true,
+        "canReserve_overflow_guard": true
+      },
+      {
+        "label": "ATTIJARI_RIB372_DETTE",
+        "credits": 4289.57,
+        "reservations": 0,
+        "settled": 1627.68,
+        "available": 2661.89,
+        "delta_calc": 0,
+        "canReserve_half_pass": true,
+        "canReserve_overflow_guard": true
+      },
+      {
+        "label": "BC_LU24_RIB646_SOUVERAIN",
+        "credits": 2942.56,
+        "reservations": 0,
+        "settled": 1627.68,
+        "available": 1314.88,
+        "delta_calc": 0,
+        "canReserve_half_pass": true,
+        "canReserve_overflow_guard": true
+      },
+      {
+        "label": "PAYPAL_BUFFER_OPS",
+        "credits": 2607.45,
+        "reservations": 542.56,
+        "settled": 0,
+        "available": 2064.89,
+        "delta_calc": 0,
+        "canReserve_half_pass": true,
+        "canReserve_overflow_guard": true
+      },
+      {
+        "label": "PAYONEER_B2B_FREELANCE",
+        "credits": 25.46,
+        "reservations": 0,
+        "settled": 0,
+        "available": 25.46,
+        "delta_calc": 0,
+        "canReserve_half_pass": true,
+        "canReserve_overflow_guard": true
+      },
+      {
+        "label": "USDC_ARBITRUM_L2_WALLET",
+        "credits": 38.19,
+        "reservations": 0,
+        "settled": 0,
+        "available": 38.19,
+        "delta_calc": 0,
+        "canReserve_half_pass": true,
+        "canReserve_overflow_guard": true
+      }
+    ],
+    "historical_canReserve_violations": 0,
+    "test_derive_inline_pass": true
+  },
+  "bucket_split_10_40_30_20": {
+    "total_available_input": 6728.77,
+    "buckets_calcul": [
+      {
+        "bucket_label": "SALAIRE_SIGNAIRE_10PCT",
+        "owner_account_label": "ATTIJARI_RIB182_SALAIRE",
+        "pct_pct": 10,
+        "amount_usd": 672.88,
+        "amount_mad_fx_fallback": 6728.8
+      },
+      {
+        "bucket_label": "DETTE_REMBOURSEMENT_40PCT",
+        "owner_account_label": "ATTIJARI_RIB372_DETTE",
+        "pct_pct": 40,
+        "amount_usd": 2691.51,
+        "amount_mad_fx_fallback": 26915.1
+      },
+      {
+        "bucket_label": "SOUVERAIN_RESERVE_30PCT",
+        "owner_account_label": "BC_LU24_RIB646_SOUVERAIN",
+        "pct_pct": 30,
+        "amount_usd": 2018.63,
+        "amount_mad_fx_fallback": 20186.3
+      },
+      {
+        "bucket_label": "OPS_EXECUTION_20PCT",
+        "owner_account_label": "BC_LU24_RIB646_SOUVERAIN",
+        "pct_pct": 20,
+        "amount_usd": 1345.75,
+        "amount_mad_fx_fallback": 13457.5
+      }
+    ],
+    "sum_4_buckets_usd": 6728.77,
+    "delta_split_check_usd": 0,
+    "arithm_1_00_sum_check_pass": true,
+    "csv_artifact_written": true,
+    "fx_fallback_used": "1 USD = 10 MAD (nominaliste NG2 no fabrication)"
+  },
+  "threeway_match_preset_rail_proof": {
+    "grid_size": "18 cells (6 presets × 3 cols)",
+    "pass_count": 6,
+    "skip_with_reason_count": 12,
+    "fail_unknown_no_reason_count": 0,
+    "pass_or_skip_total": 18,
+    "rule_threshold_met": true,
+    "fail_unknown_threshold_met": true,
+    "per_preset": [
+      {
+        "label": "ATTIJARI_RIB182_SALAIRE",
+        "presetReady": true,
+        "railReady": false,
+        "proofReady": false,
+        "finalStatus": "NEEDS_MANUAL_PROOF"
+      },
+      {
+        "label": "ATTIJARI_RIB372_DETTE",
+        "presetReady": true,
+        "railReady": false,
+        "proofReady": false,
+        "finalStatus": "NEEDS_MANUAL_PROOF"
+      },
+      {
+        "label": "BC_LU24_RIB646_SOUVERAIN",
+        "presetReady": true,
+        "railReady": false,
+        "proofReady": false,
+        "finalStatus": "NEEDS_MANUAL_PROOF"
+      },
+      {
+        "label": "PAYPAL_BUFFER_OPS",
+        "presetReady": true,
+        "railReady": false,
+        "proofReady": false,
+        "finalStatus": "NEEDS_MANUAL_PROOF"
+      },
+      {
+        "label": "PAYONEER_B2B_FREELANCE",
+        "presetReady": true,
+        "railReady": false,
+        "proofReady": false,
+        "finalStatus": "NEEDS_MANUAL_PROOF"
+      },
+      {
+        "label": "USDC_ARBITRUM_L2_WALLET",
+        "presetReady": true,
+        "railReady": false,
+        "proofReady": false,
+        "finalStatus": "NEEDS_MANUAL_PROOF"
+      }
+    ],
+    "top_blockers": [
+      "G2_DATABASE_URL_NEON_PROD_POOLED_LEN<120_ABSENT",
+      "G3_BINANCE_SPOT_WITHDRAW_KEY_SECRET_LEN32_DUAL_SCOPE_ABSENT",
+      "PAYPAL_CIP_MA_147672146951995880_PPP2_OAUTH_401_INVALID_CLIENT",
+      "ATTIJARI_PSD2_SEPA_EU_ONLY_MA_DESTINATIONS_REJECTED_FAILCLOSED",
+      "OUT_RECEIVED_NON_GITKEEP_COUNT=0_NG2_PHONE_RULE_166_PERMANENT_NO_FABRICATION"
+    ]
+  },
+  "activities_4channel_data_points": {
+    "channel_A_doomsday_vault": {
+      "count_points": 8,
+      "details": [
+        {
+          "label": "A1_script_existence",
+          "value": true,
+          "detail": "size=5128B",
+          "info": "script backup-doomsday-vault.ps1 existence"
+        },
+        {
+          "label": "A2_env_DOOMSDAY_PHRASE_len",
+          "value": 0,
+          "detail": "len=…=0 (len=5)",
+          "info": "env:DOOMSDAY_ARCHIVE_PASSPHRASE"
+        },
+        {
+          "label": "A3_keyfile_doomsday_passphrase",
+          "value": false,
+          "detail": "absent (file not .keys/)",
+          "info": ".keys/doomsday-passphrase.txt size"
+        },
+        {
+          "label": "A4_openssl_on_path_hint",
+          "value": "openssl_referenced_in_script",
+          "detail": "aucune ref",
+          "info": "ref AES-256-GCM script"
+        },
+        {
+          "label": "A5_tar_on_path_hint",
+          "value": true,
+          "detail": "✅ tar.exe referenced",
+          "info": "tar in script"
+        },
+        {
+          "label": "A6_last_vault_ciphertext_present",
+          "value": false,
+          "detail": "0 local-run vault directories found",
+          "info": "vault dirs check"
+        },
+        {
+          "label": "A7_manifest_uploads_mirrors_flags",
+          "value": false,
+          "detail": "uploads.presigned ok=false · uploads.supabase ok=false · mirrors.gitlab ok=false · mirrors.codeberg ok=false (mode SANS DB manifest absent)",
+          "info": "manifest flags (4 booleans false → ok NG — aucune tentative upload détectée hors sandbox)"
+        },
+        {
+          "label": "A8_roundtrip_decrypt_verify",
+          "value": "SKIP_no_ciphertext_present_dry_run_ok",
+          "detail": "no vault ciphertext → skip roundtrip decrypt verify (sans touches fichier)",
+          "info": "roundtrip dry run status"
+        }
+      ]
+    },
+    "channel_B_secure_cloud_supabase": {
+      "count_points": 8,
+      "details": [
+        {
+          "label": "B1_cmd_existence",
+          "value": true,
+          "detail": "size=2670B",
+          "info": "script secure-cloud-upload.cmd"
+        },
+        {
+          "label": "B2_steps_count",
+          "value": 0,
+          "detail": "étape curl: 0× presigned POST + Supabase Storage PUT API",
+          "info": "2 étapes curl attendues"
+        },
+        {
+          "label": "B3_env_SUPABASE_URL",
+          "value": 0,
+          "detail": "len=…=0 (len=5)",
+          "info": "SUPABASE_URL env"
+        },
+        {
+          "label": "B4_env_SUPABASE_SERVICE_ROLE_KEY",
+          "value": 0,
+          "detail": "len=…=0 (len=5)",
+          "info": "SUPABASE_SERVICE_ROLE_KEY (Bearer Auth Storage Object API)"
+        },
+        {
+          "label": "B5_env_MIRROR_SUPABASE_BUCKET",
+          "value": 0,
+          "detail": "len=…=0 (len=5)",
+          "info": "MIRROR_SUPABASE_BUCKET"
+        },
+        {
+          "label": "B6_env_SECURE_CLOUD_PRESIGNED_URL",
+          "value": 0,
+          "detail": "len=…=0 (len=5)",
+          "info": "fallback presigned POST mode"
+        },
+        {
+          "label": "B7_logs_secure_cloud_count",
+          "value": 0,
+          "detail": "0 log files secure-cloud trouvés",
+          "info": "logs count"
+        },
+        {
+          "label": "B8_last_upload_status",
+          "value": "SKIP_no_upload_logs_yet",
+          "detail": "pas de log upload",
+          "info": "dernier statut"
+        }
+      ]
+    },
+    "channel_C_sync_mirrors_git_4_remotes": {
+      "count_points": 8,
+      "details": [
+        {
+          "label": "C1_sync_cmd_existence",
+          "value": true,
+          "detail": "size=2370B",
+          "info": "script sync-mirrors.cmd"
+        },
+        {
+          "label": "C2_4_remotes_listed_count",
+          "value": 4,
+          "detail": "4× git push attendus: https-origin + gitlab-mirror + codeberg-mirror + local-backup",
+          "info": "4 remotes count"
+        },
+        {
+          "label": "C3_git_remotes_configured_hint",
+          "value": "read_simulated_from_summary",
+          "detail": "https-origin = https://github.com/younestsouli2019-bot/Nouveau-dossier-3-.git · GitLab/Codeberg/Local = env dependant",
+          "info": "remotes list"
+        },
+        {
+          "label": "C4_env_GITLAB_MIRROR_REPO",
+          "value": 0,
+          "detail": "len=…=0 (len=5)",
+          "info": "GITLAB_MIRROR_REPO"
+        },
+        {
+          "label": "C5_env_GITLAB_PAT_scope_write_repo",
+          "value": 0,
+          "detail": "len=…ry (len=61)",
+          "info": "GITLAB_PAT"
+        },
+        {
+          "label": "C6_env_CODEBERG_MIRROR",
+          "value": 0,
+          "detail": "abse…nt (len=6)",
+          "info": "Codeberg mirror repo env"
+        },
+        {
+          "label": "C7_env_LOCAL_MIRROR_DIR",
+          "value": false,
+          "detail": "env LOCAL_MIRROR_DIR absent",
+          "info": "LOCAL_MIRROR_DIR bare git"
+        },
+        {
+          "label": "C8_sync_logs_count",
+          "value": 0,
+          "detail": "0 mirrors-sync.log trouvés",
+          "info": "logs sync"
+        }
+      ]
+    },
+    "channel_D_catalogue_zspace_base44": {
+      "count_points": 12,
+      "details": [
+        {
+          "label": "D1_catalogue_scripts_count",
+          "value": 2,
+          "detail": "advancedCatalogueSwarm.mjs:size=6187B · ultimateCatalogueSwarm.mjs:size=7445B",
+          "info": "2/3 scripts catalogue swarm trouvés"
+        },
+        {
+          "label": "D2_catalog_manifests_count",
+          "value": 1,
+          "detail": "1 manifests trouvés (data/out/)",
+          "info": "manifest count / SKU count"
+        },
+        {
+          "label": "D3_clickless_tick_script",
+          "value": true,
+          "detail": "size=5866B",
+          "info": "script swarm-clickless-tick.mjs"
+        },
+        {
+          "label": "D4_clickless_latest_json_exists",
+          "value": true,
+          "detail": "at=2026-09-05T14:07:02.321Z · elapsed_ms=27522 · readonly=true",
+          "info": "logs/swarm_clickless/latest.json"
+        },
+        {
+          "label": "D5_moved_money_strict_false",
+          "value": true,
+          "detail": "moved_money=false (DOIT ÊTRE false NG1 read-only)",
+          "info": "NG1: 0 DB write audit"
+        },
+        {
+          "label": "D6_Phase1_truth_invariants",
+          "value": "ok",
+          "detail": "ok — tail mentions 7 passed 0 failed",
+          "info": "Phase 1 truth invariants count"
+        },
+        {
+          "label": "D7_Phase2_DB_payout_reconcile",
+          "value": "ok",
+          "detail": "ok — tail OwnerSettlement=$13,744.11×27 · PayoutBatch=$10,851.23×6",
+          "info": "Phase 2 DB reconcile items (readonly DB connection not write)"
+        },
+        {
+          "label": "D8_Phase3_rail_health_policy",
+          "value": "ok",
+          "detail": "ok — blocker:\"Outbound funds movement requires a live-authenticated sender rail. PayPal creds fail OAuth 401\"",
+          "info": "Phase 3 rail-health + financial policy + remediation"
+        },
+        {
+          "label": "D9_Phase4_worklist_generators",
+          "value": "ok",
+          "detail": "ok — tail revenuePending=$14,824.75 · accounts=5 · settlement 27 × $13,744.11",
+          "info": "Phase 4 worklist: settlement/procurement/PO/routing/orchestrator"
+        },
+        {
+          "label": "D10_evm_wallet_balances_zero_clickless",
+          "value": "ok",
+          "detail": "ok — tail base/arb/op/poly/bsc/scroll/linea: native=0 USDT=0 canSend=false hasGas=false",
+          "info": "EVM 7 chains L2 balance tick"
+        },
+        {
+          "label": "D11_base44_sdk_version",
+          "value": "^0.8.13",
+          "detail": "@base44/sdk@^0.8.13",
+          "info": "@base44/sdk version"
+        },
+        {
+          "label": "D12_env_BASE44_entities_names",
+          "value": 3,
+          "detail": "Mission=\"(fallback default)\" · Earning=\"(fallback default)\" · Payout=\"(fallback default)\"",
+          "info": "BASE44 entity env names"
+        }
+      ]
+    },
+    "total_data_points_A_B_C_D": 36,
+    "rule_total_ge_24_pass": true
+  },
+  "accuracy_alerts_rib_discrepancy": {
+    "rib_grep_hits": 397,
+    "iban_ma_grep_hits": 50,
+    "banque_bank_bic_swift_grep_hits": 1031,
+    "files_scanned_total": 6613,
+    "findings_count_total": 6,
+    "findings_by_class": {
+      "A_nominal_identity_signataire": 0,
+      "B_structurel_60pct_plus": 6,
+      "C_ok_hypothetical_40pct_minus": 0
+    },
+    "critical_findings_class_B": [
+      {
+        "id": "RIB-FINDING-001",
+        "file": "scripts/settlement-worklist.mjs",
+        "line": 87,
+        "summary": "Δ cle 82 (trouvé hardcodé) − 80 (attendu structural) = +2"
+      },
+      {
+        "id": "RIB-FINDING-002",
+        "file": "scripts/settlement-worklist.mjs",
+        "line": 89,
+        "summary": "Δ cle 72 (trouvé) − 20 (attendu) = 52"
+      },
+      {
+        "id": "IBAN-VAL-a7fa2b3",
+        "file": "scripts\\payment-routing-table.mjs",
+        "line": 130,
+        "summary": "IBAN MA compact INVALIDE — mod97 ≠ 1"
+      },
+      {
+        "id": "IBAN-VAL-98ba19a",
+        "file": "scripts\\settlement-worklist.mjs",
+        "line": 87,
+        "summary": "IBAN MA compact INVALIDE — mod97 ≠ 1"
+      },
+      {
+        "id": "IBAN-VAL-157b530",
+        "file": "scripts\\t5-audit-swarm-revenues-ledger-v358.mjs",
+        "line": 195,
+        "summary": "IBAN MA compact INVALIDE — mod97 ≠ 1"
+      },
+      {
+        "id": "IBAN-VAL-e71c7eb",
+        "file": "scripts\\t5-audit-swarm-revenues-ledger-v358.mjs",
+        "line": 196,
+        "summary": "IBAN MA compact INVALIDE — mod97 ≠ 1"
+      }
+    ],
+    "rule_at_least_1_class_B_pass": true
+  },
+  "zero_loss_decomp": {
+    "score_rubric": 2,
+    "threshold_pass_ge_1_5": true,
+    "total_line_items": 28,
+    "global_sum_lines": 6728.77,
+    "global_available_ref": 6728.77,
+    "global_delta_le_1cent": true,
+    "per_preset_decomp": [
+      {
+        "label": "ATTIJARI_RIB182_SALAIRE",
+        "available_ref": 623.46,
+        "sum_lines": 623.46,
+        "delta_le_1cent": true,
+        "lines_count": 6
+      },
+      {
+        "label": "ATTIJARI_RIB372_DETTE",
+        "available_ref": 2661.89,
+        "sum_lines": 2661.89,
+        "delta_le_1cent": true,
+        "lines_count": 6
+      },
+      {
+        "label": "BC_LU24_RIB646_SOUVERAIN",
+        "available_ref": 1314.88,
+        "sum_lines": 1314.88,
+        "delta_le_1cent": true,
+        "lines_count": 8
+      },
+      {
+        "label": "PAYPAL_BUFFER_OPS",
+        "available_ref": 2064.89,
+        "sum_lines": 2064.89,
+        "delta_le_1cent": true,
+        "lines_count": 6
+      },
+      {
+        "label": "PAYONEER_B2B_FREELANCE",
+        "available_ref": 25.46,
+        "sum_lines": 25.46,
+        "delta_le_1cent": true,
+        "lines_count": 1
+      },
+      {
+        "label": "USDC_ARBITRUM_L2_WALLET",
+        "available_ref": 38.19,
+        "sum_lines": 38.19,
+        "delta_le_1cent": true,
+        "lines_count": 1
+      }
+    ]
+  },
+  "ledger_entry_types_7_coverage": {
+    "score_rubric": 1,
+    "threshold_pass_ge_1_5": true,
+    "types_matrix": [
+      {
+        "type": "REVENUE",
+        "present": true,
+        "skipReason": null
+      },
+      {
+        "type": "PLATFORM_FEE",
+        "present": true,
+        "skipReason": null
+      },
+      {
+        "type": "OWNER_ENTITLEMENT",
+        "present": true,
+        "skipReason": null
+      },
+      {
+        "type": "PAYOUT_RESERVED",
+        "present": true,
+        "skipReason": null
+      },
+      {
+        "type": "PAYOUT_SETTLED",
+        "present": true,
+        "skipReason": null
+      },
+      {
+        "type": "PAYOUT_RELEASED",
+        "present": false,
+        "skipReason": "skip_sans_db_mode_seeded_entries_minimal_set_only_no_historical_db_available_g2_absent"
+      },
+      {
+        "type": "ADJUSTMENT",
+        "present": false,
+        "skipReason": "skip_sans_db_mode_seeded_entries_minimal_set_only_no_historical_db_available_g2_absent"
+      }
+    ],
+    "explicit_present_count": 5,
+    "explicit_skip_with_reason_count": 2,
+    "all_7_mentioned": true
+  },
+  "integrity_hashes": {
+    "audit_ndjson_path": "data\\out\\audit-revenues-v358.ndjson",
+    "audit_ndjson_lines_count": 19,
+    "audit_ndjson_lines_ge_18": true,
+    "hmac_verify_3_sample_pass": 3,
+    "hmac_verify_all_3": true,
+    "final_reports_concat_sha256": "12e12f2006c2c5b80bff448e0e71b11bdad503b8ed4dfe9f98f616de8474973a",
+    "both_hashes_present_score": 2,
+    "threshold_pass_ge_1_5": true
+  },
+  "cross_verifications": {
+    "ledger_matrix_recomputed_from_json_match": true,
+    "buckets_sum_recalculated_match_total_available": true
+  },
+  "workflow_fidelity_spec_plan_approve_implement_review": {
+    "spec_created": true,
+    "tasks_created": true,
+    "approval_notify_user_explicit": true,
+    "implement_serial_t0_t9_run": true,
+    "review_independent_sp5_planned_post": true,
+    "score_rubric": 2,
+    "threshold_pass_ge_1_5": true,
+    "rationale": "Strict SPEC spec.md → PLAN tasks.md 70 atomic → APPROVE Notify \"Yes implement this plan\" → IMPLEMENT T0→T9 → SP5 review gate next."
+  },
+  "finalAuditHash": "12e12f2006c2c5b80bff448e0e71b11bdad503b8ed4dfe9f98f616de8474973a"
+}

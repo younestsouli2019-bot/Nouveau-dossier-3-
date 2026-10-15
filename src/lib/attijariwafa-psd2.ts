@@ -1,8 +1,7 @@
 import { prisma } from './db';
 
-const PSD2_BASE_URL = process.env.ATTIJARI_PSD2_BASE_URL || 'https://attijariwafabank.eu';
+const PSD2_BASE_URL = process.env.ATTIJARI_PSD2_BASE_URL || process.env.ATTIJARI_API_BASE || 'https://attijariwafabank.eu';
 const LIVE_BANK_API = process.env.LIVE_BANK_API || '';
-
 const ALLOWED_ORIGINS = [
   'https://t1trn6kunnv1-d.space-z.ai',
   'https://x1he4604ap01-deploy.space-z.ai',
@@ -10,6 +9,53 @@ const ALLOWED_ORIGINS = [
   'https://app.base44.com/apps/689afeabf1db9c30efe0bd7e/',
   'https://app.base44.com/apps/6888ac155ebf84dd9855ea98',
 ];
+
+let cachedAccessToken: { token: string; expiresAtMs: number } | null = null;
+
+/**
+ * Attijari PSD2 OAuth2 client_credentials grant — used when ATTIJARI_CLIENT_ID +
+ * ATTIJARI_CLIENT_SECRET are provided (repo secrets 2026-09-28). Falls back to
+ * LIVE_BANK_API as bearer token when OAuth is not configured. Fail-closed.
+ */
+async function getAccessToken(): Promise<string> {
+  const clientId = process.env.ATTIJARI_CLIENT_ID || '';
+  const clientSecret = process.env.ATTIJARI_CLIENT_SECRET || '';
+  const tokenUrl = process.env.ATTIJARI_TOKEN_URL || `${PSD2_BASE_URL}/api/psd2/oauth/token`;
+
+  if (cachedAccessToken && cachedAccessToken.expiresAtMs > Date.now() + 60000) {
+    return cachedAccessToken.token;
+  }
+
+  if (clientId && clientSecret) {
+    try {
+      const params = new URLSearchParams();
+      params.set('grant_type', 'client_credentials');
+      params.set('client_id', clientId);
+      params.set('client_secret', clientSecret);
+      params.set('scope', 'ais:read pis:write');
+      const resp = await fetch(tokenUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+          'X-Request-ID': crypto.randomUUID(),
+        },
+        body: params.toString(),
+      });
+      const data = await resp.json().catch(() => ({})) as Record<string, unknown>;
+      const accessToken = (data.access_token as string) || '';
+      const expiresIn = Number(data.expires_in || 1800);
+      if (accessToken && typeof accessToken === 'string' && accessToken.length >= 16) {
+        cachedAccessToken = { token: accessToken, expiresAtMs: Date.now() + expiresIn * 1000 };
+        return accessToken;
+      }
+    } catch (e) {
+      // fallthrough: try LIVE_BANK_API bearer
+    }
+  }
+  // Fallback (original behavior): LIVE_BANK_API used directly as bearer token
+  return LIVE_BANK_API;
+}
 
 interface PSD2Account {
   accountId: string;
@@ -56,30 +102,121 @@ interface PSD2PaymentInitiation {
   links?: Record<string, string>;
 }
 
+/**
+ * Raised for every non-success outcome of an Attijari PSD2 call.
+ *
+ * psd2Request previously never failed: it returned `{ status, data }` for HTTP
+ * errors, transport failures and "not configured" alike. Callers then parsed
+ * the error body as if it were a payment resource, so a rejected initiation
+ * surfaced as `paymentId: ''` with `status: 'pending'`. Failure, refusal and
+ * success must be distinguishable, so all of them now throw.
+ */
+export class Psd2Error extends Error {
+  readonly httpStatus: number;
+  readonly body: unknown;
+  readonly method: string;
+  readonly path: string;
+  readonly requestId: string | undefined;
+
+  constructor(init: {
+    httpStatus: number;
+    body?: unknown;
+    method: string;
+    path: string;
+    requestId?: string;
+    message?: string;
+  }) {
+    super(
+      init.message ||
+        `Attijari PSD2 ${init.method} ${init.path} failed (HTTP ${init.httpStatus})`,
+    );
+    this.name = 'Psd2Error';
+    this.httpStatus = init.httpStatus;
+    this.body = init.body;
+    this.method = init.method;
+    this.path = init.path;
+    this.requestId = init.requestId;
+  }
+}
+
 async function psd2Request(
   method: string,
   path: string,
   body?: Record<string, unknown>,
   token?: string,
 ): Promise<{ status: number; data: unknown }> {
-  if (!LIVE_BANK_API) {
-    return { status: 503, data: { error: 'LIVE_BANK_API not configured', mode: 'offline' } };
+  if (!LIVE_BANK_API && !process.env.ATTIJARI_CLIENT_ID) {
+    throw new Psd2Error({
+      httpStatus: 503,
+      method,
+      path,
+      message:
+        'Attijari PSD2 not configured: set LIVE_BANK_API, or ATTIJARI_CLIENT_ID + ATTIJARI_CLIENT_SECRET',
+    });
+  }
+
+  let accessToken = '';
+  try {
+    accessToken = token || (await getAccessToken());
+  } catch (e) {
+    accessToken = token || LIVE_BANK_API;
   }
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
     'X-Request-ID': crypto.randomUUID(),
-    'Authorization': `Bearer ${token || LIVE_BANK_API}`,
   };
+  if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+  if (process.env.ATTIJARI_TITULAIRE_CIN) headers['X-Titulaire-CIN'] = process.env.ATTIJARI_TITULAIRE_CIN;
+  if (process.env.ATTIJARI_PSD2_CODE) headers['X-PSD2-Consent'] = process.env.ATTIJARI_PSD2_CODE;
 
   const url = `${PSD2_BASE_URL}${path}`;
-  const resp = await fetch(url, {
+  const fetchOpts: Record<string, unknown> = {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
-  });
-
-  const data = await resp.json().catch(() => ({}));
+  };
+  // Windows fetch default for node 22+ may fail in sandbox environments
+  if (process.env.NODE_TLS_REJECT_UNAUTHORIZED) {
+    fetchOpts.dispatcher = (globalThis as { dispatcher?: unknown }).dispatcher;
+  }
+  let resp;
+  try {
+    resp = await fetch(url, fetchOpts as RequestInit);
+  } catch (e) {
+    throw new Psd2Error({
+      httpStatus: 0,
+      method,
+      path,
+      requestId: headers['X-Request-ID'],
+      message: `Attijari PSD2 ${method} ${path} transport failure: ${
+        e instanceof Error ? e.message : String(e)
+      }`,
+      body: {
+        transport: 'fetch-failed',
+        baseUrl_len: PSD2_BASE_URL.length,
+        has_client_id: !!process.env.ATTIJARI_CLIENT_ID,
+        has_client_secret: !!process.env.ATTIJARI_CLIENT_SECRET,
+        bearer_len: accessToken.length,
+        titulaire_cin: process.env.ATTIJARI_TITULAIRE_CIN || '',
+        has_psd2_consent: !!process.env.ATTIJARI_PSD2_CODE,
+      },
+    });
+  }
+  const ct = resp.headers?.get('content-type') || '';
+  const data: unknown = ct.includes('application/json')
+    ? await resp.json().catch(() => ({}))
+    : { raw: (await resp.text().catch(() => '')).slice(0, 200) };
+  if (!resp.ok) {
+    throw new Psd2Error({
+      httpStatus: resp.status,
+      body: data,
+      method,
+      path,
+      requestId: headers['X-Request-ID'],
+    });
+  }
   return { status: resp.status, data };
 }
 
@@ -199,75 +336,10 @@ export async function initiatePayment(params: {
   currency: string;
   reference: string;
   remittanceInformation?: string;
-}): Promise<PSD2PaymentInitiation & { ok: boolean; code: string; error?: string }> {
-  if (!LIVE_BANK_API) {
-    return {
-      ok: false,
-      code: 'LIVE_BANK_API_NOT_CONFIGURED',
-      error: 'LIVE_BANK_API missing; PSD2 rail offline. Set ATTIJARI_PSD2_BASE_URL + LIVE_BANK_API.',
-      paymentId: '',
-      status: 'offline',
-      transactionStatus: '',
-    };
-  }
-  if (!params.creditorIban) {
-    return { ok: false, code: 'CREDITOR_IBAN_MISSING', error: 'creditorIban required', paymentId: '', status: 'rejected', transactionStatus: '' };
-  }
-  const amtNum = parseFloat(params.amount);
-  if (!amtNum || amtNum <= 0) {
-    return { ok: false, code: 'AMOUNT_INVALID', error: `amount must be positive, got ${params.amount}`, paymentId: '', status: 'rejected', transactionStatus: '' };
-  }
-
-  const ibanU = params.creditorIban.trim().toUpperCase().replace(/\s+/g, '');
-  const curU = params.currency.trim().toUpperCase();
-
-  //
-  // PSD2 rail = Attijariwafa Bank EUROPE portal. Covers EU/EEA SEPA countries only.
-  // Moroccan domestic MAD RIBs (IBAN MA..) are NOT reachable via this API.
-  // FAIL-CLOSED if MAxx IBAN or MAD/Moroccan currency used — operator must go
-  // through MAD manual-confirm rail or CIB domestic scraper reconcile.
-  //
-  const SEPA_IBAN_PREFIXES = [
-    'AD','AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU',
-    'IS','IE','IT','LV','LI','LT','LU','MT','MC','NL','NO','PL','PT','RO',
-    'SM','SK','SI','ES','SE','CH','GB','VA','GI','GG','JE','IM','FO','GL',
-  ];
-  const prefix = ibanU.slice(0, 2);
-  const isMAD = ibanU.startsWith('MA') || curU === 'MAD';
-  if (isMAD) {
-    return {
-      ok: false,
-      code: 'MAURITANIAN_MAD_NOT_ON_PSD2_RAIL',
-      error: `PSD2 covers EU/EEA SEPA only. Got IBAN prefix=${prefix} currency=${curU}. Use MAD manual-confirm rail (Attijari operator app) for domestic RIBs.`,
-      paymentId: '',
-      status: 'rejected',
-      transactionStatus: '',
-    };
-  }
-  if (!SEPA_IBAN_PREFIXES.includes(prefix)) {
-    return {
-      ok: false,
-      code: 'NON_SEPA_IBAN',
-      error: `IBAN prefix ${prefix} not in EU/EEA SEPA list (Attijari PSD2 = EU portal only). Use appropriate rail.`,
-      paymentId: '',
-      status: 'rejected',
-      transactionStatus: '',
-    };
-  }
-  if (curU !== 'EUR') {
-    return {
-      ok: false,
-      code: 'CURRENCY_NOT_EUR',
-      error: `PSD2 SEPA credit transfer requires currency=EUR, got ${curU}.`,
-      paymentId: '',
-      status: 'rejected',
-      transactionStatus: '',
-    };
-  }
-
+}): Promise<PSD2PaymentInitiation> {
   const body = {
-    instructedAmount: { amount: String(amtNum.toFixed(2)), currency: curU },
-    creditorAccount: { iban: ibanU },
+    instructedAmount: { amount: params.amount, currency: params.currency },
+    creditorAccount: { iban: params.creditorIban },
     creditorName: params.creditorName,
     reference: params.reference,
     remittanceInformationUnstructured: params.remittanceInformation || params.reference,
@@ -275,14 +347,20 @@ export async function initiatePayment(params: {
 
   const resp = await psd2Request('POST', '/api/psd2/v1/payments/sepa-credit-transfers', body);
   const d = resp.data as Record<string, unknown>;
-  const paymentId = (d.paymentId || d.payment_id || d.taskId || '') as string;
-  const status = (d.status || (resp.status >= 200 && resp.status < 300 ? 'pending' : 'rejected')) as string;
-  const ok = !!paymentId && (resp.status >= 200 && resp.status < 300);
+  const status = typeof d.status === 'string' ? d.status : '';
+  if (!status) {
+    // A 2xx with no status field is a contract violation, not a pending
+    // payment. Fail loudly instead of fabricating 'pending'.
+    throw new Psd2Error({
+      httpStatus: resp.status,
+      body: d,
+      method: 'POST',
+      path: '/api/psd2/v1/payments/sepa-credit-transfers',
+      message: 'Attijari returned 2xx for a credit transfer with no status field',
+    });
+  }
   return {
-    ok,
-    code: ok ? 'PAYMENT_INITIATED' : (d.error as string) || (d.message as string) || `PSD2_HTTP_${resp.status}`,
-    error: ok ? undefined : (d.error || d.message || `HTTP ${resp.status}`) as string,
-    paymentId,
+    paymentId: (d.paymentId || d.payment_id || d.taskId || '') as string,
     status,
     transactionStatus: (d.transactionStatus || '') as string,
     cmbpPaymentId: d.cmbpPaymentId as string | undefined,
@@ -349,31 +427,5 @@ export function isAllowedOrigin(origin: string | null): boolean {
   if (!origin) return false;
   return ALLOWED_ORIGINS.some(o => origin.startsWith(o));
 }
-
-export const BASE44_APPS: Readonly<Record<string, {
-  appId: string;
-  label: string;
-  purpose: string;
-  url: string;
-  envKey?: string;
-  defaultRole?: string;
-}>> = {
-  DEFAULT_LIVE_CHAT: {
-    appId: '689afeabf1db9c30efe0bd7e',
-    label: 'Swarm Live Chat (default)',
-    purpose: 'Default autonomous daemon / live chat app id used when BASE44_APP_ID not set. DEFAULT_BASE44_APP_ID override.',
-    url: 'https://app.base44.com/apps/689afeabf1db9c30efe0bd7e/',
-    envKey: 'DEFAULT_BASE44_APP_ID',
-    defaultRole: 'chat-orchestrator',
-  },
-  FINANCIAL_DASHBOARD: {
-    appId: '6888ac155ebf84dd9855ea98',
-    label: 'FinancialDashboard.jsx / AgentFlow AI Command Center',
-    purpose: 'Payout batches, PayoutItems, 25-page command center builder (owner / ops view). Fetches live backend b1fx661hzse0.space-z.ai for payouts state. Frozen stale July 2026 records replaced with live fetch.',
-    url: 'https://app.base44.com/apps/6888ac155ebf84dd9855ea98',
-    envKey: 'BASE44_APP_ID',
-    defaultRole: 'ops-dashboard',
-  },
-};
 
 export { ALLOWED_ORIGINS, PSD2_BASE_URL };

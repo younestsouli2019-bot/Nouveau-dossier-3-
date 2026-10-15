@@ -7,19 +7,19 @@ function normalizeAccount(value) {
 
 function getOwnerAccounts() {
 	const paypal = normalizeAccount(
-		process.env.OWNER_PAYPAL_EMAIL ?? "younestsouli2019@gmail.com",
+		process.env.OWNER_PAYPAL_EMAIL ?? "",
 	);
 	const bank = normalizeAccount(
 		process.env.OWNER_BANK_RIB ??
 			process.env.OWNER_BANK_ACCOUNT ??
 			process.env.OWNER_IBAN ??
 			process.env.OWNER_BANK_IBAN ??
-			"007810000448500030594182",
+			"",
 	);
 	const payoneer = String(
 		process.env.OWNER_PAYONEER_ACCOUNT_ID ??
 			process.env.OWNER_PAYONEER_ID ??
-			"PRINCIPAL_ACCOUNT",
+			"",
 	);
 	const crypto = String(
 		process.env.OWNER_CRYPTO_ADDRESS ?? process.env.OWNER_TRUST_WALLET ?? "",

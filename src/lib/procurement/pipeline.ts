@@ -19,13 +19,6 @@ import {
   isSyntheticOracleHash as _isSyntheticOracleHash,
 } from '@/lib/procurement/payment-gateway-router'
 import { autodetectCarrier } from '@/lib/procurement/carrier-router'
-import {
-  AUTO_RECEIPT_SIGNER,
-  autoProof,
-  handsFreePolicyActive,
-  isHandsFreeOwner,
-  loadPresetOwnerIds,
-} from '@/lib/treasury/hands-free-policy'
 
 export type PipelineStatus =
   | 'pending' | 'ordered' | 'shipped' | 'in_transit'
@@ -97,7 +90,6 @@ export async function advanceItem(
     proofHash?: string
     confirmedBy?: string
     notes?: string
-    events?: string
     /** Carrier-scraped tracking payload (overrides the shipment's stored events). */
     scraped?: ScrapedTrackingPayload
   },
@@ -182,7 +174,6 @@ export async function advanceItem(
                 carrier: hasCarrier ? (metadata?.carrier as string).trim() : null,
                 trackingNumber: trackingSet,
                 trackingUrl: (metadata?.trackingUrl as string | undefined) || null,
-                events: (metadata?.events as string | undefined) || null,
                 // Honest: label_created until carrier pick-up event confirmed. Never auto
                 // in_transit without verified event (GooglePay-refund lost-proof pattern).
                 status: trackingSet ? 'label_created' : 'pending',
@@ -201,16 +192,9 @@ export async function advanceItem(
         }
       } else {
         const patch: Record<string, unknown> = { trackingVerified: false }
-        // Always re-state carrier/tracking from existing row when present, so
-        // TRUTH guard (args.data-only read) sees them even on status-only
-        // transitions like pending → label_created.
-        if (existingShipment.carrier) patch.carrier = existingShipment.carrier
-        if (existingShipment.trackingNumber) patch.trackingNumber = existingShipment.trackingNumber
-        if (existingShipment.events && typeof existingShipment.events === 'string' && existingShipment.events.trim().length > 50) patch.events = existingShipment.events
         if (hasCarrier && !existingShipment.carrier) patch.carrier = (metadata?.carrier as string).trim()
         if (hasTracking && !existingShipment.trackingNumber) patch.trackingNumber = (metadata?.trackingNumber as string).trim()
         if ((metadata?.trackingUrl as string | undefined) && !existingShipment.trackingUrl) patch.trackingUrl = metadata?.trackingUrl as string
-        if ((metadata?.events as string | undefined) && (!existingShipment.events || existingShipment.events.trim().length < 50)) patch.events = metadata?.events as string
         if (existingShipment.status === 'pending' && hasTracking) patch.status = 'label_created'
         if (Object.keys(patch).length > 0) {
           await db.shipment.update({ where: { id: existingShipment.id }, data: patch })
@@ -240,11 +224,6 @@ export async function advanceItem(
         where: { id: shipment.id },
         data: {
           status: 'in_transit',
-          // Re-state carrier/tracking so TRUTH guard (which reads args.data
-          // only, does not merge existing DB row) sees them on status change.
-          carrier: shipment.carrier ?? undefined,
-          trackingNumber: shipment.trackingNumber ?? undefined,
-          trackingUrl: shipment.trackingUrl ?? undefined,
           // trackingVerified ONLY set true if a real tracked event exists (not
           // simply because user typed a tracking number string). Keeps false
           // until /api/carrier-tracking?action=track returns REAL events JSON.
@@ -256,29 +235,15 @@ export async function advanceItem(
     }
     case 'delivered': {
       updateData.deliveredAt = now
-      // TRUTH-005: delivered requires deliveryProofHash on ProcurementItem
-      // AND the TRUTH guard reads args.data payload only (no DB merge), so
-      // we must re-state proofHash in the updateData even if DB already has it.
-      if (metadata?.proofHash && !_isSyntheticOracleHash(metadata.proofHash)) {
-        updateData.deliveryProofHash = metadata.proofHash
-      }
       const delivShipment = await db.shipment.findFirst({ where: { procurementItemId: item.id } })
       if (delivShipment) {
-        const hasEventsExisting = !!delivShipment.events && delivShipment.events.trim().length > 50
-        const eventsOverride = (metadata?.events as string | undefined) && (metadata?.events as string).trim().length > 50 ? (metadata?.events as string) : null
-        const hasRealProof = delivShipment.trackingVerified === true || hasEventsExisting || !!eventsOverride
-        const eventsFinal = eventsOverride ?? (hasEventsExisting ? delivShipment.events : null)
+        const hasRealProof = delivShipment.trackingVerified === true ||
+          (!!delivShipment.events && delivShipment.events.trim().length > 50)
         await db.shipment.update({
           where: { id: delivShipment.id },
           data: {
             status: 'delivered',
             actualDelivery: now,
-            // Re-state carrier/tracking so TRUTH guard sees them on status
-            // change (guard reads args.data payload only, no DB merge).
-            carrier: delivShipment.carrier ?? undefined,
-            trackingNumber: delivShipment.trackingNumber ?? undefined,
-            trackingUrl: delivShipment.trackingUrl ?? undefined,
-            events: eventsFinal ?? undefined,
             // Only flip trackingVerified=true here if we have real events. Never
             // accept a bare string as proof of delivery.
             trackingVerified: delivShipment.trackingVerified || hasRealProof,
@@ -335,13 +300,6 @@ export async function advanceItem(
       //   (F) 3-point PO fraud guard (destination/weight/timeline) ALL PASS
       //   (G) At least one payment gateway (PayZone/YouCan Pay/CMI/Stripe/Chari/3PL)
       //       has API keys/balance configured (fail-closed until configured)
-      // TRUTH guard reads deliveryProofHash/receiptConfirmed* from args.data only,
-      // so re-state the existing values in updateData to pass even when DB already
-      // has them populated from earlier transitions.
-      if (item.deliveryProofHash) updateData.deliveryProofHash = item.deliveryProofHash
-      if (item.receiptConfirmedAt) updateData.receiptConfirmedAt = item.receiptConfirmedAt
-      if (item.receiptConfirmedBy) updateData.receiptConfirmedBy = item.receiptConfirmedBy
-      if (item.quantityReceived) updateData.quantityReceived = item.quantityReceived
       if (!item.deliveryProofHash || item.deliveryProofHash.trim().length < 16) {
         throw Object.assign(
           new Error(
@@ -442,7 +400,7 @@ export async function advanceItem(
         receiptDeliveryProofHash: item.deliveryProofHash,
         quantityReceived: item.quantityReceived ?? undefined,
       }
-      const gate = await payoutReleaseGate(
+      const gate = payoutReleaseGate(
         shipmentEvidence,
         receiptEvidence,
         scraped,
@@ -452,7 +410,6 @@ export async function advanceItem(
           requireHumanSignOff: true,
           requireQuantityMatch: true,
           totalOrderedQty: item.quantity ?? undefined,
-          threeWayMatchItemIds: [item.id],
         },
       )
       if (!gate.release) {
@@ -484,18 +441,8 @@ export async function advanceItem(
   // Write AuditLedger entry. The previousHash chain is serialized with a
   // transaction-scoped Postgres advisory lock — concurrent writes previously
   // read the same lastAudit row and forked the chain.
-  // NOTE: pg_advisory_xact_lock() returns void on Neon Postgres; Prisma 7
-  // fails with "Failed to deserialize column of type 'void'". Workaround:
-  // project the void lock to a scalar text 'ok' via ::text cast so Prisma
-  // never sees a void-typed column. Advisory lock still acquired at SQL level.
   await db.$transaction(async (tx) => {
-    try {
-      void (await tx.$queryRawUnsafe(`SELECT pg_advisory_xact_lock(hashtext('audit_ledger_chain'))::text AS lock_ok`))
-    } catch (_lockErr: any) {
-      // Non-fatal fallback: advisory lock is for serialization only; we
-      // proceed with compare-and-swap on lastAudit.entryHash + tx retry.
-      void (_lockErr)
-    }
+    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext('audit_ledger_chain'))`
     const lastAudit = await tx.auditLedger.findFirst({ orderBy: { createdAt: 'desc' } })
     await tx.auditLedger.create({
       data: {
@@ -619,244 +566,4 @@ export async function bulkAdvance(
   }
 
   return report
-}
-
-function normalizeCity(c: string | null | undefined): string {
-  return String(c ?? '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]/g, '')
-    .trim()
-}
-
-function recipientFuzzyMatchesOwner(
-  recipientName: string | null | undefined,
-  owner: { id: string; label?: string | null; accountNumberLast?: string | null; countryCode?: string | null },
-): boolean {
-  const r = normalizeCity(recipientName)
-  if (!r) return false
-  const label = normalizeCity(owner.label)
-  const last = String(owner.accountNumberLast ?? '')
-  if (label && (label.includes(r) || r.includes(label))) return true
-  if (last && r.includes(last)) return true
-  if (r.includes('owner') && r.includes('hands') && r.includes('free')) return true
-  if (r.includes('rib') && last && r.includes(last)) return true
-  if (label) {
-    const labelWords = label.split(/[^a-z0-9]+/).filter((w) => w.length >= 4)
-    const rWords = r.split(/[^a-z0-9]+/).filter((w) => w.length >= 4)
-    let hits = 0
-    for (const lw of labelWords) if (rWords.some((rw) => rw.includes(lw) || lw.includes(rw))) hits++
-    if (hits >= 1 && labelWords.length >= 1) return true
-  }
-  return false
-}
-
-export interface AutoOwnerAdvanceResult {
-  itemId: string
-  scope: 'owner-funded' | 'not-owner-funded' | 'hands-free-inactive'
-  skippedReason?: string
-  advanced: AdvanceResult[]
-  advancedStatuses: PipelineStatus[]
-  error?: string
-  finalStatus?: PipelineStatus
-  finalNotes?: string
-}
-
-export async function autoOwnerAdvanceToSettled(
-  itemId: string,
-  opts?: { ownerScopeForce?: boolean; createdAtMinutesFloor?: number },
-): Promise<AutoOwnerAdvanceResult> {
-  if (!handsFreePolicyActive()) {
-    return { itemId, scope: 'hands-free-inactive', skippedReason: 'OWNER_HANDS_FREE_POLICY not active (env OWNER_HANDS_FREE_POLICY != true OR OWNER_EXEC_UNLOCK length < 16)', advanced: [], advancedStatuses: [] }
-  }
-  const presetIds = await loadPresetOwnerIds()
-  const presetOwners = await db.ownerAccount.findMany({
-    where: { id: { in: Array.from(presetIds) } },
-    select: { id: true, label: true, accountNumberLast: true, countryCode: true },
-  })
-  const item = await db.procurementItem.findUnique({ where: { id: itemId } })
-  if (!item) {
-    return { itemId, scope: 'not-owner-funded', skippedReason: `item ${itemId} not found`, advanced: [], advancedStatuses: [] }
-  }
-  let ownerFunded = false
-  let matchedOwnerId: string | null = null
-  if (item.recipientName) {
-    for (const o of presetOwners) {
-      if (recipientFuzzyMatchesOwner(item.recipientName, o)) {
-        ownerFunded = true
-        matchedOwnerId = o.id
-        break
-      }
-    }
-  }
-  if (!ownerFunded && item.purchaseOrderId) {
-    try {
-      const po = await db.purchaseOrder.findUnique({
-        where: { id: item.purchaseOrderId },
-        select: { supplierName: true, batches: true },
-      })
-      if (po?.supplierName) {
-        for (const o of presetOwners) {
-          if (recipientFuzzyMatchesOwner(po.supplierName, o)) {
-            ownerFunded = true
-            matchedOwnerId = o.id
-            break
-          }
-        }
-      }
-    } catch (_) {}
-  }
-  if (!ownerFunded && opts?.ownerScopeForce !== true) {
-    return { itemId, scope: 'not-owner-funded', skippedReason: `item ${itemId} not detected as owner-funded destination (no buyerAccountId column in schema → runtime recipientName/heuristic failed). Use opts.ownerScopeForce=true to override.`, advanced: [], advancedStatuses: [] }
-  }
-  if (!ownerFunded && opts?.ownerScopeForce === true) {
-    const fallback = presetOwners[0]?.id
-    if (fallback) {
-      ownerFunded = true
-      matchedOwnerId = fallback
-    }
-  }
-  if (!ownerFunded) {
-    return { itemId, scope: 'not-owner-funded', skippedReason: 'no preset owner available even after ownerScopeForce fallback', advanced: [], advancedStatuses: [] }
-  }
-
-  const advanced: AdvanceResult[] = []
-  const advancedStatuses: PipelineStatus[] = []
-  const pushRes = (r: AdvanceResult) => { advanced.push(r); advancedStatuses.push(r.toStatus as PipelineStatus) }
-
-  const nowTs = new Date()
-  const shippedAt = new Date(nowTs.getTime() - 2 * 3600 * 1000)
-  const deliveredAt = new Date(nowTs.getTime() - 1 * 3600 * 1000)
-  const expectedWeight = (item.expectedMinWeightKg ?? 1.0) + 0.05
-  const carrier = 'Owner-Internal-Auto'
-  const trackingNumber = `OWNER-SHIP-${itemId.slice(-8).toUpperCase()}`
-  const minuteFloor = opts?.createdAtMinutesFloor ?? Math.floor(Date.now() / 60000)
-  const deliverySeed = `${item.id}:${matchedOwnerId}:${minuteFloor}`
-  const deliveryProof = autoProof('OWNER-DELIVERY-SIGNED', deliverySeed)
-  const receiptNotes = `Owner hands-free auto good receipt — destination=preset owner id ${matchedOwnerId.slice(0, 8)}… — carrier scan present proofHash ${deliveryProof.ref.slice(0, 16)}… — warehouse handled, qty checked`
-  const scraped: ScrapedTrackingPayload = {
-    destination_city: item.deliveryCity ?? 'Owner Hands-Free Warehouse MA',
-    weight_kg: expectedWeight,
-    shipped_at: shippedAt.toISOString(),
-    delivered_at: deliveredAt.toISOString(),
-  }
-
-  let current = item.status as PipelineStatus
-  try {
-    if (current === 'pending') {
-      pushRes(await advanceItem(itemId, 'ordered', { trackingNumber: `OWNER-ORDER-${itemId.slice(-6)}` }))
-      current = 'ordered'
-    }
-    if (current === 'ordered') {
-      pushRes(await advanceItem(itemId, 'shipped', {
-        carrier,
-        trackingNumber,
-        notes: `Owner-internal shipment booked — auto carrier=Owner-Internal-Auto tracking=${trackingNumber} — destination preset owner ${matchedOwnerId.slice(0,8)}…`,
-      }))
-      current = 'shipped'
-    }
-    if (current === 'shipped') {
-      pushRes(await advanceItem(itemId, 'in_transit', { carrier, trackingNumber }))
-      current = 'in_transit'
-    }
-    if (current === 'in_transit') {
-      pushRes(await advanceItem(itemId, 'delivered', {
-        carrier,
-        trackingNumber,
-        proofHash: deliveryProof.ref,
-        scraped,
-        notes: `Owner-internal delivery scan recorded at ${deliveredAt.toISOString()} — proof=${deliveryProof.ref.slice(0,20)}…`,
-      }))
-      current = 'delivered'
-    }
-    if (current === 'delivered') {
-      pushRes(await advanceItem(itemId, 'receipt_confirmed', {
-        carrier,
-        trackingNumber,
-        proofHash: deliveryProof.ref,
-        confirmedBy: AUTO_RECEIPT_SIGNER,
-        notes: receiptNotes,
-        scraped,
-      }))
-      current = 'receipt_confirmed'
-    }
-    if (current === 'receipt_confirmed') {
-      const shp = await db.shipment.findFirst({ where: { procurementItemId: itemId }, orderBy: { createdAt: 'desc' } })
-      if (shp) {
-        const eventsPayload = JSON.stringify([
-          { timestamp: shippedAt.toISOString(), location: scraped.destination_city ?? 'Owner Warehouse MA', event: 'PICKUP_SCAN', description: 'Carrier picked up from origin owner warehouse', carrier_scan: true },
-          { timestamp: new Date(shippedAt.getTime() + 30 * 60 * 1000).toISOString(), location: 'Transit Hub MA', event: 'IN_TRANSIT_SCAN', description: 'HUB sort-scan registered by owner logistics', carrier_scan: true },
-          { timestamp: deliveredAt.toISOString(), location: scraped.destination_city ?? 'Owner Warehouse MA', event: 'DELIVERED_SCAN', description: 'Terminal delivered scan recorded at owner destination handoff point', carrier_scan: true },
-        ])
-        const fraudNote = `MANUAL_REVIEW_RESOLVED:OWNER-AUTO warehouse_handled=yes / carrier_scan_present=yes (proofHash ${deliveryProof.ref.slice(0, 20)}…) / empty_box_scan=no / weight_ok=${expectedWeight}kg / destination=preset-owner-${matchedOwnerId.slice(0,8)} / scope=owner-funded-hands-free / sovereign-ruling:trackingVerified-kept-false-because-no-public-carrier-event / settled-by-owner-automation@system — length≥80 chars per TRUTH guards`.slice(0, 500)
-        await db.shipment.update({
-          where: { id: shp.id },
-          data: {
-            events: eventsPayload,
-            weightKg: expectedWeight,
-            trackingVerified: true,
-            trackingVerifiedAt: nowTs,
-            lastFraudVerdict: fraudNote,
-            lastFraudVerdictAt: nowTs,
-            actualDelivery: deliveredAt,
-            status: 'delivered',
-            carrier,
-            trackingNumber,
-          },
-        })
-      }
-      const gwCcyOrig = process.env.THREE_PL_BALANCE_CURRENCY
-      const gwEmailOrig = process.env.THREE_PL_CONTACT_EMAIL
-      process.env.THREE_PL_BALANCE_CURRENCY = item.currency ?? 'USD'
-      process.env.THREE_PL_CONTACT_EMAIL = AUTO_RECEIPT_SIGNER
-      try {
-        pushRes(await advanceItem(itemId, 'settled', {
-          carrier,
-          trackingNumber,
-          proofHash: deliveryProof.ref,
-          confirmedBy: AUTO_RECEIPT_SIGNER,
-          scraped,
-          notes: receiptNotes,
-        }))
-        current = 'settled'
-      } finally {
-        if (gwCcyOrig === undefined) delete process.env.THREE_PL_BALANCE_CURRENCY; else process.env.THREE_PL_BALANCE_CURRENCY = gwCcyOrig
-        if (gwEmailOrig === undefined) delete process.env.THREE_PL_CONTACT_EMAIL; else process.env.THREE_PL_CONTACT_EMAIL = gwEmailOrig
-      }
-      if (shp) {
-        const finalFraud = `MANUAL_REVIEW_RESOLVED:OWNER-AUTO SETTLED — trackingVerified REVERTED to false per sovereign-ruling-2026-08-30 (only real carrier public scraper events set this true; owner-internal auto uses owner-attested proofHash instead). proofHash=${deliveryProof.ref.slice(0,20)}… — buyer=owner-automation@system — preset owner scope=${matchedOwnerId.slice(0,8)}… — length≥80 chars per TRUTH-007 guard`
-        await db.shipment.updateMany({
-          where: { id: shp.id },
-          data: {
-            trackingVerified: false,
-            trackingVerifiedAt: null,
-            lastFraudVerdict: finalFraud,
-            lastFraudVerdictAt: new Date(),
-          },
-        })
-      }
-    }
-  } catch (e: any) {
-    const msg = e?.message ?? String(e)
-    return {
-      itemId,
-      scope: 'owner-funded',
-      advanced,
-      advancedStatuses,
-      error: msg,
-      finalStatus: current,
-      finalNotes: `autoOwnerAdvance partially applied. Stopped at ${current}: ${msg}`,
-    }
-  }
-
-  const finalItem = await db.procurementItem.findUnique({ where: { id: itemId }, select: { status: true, notes: true } })
-  return {
-    itemId,
-    scope: 'owner-funded',
-    advanced,
-    advancedStatuses,
-    finalStatus: (finalItem?.status as PipelineStatus) ?? current,
-    finalNotes: finalItem?.notes ?? undefined,
-  }
 }

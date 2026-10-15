@@ -83,7 +83,7 @@ src/agents/prompts/tool-prompt-quarantine-write.md
 reports/policy/PRECAUTIONS_MATRIX.md
 "
 
-CHANGED="$(git diff --cached --name-only --diff-filter=ACMRT)"
+CHANGED="$(git diff --cached --name-only --diff-filter=ACMRTD)"
 
 HIT=""
 for f in $CORE_FILES; do

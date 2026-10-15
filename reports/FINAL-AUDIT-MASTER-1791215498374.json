@@ -1,0 +1,84 @@
+{
+  "timestamp": "2026-10-05T15:51:38.368Z",
+  "accuracy001ACompliance": {
+    "reference": "RECTIFICATIF-ACCURACY-2026-1005-001-A",
+    "totalHits": 17,
+    "qualified": 17,
+    "bareReferences": 0,
+    "pass": true,
+    "compliancePercent": 100.0,
+    "checksum": "e469506c75cacad4201bd16dbb80516e31b2a19c723d8a5b744a4e07552e79af",
+    "checksumFormula": "SHA256(\"17:17:202610051559\")",
+    "reportFile": "reports/accuracy-001-a-compliance-v358.md",
+    "perFileCounts": [
+      {
+        "file": "audit/legal/gen-huissier-pdf.cjs",
+        "total": 9,
+        "qualified": 9,
+        "tokens": ["RECTIFICATIF","NON VÉRIFIÉ","INCOHÉRENCE","FAIL-CLOSED"]
+      },
+      {
+        "file": "audit/legal/DEPP_RESEARCH_HISTORICAL_FRAUD_RISK_MATRIX.md",
+        "total": 2,
+        "qualified": 2,
+        "tokens": ["NON VÉRIFIÉES","RECTIFICATIF ACCURACY-2026-1005-001-A"]
+      },
+      {
+        "file": ".trae/specs/restart-audit-contentieux-revenue-po-v358/tasks.md",
+        "total": 1,
+        "qualified": 1,
+        "tokens": ["Pattern list P 8 explicit accuracy patterns"]
+      },
+      {
+        "file": ".trae/specs/restart-audit-contentieux-revenue-po-v358/spec.md",
+        "total": 5,
+        "qualified": 5,
+        "tokens": ["RECTIFICATIF ACCURACY-001-A","NON VÉRIFIÉES","FAIL-CLOSED PERMANENT C-1"]
+      }
+    ]
+  },
+  "summary": {
+    "totalAudited": 0,
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "totalSuspectAmount": 0,
+    "quarantined": 0,
+    "dataSources": {
+      "base44_RevenueEvent": 0,
+      "base44_PayoutBatch": 0,
+      "base44_TransactionLog": 0,
+      "local_RevenueEvent_files": 0,
+      "finance_audit_files": 0,
+      "finance_idempotency_files": 0,
+      "settlement_ledger_txns": 0,
+      "ledger_updates": 0,
+      "procurement_requests": 0,
+      "reconciliation_csv_records": 0
+    },
+    "auditExitCodes": {
+      "step1_truth_invariant": 0,
+      "step2_deep_sqlite": 1,
+      "step3_cols_audit": 1,
+      "step4_gap_agents": 1,
+      "step5_gap_payouts": 1,
+      "step6_gap_cols": 1,
+      "step7_final_master": 0,
+      "toleratedFailures": 5,
+      "toleratedReason": "G2 DATABASE_URL Neon PROD pooled len=0 + step2 better-sqlite3 package not installed (optional legacy secondary). All 5 non-zero steps are EXPECTED with G2 absent per AC-1 rule remediation-lines evidence."
+    }
+  },
+  "findings": [],
+  "quarantined": [],
+  "data": {
+    "re": [],
+    "cs": [],
+    "pb": [],
+    "pi": [],
+    "os": [],
+    "op": [],
+    "pr": [],
+    "po": [],
+    "shp": []
+  }
+}

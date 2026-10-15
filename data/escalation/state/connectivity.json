@@ -1,0 +1,37 @@
+{
+  "online": true,
+  "status": "online",
+  "lastOnlineAt": "2026-10-15T14:16:39.719Z",
+  "lastOfflineAt": null,
+  "offlineSince": null,
+  "lastProbedAt": "2026-10-15T14:52:52.680Z",
+  "lastProbe": {
+    "online": true,
+    "probedAt": "2026-10-15T14:52:52.680Z",
+    "results": [
+      {
+        "name": "dns",
+        "host": "1.1.1.1",
+        "port": 443,
+        "ok": true
+      },
+      {
+        "name": "dns2",
+        "host": "8.8.8.8",
+        "port": 53,
+        "ok": true
+      }
+    ]
+  },
+  "recoveredAt": "2026-10-15T14:16:39.719Z",
+  "probeHistory": [
+    {
+      "at": "2026-10-15T14:16:39.719Z",
+      "status": "online"
+    },
+    {
+      "at": "2026-10-15T14:52:52.680Z",
+      "status": "online"
+    }
+  ]
+}

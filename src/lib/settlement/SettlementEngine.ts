@@ -32,6 +32,12 @@ export enum SettlementState {
   EXPIRED = 'EXPIRED',
 }
 
+// Terminal = no outbound transitions. QUARANTINED is deliberately excluded:
+// it is a hold that a human can release back into reconciliation, which is
+// exactly what VALID_TRANSITIONS[QUARANTINED] encodes. It was listed here
+// while also having outbound edges, so the two structures disagreed.
+// The truth-guards below are unaffected: this set is only consulted for
+// `to === SETTLED | CONFIRMED | PROVIDER_RECONCILED`, which excludes it.
 const TERMINAL_STATES = new Set([
   SettlementState.SETTLED,
   SettlementState.REJECTED,

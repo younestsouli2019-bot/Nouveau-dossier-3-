@@ -7,7 +7,11 @@ on:
     - cron: '0 0 * * 1'
 
 permissions:
-  contents: write
+  # FAIL-CLOSED / no-fabrication: this pipeline must never mutate the branch.
+  # It previously ran with contents: write and auto-committed + auto-pushed
+  # model-generated code to `main` (see G5 finding C-6). Patches are now emitted
+  # as review artifacts instead.
+  contents: read
 
 concurrency:
   group: anti-regression
@@ -46,16 +50,24 @@ jobs:
         run: python .github/scripts/anti_regression_agent.py --platform $PLATFORM --env $ENV
 
       - name: Execute Autonomous Self-Healing & Code Patching
+        id: selfheal
         if: failure() && steps.regression-check.outcome == 'failure'
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PLATFORM: ${{ matrix.platform }}
         run: |
-          echo "Regression detected! Initiating Autonomous Self-Healing Agent..."
+          echo "Regression detected — generating a self-heal patch (REVIEW REQUIRED)."
           python .github/scripts/self_heal_agent.py --platform $PLATFORM
-          git config --global user.name "AI Self-Healing Agent"
-          git config --global user.email "agent@autonomous.ai"
-          git add .
-          git diff-index --quiet HEAD || git commit -m "chore(auto-heal): autonomous fix for $PLATFORM regression"
-          git push origin HEAD:${{ github.ref }}
+          # Nobody auto-pushes model-generated code to the branch any more:
+          # capture the working-tree diff as a reviewable patch artifact.
+          git diff > "self-heal-${{ matrix.platform }}.patch" || true
+          echo "patch_lines=$(wc -l < "self-heal-${{ matrix.platform }}.patch" || echo 0)"
+
+      - name: Upload self-heal patch (review required)
+        if: always() && steps.selfheal.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: self-heal-patch-${{ matrix.platform }}
+          path: self-heal-${{ matrix.platform }}.patch
+          if-no-files-found: ignore
+          retention-days: 14
