@@ -7,6 +7,11 @@ const CHAIN_SALT_HEX = crypto
   .update("AUTHORITATIVE_CHAIN_V1")
   .digest("hex");
 
+const HKDF_SALT = "authoritative-ledger-v1-salt-202610"; // FIX RM-1: OWNER-bound salt
+const HKDF_INFO = "authoritative-ledger-chainkey/v2";
+const STALE_LOCK_MS = 10 * 60 * 1000; // 10 minutes (FIX RM-6)
+const MIN_UNLOCK_LEN = 43; // same high-entropy threshold used in T5/T6 scripts
+
 export const AUTHORITATIVE_LEDGER_PATH = path.resolve(
   "data/out/authoritative-ledger.ndjson",
 );
@@ -28,6 +33,28 @@ export type AuthoritativeEventType =
   | "system.ledger.checksum_mismatch";
 
 const TYPE_REGEX = /^[a-z]+\.[a-z_]+\.[a-z_]+$/;
+
+/**
+ * STRICT EVENT ENUM. FIX RM-5 (regex-only check accepted custom types
+ * outside the 14-item enum even when TS compiled with loose config).
+ * Runtime + compile-time double guarantee.
+ */
+const KNOWN_EVENT_TYPES: ReadonlySet<AuthoritativeEventType> = new Set<AuthoritativeEventType>([
+  "sales.order.created",
+  "sales.payment.verified",
+  "sales.delivery.completed",
+  "sales.refund.issued",
+  "sales.order.abandoned",
+  "payout.initiated",
+  "payout.pending_provider",
+  "payout.completed",
+  "payout.failed",
+  "payout.needs_manual_proof",
+  "reconciliation.discrepancy.opened",
+  "reconciliation.discrepancy.resolved",
+  "system.ledger.bootstrapped",
+  "system.ledger.checksum_mismatch",
+]);
 
 export interface AuthoritativeLedgerEventV1 {
   schema: "authoritative-ledger-event-v1";
@@ -69,20 +96,67 @@ function sortedJsonStringify(obj: unknown): string {
   return JSON.stringify(sortedReplacer("", obj));
 }
 
-function chainKeyStatic(): Buffer {
-  return crypto
-    .createHash("sha256")
-    .update("HKDF|authoritative-ledger|" + CHAIN_SALT_HEX)
-    .digest();
+/**
+ * FIX RM-1 — derive OWNER-bound chain key from OWNER_EXEC_UNLOCK using HKDF.
+ * Prior: sha256("AUTHORITATIVE_CHAIN_V1") public constant = forgeable by anyone.
+ * Now: process.env.OWNER_EXEC_UNLOCK (len >= 43) → HKDF(sha256, salt, info, 32B).
+ *
+ * @throws Error if OWNER_EXEC_UNLOCK is absent/short and allowFallbackForTests is false.
+ */
+function deriveChainKeyFromOwner(allowFallbackForTests: boolean): Buffer {
+  const candidate = process.env.OWNER_EXEC_UNLOCK || "";
+  if (candidate.length >= MIN_UNLOCK_LEN) {
+    const ikm = crypto
+      .createHash("sha256")
+      .update("owner-exec-unlock-ikm/v1|" + candidate)
+      .digest();
+    const key = crypto.hkdfSync("sha256", ikm, HKDF_SALT, HKDF_INFO, 32);
+    return Buffer.from(key);
+  }
+  if (allowFallbackForTests) {
+    // Only for vitest. CLEARLY LABELED DUMMY, never used in prod.
+    const dummy = Buffer.from("RWC-AUTHLEDGER-DUMMY-CHAINKEY-V2-FOR-VITEST-ONLY", "utf8");
+    return crypto.createHash("sha256").update(dummy).digest();
+  }
+  throw new Error(
+    "AUTHORITATIVE_LEDGER_KEY_UNAVAILABLE: OWNER_EXEC_UNLOCK env var missing or too short (< " +
+      MIN_UNLOCK_LEN +
+      " chars). Cannot initialize chain HMAC key without signataire owner secret. " +
+      "If this is a unit test, pass { allowFallbackForTests: true } in the constructor opts. " +
+      "In production, inject OWNER_EXEC_UNLOCK via process-scoped env for >=120s only.",
+  );
+}
+
+export interface AuthoritativeLedgerOptions {
+  filePath?: string;
+  chainKey?: Buffer;
+  /** Explicit opt-in only for vitest; never set in deployed code. */
+  allowFallbackForTests?: boolean;
 }
 
 function acquireLockSync(lockDir: string): () => void {
   try {
     fs.mkdirSync(lockDir, { recursive: true });
   } catch {
-    // already exists — another process may hold it, we still try
+    // already exists
   }
   const lockFile = path.join(lockDir, "ledger.lock");
+
+  // FIX RM-6: stale-lock auto-cleanup based on mtime.
+  try {
+    const st = fs.statSync(lockFile);
+    const ageMs = Date.now() - st.mtimeMs;
+    if (ageMs > STALE_LOCK_MS) {
+      try {
+        fs.unlinkSync(lockFile);
+      } catch {
+        /* best effort */
+      }
+    }
+  } catch {
+    // lock file does not exist yet — fine
+  }
+
   let acquired = false;
   for (let attempt = 0; attempt < 10 && !acquired; attempt++) {
     try {
@@ -125,9 +199,10 @@ export class AuthoritativeLedger {
   private readonly filePath: string;
   private readonly chainKey: Buffer;
 
-  constructor(opts?: { filePath?: string; chainKey?: Buffer }) {
+  constructor(opts?: AuthoritativeLedgerOptions) {
     this.filePath = opts?.filePath ?? AUTHORITATIVE_LEDGER_PATH;
-    this.chainKey = opts?.chainKey ?? chainKeyStatic();
+    // FIX RM-1: user-supplied chainKey > env-derived HKDF > throw
+    this.chainKey = opts?.chainKey ?? deriveChainKeyFromOwner(!!opts?.allowFallbackForTests);
     ensureDirFor(this.filePath);
     if (!fs.existsSync(this.filePath)) {
       fs.writeFileSync(this.filePath, "");
@@ -168,6 +243,12 @@ export class AuthoritativeLedger {
     if (!TYPE_REGEX.test(type)) {
       throw new Error(
         `AUTHORITATIVE_INVALID_SCHEMA type ${type} does not match ^[a-z]+\\.[a-z_]+\\.[a-z_]+$`,
+      );
+    }
+    // FIX RM-5: regex alone was not enough; also check KNOWN 14-item enum at runtime.
+    if (!KNOWN_EVENT_TYPES.has(type as AuthoritativeEventType)) {
+      throw new Error(
+        `AUTHORITATIVE_UNKNOWN_EVENT_TYPE: '${type}' is not in the 14 known AuthoritativeEventType enum values.`,
       );
     }
   }
@@ -320,6 +401,33 @@ export class AuthoritativeLedger {
       prevHash = hash;
     }
     return { valid: true, lineCount: lines.length };
+  }
+
+  /**
+   * FIX RM-2. Project rule: "AuthoritativeLedger.ts tamper detection triggers exit 17".
+   * Wraps .verify() and calls process.exit(17) if valid === false. Writes 1 line stderr
+   * reason with file path + badLine number. Idempotent: safe to call many times.
+   *
+   * @returns The same verify result for logging (always {valid:true} on return).
+   */
+  verifyOrExit17(): { valid: true; lineCount: number } {
+    const v = this.verify();
+    if (v.valid) {
+      return { valid: true, lineCount: v.lineCount };
+    }
+    const msg =
+      `[AuthoritativeLedger] FAIL-CLOSED exit=17. ledger=${path.relative(process.cwd(), this.filePath)} ` +
+      `badLine=${v.badLine ?? "-"} reason=${v.reason ?? "unknown"}`;
+    try {
+      process.stderr.write(msg + "\n");
+    } catch {
+      console.error(msg);
+    }
+    // Safety: never call exit during vitest; throw so the test can assert instead.
+    if (typeof process.env.NODE_ENV === "string" && /^test/i.test(process.env.NODE_ENV)) {
+      throw new Error(msg + " [NODE_ENV=test: throwing instead of process.exit(17) so vitest can catch]");
+    }
+    process.exit(17);
   }
 
   readAll(): AuthoritativeLedgerLine[] {
