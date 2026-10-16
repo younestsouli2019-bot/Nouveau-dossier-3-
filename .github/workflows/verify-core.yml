@@ -5,10 +5,11 @@
 #
 # Why report-only: the manifest was stale since 0259b36 (2026-08-29). It was
 # regenerated under a deliberate [CORE-UPDATE] commit that also reconciled the
-# allowlist from 48 to 42 entries — 3 renamed workflows (sync-secrets.yml ->
-# sync-secrets.workflow.yml, main.yml -> ci.yml, protect-core.yml ->
-# verify-core.yml) and 6 paths that no longer exist (contracts/escrow/**,
-# RELEASE_MANIFEST.json, reports/policy/PRECAUTIONS_MATRIX.md).
+# allowlist from 48 to 41 entries — 2 renamed workflows (sync-secrets.yml ->
+# sync-secrets.workflow.yml, protect-core.yml -> verify-core.yml) and 7 paths
+# that no longer exist and are not to be resurrected (contracts/escrow/**,
+# RELEASE_MANIFEST.json, reports/policy/PRECAUTIONS_MATRIX.md, and main.yml,
+# which was removed on 2026-09-07 for being an ungated withdrawal trigger).
 # Flip it to blocking by deleting the `exit 0` in the "Run verify-core" step.
 #
 # Read-only: no secrets are referenced (scripts/audit-workflow-secrets.mjs lint

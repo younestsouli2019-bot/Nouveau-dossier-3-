@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Layer 3/5 — verifies integrity of the 42-file SWARM CORE critical set
+  Layer 3/5 — verifies integrity of the 41-file SWARM CORE critical set
   against scripts/guard/core-integrity.sha256manifest.
 .DESCRIPTION
   On first run (or whenever -Init is passed), re-computes SHA-256 of every
@@ -40,8 +40,7 @@ $CORE_FILES = @(
   '.gitignore','.gitattributes','package.json','package-lock.json',
   'prisma/schema.prisma','CHANGELOG.md',
   '.github/workflows/sync-secrets.workflow.yml','.github/workflows/deploy-pages.yml',
-  '.github/workflows/ci.yml','.github/workflows/org-broadcast.yml',
-  '.github/workflows/verify-core.yml',
+  '.github/workflows/org-broadcast.yml','.github/workflows/verify-core.yml',
   'scripts/swarm-autonomy-daemon.mjs','scripts/swarm-improve-loop.mjs',
   'scripts/START-SWARM.cmd','scripts/STOP-SWARM.cmd',
   'scripts/guard/core-integrity.sha256manifest',

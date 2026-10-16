@@ -41,7 +41,6 @@ prisma/schema.prisma
 CHANGELOG.md
 .github/workflows/sync-secrets.workflow.yml
 .github/workflows/deploy-pages.yml
-.github/workflows/ci.yml
 .github/workflows/org-broadcast.yml
 .github/workflows/verify-core.yml
 scripts/swarm-autonomy-daemon.mjs
