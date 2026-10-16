@@ -83,7 +83,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^3.0.0",
-    "dotenv": "^16.6.1",
+    "dotenv": "^18.0.7",
     "ethers": "^6.0.0",
     "framer-motion": "^13.1.1",
     "geist": "^1.7.2",
