@@ -1,7 +1,9 @@
 <#
 .SYNOPSIS
-  Layer 3/5 — verifies integrity of the 41-file SWARM CORE critical set
-  against scripts/guard/core-integrity.sha256manifest.
+  Layer 3/5 — verifies integrity of the SWARM CORE critical set against
+  scripts/guard/core-integrity.sha256manifest. The set itself is read from the
+  single canonical allowlist scripts/guard/core-files.txt, so it is no longer
+  duplicated here.
 .DESCRIPTION
   On first run (or whenever -Init is passed), re-computes SHA-256 of every
   CORE file and writes the signed + dated manifest to
@@ -36,49 +38,43 @@ if ([string]::IsNullOrWhiteSpace($OutFile)) {
   $OutFile = Join-Path $PSScriptRoot 'core-integrity.sha256manifest'
 }
 
+# The CORE allowlist lives in exactly ONE place: scripts/guard/core-files.txt.
+# Do not inline a copy here -- the pre-commit hook, apply-attrib-readonly.ps1
+# and sync-core-guards.ps1 all read that same file, and CI fails on drift.
+$coreListFile = Join-Path $PSScriptRoot 'core-files.txt'
+if (-not (Test-Path -LiteralPath $coreListFile)) {
+  throw ("[verify-core] FAIL-CLOSED: canonical CORE list missing: " + $coreListFile)
+}
 $CORE_FILES = @(
-  '.gitignore','.gitattributes','package.json','package-lock.json',
-  'prisma/schema.prisma','CHANGELOG.md',
-  '.github/workflows/sync-secrets.workflow.yml','.github/workflows/deploy-pages.yml',
-  '.github/workflows/org-broadcast.yml','.github/workflows/verify-core.yml',
-  'scripts/swarm-autonomy-daemon.mjs','scripts/swarm-improve-loop.mjs',
-  'scripts/START-SWARM.cmd','scripts/STOP-SWARM.cmd',
-  'scripts/guard/core-integrity.sha256manifest',
-  'scripts/guard/verify-core.ps1',
-  'scripts/guard/apply-attrib-readonly.ps1',
-  'scripts/guard/install-core-protect-hook.ps1',
-  'scripts/guard/pre-commit.hook.sh',
-  'scripts/mirrors/sync-mirrors.cmd',
-  'scripts/mirrors/backup-doomsday-vault.local.cmd',
-  'scripts/mirrors/secure-cloud-upload.cmd',
-  'src/lib/atomic-simulation.ts','src/lib/audit-agent.ts',
-  'src/lib/escrow-vaults.ts','src/lib/settlement-engine.ts',
-  'src/lib/strict-enforcement/audit-reconciliation.ts',
-  'src/lib/owner-config.ts',
-  'src/lib/strict-enforcement/crypto-utils.ts',
-  'src/app/api/webhooks/github-secrets/route.ts',
-  'src/app/api/settlements/wet-run/route.ts',
-  'src/locking/distlock.py','src/locking/tests/test_distlock.py',
-  'src/locking/requirements.txt',
-  'src/agents/prompts/registry.json',
-  'src/agents/prompts/system-prompt-audit-critical.md',
-  'src/agents/prompts/system-prompt-duplicate-isolation.md',
-  'src/agents/prompts/1shot-cannibal-cluster-payoneer-9x150.md',
-  'src/agents/prompts/1shot-fabricated-proofhash.md',
-  'src/agents/prompts/tool-prompt-load-evidence-csv.md',
-  'src/agents/prompts/tool-prompt-quarantine-write.md'
+  Get-Content -LiteralPath $coreListFile |
+    ForEach-Object { $_.Trim() } |
+    Where-Object { $_ -ne '' -and -not $_.StartsWith('#') }
 )
+if ($CORE_FILES.Count -eq 0) {
+  throw ("[verify-core] FAIL-CLOSED: canonical CORE list is empty: " + $coreListFile)
+}
 
 function Hash-File([string]$Full) {
-  $fs = [System.IO.File]::OpenRead($Full)
+  # Hash the LF-normalised bytes, not the raw working-tree bytes.
+  # git stores every CORE text file LF-only in the index (see `* text=auto`),
+  # so a Windows checkout (core.autocrlf=true -> CRLF) and the Linux CI
+  # checkout (LF) would otherwise hash the SAME committed file to DIFFERENT
+  # SHA-256 values, and a manifest blessed on Windows could never pass on CI.
+  # Dropping CR that immediately precedes LF reproduces the index bytes.
+  # Every CORE entry is a text file; a binary CORE file would need `-text`.
+  $bytes = [System.IO.File]::ReadAllBytes($Full)
+  $norm  = New-Object System.Collections.Generic.List[byte] ($bytes.Length)
+  for ($i = 0; $i -lt $bytes.Length; $i++) {
+    if ($bytes[$i] -eq 13 -and ($i + 1) -lt $bytes.Length -and $bytes[$i + 1] -eq 10) { continue }
+    $norm.Add($bytes[$i])
+  }
+  $sha = [System.Security.Cryptography.SHA256]::Create()
   try {
-    $sha = [System.Security.Cryptography.SHA256]::Create()
-    [byte[]]$raw = $sha.ComputeHash($fs)
-    return ([System.BitConverter]::ToString($raw)).Replace('-','').ToLowerInvariant()
+    [byte[]]$raw = $sha.ComputeHash($norm.ToArray())
   } finally {
     $sha.Dispose()
-    $fs.Dispose()
   }
+  return ([System.BitConverter]::ToString($raw)).Replace('-','').ToLowerInvariant()
 }
 
 Push-Location $repoRoot

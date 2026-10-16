@@ -2,7 +2,7 @@
 # ============================================================
 # CORE-PROTECT pre-commit hook — Layer 2/5 of the swarm
 #   write-protect stack. Refuses any commit that adds/modifies/
-#   removes a file on the 48-entry SWARM CORE critical list
+#   removes a file on the SWARM CORE critical list
 #   unless ONE of the following is true:
 #     (a) env SKIP_CORE_PROTECT=1          (local one-off)
 #     (b) staged commit message carries the literal tag
@@ -24,57 +24,20 @@ if [ "${SKIP_CORE_PROTECT:-0}" = "1" ]; then
 fi
 
 # ------------------------------------------------------------------
-# BEGIN CORE LIST — kept here intentionally so the hook is self-
-# contained even without network / repo context. Must be kept in
-# lock-step with:
-#   scripts/guard/verify-core.ps1
-#   scripts/guard/apply-attrib-readonly.ps1
-#   .github/workflows/verify-core.yml
-#   .gitattributes (-merge guard lines)
+# CORE LIST -- read from the single canonical allowlist. It used to be
+# inlined here, which allowed it to drift from verify-core.ps1 /
+# apply-attrib-readonly.ps1 / .gitattributes. It is no longer a copy.
 # ------------------------------------------------------------------
-CORE_FILES="
-.gitignore
-.gitattributes
-package.json
-package-lock.json
-prisma/schema.prisma
-CHANGELOG.md
-.github/workflows/sync-secrets.workflow.yml
-.github/workflows/deploy-pages.yml
-.github/workflows/org-broadcast.yml
-.github/workflows/verify-core.yml
-scripts/swarm-autonomy-daemon.mjs
-scripts/swarm-improve-loop.mjs
-scripts/START-SWARM.cmd
-scripts/STOP-SWARM.cmd
-scripts/guard/core-integrity.sha256manifest
-scripts/guard/verify-core.ps1
-scripts/guard/apply-attrib-readonly.ps1
-scripts/guard/install-core-protect-hook.ps1
-scripts/guard/pre-commit.hook.sh
-scripts/mirrors/sync-mirrors.cmd
-scripts/mirrors/backup-doomsday-vault.local.cmd
-scripts/mirrors/secure-cloud-upload.cmd
-src/lib/atomic-simulation.ts
-src/lib/audit-agent.ts
-src/lib/escrow-vaults.ts
-src/lib/settlement-engine.ts
-src/lib/strict-enforcement/audit-reconciliation.ts
-src/lib/owner-config.ts
-src/lib/strict-enforcement/crypto-utils.ts
-src/app/api/webhooks/github-secrets/route.ts
-src/app/api/settlements/wet-run/route.ts
-src/locking/distlock.py
-src/locking/tests/test_distlock.py
-src/locking/requirements.txt
-src/agents/prompts/registry.json
-src/agents/prompts/system-prompt-audit-critical.md
-src/agents/prompts/system-prompt-duplicate-isolation.md
-src/agents/prompts/1shot-cannibal-cluster-payoneer-9x150.md
-src/agents/prompts/1shot-fabricated-proofhash.md
-src/agents/prompts/tool-prompt-load-evidence-csv.md
-src/agents/prompts/tool-prompt-quarantine-write.md
-"
+ROOT_FOR_CORE="$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
+CORE_LIST_FILE="$ROOT_FOR_CORE/scripts/guard/core-files.txt"
+if [ ! -f "$CORE_LIST_FILE" ]; then
+  echo "[core-protect] FAIL-CLOSED: CORE list missing: $CORE_LIST_FILE" 1>&2
+  exit 1
+fi
+# tr -d '\r': core.autocrlf=true hands a Windows checkout a CRLF copy of the
+# list while `git diff --cached --name-only` emits LF paths. Without this the
+# paths would never compare equal and the gate would silently stop blocking.
+CORE_FILES="$(grep -vE '^[[:space:]]*(#|$)' "$CORE_LIST_FILE" | tr -d '\r')"
 
 CHANGED="$(git diff --cached --name-only --diff-filter=ACMRTD)"
 
@@ -109,7 +72,7 @@ if [ -n "$HIT" ]; then
   echo "  A.  SKIP_CORE_PROTECT=1 git commit ...           # local one-off" 1>&2
   echo "  B.  git commit -m \"[CORE-UPDATE] <section>: <reason>\"   # audited, CI also OK" 1>&2
   echo "" 1>&2
-  echo "CORE file allowlist lives in scripts/guard/pre-commit.hook.sh." 1>&2
+  echo "CORE file allowlist lives in scripts/guard/core-files.txt." 1>&2
   echo "********************************************************************************" 1>&2
   exit 1
 fi
