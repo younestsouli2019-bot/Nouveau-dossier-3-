@@ -37,12 +37,10 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Continue'
-          # verify-core.ps1 terminates with `exit <n>` when the manifest drifts.
-          # Invoking it in-process with `&` lets that `exit` tear down THIS step:
-          # the first run ended at the gate's exit 1, so no job summary and no
-          # verify-core-output.txt were ever produced (the upload step then found
-          # no file). Spawn a child pwsh instead — only the child exits, and the
-          # report-only contract (always `exit 0` here) holds.
+          # verify-core.ps1 ends with `exit <n>` on manifest drift. Running it in
+          # this process would tear the step down before the report is written,
+          # so spawn a child pwsh and read its exit code. This step always ends
+          # with exit 0 (report-only).
           $raw  = @()
           $code = 0
           try {
@@ -50,22 +48,27 @@ jobs:
             $code = $LASTEXITCODE
           } catch {
             $code = 99
-            $raw  = @("verify-core invocation threw: $($_.Exception.Message)")
+            $raw  = @('verify-core invocation threw: ' + $_.Exception.Message)
           }
-          $out  = ($raw | Out-String)
+          $out = ($raw | Out-String)
           Set-Content -LiteralPath verify-core-output.txt -Value $out -Encoding utf8NoBOM
-          "exit_code=$code" >> $env:GITHUB_OUTPUT
-          @"
-          ## verify-core — CORE integrity report (REPORT-ONLY)
-
-          Exit code: ``$code``
-          Manifest: ``scripts/guard/core-integrity.sha256manifest``
-          Manifest hash frozen at: ``0259b36`` (2026-08-29)
-
-          ```
-          $out
-          ```
-          "@ >> $env:GITHUB_STEP_SUMMARY
+          Add-Content -LiteralPath $env:GITHUB_OUTPUT -Value ('exit_code=' + $code) -Encoding utf8NoBOM
+          # Build the markdown from single-quoted fragments. Inside a
+          # double-quoted here-string a trailing backtick escapes the newline and
+          # swallows the closing terminator, which killed this step at parse time
+          # (TerminatorExpectedAtEndOfString) before any output existed.
+          $sh = @(
+            '## verify-core report (REPORT-ONLY)'
+            ''
+            ('- exit_code: ' + $code)
+            '- manifest: scripts/guard/core-integrity.sha256manifest'
+            ''
+            '```'
+            $out
+            '```'
+          ) -join "`n"
+          Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $sh -Encoding utf8NoBOM
+          Write-Host ('verify-core report-only step complete. exit_code=' + $code)
           exit 0
 
       - name: Annotate result (non-blocking)
