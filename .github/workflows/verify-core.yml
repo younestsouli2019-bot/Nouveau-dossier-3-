@@ -37,8 +37,22 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Continue'
-          $out  = & ./scripts/guard/verify-core.ps1 2>&1 | Out-String
-          $code = $LASTEXITCODE
+          # verify-core.ps1 terminates with `exit <n>` when the manifest drifts.
+          # Invoking it in-process with `&` lets that `exit` tear down THIS step:
+          # the first run ended at the gate's exit 1, so no job summary and no
+          # verify-core-output.txt were ever produced (the upload step then found
+          # no file). Spawn a child pwsh instead — only the child exits, and the
+          # report-only contract (always `exit 0` here) holds.
+          $raw  = @()
+          $code = 0
+          try {
+            $raw  = & pwsh -NoProfile -NonInteractive -File ./scripts/guard/verify-core.ps1 2>&1
+            $code = $LASTEXITCODE
+          } catch {
+            $code = 99
+            $raw  = @("verify-core invocation threw: $($_.Exception.Message)")
+          }
+          $out  = ($raw | Out-String)
           Set-Content -LiteralPath verify-core-output.txt -Value $out -Encoding utf8NoBOM
           "exit_code=$code" >> $env:GITHUB_OUTPUT
           @"

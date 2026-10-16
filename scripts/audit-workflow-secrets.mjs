@@ -96,6 +96,12 @@ const ALLOWED_GITHUB_NATIVE = new Set([
   'ORG_BOT_PAT',
   'ORG_PAT',
   'OWNER_EXEC_UNLOCK',
+  // Signataire 8-unblock set consumed directly by deploy-vercel.yml's G1-G4
+  // gate (presence/truthiness only). They live in the GitHub repo secret store,
+  // are never OIDC-injected, and carry no vault-backed value.
+  'CEX_DIRECT_DEPOSIT_ENABLED',
+  'OWNER_HANDS_FREE_POLICY',
+  'RELEASE_AMOUNT_OVERRIDE_USD',
   'OWNER_KEY_BACKUP_SECRET',
   'OWNER_KYC_STATUS',
   'OWNER_PAYOUT_BANK_BIC',
