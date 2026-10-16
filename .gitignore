@@ -130,3 +130,8 @@ swarm-runner-repo/**
 #    injected env presence hints (even if values never printed).
 logs/
 logs/**
+
+# 10. Stray backup artifacts from local tooling/editors. Workflow edits that
+#     leave a sidecar copy must never enter a commit (2026-10-16).
+.github/workflows/*.bak
+.github/workflows/*.bak-*
