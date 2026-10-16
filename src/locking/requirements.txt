@@ -1,3 +1,5 @@
 # requirements for src/locking/ — install once.
-redis>=5.0.1
-pytest>=8.0    # optional, for test_distlock.py
+# Pinned exactly (no ranges): unbounded ranges intersect advisories fixed in
+# older majors (redis 4.x, pytest <9.1.1) and manufacture Dependabot alerts.
+redis==8.1.0
+pytest==9.1.1  # optional, for test_distlock.py

@@ -112,7 +112,8 @@
     "@types/react-dom": "^19.2.5",
     "eslint": "^8.57.0",
     "playwright": "^1.62.1",
-    "vitest": "^3.2.6"
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
   },
   "overrides": {
     "deepmerge-ts": "^8.0.2",

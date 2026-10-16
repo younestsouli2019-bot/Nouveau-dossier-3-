@@ -7,6 +7,217 @@ import {
 } from '../SettlementEngine';
 import { resolveBestPayoutRoute } from '../../payout-routing';
 
+// vi.mock must be declared at the module top level: Vitest hoists it here
+// regardless of where it is written, and Vitest 5 hard-errors on nested
+// calls. These were previously nested inside the T6 test body; relocating
+// them is behavior-preserving (they were already hoisted to this point).
+
+vi.mock('../../db', () => {
+  const CANONICAL_PAYOUT_ID = 'pi_MOCK_T6_CANONICAL';
+  const IDEM_HIT_META = JSON.stringify({ payoutItemId: CANONICAL_PAYOUT_ID, source: 'idem_hit_store' });
+
+  const store: { routingToken?: string; metadata?: string; payoutItemId?: string; itemStatus?: string } = { itemStatus: 'REVENUE' };
+
+  const baseOwnerAccount = {
+    id: 'verified-owner-1',
+    isActive: true,
+    verifiedAt: new Date('2026-01-01T00:00:00.000Z'),
+    accountType: 'paypal' as const,
+    accountHolder: 'Test Owner',
+    paypalEmail: 'owner@paypal.invalid',
+    wiseEmail: 'owner@wise.invalid',
+    payoneerId: '',
+    walletAddress: '',
+    network: '',
+    isPrimary: true,
+    countryCode: 'US',
+    sortOrder: 1,
+    purposes: ['settlement'],
+    spendable: 10000,
+    held: 0,
+  };
+
+  const basePayoutItemFind = {
+    id: CANONICAL_PAYOUT_ID,
+    status: 'PROCESSING',
+    payoutBatchId: 'pb-fake',
+    amount: 50,
+    currency: 'USD',
+    externalRef: 'REAL-PP-TXN-ABC123',
+    transactionRef: 'REAL-PP-TXN-ABC123',
+    connectorId: 'test-rail',
+    connectorStatus: 'live_paypal_api',
+    proofHash: null,
+    retryCount: 0,
+    lastRetryAt: null,
+    deliveryConfirmed: false,
+    failureReason: null,
+    processedAt: null,
+    recipientName: 'Test Owner',
+    recipientEmail: 'owner@paypal.invalid',
+    paymentMethod: 'paypal',
+    batchNumber: 'PB-REALBATCH01',
+  };
+
+  const makeTx = () => ({
+    ownerAccount: {
+      findUnique: async (_q: unknown) => ({ ...baseOwnerAccount }),
+      findMany: async (_q: unknown) => [{ ...baseOwnerAccount }],
+    },
+    revenueEvent: {
+      findUnique: async (_q: unknown) => ({
+        id: 'rev-1',
+        amount: 50,
+        currency: 'USD',
+        status: 'REVENUE',
+        proofHash: 'a'.repeat(64),
+        proofType: 'SHA256',
+      }),
+      update: async (args: { where?: unknown; data?: unknown }) => ({
+        id: 'rev-1',
+        ...((args?.data as object) || {}),
+      }),
+    },
+    settlementExecution: {
+      findFirst: async (q: { where?: { metadata?: { contains?: string }; status?: { notIn?: string[] } } }) => {
+        const containsKey = q?.where?.metadata?.contains ?? '';
+        if (store.routingToken === containsKey && store.payoutItemId) {
+          return {
+            id: 'se-existing',
+            settlementId: 'SE-PREV-001',
+            metadata: store.metadata ?? IDEM_HIT_META,
+            routingToken: containsKey,
+            status: 'IDEMPOTENCY',
+          };
+        }
+        return null;
+      },
+      updateMany: async (_q: { where?: { routingToken?: string }; data?: object }) => ({ count: 1 }),
+      create: async (p: { data?: Record<string, unknown> }) => {
+        const data = p.data ?? {};
+        store.routingToken = String(data.routingToken ?? '');
+        store.metadata = String(data.metadata ?? '');
+        const metaParsed: Record<string, unknown> = {};
+        try { Object.assign(metaParsed, JSON.parse(String(data.metadata ?? '{}'))); } catch { /* noop */ }
+        store.payoutItemId = String(metaParsed.payoutItemId ?? CANONICAL_PAYOUT_ID);
+        return { id: 'se-new-1', ...data };
+      },
+    },
+    payoutBatch: {
+      findFirst: async (_q: unknown) => ({ id: 'pb-fake', batchNumber: 'PB-REALBATCH01' }),
+      upsert: async (_q: unknown) => ({ id: 'pb-fake', batchNumber: 'PB-REALBATCH01' }),
+      create: async (p: { data?: Record<string, unknown> }) => ({
+        id: 'pb-fake',
+        batchNumber: (p?.data?.batchNumber as string) ?? 'PB-REALBATCH01',
+        ...(p?.data ?? {}),
+      }),
+    },
+    payoutItem: {
+      create: async (p: { data?: Record<string, unknown> }) => {
+        store.itemStatus = (p?.data?.status as string) || 'REVENUE';
+        return {
+          id: CANONICAL_PAYOUT_ID,
+          ...(p?.data ?? {}),
+          status: store.itemStatus,
+        };
+      },
+      findUnique: async (q: { where?: { id?: string } }) => ({
+        ...basePayoutItemFind,
+        id: q?.where?.id ?? CANONICAL_PAYOUT_ID,
+        status: store.itemStatus ?? basePayoutItemFind.status,
+      }),
+      update: async (args: { where?: object; data?: object }) => {
+        const data = (args?.data ?? {}) as Record<string, unknown>;
+        if (typeof data.status === 'string') {
+          store.itemStatus = data.status;
+        }
+        return {
+          ...basePayoutItemFind,
+          ...data,
+          id: CANONICAL_PAYOUT_ID,
+          status: store.itemStatus ?? basePayoutItemFind.status,
+        };
+      },
+    },
+    payoutAuditLog: {
+      create: async (_p: unknown) => ({ id: 'aud-1' }),
+    },
+    auditLedger: {
+      create: async (_p: unknown) => ({ id: 'al-1' }),
+    },
+    paymentEscalation: {
+      create: async (_p: unknown) => ({ id: 'pe-1' }),
+    },
+    ownerSettlement: {
+      findMany: async (_q: unknown) => [],
+      create: async (p: { data?: Record<string, unknown> }) => ({
+        id: 'os-fake',
+        ...(p?.data ?? {}),
+      }),
+    },
+  });
+
+  return {
+    prisma: {
+      ...makeTx(),
+      $transaction: async (fn: (tx: unknown) => Promise<unknown>) => fn(makeTx()),
+    },
+    db: undefined as unknown,
+  };
+});
+
+vi.mock('../../single-writer-lock', () => ({
+  acquireLock: async () => ({ acquired: true, lockId: 'mock-lock-1', stateHash: 'sha256:mockhash_x' }),
+  releaseLock: async (_lockId: string): Promise<void> => {},
+  computeStateHash: async (_record: unknown): Promise<string> => 'sha256:mockhash_x',
+}));
+
+vi.mock('../../escrow-vaults', () => ({
+  allocateToVault: async (_vId: string, _amt: number, _outflowType: string, _approvals = 1) => ({
+    approved: true,
+    vaultId: _vId,
+    requested: _amt,
+    allocated: _amt,
+    remaining: 9999,
+    quorumMet: true,
+  }),
+  getTotalExposure: async () => ({ total: 0, percentage: 5, limit: 85 }),
+}));
+
+vi.mock('../../atomic-simulation', () => ({
+  simulatePipeline: async (_r: unknown) => ({
+    approved: true,
+    action: 'settlement' as const,
+    estimatedFee: 0,
+    estimatedNet: 50,
+    slippageBps: 0,
+    gasEstimateUsd: 0,
+    profitabilityScore: 100,
+    proofHash: 'mockhash',
+  }),
+}));
+
+vi.mock('../../audit-agent', () => ({
+  detectDuplicates: async (): Promise<Array<{ isDuplicate: boolean; confidence: number; pattern: string; isolationAction: string; reasoning: string; proofHash: string }>> => [],
+}));
+
+vi.mock('../../owner-config', () => ({
+  isOwnerKycPassed: (): boolean => true,
+  isPayoutConfigComplete: (): boolean => true,
+  getDisbursementPolicy: () => ({
+    schedule: 'instant' as const,
+    platformFeeBps: 0,
+    fraudWindowHoldHours: 72,
+    chargebackReservePct: 5,
+    bucketPct: {
+      sovereignReserves: 30,
+      procurementBuffer: 20,
+      runtimeOperations: 20,
+      salary: 30,
+    },
+  }),
+}));
+
 describe('T4 — resolveBestPayoutRoute: mixed OwnerAccount sets (verified + unverified)', () => {
   it('given 3 unverified + 1 verified → only verified is selected, unverified filtered', () => {
     const accounts = [
@@ -76,212 +287,6 @@ describe('T6 — Exactly-Once Idempotency (50 sims crash-retry model)', () => {
       PAYPAL_CLIENT_ID: 'real-paypal-client-id-not-empty',
       PAYPAL_CLIENT_SECRET: 'not-a-placeholder-really',
     };
-
-    vi.mock('../../db', () => {
-      const CANONICAL_PAYOUT_ID = 'pi_MOCK_T6_CANONICAL';
-      const IDEM_HIT_META = JSON.stringify({ payoutItemId: CANONICAL_PAYOUT_ID, source: 'idem_hit_store' });
-
-      const store: { routingToken?: string; metadata?: string; payoutItemId?: string; itemStatus?: string } = { itemStatus: 'REVENUE' };
-
-      const baseOwnerAccount = {
-        id: 'verified-owner-1',
-        isActive: true,
-        verifiedAt: new Date('2026-01-01T00:00:00.000Z'),
-        accountType: 'paypal' as const,
-        accountHolder: 'Test Owner',
-        paypalEmail: 'owner@paypal.invalid',
-        wiseEmail: 'owner@wise.invalid',
-        payoneerId: '',
-        walletAddress: '',
-        network: '',
-        isPrimary: true,
-        countryCode: 'US',
-        sortOrder: 1,
-        purposes: ['settlement'],
-        spendable: 10000,
-        held: 0,
-      };
-
-      const basePayoutItemFind = {
-        id: CANONICAL_PAYOUT_ID,
-        status: 'PROCESSING',
-        payoutBatchId: 'pb-fake',
-        amount: 50,
-        currency: 'USD',
-        externalRef: 'REAL-PP-TXN-ABC123',
-        transactionRef: 'REAL-PP-TXN-ABC123',
-        connectorId: 'test-rail',
-        connectorStatus: 'live_paypal_api',
-        proofHash: null,
-        retryCount: 0,
-        lastRetryAt: null,
-        deliveryConfirmed: false,
-        failureReason: null,
-        processedAt: null,
-        recipientName: 'Test Owner',
-        recipientEmail: 'owner@paypal.invalid',
-        paymentMethod: 'paypal',
-        batchNumber: 'PB-REALBATCH01',
-      };
-
-      const makeTx = () => ({
-        ownerAccount: {
-          findUnique: async (_q: unknown) => ({ ...baseOwnerAccount }),
-          findMany: async (_q: unknown) => [{ ...baseOwnerAccount }],
-        },
-        revenueEvent: {
-          findUnique: async (_q: unknown) => ({
-            id: 'rev-1',
-            amount: 50,
-            currency: 'USD',
-            status: 'REVENUE',
-            proofHash: 'a'.repeat(64),
-            proofType: 'SHA256',
-          }),
-          update: async (args: { where?: unknown; data?: unknown }) => ({
-            id: 'rev-1',
-            ...((args?.data as object) || {}),
-          }),
-        },
-        settlementExecution: {
-          findFirst: async (q: { where?: { metadata?: { contains?: string }; status?: { notIn?: string[] } } }) => {
-            const containsKey = q?.where?.metadata?.contains ?? '';
-            if (store.routingToken === containsKey && store.payoutItemId) {
-              return {
-                id: 'se-existing',
-                settlementId: 'SE-PREV-001',
-                metadata: store.metadata ?? IDEM_HIT_META,
-                routingToken: containsKey,
-                status: 'IDEMPOTENCY',
-              };
-            }
-            return null;
-          },
-          updateMany: async (_q: { where?: { routingToken?: string }; data?: object }) => ({ count: 1 }),
-          create: async (p: { data?: Record<string, unknown> }) => {
-            const data = p.data ?? {};
-            store.routingToken = String(data.routingToken ?? '');
-            store.metadata = String(data.metadata ?? '');
-            const metaParsed: Record<string, unknown> = {};
-            try { Object.assign(metaParsed, JSON.parse(String(data.metadata ?? '{}'))); } catch { /* noop */ }
-            store.payoutItemId = String(metaParsed.payoutItemId ?? CANONICAL_PAYOUT_ID);
-            return { id: 'se-new-1', ...data };
-          },
-        },
-        payoutBatch: {
-          findFirst: async (_q: unknown) => ({ id: 'pb-fake', batchNumber: 'PB-REALBATCH01' }),
-          upsert: async (_q: unknown) => ({ id: 'pb-fake', batchNumber: 'PB-REALBATCH01' }),
-          create: async (p: { data?: Record<string, unknown> }) => ({
-            id: 'pb-fake',
-            batchNumber: (p?.data?.batchNumber as string) ?? 'PB-REALBATCH01',
-            ...(p?.data ?? {}),
-          }),
-        },
-        payoutItem: {
-          create: async (p: { data?: Record<string, unknown> }) => {
-            store.itemStatus = (p?.data?.status as string) || 'REVENUE';
-            return {
-              id: CANONICAL_PAYOUT_ID,
-              ...(p?.data ?? {}),
-              status: store.itemStatus,
-            };
-          },
-          findUnique: async (q: { where?: { id?: string } }) => ({
-            ...basePayoutItemFind,
-            id: q?.where?.id ?? CANONICAL_PAYOUT_ID,
-            status: store.itemStatus ?? basePayoutItemFind.status,
-          }),
-          update: async (args: { where?: object; data?: object }) => {
-            const data = (args?.data ?? {}) as Record<string, unknown>;
-            if (typeof data.status === 'string') {
-              store.itemStatus = data.status;
-            }
-            return {
-              ...basePayoutItemFind,
-              ...data,
-              id: CANONICAL_PAYOUT_ID,
-              status: store.itemStatus ?? basePayoutItemFind.status,
-            };
-          },
-        },
-        payoutAuditLog: {
-          create: async (_p: unknown) => ({ id: 'aud-1' }),
-        },
-        auditLedger: {
-          create: async (_p: unknown) => ({ id: 'al-1' }),
-        },
-        paymentEscalation: {
-          create: async (_p: unknown) => ({ id: 'pe-1' }),
-        },
-        ownerSettlement: {
-          findMany: async (_q: unknown) => [],
-          create: async (p: { data?: Record<string, unknown> }) => ({
-            id: 'os-fake',
-            ...(p?.data ?? {}),
-          }),
-        },
-      });
-
-      return {
-        prisma: {
-          ...makeTx(),
-          $transaction: async (fn: (tx: unknown) => Promise<unknown>) => fn(makeTx()),
-        },
-        db: undefined as unknown,
-      };
-    });
-
-    vi.mock('../../single-writer-lock', () => ({
-      acquireLock: async () => ({ acquired: true, lockId: 'mock-lock-1', stateHash: 'sha256:mockhash_x' }),
-      releaseLock: async (_lockId: string): Promise<void> => {},
-      computeStateHash: async (_record: unknown): Promise<string> => 'sha256:mockhash_x',
-    }));
-
-    vi.mock('../../escrow-vaults', () => ({
-      allocateToVault: async (_vId: string, _amt: number, _outflowType: string, _approvals = 1) => ({
-        approved: true,
-        vaultId: _vId,
-        requested: _amt,
-        allocated: _amt,
-        remaining: 9999,
-        quorumMet: true,
-      }),
-      getTotalExposure: async () => ({ total: 0, percentage: 5, limit: 85 }),
-    }));
-
-    vi.mock('../../atomic-simulation', () => ({
-      simulatePipeline: async (_r: unknown) => ({
-        approved: true,
-        action: 'settlement' as const,
-        estimatedFee: 0,
-        estimatedNet: 50,
-        slippageBps: 0,
-        gasEstimateUsd: 0,
-        profitabilityScore: 100,
-        proofHash: 'mockhash',
-      }),
-    }));
-
-    vi.mock('../../audit-agent', () => ({
-      detectDuplicates: async (): Promise<Array<{ isDuplicate: boolean; confidence: number; pattern: string; isolationAction: string; reasoning: string; proofHash: string }>> => [],
-    }));
-
-    vi.mock('../../owner-config', () => ({
-      isOwnerKycPassed: (): boolean => true,
-      isPayoutConfigComplete: (): boolean => true,
-      getDisbursementPolicy: () => ({
-        schedule: 'instant' as const,
-        platformFeeBps: 0,
-        fraudWindowHoldHours: 72,
-        chargebackReservePct: 5,
-        bucketPct: {
-          sovereignReserves: 30,
-          procurementBuffer: 20,
-          runtimeOperations: 20,
-          salary: 30,
-        },
-      }),
-    }));
 
     const { settlementEngine } = await import('../SettlementEngine');
 
