@@ -400,7 +400,7 @@ export async function advanceItem(
         receiptDeliveryProofHash: item.deliveryProofHash,
         quantityReceived: item.quantityReceived ?? undefined,
       }
-      const gate = payoutReleaseGate(
+      const gate = await payoutReleaseGate(
         shipmentEvidence,
         receiptEvidence,
         scraped,

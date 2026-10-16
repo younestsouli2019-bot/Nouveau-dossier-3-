@@ -62,7 +62,14 @@ foreach ($f in $files) {
         }
     }
     if ($content -ne $orig) {
-        Set-Content -LiteralPath $f -Value $content -NoNewline -Encoding UTF8
+        # Write UTF-8 WITHOUT BOM: PS5.1 "-Encoding UTF8" emits EF BB BF,
+        # which corrupts markdown/workflow files with an invisible diff.
+        if ($PSVersionTable.PSVersion.Major -ge 7) {
+            Set-Content -LiteralPath $f -Value $content -NoNewline -Encoding utf8NoBOM
+        } else {
+            $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+            [System.IO.File]::WriteAllText($f, $content, $utf8NoBom)
+        }
     }
 }
 Write-Host ""

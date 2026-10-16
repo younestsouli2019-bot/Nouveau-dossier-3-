@@ -65,7 +65,7 @@ jobs:
 
       - name: Upload self-heal patch (review required)
         if: always() && steps.selfheal.outcome == 'success'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: self-heal-patch-${{ matrix.platform }}
           path: self-heal-${{ matrix.platform }}.patch

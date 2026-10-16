@@ -29,7 +29,7 @@ fi
 # lock-step with:
 #   scripts/guard/verify-core.ps1
 #   scripts/guard/apply-attrib-readonly.ps1
-#   .github/workflows/protect-core.yml
+#   .github/workflows/verify-core.yml
 #   .gitattributes (-merge guard lines)
 # ------------------------------------------------------------------
 CORE_FILES="
@@ -39,12 +39,10 @@ package.json
 package-lock.json
 prisma/schema.prisma
 CHANGELOG.md
-RELEASE_MANIFEST.json
-.github/workflows/sync-secrets.yml
+.github/workflows/sync-secrets.workflow.yml
 .github/workflows/deploy-pages.yml
-.github/workflows/main.yml
 .github/workflows/org-broadcast.yml
-.github/workflows/protect-core.yml
+.github/workflows/verify-core.yml
 scripts/swarm-autonomy-daemon.mjs
 scripts/swarm-improve-loop.mjs
 scripts/START-SWARM.cmd
@@ -69,10 +67,6 @@ src/app/api/settlements/wet-run/route.ts
 src/locking/distlock.py
 src/locking/tests/test_distlock.py
 src/locking/requirements.txt
-contracts/escrow/CounterpartyEscrow.sol
-contracts/escrow/interfaces/IHierarchicalEscrow.sol
-contracts/escrow/libraries/UniqueStateHash.sol
-contracts/escrow/ARCHITECTURE.md
 src/agents/prompts/registry.json
 src/agents/prompts/system-prompt-audit-critical.md
 src/agents/prompts/system-prompt-duplicate-isolation.md
@@ -80,7 +74,6 @@ src/agents/prompts/1shot-cannibal-cluster-payoneer-9x150.md
 src/agents/prompts/1shot-fabricated-proofhash.md
 src/agents/prompts/tool-prompt-load-evidence-csv.md
 src/agents/prompts/tool-prompt-quarantine-write.md
-reports/policy/PRECAUTIONS_MATRIX.md
 "
 
 CHANGED="$(git diff --cached --name-only --diff-filter=ACMRTD)"

@@ -192,7 +192,7 @@ class SWARMAutonomousRevenue {
     }
 
     // Flash loan arbitrage
-    async executeFlashLoanArbitrageopportunity) {
+    async executeFlashLoanArbitrage(opportunity) {
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         console.log('💰 FLASH LOAN ARBITRAGE');
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');

@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 function parseCsvLine(line) {
@@ -104,7 +105,12 @@ function main() {
 		console.log(`Updated rows: ${updatedCount}`);
 	}
 	if (overwrite && output === input) {
-		const backup = `${input}.bak`;
+		// Backups go to the OS temp dir, never beside the input: a sibling
+		// "${input}.bak" inside the repo risks being picked up by a commit.
+		const backup = path.join(
+			os.tmpdir(),
+			`${path.basename(input)}.bak-${Date.now()}`,
+		);
 		fs.copyFileSync(input, backup);
 		console.log(`Backup written: ${backup}`);
 	}

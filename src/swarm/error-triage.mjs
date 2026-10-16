@@ -10,7 +10,9 @@
  *   import { runCustodianLoop } from "./swarm/error-triage.mjs";
  *   const result = await runCustodianLoop({
  *     agent_id: "settlement-agent",
- *     primaryTask: async (ctx) => { /* do the real work */ },
+ *     primaryTask: async (ctx) => {
+ *       // do the real work
+ *     },
  *     scanScope: ["src/finance", "settlements/", "scripts/"],
  *   });
  */
@@ -245,8 +247,7 @@ export function scanTypeScriptErrors(projectRoot = ".") {
 }
 
 function parseTscOutput(output, bugs) {
-  const lines = output.split("
-");
+  const lines = output.split("\n");
   // tsc format: file(line,col): error TSxxxx: message
   const tscRegex = /^(.+?)\((\d+),(\d+)\):\s*(error|warning)\s+(TS\d+):\s*(.+)$/;
   for (const line of lines) {

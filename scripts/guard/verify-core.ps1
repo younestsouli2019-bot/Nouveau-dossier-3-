@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Layer 3/5 — verifies integrity of the 48-file SWARM CORE critical set
+  Layer 3/5 — verifies integrity of the 41-file SWARM CORE critical set
   against scripts/guard/core-integrity.sha256manifest.
 .DESCRIPTION
   On first run (or whenever -Init is passed), re-computes SHA-256 of every
@@ -38,10 +38,9 @@ if ([string]::IsNullOrWhiteSpace($OutFile)) {
 
 $CORE_FILES = @(
   '.gitignore','.gitattributes','package.json','package-lock.json',
-  'prisma/schema.prisma','CHANGELOG.md','RELEASE_MANIFEST.json',
-  '.github/workflows/sync-secrets.yml','.github/workflows/deploy-pages.yml',
-  '.github/workflows/main.yml','.github/workflows/org-broadcast.yml',
-  '.github/workflows/protect-core.yml',
+  'prisma/schema.prisma','CHANGELOG.md',
+  '.github/workflows/sync-secrets.workflow.yml','.github/workflows/deploy-pages.yml',
+  '.github/workflows/org-broadcast.yml','.github/workflows/verify-core.yml',
   'scripts/swarm-autonomy-daemon.mjs','scripts/swarm-improve-loop.mjs',
   'scripts/START-SWARM.cmd','scripts/STOP-SWARM.cmd',
   'scripts/guard/core-integrity.sha256manifest',
@@ -61,18 +60,13 @@ $CORE_FILES = @(
   'src/app/api/settlements/wet-run/route.ts',
   'src/locking/distlock.py','src/locking/tests/test_distlock.py',
   'src/locking/requirements.txt',
-  'contracts/escrow/CounterpartyEscrow.sol',
-  'contracts/escrow/interfaces/IHierarchicalEscrow.sol',
-  'contracts/escrow/libraries/UniqueStateHash.sol',
-  'contracts/escrow/ARCHITECTURE.md',
   'src/agents/prompts/registry.json',
   'src/agents/prompts/system-prompt-audit-critical.md',
   'src/agents/prompts/system-prompt-duplicate-isolation.md',
   'src/agents/prompts/1shot-cannibal-cluster-payoneer-9x150.md',
   'src/agents/prompts/1shot-fabricated-proofhash.md',
   'src/agents/prompts/tool-prompt-load-evidence-csv.md',
-  'src/agents/prompts/tool-prompt-quarantine-write.md',
-  'reports/policy/PRECAUTIONS_MATRIX.md'
+  'src/agents/prompts/tool-prompt-quarantine-write.md'
 )
 
 function Hash-File([string]$Full) {
@@ -105,7 +99,8 @@ try {
       }
       $lines.Add(($hash + '  ' + $rel))
     }
-    Set-Content -LiteralPath $OutFile -Value $lines.ToArray() -Encoding UTF8
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllLines($OutFile, $lines.ToArray(), $utf8NoBom)
     Write-Host ("[verify-core] wrote manifest: " + $OutFile + "  entries=" + $CORE_FILES.Count)
     exit 0
   }
