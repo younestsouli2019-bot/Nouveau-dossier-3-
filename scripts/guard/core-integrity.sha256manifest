@@ -1,9 +1,9 @@
-# swarm-core integrity manifest â€” generated 2026-10-16T12:16:45Z
+# swarm-core integrity manifest â€” generated 2026-10-16T14:13:22Z
 # files=41  algorithm=SHA-256  encoding=hex  path-base=repo-root
 # Re-generate with: powershell -File scripts/guard/verify-core.ps1 -Init
 # Protect this file from write via: attrib +R scripts/guard/core-integrity.sha256manifest
 4d1ea36a6d91cda3c4720caa405c586364dcfbd454059395aa598dab7ffbc53a  .gitignore
-1e753f6efe3aa54851004c65e06a97472679447539bd046ad112215a67b6bf93  .gitattributes
+adb3bd1dd931d90d6836ba41e916180a2cad6f7d48b91e9c839b724767670996  .gitattributes
 996b6b4d22c4adf50a5c43c2897b2b4f817b84b9c7b3111ed2078517facd4db8  package.json
 91cbf021909b26a697334641c52427a60751a3b225a312cd3a4bc733c6baf400  package-lock.json
 bcc4ad421db88d72ec3a7968b2cd83f8a161eafc5715fb7539ead55142c41b96  prisma/schema.prisma
@@ -16,7 +16,7 @@ fe6fc7700c8c7dc9003c72d1f7773beafc1405d2b95d7759d06c2c7d55bff19d  scripts/swarm-
 4e282ac05fd268a67641e7468f706854f88c21e6e0da72583ec7648b75a3171d  scripts/swarm-improve-loop.mjs
 deaa3f1e4eecb5f71b8981782dc564772bc94cf9b6715aec2e84c690d92aa76d  scripts/START-SWARM.cmd
 357c9985db96886f76bd3f7f45bb3d633a0670b07ab0b126fb239dd4f544023b  scripts/STOP-SWARM.cmd
-24185b1b8e14966a8f70bbb4df22107d5ff61215ebb516d3d759bfcd79bebe01  scripts/guard/core-integrity.sha256manifest
+9ea903bc44136ef1e3eb8a1c60994e3491c414fa0ef14f199d368d02e3da3eda  scripts/guard/core-integrity.sha256manifest
 299c70c914b5204316a493177f5cee382c603205b13578e8dddb6cac1e66676c  scripts/guard/verify-core.ps1
 ef7d46fd21eff9189b3c59397faa4f24aeca6a5d3a41399c04921b1eef77ac40  scripts/guard/apply-attrib-readonly.ps1
 9d3cf8ab922211457cf2b8cfb9e6125349500ca0950e0de0dacfcb99b038582f  scripts/guard/install-core-protect-hook.ps1

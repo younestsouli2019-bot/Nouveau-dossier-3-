@@ -2,3 +2,60 @@
 * text=auto
 doomsday-vault/doomsday-2026-01-14.zip filter=lfs diff=lfs merge=lfs -text
 repo-backup-2026-01-12.zip filter=lfs diff=lfs merge=lfs -text
+
+# ---------------------------------------------------------------------------
+# SWARM CORE - Layer 4/5: never let git silently content-merge a CORE file.
+#
+# Every path on the 41-entry CORE list carries "-merge" (the merge attribute
+# set to unset). git then refuses to auto-resolve any file that BOTH sides
+# changed: it surfaces as a conflict that must be resolved deliberately.
+# This closes the "rogue worktree push quietly overwrote a protected file"
+# failure mode (2026-08-20 commit 2762682c10) that the other layers can only
+# detect after the git object has already been written.
+#
+# Must be kept in lock-step with the CORE lists in:
+#   scripts/guard/verify-core.ps1
+#   scripts/guard/pre-commit.hook.sh
+#   scripts/guard/apply-attrib-readonly.ps1
+# ---------------------------------------------------------------------------
+.gitignore -merge
+.gitattributes -merge
+package.json -merge
+package-lock.json -merge
+prisma/schema.prisma -merge
+CHANGELOG.md -merge
+.github/workflows/sync-secrets.workflow.yml -merge
+.github/workflows/deploy-pages.yml -merge
+.github/workflows/org-broadcast.yml -merge
+.github/workflows/verify-core.yml -merge
+scripts/swarm-autonomy-daemon.mjs -merge
+scripts/swarm-improve-loop.mjs -merge
+scripts/START-SWARM.cmd -merge
+scripts/STOP-SWARM.cmd -merge
+scripts/guard/core-integrity.sha256manifest -merge
+scripts/guard/verify-core.ps1 -merge
+scripts/guard/apply-attrib-readonly.ps1 -merge
+scripts/guard/install-core-protect-hook.ps1 -merge
+scripts/guard/pre-commit.hook.sh -merge
+scripts/mirrors/sync-mirrors.cmd -merge
+scripts/mirrors/backup-doomsday-vault.local.cmd -merge
+scripts/mirrors/secure-cloud-upload.cmd -merge
+src/lib/atomic-simulation.ts -merge
+src/lib/audit-agent.ts -merge
+src/lib/escrow-vaults.ts -merge
+src/lib/settlement-engine.ts -merge
+src/lib/strict-enforcement/audit-reconciliation.ts -merge
+src/lib/owner-config.ts -merge
+src/lib/strict-enforcement/crypto-utils.ts -merge
+src/app/api/webhooks/github-secrets/route.ts -merge
+src/app/api/settlements/wet-run/route.ts -merge
+src/locking/distlock.py -merge
+src/locking/tests/test_distlock.py -merge
+src/locking/requirements.txt -merge
+src/agents/prompts/registry.json -merge
+src/agents/prompts/system-prompt-audit-critical.md -merge
+src/agents/prompts/system-prompt-duplicate-isolation.md -merge
+src/agents/prompts/1shot-cannibal-cluster-payoneer-9x150.md -merge
+src/agents/prompts/1shot-fabricated-proofhash.md -merge
+src/agents/prompts/tool-prompt-load-evidence-csv.md -merge
+src/agents/prompts/tool-prompt-quarantine-write.md -merge
