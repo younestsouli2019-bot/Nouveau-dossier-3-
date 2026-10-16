@@ -203,6 +203,10 @@ jobs:
           path: |
             .next
             .vercel
+          # `.next` and `.vercel` are dot-prefixed, so upload-artifact treats
+          # them as hidden and silently skips them without this flag — the
+          # smoke job then fails to download the artifact it needs.
+          include-hidden-files: true
           retention-days: 2
           if-no-files-found: warn
 
