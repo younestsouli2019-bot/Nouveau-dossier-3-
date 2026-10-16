@@ -152,7 +152,7 @@ jobs:
           echo "::endgroup::"
 
       - name: Sync Vault Configuration
-        if: ${{ steps.github-oidc.outputs.oidc_available == 'true' }}
+        if: ${{ steps['github-oidc'].outputs.oidc_available == 'true' }}
         env:
           VAULT_ADDR: ${{ needs.preflight-checks.outputs.vault_url }}
         run: |
@@ -171,10 +171,10 @@ jobs:
           echo "::endgroup::"
 
       - name: Inject secrets into Swarm Vault
-        if: ${{ steps.github-oidc.outputs.oidc_available == 'true' && needs.preflight-checks.outputs.swarm_vault_url != '' && (github.event.inputs.audit_only != 'true') }}
+        if: ${{ steps['github-oidc'].outputs.oidc_available == 'true' && needs.preflight-checks.outputs.swarm_vault_url != '' && (github.event.inputs.audit_only != 'true') }}
         env:
           SWARM_VAULT_API_URL: ${{ needs.preflight-checks.outputs.swarm_vault_url }}
-          OIDC_TOKEN: ${{ steps.github-oidc.outputs.oidc_token }}
+          OIDC_TOKEN: ${{ steps['github-oidc'].outputs.oidc_token }}
           SEC_BASE44_APP_ID: ${{ secrets.BASE44_APP_ID }}
           SEC_BASE44_SERVICE_TOKEN: ${{ secrets.BASE44_SERVICE_TOKEN }}
           SEC_PLAIDBOX_KEY: ${{ secrets.PLAIDBOX_KEY }}
