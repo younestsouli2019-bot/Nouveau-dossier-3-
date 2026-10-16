@@ -62,33 +62,33 @@ jobs:
           npm ci --no-audit --no-fund --ignore-scripts
           npx prisma generate
 
-      - name: Upload workspace artifact
-        uses: actions/upload-artifact@v5
-        with:
-          name: ci-workspace
-          path: |
-            .
-          include-hidden-files: true
-          retention-days: 2
-          if-no-files-found: error
-
   lint:
     name: lint
     needs: [ci]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Download workspace
-        uses: actions/download-artifact@v5
+      - name: Checkout
+        uses: actions/checkout@v5
         with:
-          name: ci-workspace
-          path: .
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
+
+      # Dependencies are installed per job. The previous design shipped the
+      # whole workspace (including node_modules) through a 364 MB artifact and
+      # re-downloaded it into every downstream job: the artifact round-trip
+      # drops symlinks and the executable bit, so node_modules/.bin/* came back
+      # unusable and every `npm run <script>` died with exit 127. Reinstalling
+      # from the shared npm cache is both correct and cheaper.
+      - name: Install dependencies
+        run: |
+          npm ci --no-audit --no-fund --ignore-scripts
+          npx prisma generate
 
       - name: run lint
         run: npm run lint --if-present
@@ -99,17 +99,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Download workspace
-        uses: actions/download-artifact@v5
+      - name: Checkout
+        uses: actions/checkout@v5
         with:
-          name: ci-workspace
-          path: .
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
+
+      - name: Install dependencies
+        run: |
+          npm ci --no-audit --no-fund --ignore-scripts
+          npx prisma generate
 
       - name: run typecheck
         run: npm run typecheck --if-present
@@ -120,17 +124,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Download workspace
-        uses: actions/download-artifact@v5
+      - name: Checkout
+        uses: actions/checkout@v5
         with:
-          name: ci-workspace
-          path: .
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
+
+      - name: Install dependencies
+        run: |
+          npm ci --no-audit --no-fund --ignore-scripts
+          npx prisma generate
 
       - name: run vitest
         run: npm test -- --reporter=default --no-color
@@ -141,17 +149,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Download workspace
-        uses: actions/download-artifact@v5
+      - name: Checkout
+        uses: actions/checkout@v5
         with:
-          name: ci-workspace
-          path: .
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund --ignore-scripts
 
       - name: prisma validate
         run: npx prisma validate && npx prisma generate
@@ -167,17 +177,21 @@ jobs:
       GITHUB_SHA: ${{ github.sha }}
       VERCEL_GIT_COMMIT_SHA: ${{ github.sha }}
     steps:
-      - name: Download workspace
-        uses: actions/download-artifact@v5
+      - name: Checkout
+        uses: actions/checkout@v5
         with:
-          name: ci-workspace
-          path: .
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
+
+      - name: Install dependencies
+        run: |
+          npm ci --no-audit --no-fund --ignore-scripts
+          npx prisma generate
 
       - name: next build
         run: npm run build
@@ -198,23 +212,27 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Download workspace
-        uses: actions/download-artifact@v5
+      - name: Checkout
+        uses: actions/checkout@v5
         with:
-          name: ci-workspace
-          path: .
-
-      - name: Download build
-        uses: actions/download-artifact@v5
-        with:
-          name: next-build
-          path: .
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
+
+      - name: Install dependencies
+        run: |
+          npm ci --no-audit --no-fund --ignore-scripts
+          npx prisma generate
+
+      - name: Download build
+        uses: actions/download-artifact@v5
+        with:
+          name: next-build
+          path: .
 
       - name: start prod server & probe
         shell: bash
