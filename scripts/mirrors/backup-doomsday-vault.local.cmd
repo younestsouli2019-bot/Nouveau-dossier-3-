@@ -30,21 +30,36 @@ echo [%DATE% %TIME%] vault build start iso=%ISO% >> "%LOG%"
 echo [%DATE% %TIME%] passphrase fingerprint expected: 50f98c6a... >> "%LOG%"
 
 REM --- 1. Tarball ---
+REM 2026-10-17: path list reconciled. It still named artifacts that had been
+REM removed from the repo (contracts\escrow, reports\policy, the 5 timestamped
+REM reports/*-1787*.{json,md} files, reports\reconciliation_report.csv,
+REM RELEASE_MANIFEST.json, .env.example), so tar reported errors on every build
+REM -- and both its message and its exit code were discarded, so the vault was
+REM SILENTLY INCOMPLETE. The whole reports\ tree is archived now instead of a
+REM hardcoded list of report filenames, so it cannot rot again. Any missing
+REM required path aborts the build at the check below (fail-closed).
 set TAR=doomsday-vault\%ISO%.tar
 set ENC=%OUTDIR%\doomsday_%ISO%.tgz.enc
-tar.exe -czf "%TAR%" ^
-  prisma ^
-  src\locking src\agents\prompts contracts\escrow reports\policy ^
-  reports\FINAL-AUDIT-MASTER-1787178215389.json reports\FINAL-AUDIT-MASTER-SUMMARY-1787178215389.md ^
-  reports\audit-report-1787176654540.json reports\audit-summary-1787176654540.md ^
-  reports\deep-sqlite-audit-1787177797363.json reports\reconciliation_report.csv ^
-  CHANGELOG.md RELEASE_MANIFEST.json ^
-  data\quarantine data\owner data\financial ^
-  data\swarm_autonomy\state data\swarm_autonomy\logs ^
-  scripts\START-SWARM.cmd scripts\STOP-SWARM.cmd scripts\swarm-autonomy-daemon.mjs scripts\swarm-consensus.mjs scripts\swarm-improve-loop.mjs ^
-  scripts\final-master-audit.mjs scripts\run-full-integrity-audit.mjs scripts\mirrors ^
-  .github\workflows .env.example .gitignore package.json package-lock.json prisma\schema.prisma ^
-  >> "%LOG%" 2>&1
+set VAULT_PATHS=prisma src\locking src\agents\prompts reports
+set VAULT_PATHS=%VAULT_PATHS% data\owner data\swarm_autonomy\state data\swarm_autonomy\logs
+set VAULT_PATHS=%VAULT_PATHS% scripts\START-SWARM.cmd scripts\STOP-SWARM.cmd
+set VAULT_PATHS=%VAULT_PATHS% scripts\swarm-autonomy-daemon.mjs scripts\swarm-consensus.mjs
+set VAULT_PATHS=%VAULT_PATHS% scripts\swarm-improve-loop.mjs scripts\final-master-audit.mjs
+set VAULT_PATHS=%VAULT_PATHS% scripts\run-full-integrity-audit.mjs scripts\mirrors
+set VAULT_PATHS=%VAULT_PATHS% .github\workflows .gitignore package.json package-lock.json
+set VAULT_PATHS=%VAULT_PATHS% prisma\schema.prisma CHANGELOG.md
+REM data\quarantine and data\financial are created at runtime, so "absent" is
+REM normal: add them only when present, and record it when they are not.
+if exist "data\quarantine" set VAULT_PATHS=%VAULT_PATHS% data\quarantine
+if not exist "data\quarantine" echo [%DATE% %TIME%] vault: data\quarantine absent -- skipped >> "%LOG%"
+if exist "data\financial" set VAULT_PATHS=%VAULT_PATHS% data\financial
+if not exist "data\financial" echo [%DATE% %TIME%] vault: data\financial absent -- skipped >> "%LOG%"
+tar.exe -czf "%TAR%" %VAULT_PATHS% >> "%LOG%" 2>&1
+if errorlevel 1 (
+  echo [vault] ERROR: tar failed -- refusing to archive a partial vault.
+  echo [%DATE% %TIME%] vault: ERROR tar failed, build aborted >> "%LOG%"
+  exit /B 1
+)
 
 REM --- 2. Encrypt with OpenSSL AES-256-GCM using PBKDF2 iterations 1,000,000 ---
 openssl.exe enc -aes-256-gcm -salt -pbkdf2 -iter 1000000 ^
