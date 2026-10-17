@@ -3,7 +3,7 @@
 # Every consumer of the CORE allowlist reads THIS file. Nothing may inline a
 # second copy of the list:
 #   scripts/guard/verify-core.ps1            Layer 3/5 -- SHA-256 manifest
-#   scripts/guard/pre-commit.hook.sh         Layer 2/5 -- staged-path gate
+#   scripts/guard/commit-msg.hook.sh         Layer 2/5 -- staged-path + tag gate
 #   scripts/guard/apply-attrib-readonly.ps1  Layer 5/5 -- filesystem +R bit
 #   scripts/guard/sync-core-guards.ps1       generates the .gitattributes block
 #
@@ -36,7 +36,7 @@ scripts/guard/sync-core-guards.ps1
 scripts/guard/verify-core.ps1
 scripts/guard/apply-attrib-readonly.ps1
 scripts/guard/install-core-protect-hook.ps1
-scripts/guard/pre-commit.hook.sh
+scripts/guard/commit-msg.hook.sh
 scripts/mirrors/sync-mirrors.cmd
 scripts/mirrors/backup-doomsday-vault.local.cmd
 scripts/mirrors/secure-cloud-upload.cmd

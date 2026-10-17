@@ -1,12 +1,13 @@
-# verify-core — CORE integrity evidence gate (REPORT-ONLY).
+# verify-core — CORE integrity gate (BLOCKING).
 #
 # Runs scripts/guard/verify-core.ps1 with NO -Init and publishes its full output
 # to the job summary + an artifact. It never rewrites the manifest.
 #
-# Why report-only: the manifest was stale since 0259b36 (2026-08-29). It was
-# regenerated under a deliberate [CORE-UPDATE] commit that also reconciled the
-# allowlist from 48 to 43 entries — 2 renamed workflows (sync-secrets.yml ->
-# sync-secrets.workflow.yml, protect-core.yml -> verify-core.yml), 7 paths
+# History: this gate started out report-only because the manifest had been stale
+# since 0259b36 (2026-08-29). It was regenerated under a deliberate [CORE-UPDATE]
+# commit that also reconciled the allowlist from 48 to 43 entries — 2 renamed
+# workflows (sync-secrets.yml -> sync-secrets.workflow.yml, protect-core.yml ->
+# verify-core.yml), 7 paths
 # that no longer exist and are not to be resurrected (contracts/escrow/**,
 # RELEASE_MANIFEST.json, reports/policy/PRECAUTIONS_MATRIX.md, and main.yml,
 # which was removed on 2026-09-07 for being an ungated withdrawal trigger), and
@@ -15,8 +16,9 @@
 # into .gitattributes).
 # verify-core.ps1 hashes LF-normalised bytes, so a manifest blessed on Windows
 # (core.autocrlf=true) now matches a Linux checkout. Previously it could not.
-# Flip verify-core itself to blocking by deleting the `exit 0` in the
-# "Run verify-core" step. The CORE-drift step below is ALREADY blocking.
+# This gate is BLOCKING: the "Run verify-core" step propagates the real exit code
+# of verify-core.ps1, so a manifest drift fails the job and blocks the PR. The
+# CORE-drift step below is likewise blocking.
 #
 # Read-only: no secrets are referenced (scripts/audit-workflow-secrets.mjs lint
 # stays green), no repo writes, contents: read only.
@@ -50,15 +52,14 @@ jobs:
           # lock-step; this is the gate that makes silent drift impossible.
           ./scripts/guard/sync-core-guards.ps1 -Check
 
-      - name: Run verify-core (read-only, no -Init)
+      - name: Run verify-core (BLOCKING, read-only, no -Init)
         id: verify
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Continue'
           # verify-core.ps1 ends with `exit <n>` on manifest drift. Running it in
           # this process would tear the step down before the report is written,
-          # so spawn a child pwsh and read its exit code. This step always ends
-          # with exit 0 (report-only).
+          # so spawn a child pwsh, read its exit code, then propagate it.
           $raw  = @()
           $code = 0
           try {
@@ -76,7 +77,7 @@ jobs:
           # swallows the closing terminator, which killed this step at parse time
           # (TerminatorExpectedAtEndOfString) before any output existed.
           $sh = @(
-            '## verify-core report (REPORT-ONLY)'
+            '## verify-core report'
             ''
             ('- exit_code: ' + $code)
             '- manifest: scripts/guard/core-integrity.sha256manifest'
@@ -86,15 +87,16 @@ jobs:
             '```'
           ) -join "`n"
           Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $sh -Encoding utf8NoBOM
-          Write-Host ('verify-core report-only step complete. exit_code=' + $code)
-          exit 0
+          Write-Host ('verify-core step complete. exit_code=' + $code)
+          exit $code
 
-      - name: Annotate result (non-blocking)
+      - name: Annotate result
+        if: always()
         shell: pwsh
         run: |
           $rc = '${{ steps.verify.outputs.exit_code }}'
           if ($rc -ne '0') {
-            Write-Host "::warning title=verify-core FAILED::CORE manifest drift detected (report-only, not blocking). See job summary and verify-core-output artifact."
+            Write-Host "::error title=verify-core FAILED::CORE manifest drift detected. See job summary and verify-core-output artifact."
           } else {
             Write-Host "verify-core: PASS"
           }

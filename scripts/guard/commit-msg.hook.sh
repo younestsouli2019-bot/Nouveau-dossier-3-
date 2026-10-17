@@ -1,13 +1,25 @@
 #!/bin/sh
 # ============================================================
-# CORE-PROTECT pre-commit hook — Layer 2/5 of the swarm
+# CORE-PROTECT commit-msg hook — Layer 2/5 of the swarm
 #   write-protect stack. Refuses any commit that adds/modifies/
 #   removes a file on the SWARM CORE critical list
 #   unless ONE of the following is true:
 #     (a) env SKIP_CORE_PROTECT=1          (local one-off)
-#     (b) staged commit message carries the literal tag
+#     (b) the proposed commit message carries the literal tag
 #         "[CORE-UPDATE]" somewhere inside
-#   Incident avoided: 2026-08-20T00:15 UTC commit 2762682c10
+#
+# WHY commit-msg AND NOT pre-commit:
+#   git runs `pre-commit` BEFORE it obtains the commit message, so a
+#   pre-commit hook can only ever read the PREVIOUS message out of
+#   .git/COMMIT_EDITMSG. The tag check therefore read stale data and was
+#   wrong in BOTH directions: it silently allowed an untagged CORE change
+#   (whenever the previous commit happened to carry the tag) and refused a
+#   correctly tagged one. githelp:githooks says pre-commit "takes no
+#   parameters, and is invoked before obtaining the proposed commit log
+#   message", whereas commit-msg "takes a single parameter, the name of the
+#   file that holds the proposed commit log message". That parameter is $1.
+#
+# Incident avoided: 2026-08-20T00:15 UTC commit 2762682c10
 #   ups-lawis accidentally deleted .github/workflows/sync-
 #   secrets.yml, gutted .gitignore (50 → 3 lines), and
 #   re-added 183 tracked catalogue ZIP bloat files (~40 MB).
@@ -21,6 +33,17 @@ set -eu
 if [ "${SKIP_CORE_PROTECT:-0}" = "1" ]; then
   echo "[core-protect] SKIP_CORE_PROTECT=1 set; bypassing core gate." 1>&2
   exit 0
+fi
+
+# ------------------------------------------------------------------
+# PROPOSED MESSAGE -- git hands us the path of the message file as $1.
+# FAIL-CLOSED if we cannot read it: without the message we cannot tell a
+# tagged (allowed) commit from an untagged (refused) one.
+# ------------------------------------------------------------------
+MSG_FILE="${1:-}"
+if [ -z "$MSG_FILE" ] || [ ! -f "$MSG_FILE" ]; then
+  echo "[core-protect] FAIL-CLOSED: commit-msg hook received no readable message file (arg='$MSG_FILE')." 1>&2
+  exit 1
 fi
 
 # ------------------------------------------------------------------
@@ -50,12 +73,8 @@ for f in $CORE_FILES; do
 done
 
 if [ -n "$HIT" ]; then
-  MSG_BUFF=""
-  for mf in .git/COMMIT_EDITMSG .git/MERGE_MSG; do
-    if [ -f "$mf" ]; then MSG_BUFF="$MSG_BUFF $(cat "$mf")"; fi
-  done
-  if printf '%s' "$MSG_BUFF" | grep -q '\[CORE-UPDATE\]'; then
-    echo "[core-protect] [CORE-UPDATE] tag found; allowing core change." 1>&2
+  if grep -q '\[CORE-UPDATE\]' "$MSG_FILE"; then
+    echo "[core-protect] [CORE-UPDATE] tag found in proposed message; allowing core change." 1>&2
     exit 0
   fi
 

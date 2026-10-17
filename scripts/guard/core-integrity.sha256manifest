@@ -1,9 +1,9 @@
-# swarm-core integrity manifest â€” generated 2026-10-16T15:16:57Z
+# swarm-core integrity manifest â€” generated 2026-10-16T16:38:54Z
 # files=43  algorithm=SHA-256  encoding=hex  path-base=repo-root
 # Re-generate with: powershell -File scripts/guard/verify-core.ps1 -Init
 # Protect this file from write via: attrib +R scripts/guard/core-integrity.sha256manifest
 ba18a114946a80b97edc1cd07ce8d9780b5af52dae3cce121c2baa53fb2476da  .gitignore
-62cb9442ee39832fe2c5099fd25a2732b269c649a1f0fa323737494dfb2382f1  .gitattributes
+22723f24a3f74a681275e5e73c426f24ec1dc0366fa34a6fe9fd5c18b4bfc21e  .gitattributes
 8f9356c8a30e897257713d959af451d2cba9bd9614a63fdd794bc48a4c1bba35  package.json
 80511631242783aab0ed3e85343f7dcefb3c4fdf5cff9044ed5b302486b63807  package-lock.json
 9282f981427c57dee533d7a4b3837cd02adb99f88f97915df9bd07ca2a267130  prisma/schema.prisma
@@ -11,18 +11,18 @@ f69fdcf58dd8c5eb6b25b320d0bf8c06ea6e287bedd07a49727dedff17f8a57e  CHANGELOG.md
 241c67b7fa70ecc82dfc44e1f6130033db60c618bcb2034799480ddce4f6b630  .github/workflows/sync-secrets.workflow.yml
 ec62b9b77e9f0e9962266ef001d394d4f52a909e3a82e22a62b3f872ed87a405  .github/workflows/deploy-pages.yml
 32d69567a4d75297eb2cdb3ae864e62dd8f76982e83809aa44d6fa1739dc9a09  .github/workflows/org-broadcast.yml
-ead0ec7d2b37f109f6672ebeaca2d65ec54c4f4e53ca4d878221aafb3b6035fa  .github/workflows/verify-core.yml
+fb88cfb1f321da472f8f43e46c528b8e9ebe50ececcf5cc1b83aa6ced1c57dcf  .github/workflows/verify-core.yml
 6dce83922a3cb37d639ce30ab7c00976ba22cc50f1fc448f856d06584517df60  scripts/swarm-autonomy-daemon.mjs
 977a3065250fca8905ab074959c3b692a5be1d6bb43addc9c41f9156b1841122  scripts/swarm-improve-loop.mjs
 a6a6a37657e9908a5a078b8c897aa70e67554c23a0e500f571e71d56d6138609  scripts/START-SWARM.cmd
 a6a1722e5d61b8772bcc3f532167336e192dab38ac56bc29ca7441f4bae85c76  scripts/STOP-SWARM.cmd
-329f67a519bbe3d4751652fd3a49d76a911b0c0efa9c4876b20c7f517409da4b  scripts/guard/core-integrity.sha256manifest
-ce573c2fa77749e5c9c02c2e0c66eb1ed716260dbb8b129c0c767da88bece5ae  scripts/guard/core-files.txt
-49191a6394e119142cec4e218dbd675af9eaddbb53985a264bf1d88564647fe2  scripts/guard/sync-core-guards.ps1
+7c72d2ddf085d6b20d1b60c83d8b5f11fe6f370e334bd56a99ab3ebcd53a1e23  scripts/guard/core-integrity.sha256manifest
+46f8dbc8936037d5ba641b7cb3fc4db3e6e22c5905ae2872c7b9567364058c86  scripts/guard/core-files.txt
+a32186f5481fb4d61acd1ef932610951ebe38a749aef85abcf2cdc02e8b86428  scripts/guard/sync-core-guards.ps1
 84a1ad5f26b07d5e5d8fed27bbf9ff99c615eab6b833c3cecc6d0ba8b641e8e4  scripts/guard/verify-core.ps1
 c33bd001c2edaa6f4c408afb907cb9de518e4bbc574bc05afc35ae99fe3c8dba  scripts/guard/apply-attrib-readonly.ps1
-4973eaa5a1ceb8eaa70b44e755991052a2d67e0a98ba6354ed71a25895dc467b  scripts/guard/install-core-protect-hook.ps1
-03e5547bde2d2b5135f83df9ed12cdced79ff5fdbad615ab388203013a499720  scripts/guard/pre-commit.hook.sh
+769d37e7b2b016787a9639d8b3843b5cb8fdf8d1c868583ab427ce5181d6b5c9  scripts/guard/install-core-protect-hook.ps1
+afac70b08f10b440e6236ef32184704dd10997fe046587612f7c7d194c61eb2f  scripts/guard/commit-msg.hook.sh
 c82d2b779c58aa6a2298dd36674c746aefde24b1dabbe444a0a38a808daae873  scripts/mirrors/sync-mirrors.cmd
 788237e6b95986a7b59d765f6f1c4ebda182d396c1658c32dc217c11306d68b2  scripts/mirrors/backup-doomsday-vault.local.cmd
 4c51887df81c4622660b64ff04cbf8d93fd1690d23e660263fa7a5b0ff18f6c1  scripts/mirrors/secure-cloud-upload.cmd

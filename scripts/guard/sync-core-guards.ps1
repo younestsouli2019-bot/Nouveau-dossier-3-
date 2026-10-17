@@ -121,7 +121,7 @@ if ($Check) {
   # the moment anything else changed.
   $consumers = @(
     'scripts/guard/verify-core.ps1',
-    'scripts/guard/pre-commit.hook.sh',
+    'scripts/guard/commit-msg.hook.sh',
     'scripts/guard/apply-attrib-readonly.ps1'
   )
   $problems = @()

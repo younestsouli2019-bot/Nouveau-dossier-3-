@@ -28,7 +28,7 @@ scripts/guard/sync-core-guards.ps1 -merge
 scripts/guard/verify-core.ps1 -merge
 scripts/guard/apply-attrib-readonly.ps1 -merge
 scripts/guard/install-core-protect-hook.ps1 -merge
-scripts/guard/pre-commit.hook.sh -merge
+scripts/guard/commit-msg.hook.sh -merge
 scripts/mirrors/sync-mirrors.cmd -merge
 scripts/mirrors/backup-doomsday-vault.local.cmd -merge
 scripts/mirrors/secure-cloud-upload.cmd -merge
