@@ -1,9 +1,1500 @@
 {
   "$comment": "Authoritative price book. The ONLY permitted source of a course price. Never accept an amount from a client request body. Contract and publishing process: ./README.md in this directory.",
   "schemaVersion": 1,
-  "updated": "2026-09-30",
+  "updated": "2026-10-17",
   "currency": "MAD",
   "minorUnits": 2,
   "$comment_modes": "Each course is either 'fixed' (amount is authoritative) or 'quote_required' (no amount is published; the order is captured as a lead and a human quotes it). 'absent' means the course is not for sale.",
-  "courses": {}
+  "courses": {
+    "certified-blockchain-expert-cbe-preptest-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "financial-risk-manager-test-bank": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "sap-certified-development-associate-abap-with-sap-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "heimdal-certified-security-professional-hcsp-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-software-development-professional-csdp-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-iot-professional-ciotp-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "ase-l3-certification-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "private-pilot-license-ppl-preptest-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "full-stack-django-and-react-test-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "d-wave-quantum-programming-certification-testprep-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "iso-9001-certification-practice-exams": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "pipedrive-crm-certificate-preptest-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "databricks-certified-machine-learning-associate-testprep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "acca-f5-performance-management-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "osha-30-hour-construction-safety-certification-exam-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "servicetitan-certified-administrator-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "aphr-associate-professional-in-human-resources-certification": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "comptia-cloud-certificaci-n-2025-domina-la-nube": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "operational-sustainability-os-certification-exam-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "sc-100-microsoft-cybersecurity-architect-180-exam-practice": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "ase-automotive-service-excellence-preptest-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "nha-phlebotomy-exam-2025-master-the-test-with-practice": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "tests-psychotechniques-m-moire-intelligence-logique-etc": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-energy-manager-cem-exam-practice-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-data-center-professional-cdcp-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "itil-4-certification-practice-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "prosp-rer-avec-l-activit-secondaire-et-les-revenus-passifs": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "comptia-network-certification-practice-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "renewable-energy-devices-and-systems-matlab-and-ansys-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "netsuite-certification-suitefoundation-exam-preparation": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "iias-certified-internal-auditor-cia-prep-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "sae-certified-automotive-engineer-cae-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "kcna-2025-exam-testprep-full-stack-development-certification": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "zoho-crm-certification-preptest-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "the-nasm-certified-personal-trainer-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "leed-green-associate-exam-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "ansi-tia-942-standards-for-data-center-design": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "data-centre-specialist-practice-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "elastic-stack-elk-certified-engineer-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-ethical-ai-practitioner-ceaip-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-public-accountant-cpa-2025-testprep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "omca-certification-test-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "exabeam-certified-security-operations-professional-testprep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "microsoft-certified-dynamics-365-finance-and-supply-chain": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "labview-certified-developer-cld-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "icc-commercial-contractor-license-exam-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "simulink-certification-2025-exam-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "matlab-certified-associate-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "arcsight-certified-security-analyst-acsa-preptest-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "lsat-preptest-62-63-64-65-66-67-68-69-70-71-72-73": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "kubernetes-security-specialist-cks-exam-prep-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "google-cloud-database-engineer-certification-exam-prep-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "giac-security-operations-manager-gsom-2025-exam-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-data-center-energy-professional-cdcep-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "terraform-associate-certification-200-exam-testprep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "tesol-tefl-certification-testprep-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "ibm-s-qiskit-certification-testprep-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "first-aid-cpr-and-aed-instructor-prep-test-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-pharmacy-technician-cpht-2025-prep-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "ansible-certified-specialist-in-advanced-automation-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "teas-version-7-exam-mcqs-preptest-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "giac-cloud-security-automation-gcsa-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "capm-in-depth-project-management-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "calculus-test-in-mathematics-for-the-iit-jee-engineering": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "catia-v5-certified-professional-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "medical-billing-and-coding-2025-test-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-in-production-and-inventory-management-cpim-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "giac-certified-incident-handler-certification": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "nclex-rn-exam-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "helium-10-certified-expert-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "microsoft-security-operations-analyst-exam-ref-sc-200": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "microsoft-python-certification-exam-98-281-and-pcep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-property-manager-cpm-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-data-center-specialist-cdcs-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "siemens-nx-cad-certified-professional-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "ace-the-ccs-p-2025-physician-coding-exam-prep-for-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "ibm-quantum-certification-2025-get-certified-get-ahead": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "aws-certified-solutions-architect-associate-practice-tests": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "nascla-contractors-exam-business-law-project-management": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-blockchain-developer-cbd-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "professional-engineer-pe-license-practice-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "real-estate-broker-license-2025-preptest-for-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "enterprise-architecture-foundation-exam-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "managing-successful-projects-with-prince2-test-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "artificial-intelligence-professional-caip-preptest-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "easa-module-3-aircraft-maintenance-technician-prep-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "financial-risk-manager-frm-certification-prep-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "masterful-health-and-wellness-coaching-health-coach-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "sage-100-certification-preptest-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "google-professional-machine-learning-engineer-2025-testprep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-supply-chain-professional-cscp-preptest-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "power-bi-certification-advanced-knowledge-and-skills": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certificaci-n-oficial-openstack-coa": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "master-privacy-management-cybersecurity-iapp-cippus-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "data-center-design-consultant-dcdc-preptest-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "it-fundamentals-certification-practice-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "siemens-scada-engineer-2025-test-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "shrm-society-for-human-resource-management-complete-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "mcat-organic-chemistry-2025-kaplan-test-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "mcat-physics-and-math-2025-kaplan-test-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "cyber-threat-intelligence-examen-en-fran-ais": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "biomedical-engineering-bme-high-difficulty-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "mastering-requirements-engineering-functional-analysis": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-water-treatment-operator-practice-grades-i-iv": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "cyber-network-defense-quiz-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "bitrix24-certified-administrator-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "asme-boiler-and-pressure-vessel-bpv-certification": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "ewpt-hands-on-professional-level-red-team-certification": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "international-accredited-business-accountant-iaba-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "servicenow-certified-system-administrator-csa-practice": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "confined-space-entry-supervisor": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "exploiter-l-hypersensibilit": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "oncology-oncc-high-difficulty-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "databricks-certified-generative-ai-engineer-associate-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "introducci-n-a-la-defensa-de-redes-inform-ticas": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "scaffolding-competent-person-certification": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "cdl-commercial-driver-s-license-exams": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-marina-operator-cmo-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-data-center-auditor-cdca-preptest-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "cisco-certified-network-associate-ccna-preptest-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "zerodha-certified-technical-analyst-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-public-bookkeeper-cpb-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "accredited-land-consultant-alc-certification-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "adobe-marketo-engage-certified-expert-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "ccnp-cisco-certified-network-professional-examprep-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-reliability-engineer-cre-prep-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "mastering-ethical-hacking-and-ai-integration": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "proyectos-adicionales-e-ingresos-pasivos-de-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "tradestation-trading-mastery-certification-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "conquer-sage-100-cre-cert-2025-hard-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "osha-30-hour-construction-safety-certification-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "nascla-exam-business-law-contracts-risk-management-etc": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "salesforce-certified-administrator-practice-exams-adm-201": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "aws-certified-welding-inspector-cwi-practice-exams": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "asme-quality-program-for-suppliers-qps": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "sap-ariba-sourcing-procurement-practice-exams": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "automation-in-project-management-with-genai": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "cobol-certification-high-difficulty-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "direct-air-capture-dac-training-certification": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-signalperson-nccco-2025-exam-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "notary-public-practice-exam-become-state-appointed": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "twilio-certified-developer-preptest-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "asana-certified-pro-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "ecir-preparation": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-lubrication-specialist-cls-exam-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "ecfmg-certification-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "servsafe-food-protection-manager-certification-exam-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-rigger-level-i-nccco": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "hazardous-waste-operations-hazwoper-40-hour": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "burp-suite-certified-practitioner-bscp": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "osha-1910-269-qualified-worker-power-generation-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "nace-cct-exam-prep-corrosion-technician-certificate": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "nccco-mobile-crane-operator-telescopic-boom-fixed-cab": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "impel-automotive-ai-certification-prep-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "nabtu-mc3-certification-multi-craft-core-apprenticeship": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-functional-safety-expert-cfse-prep-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "computer-science-fundamentals-preptest-2025-26": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "solidworks-certification-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-marina-manager-cmm-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "odoo-certified-erp-implementation-specialist-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "msp-programme-management-certification": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "giac-cyber-incident-leader-gcil": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "vibe-coding-ultimate-certification-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "free-resources-for-all": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "data-center-operations-certification-dcoc-testprep-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "prsa-s-a-new-view-of-imc-certificate": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "osha-510-construction-industry-safety-standards": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "journeyman-plumber-exam-prep-2025-ipc": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "forklift-and-pit-certification": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "workday-hcm-core-concepts-practice-exams": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "cobit-5-foundation-prep-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "thriving-in-the-2025-side-hustle-and-passive-income-landscap": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "oscp-certification-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "anab-accredited-food-handler-certification-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "accredited-buyer-s-representative-abr-certification-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "fastapi-certification-prep-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "spe-certification-licensing-exam-petroleum-engineering": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "iso-iec-27001-information-security-management-examprep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "ma-triser-l-criture-cr-ative-avec-l-ia-g-n-rative": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "advanced-botanical-medicine-program-specific-knowledge": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-water-efficiency-professional-cwep-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "cloud-security-architecture-and-design-gcad": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "north-american-pharmacist-licensure-examination-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "vcta-cloud-management-automation-vcta-cma": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "finra-series-7-general-securities-representative": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-quality-auditor-cqa-prep-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "razorpay-certified-payments-expert-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "dominar-la-integraci-n-de-hacking-tico-y-ia": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "arcgis-api-for-python-associate-2025-2026-certification": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "mongodb-associate-developer": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "rrc-certification-luxury-homes-certification-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "vmware-certified-technical-associate-vcta": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "preliminary-sat-national-merit-scholarship-qualifying-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "menguasai-peretasan-etis-dan-integrasi-ai": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-data-professional-cdp-practice-questions": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-hotel-administrator-cha-prep-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "fabno-naturopathic-oncology": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "gdtp-y14-5-geometric-dimensioning-and-tolerancing": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "georgia-tech-advanced-problem-solving-certificate-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "ejpt-elearnsecurity-junior-penetration-tester": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "ma-trise-du-piratage-thique-et-de-l-int-gration-de-l-ia": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "advanced-rag-developer-certification-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "close-crm-certified-sales-professional-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "oracle-fusion-cloud-supply-chain-manufacturing-cert": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "woocommerce-certified-developer-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-real-estate-brokerage-manager-crb": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "cyber-threat-intelligence-cti-practice-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "professional-digitalmarketing-pcm-advanceddigital-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "comlex-usa-licensure-osteopathic-medicine-examprep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "etik-hacking-ve-yapay-zeka-entegrasyonunda-ustala-ma": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "atd-associate-professional-in-talent-development-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "bigcommerce-certified-partner-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "ecppt-certified-professional-penetration-tester": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "internal-medicine-abim-high-difficulty-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "wncc-medical-coding-certificate-program": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "nsf-gmp-registration-nsf-ansi-455-certification": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-reverse-engineering-analyst-certification-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "docker-certified-associate-dca-exam-prep-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "nascla-accredited-electrical-testprep-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "imd-complex-problem-solving-fred-framework": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "nccer-construction-foreman-certification-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "juniper-networks-certified-associate-jncia-junos-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "intellectual-property-patent-bar-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "dermatology-abd-high-difficulty-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "plastic-surgical-nursing-certification-cans-cpsn-bundle-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "osha-10-hour-construction-safety-2025-certification-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "erlang-and-elixir-programming": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "sap-concur-certified-associate-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "cisco-devnet-high-difficulty-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "knowledge-of-sio-clinical-practice-guidelines": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "authorized-inspection-agency-aia-accreditation": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "shopify-plus-certified-high-difficulty-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "practical-network-penetration-tester-pnpt": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "samcart-certified-partner-program-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "general-accredited-appraiser-gaa": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-residential-specialist-crs": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "nfpa-70e-electrical-safety-in-the-workplace-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "next-gen-siem-mastery-advanced-techniques": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "iso-9001-2015-quality-management-systems": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "sap-s-4hana-financial-accounting-fico-exam-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "fall-protection-competent-person-osha-1926-m-test-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-systems-thinking-associate-csta-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "domina-la-escritura-creativa-con-ia-generativa": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "isaca-cism-practice-exams": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "agriscience-foundations-certification-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-industrial-hygienist-cih-prep-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "nplex-part-i-biomedical-science-examination": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "pediatrics-abp-high-difficulty-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "refonte-learning-prompt-engineering-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "nism-securities-markets-foundation-certification-series-xii": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "oracle-certified-associate-oca-testprep-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "data-center-design-consultant-dcdc-2025-certification-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "diplomate-of-canonical-chinese-medicine-dccm": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-international-property-specialist-cips": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "linux-foundation-certified-system-administrator-lfcs": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "harnessing-hypersensitivity": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "sitecore-content-management-training-certification-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "course": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "cardiology-ccds-high-difficulty-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "maestr-a-en-siem-de-pr-xima-generaci-n-t-cnicas-avanzadas": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "iso-27001-information-security-management": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "databricks-certified-data-engineer-associate": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "mastering-creative-writing-with-generative-ai": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "gsdc-agentic-ai-professional-certification-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-data-center-expert-cdce-preptest-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "salesforce-certified-administrator-prep-exam-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "freshservice-expert-certification-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-kubernetes-administrator-cka-and-ckad-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "easa-module-1-aircraft-maintenance-technician-prep-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "easa-module-2-aircraft-maintenance-technician-prep-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-commercial-investment-member-ccim-preptest-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "comsol-certified-simulation-engineer-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "abaqus-certified-analyst-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "cswp-certified-solidworks-professional-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "splunk-certified-cybersecurity-defense-analyst-preptest-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "cbap-ccba-certified-business-analysis-prep-test-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "tia-942-certification-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "microsoft-sentinel-analyst-2025-certification-test-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "ethereum-certified-developer-ecd-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "cisco-ccnp-hands-on-practical-test-mcqs": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "aws-certified-machine-learning-specialty-testprep-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "hibob-hcm-administrator-certification-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "certified-openstack-administrator-coa-exam-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "azure-administrator-associate-az-104-practice-exam": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "tensorflow-developer-certificate-preptest-2025": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "autodesk-certified-professional-acp-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "siemens-certified-programmable-logic-controller-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "nebosh-hse-certificate-in-process-safety-management": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "registered-communications-distribution-designer-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "cswa-2025-exam-prep-guaranteed-solidworks-certification": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "sage-construction-and-real-estate-certif-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "cehv12-certification-prep-the-complete-practice-test": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "nvidia-certified-professional-ai-operations-2025-testprep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "crisc-mcq-test-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "adobe-premiere-pro-cc-adobe-certified-associate-exam-prep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "giac-defensible-security-architecture-gdsa-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "cmx-community-management-certification-2025-preptest": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    },
+    "star-ccm-certified-simulation-engineer-2025-testprep": {
+      "mode": "quote_required",
+      "approvedBy": "owner",
+      "approvedAt": "2026-10-17"
+    }
+  }
 }

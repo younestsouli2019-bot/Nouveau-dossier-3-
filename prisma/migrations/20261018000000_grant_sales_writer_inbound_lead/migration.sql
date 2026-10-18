@@ -1,0 +1,36 @@
+-- S6-T01 follow-up: sales_writer needs InboundLead rights, because /api/orders
+-- writes BOTH tables and the single DATABASE_URL can only carry one role.
+--
+-- Context (migration 20261006000200_sales_payout_ledger_split_roles):
+--   sales_writer    -> SELECT, INSERT "SalesLedger" (no InboundLead grant at all)
+--   marketing_agent -> SELECT "SalesLedger", SELECT/INSERT "InboundLead"
+--
+-- Neither role could serve /api/orders on its own. The route splits by order
+-- type, because the schema does:
+--   priced order  (mode: fixed)          -> "SalesLedger", status awaiting_payment
+--   quote request (mode: quote_required) -> "InboundLead", a lead with no amount
+--
+-- Why SELECT and not just INSERT:
+--   the admin lookup (GET /api/orders?reference=...) falls back to
+--   "InboundLead" when the reference is not in "SalesLedger". With INSERT
+--   only, every quote lead would be written and then be unreadable through
+--   the very route that created it -- and today every catalog course is
+--   quote_required, so that is the only path carrying traffic.
+--
+-- What this does NOT grant: sales_writer still has no UPDATE on "InboundLead",
+-- and its explicit DENY list on the payout tables (Payout, PayoutLedger,
+-- PayoutBatch, PayoutItem, PayoutEvent, PayoutHold, OwnerSettlement,
+-- OwnerPayment, OwnerPaymentConfig, OwnerAccount, ClearingBatch,
+-- CryptoSettlement, WireExecutionLog, CashReturn) is untouched. The
+-- sales/payout separation that migration established is preserved.
+--
+-- This migration is only meaningful once DATABASE_URL authenticates as
+-- sales_writer. Until then the web app runs as the owner role and this grant
+-- is inert (a no-op on privileges it already has). Revert with:
+--   REVOKE SELECT, INSERT ON "InboundLead" FROM sales_writer;
+--
+-- Preconditions: role sales_writer exists (created by 20261006000200).
+-- No sequence grants are required: every id on this schema defaults to cuid(),
+-- generated client-side, so there is no SERIAL/IDENTITY to advance.
+
+GRANT SELECT, INSERT ON "InboundLead" TO sales_writer;

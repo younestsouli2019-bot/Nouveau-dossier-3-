@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { randomBytes, createHash } from 'node:crypto'
-import { mkdirSync, appendFileSync, existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { prisma } from '@/lib/db'
 
 export const runtime = 'nodejs'
 
@@ -11,7 +12,7 @@ export const runtime = 'nodejs'
  * Replaces the manual loop where a buyer had to email a PayPal memo
  * and wait for the owner to match it by hand. The buyer now submits
  * their details, gets a unique reference immediately, and the order
- * lands in an append-only log the owner (or the matcher daemon) reads.
+ * is persisted so the owner (or the matcher daemon) can find it.
  *
  * Deliberate constraints:
  *  - NO payment is taken or confirmed here. Creating an order is not
@@ -19,9 +20,18 @@ export const runtime = 'nodejs'
  *  - Never store card data, PayPal tokens, or bank credentials.
  *  - The reference is unguessable (160 bits) and is the join key the
  *    payment matcher will use against the incoming rail notification.
+ *  - The buyer's address is persisted as a SHA-256 hash only, matching
+ *    SalesLedger.buyer_email_hash ("NO PII PLAIN").
+ *
+ * Persistence is split by order type, because the two are not the same
+ * thing and the schema says so:
+ *   - a priced order (awaiting_payment) is a receivable -> SalesLedger,
+ *     whose price_amount_cents is a required positive integer;
+ *   - a quote request (awaiting_quote) has no amount at all and is a
+ *     lead, not a receivable -> InboundLead.
+ * Storing a lead in SalesLedger would require inventing a price, which
+ * is exactly the fabrication the pricing contract forbids.
  */
-
-const ORDER_LOG_DIR = join(process.cwd(), 'data', 'out', 'orders')
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
@@ -260,9 +270,50 @@ export async function POST(request: NextRequest) {
     contactEmail: 'billing@realworldcerts.com',
   }
 
+  // The buyer's address is never stored in the clear, matching the schema
+  // comment on SalesLedger.buyer_email_hash ("NO PII PLAIN"). The hash is
+  // enough to recognise a returning buyer and to reconcile against a rail
+  // notification; it is not enough to re-contact anyone from a dump.
+  const buyerEmailHash = createHash('sha256').update(buyerEmail).digest('hex')
+
   try {
-    mkdirSync(ORDER_LOG_DIR, { recursive: true })
-    appendFileSync(join(ORDER_LOG_DIR, 'orders.jsonl'), JSON.stringify(record) + '\n', 'utf8')
+    if (isQuote) {
+      // A lead, not a receivable. There is no amount here on purpose: the
+      // only honest value would be invented, and an invented price is
+      // exactly what the price-book contract exists to prevent.
+      await prisma.inboundLead.create({
+        data: {
+          campaign: 'realworldcerts_checkout',
+          source: 'checkout_quote_request',
+          product_slug: record.courseSlug,
+          metadata: {
+            // The reference is returned to the buyer, so the row has to
+            // carry it or the reference resolves to nothing later.
+            reference: record.reference,
+            courseTitle: record.courseTitle,
+            currency: record.currency,
+            method: record.method,
+            buyerEmailHash,
+            status: record.status,
+          },
+        },
+      })
+    } else {
+      // A receivable. price_amount_cents is a positive integer under CHECK
+      // salesledger_amount_positive, which resolvePrice has already
+      // guaranteed; a lead could not be written here even if we tried.
+      await prisma.salesLedger.create({
+        data: {
+          order_reference: record.reference,
+          product_slug: record.courseSlug,
+          buyer_email_hash: buyerEmailHash,
+          price_amount_cents: price.amountMinor,
+          currency: record.currency,
+          payment_method: record.method,
+          status: 'awaiting_payment',
+        },
+      })
+    }
   } catch {
     // If we cannot persist, we must not hand out a reference that can
     // never be matched.
@@ -321,19 +372,54 @@ export async function GET(request: NextRequest) {
   }
 
   const reference = request.nextUrl.searchParams.get('reference')
-  const logPath = join(ORDER_LOG_DIR, 'orders.jsonl')
-  if (!existsSync(logPath)) return NextResponse.json({ order: null })
+  if (!reference) return NextResponse.json({ error: 'reference_required' }, { status: 400 })
 
-  const lines = readFileSync(logPath, 'utf8').split('\n').filter(Boolean)
-  const match = lines
-    .map((l) => {
-      try {
-        return JSON.parse(l) as OrderRecord
-      } catch {
-        return null
-      }
+  // Two tables, one reference. Look in both, because a reference is minted
+  // before we know whether the course is priced or quoted, and the buyer is
+  // told the same reference either way.
+  try {
+    const sale = await prisma.salesLedger.findFirst({ where: { order_reference: reference } })
+    if (sale) {
+      return NextResponse.json({
+        order: {
+          reference: sale.order_reference,
+          status: sale.status,
+          courseSlug: sale.product_slug,
+          // SalesLedger stores the slug, not the published title.
+          courseTitle: findCatalogEntry(sale.product_slug)?.title ?? sale.product_slug,
+          amountMinor: sale.price_amount_cents,
+          currency: sale.currency,
+          method: sale.payment_method,
+          buyerEmailHash: sale.buyer_email_hash,
+          createdAt: sale.createdAt,
+          source: 'sales_ledger',
+        },
+      })
+    }
+
+    const lead = await prisma.inboundLead.findFirst({
+      where: { metadata: { path: ['reference'], equals: reference } },
     })
-    .find((r) => r && (!reference || r.reference === reference))
+    if (!lead) return NextResponse.json({ order: null })
 
-  return NextResponse.json({ order: match ?? null })
+    const meta = (lead.metadata ?? {}) as Record<string, unknown>
+    const str = (v: unknown): string | null => (typeof v === 'string' ? v : null)
+    return NextResponse.json({
+      order: {
+        reference,
+        status: str(meta.status) ?? 'awaiting_quote',
+        courseSlug: lead.product_slug,
+        courseTitle: str(meta.courseTitle),
+        // A lead is never given an amount, here or anywhere else.
+        amountMinor: null,
+        currency: str(meta.currency),
+        method: str(meta.method),
+        buyerEmailHash: str(meta.buyerEmailHash),
+        createdAt: lead.createdAt,
+        source: 'inbound_lead',
+      },
+    })
+  } catch {
+    return NextResponse.json({ error: 'order_store_unavailable' }, { status: 503 })
+  }
 }

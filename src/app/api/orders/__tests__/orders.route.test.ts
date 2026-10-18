@@ -1,7 +1,45 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
-import { mkdtempSync, rmSync, writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs'
+import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+
+/**
+ * The route persists through Prisma, and src/lib/db.ts builds its client at
+ * import time. Mocking the module keeps the suite offline and, more to the
+ * point, lets us assert *which table* each kind of order landed in — that
+ * split is the behaviour worth pinning.
+ */
+const db = vi.hoisted(() => ({ sales: [] as any[], leads: [] as any[] }))
+
+vi.mock('@/lib/db', () => ({
+	prisma: {
+		salesLedger: {
+			create: vi.fn(async ({ data }: any) => {
+				const row = { id: `sl_${db.sales.length + 1}`, createdAt: new Date(), ...data }
+				db.sales.push(row)
+				return row
+			}),
+			findFirst: vi.fn(
+				async ({ where }: any) =>
+					db.sales.find((r) => r.order_reference === where?.order_reference) ?? null,
+			),
+		},
+		inboundLead: {
+			create: vi.fn(async ({ data }: any) => {
+				const row = { id: `il_${db.leads.length + 1}`, createdAt: new Date(), ...data }
+				db.leads.push(row)
+				return row
+			}),
+			findFirst: vi.fn(
+				async ({ where }: any) =>
+					db.leads.find((r) => r.metadata?.reference === where?.metadata?.equals) ?? null,
+			),
+		},
+	},
+}))
+
+const sha256 = (s: string) => createHash('sha256').update(s).digest('hex')
 
 function makeNextRequest(url: string, init?: RequestInit) {
 	const req = new Request(url, init) as any
@@ -15,6 +53,8 @@ describe('/api/orders — order capture', () => {
 	const realCwd = process.cwd()
 
 	beforeEach(() => {
+		db.sales.length = 0
+		db.leads.length = 0
 		root = mkdtempSync(join(tmpdir(), 'rwc-orders-'))
 		// Capture the real function first; spying replaces the property, so
 		// it cannot be invoked on the spied object.
@@ -102,10 +142,19 @@ describe('/api/orders — order capture', () => {
 		expect(body.status).toBe('awaiting_payment')
 		expect(body.course.title).toBe('AWS SAA')
 
-		const log = readFileSync(join(root, 'data', 'out', 'orders', 'orders.jsonl'), 'utf8')
-		const rec = JSON.parse(log.trim())
-		expect(rec.buyerEmail).toBe('buyer@example.com')
-		expect(rec.amountMinor).toBe(129900)
+		// A priced order is a receivable, so it lands in SalesLedger and
+		// never in the lead table.
+		expect(db.leads).toHaveLength(0)
+		expect(db.sales).toHaveLength(1)
+		const row = db.sales[0]
+		expect(row.order_reference).toBe(body.reference)
+		expect(row.price_amount_cents).toBe(129900)
+		expect(row.status).toBe('awaiting_payment')
+		expect(row.currency).toBe('MAD')
+		expect(row.payment_method).toBe('paypal')
+		// The address is persisted as a hash only — never in the clear.
+		expect(row.buyer_email_hash).toBe(sha256('buyer@example.com'))
+		expect(row.buyer_email_hash).toHaveLength(64)
 		// Buyer email is not echoed back to the browser response body.
 		expect(JSON.stringify(body)).not.toContain('buyer@example.com')
 	})
@@ -131,12 +180,20 @@ describe('/api/orders — order capture', () => {
 			expect(body.amountMinor).toBeUndefined()
 			expect(body.currency).toBe('MAD')
 
-			const rec = JSON.parse(
-				readFileSync(join(root, 'data', 'out', 'orders', 'orders.jsonl'), 'utf8').trim(),
-			)
-			expect(rec.amountMinor).toBeNull()
-			expect(rec.quotedManually).toBe(true)
-			expect(rec.courseTitle).toBe('CCNA Lab')
+			// A quote request is a lead, not a receivable. price_amount_cents
+			// is a positive integer under CHECK salesledger_amount_positive,
+			// so this row could not be written to SalesLedger even if we
+			// wanted to — and there is no honest amount to write.
+			expect(db.sales).toHaveLength(0)
+			expect(db.leads).toHaveLength(1)
+			const lead = db.leads[0]
+			expect(lead.product_slug).toBe('ccna-lab')
+			expect(lead.metadata.reference).toBe(body.reference)
+			expect(lead.metadata.courseTitle).toBe('CCNA Lab')
+			expect(lead.metadata.currency).toBe('MAD')
+			expect(lead.metadata.buyerEmailHash).toBe(sha256('q@x.com'))
+			// No amount is recorded anywhere on a lead.
+			expect(JSON.stringify(lead)).not.toContain('amount')
 		})
 	})
 
@@ -146,7 +203,9 @@ describe('/api/orders — order capture', () => {
 			const res = await post({ email: 'b@x.com', courseSlug: 'aws-saa', method: 'paypal' })
 			expect(res.status).toBe(503)
 			expect((await res.json()).error).toBe('price_book_unavailable')
-			expect(existsSync(join(root, 'data', 'out', 'orders', 'orders.jsonl'))).toBe(false)
+			// Nothing was minted, so nothing was persisted in either table.
+			expect(db.sales).toHaveLength(0)
+			expect(db.leads).toHaveLength(0)
 		})
 
 		it('mints nothing for an unknown schema version', async () => {
