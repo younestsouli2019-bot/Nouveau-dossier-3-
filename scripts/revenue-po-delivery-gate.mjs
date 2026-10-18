@@ -60,8 +60,75 @@ function readCsvRows(p) {
   return { header, rows };
 }
 
+/* --- sale-received evidence --------------------------------------------- */
+/**
+ * The rwc_sale_received count, read from the same table the status endpoint
+ * reads ("AuditLedger", action = 'rwc_sale_received'). This is the only proof
+ * that a captured order actually turned into money, so it is read rather than
+ * inferred from an order row being present.
+ *
+ * Fallback: when DATABASE_URL is unset or the query fails, the same literal is
+ * looked for in the local data/ artifacts. "Not readable" therefore reports as
+ * NOT_RUN, never as "0 sales" — the two are different claims.
+ */
+async function readSaleReceived() {
+  const fromDb = await readSaleReceivedFromDb();
+  if (fromDb) return fromDb;
+  return readSaleReceivedFromFiles();
+}
+
+async function readSaleReceivedFromDb() {
+  const url = process.env.DATABASE_URL;
+  if (!url) return null;
+  let client;
+  try {
+    const { Client } = await import('pg');
+    client = new Client({ connectionString: url, ssl: { rejectUnauthorized: false } });
+    await client.connect();
+    const audited = await client.query(
+      `SELECT COUNT(*)::int AS n FROM "AuditLedger" WHERE action = 'rwc_sale_received'`,
+    );
+    const sales = await client.query(
+      `SELECT status::text AS status, COUNT(*)::int AS n FROM "SalesLedger" GROUP BY status`,
+    );
+    const leads = await client.query(`SELECT COUNT(*)::int AS n FROM "InboundLead"`);
+    const byStatus = {};
+    for (const row of sales.rows) byStatus[row.status] = Number(row.n);
+    return {
+      source: 'database',
+      audited: Number(audited.rows[0]?.n || 0),
+      byStatus,
+      totalSales: Object.values(byStatus).reduce((a, b) => a + b, 0),
+      leads: Number(leads.rows[0]?.n || 0),
+      files: [],
+    };
+  } catch {
+    // Unreadable DB is not evidence of zero sales; fall through to artifacts.
+    return null;
+  } finally {
+    if (client) { try { await client.end(); } catch { /* already closed */ } }
+  }
+}
+
+function readSaleReceivedFromFiles() {
+  const dirs = [join(ROOT, 'data', 'out'), join(ROOT, 'data')];
+  const files = [];
+  let audited = 0;
+  for (const d of dirs) {
+    if (!existsSync(d)) continue;
+    for (const f of readdirSync(d, { withFileTypes: true })) {
+      if (!f.isFile() || !/\.(csv|json|jsonl|ndjson)$/.test(f.name)) continue;
+      let body = '';
+      try { body = readFileSync(join(d, f.name), 'utf8'); } catch { continue; }
+      const n = (body.match(/rwc_sale_received/g) || []).length;
+      if (n > 0) { audited += n; files.push(f.name); }
+    }
+  }
+  return { source: 'files', audited, byStatus: {}, totalSales: null, leads: null, files };
+}
+
 /* --- Q1: revenue routing ------------------------------------------------- */
-function q1RevenueRouted() {
+async function q1RevenueRouted() {
   const checks = [];
 
   // 1. Is there any captured revenue at all?
@@ -76,7 +143,26 @@ function q1RevenueRouted() {
       : 'data/out/orders/orders.jsonl absent — no captured revenue recorded',
     { captured }));
 
-  // 2. Authorizer ledger: any non-zero balance anywhere?
+  // 2. Did any captured order actually become money? The rwc_sale_received
+  //    audit row is the only artifact that says so — an order row on its own
+  //    does not. A sale marked paid with no audit row is a contradiction, not
+  //    a backlog, so it FAILs instead of waiting to be noticed later.
+  const sr = await readSaleReceived();
+  const paid = Number(sr.byStatus?.paid || 0);
+  const srWhere = sr.source === 'database'
+    ? `${sr.totalSales} SalesLedger row(s) [${Object.entries(sr.byStatus).map(([k, v]) => `${k}=${v}`).join(' ') || 'none'}], ${sr.leads} quote lead(s)`
+    : `${sr.files.length} local artifact(s) mention the action — SalesLedger not readable`;
+  const srDetail = sr.audited > 0
+    ? `${sr.audited} rwc_sale_received audit row(s); ${srWhere}`
+    : paid > 0
+      ? `${paid} sale(s) marked paid but 0 rwc_sale_received audit rows — money received and not recorded`
+      : `0 rwc_sale_received; ${srWhere}`;
+  checks.push(R('q1_sale_received',
+    sr.audited > 0 ? 'PASS' : paid > 0 ? 'FAIL' : 'NOT_RUN',
+    srDetail,
+    { audited: sr.audited, source: sr.source, byStatus: sr.byStatus }));
+
+  // 3. Authorizer ledger: any non-zero balance anywhere?
   const ledger = readJson(join(ROOT, 'data', 'out', 'authorizer-ledger-report.json'));
   if (!ledger) {
     checks.push(R('q1_ledger_balances', 'NOT_RUN', 'authorizer-ledger-report.json absent or unreadable'));
@@ -90,7 +176,7 @@ function q1RevenueRouted() {
       { accounts: accounts.length, nonZero: nonZero.length, asOf: ledger.at }));
   }
 
-  // 3. Preset bucket routing: is there evidence of a bucket split?
+  // 4. Preset bucket routing: is there evidence of a bucket split?
   const bucketEvidence = [];
   const reportDir = join(ROOT, 'data', 'out');
   if (existsSync(reportDir)) {
@@ -110,7 +196,7 @@ function q1RevenueRouted() {
       : `only ${bucketsHit.length}/${PRESET_BUCKETS.length} buckets evidenced (${bucketsHit.join(',') || 'none'})`,
     { expected: PRESET_BUCKETS.map((b) => `${b.pct}% ${b.name}`), evidenced: bucketsHit }));
 
-  // 4. Is the payout rail actually reachable?
+  // 5. Is the payout rail actually reachable?
   const hasDb = Boolean(process.env.DATABASE_URL);
   checks.push(R('q1_payout_rail', hasDb ? 'PASS' : 'NOT_RUN',
     hasDb
@@ -118,7 +204,7 @@ function q1RevenueRouted() {
       : 'DATABASE_URL unset — preset OwnerAccounts unreachable, no payout can be confirmed',
     { databaseUrl: hasDb }));
 
-  // 5. Hands-free policy gates
+  // 6. Hands-free policy gates
   const gates = {
     OWNER_HANDS_FREE_POLICY: process.env.OWNER_HANDS_FREE_POLICY === 'true',
     AUTO_CONFIRM_OWNER_BATCHES: process.env.AUTO_CONFIRM_OWNER_BATCHES === 'true',
@@ -221,8 +307,8 @@ function q2PoDelivered() {
 }
 
 /* --- main ---------------------------------------------------------------- */
-function main() {
-  const q1 = q1RevenueRouted();
+async function main() {
+  const q1 = await q1RevenueRouted();
   const q2 = q2PoDelivered();
 
   const failAny = [q1, q2].some((q) => q.verdict === 'FAIL');
