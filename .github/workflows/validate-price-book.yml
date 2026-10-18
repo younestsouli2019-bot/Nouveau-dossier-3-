@@ -1,0 +1,46 @@
+name: validate-price-book
+run-name: price-book contract — ${{ github.sha }} @ ${{ github.ref_name }}
+
+# Why this is separate from ci.yml: ci.yml only fires on a push to
+# main/master/release/**/develop, plus pull requests. The price book was gutted
+# by a direct push to a feature branch (690abde: 298 entries -> 10), which no
+# existing workflow watched. This runs on every push, on any branch, so that
+# path is covered.
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch: {}
+
+concurrency:
+  group: price-book-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: price book contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      # The guard imports nothing from src and needs no Prisma client, so the
+      # postinstall generate is skipped.
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund --ignore-scripts
+
+      - name: validate price book
+        run: npx vitest run scripts/validate-prices-book.test.mjs --reporter=default --no-color
