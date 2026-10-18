@@ -42,9 +42,10 @@
       "approvedAt": "2026-10-17"
     },
     "private-pilot-license-ppl-preptest-2025": {
-      "mode": "quote_required",
+      "mode": "fixed",
+      "amountMinor": 25000,
       "approvedBy": "owner",
-      "approvedAt": "2026-10-17"
+      "approvedAt": "2026-10-18"
     },
     "full-stack-django-and-react-test-prep": {
       "mode": "quote_required",
