@@ -581,6 +581,15 @@ ${jsonLdBlocks}
   }` : ""}
   const dnow = new Date();
   const ref = "RWC-" + dnow.getFullYear().toString().slice(-2) + String(dnow.getMonth()+1).padStart(2,"0") + String(dnow.getDate()).padStart(2,"0") + "-" + Math.random().toString(36).slice(2,8).toUpperCase();
+  var fpn = 0; for (var fi2=0; fi2<(slug||"").length; fi2++) fpn = (fpn*31 + (slug||"").charCodeAt(fi2)) % 10000;
+  var amtNum = amount ? Number(amount) : (19 + fpn/10000);
+  if (location.pathname.indexOf("crypto") >= 0 && slug && q.get("email")) {
+    try { fetch("https://preview-sandbox--69b1d8d1b8ddf9df46c66114.base44-preview.app/functions/checkoutIntent", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug: slug, course: course || "", email: q.get("email"), ref: ref, amount: Math.round(amtNum*10000)/10000, network: "BEP20/ERC20", source: "crypto-page" })
+    }).catch(function(){}); } catch(e2) {}
+  }
+
   const refEl = document.getElementById("orderRef");
   refEl.textContent = ref;
   document.getElementById("copyRef").addEventListener("click", function(){
