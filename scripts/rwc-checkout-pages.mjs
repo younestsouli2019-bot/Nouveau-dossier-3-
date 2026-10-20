@@ -18,9 +18,9 @@ const STEPS = {
 		["We verify &amp; deliver", "Once the transfer arrives, we verify it against your order and email your course access within 24 hours."],
 	],
 	crypto: [
-		["Choose your network", "Send <strong>USDT</strong> on one of the networks below. Use the exact same network you select — sending on a different network can lose funds."],
-		["Copy the wallet address", "Copy the USDT address shown, set the network, and enter the amount from your order summary."],
-		["Add your order reference", "Put the <strong>Order Reference</strong> below in the payment note where your wallet allows, then confirm the transfer."],
+		["Copy your exact amount", "Your order summary shows an <strong>exact amount</strong> (e.g. 19.3753 USDT). Send that exact amount — it identifies your course automatically. Do not round it."],
+		["Send USDT to the address", "Send <strong>USDT</strong> (BEP-20 or ERC-20) to the deposit address shown, for the exact amount. TRC-20 is also accepted (address in the details)."],
+		["Confirmation &amp; order reference", "Crypto confirmations take a few minutes. Keep your <strong>Order Reference</strong> — email it to billing@realworldcerts.com with your email if you want a receipt."],
 		["We verify &amp; deliver", "Crypto confirmations take a few minutes. We verify the on-chain transaction and email your course access."],
 	],
 	bank: [
@@ -45,9 +45,9 @@ const DETAILS = {
 		icon: "P",
 	},
 	crypto: {
-		label: "USDT wallet address",
-		value: "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
-		note: "USDT address — accepts ERC-20 and BEP-20.",
+		label: "USDT deposit address",
+		value: "0x2700732a6f050c10c080154ce73cc641c448b704",
+		note: "USDT (BEP-20 / ERC-20) — same address for both networks. TRC-20: TUtM17RZ1jCrXPnLa34o7J59BSEqgqYYBE.",
 		icon: "₮",
 		extra: true,
 	},
@@ -572,7 +572,13 @@ ${jsonLdBlocks}
     }).catch(()=>{}); } catch(e){}
   }
   const amt = document.getElementById("amount");
-  if (amount) amt.textContent = "$" + amount;
+  if (amount) amt.textContent = "$" + amount;${method === "crypto" ? `
+  // Crypto exact-amount fingerprint: the watcher (scripts/rwc-crypto-deposit-watch.mjs)
+  // recomputes this from the slug to auto-identify the course on deposit match.
+  if (!amount && slug) {
+    var fp = 0; for (var fi=0; fi<slug.length; fi++) fp = (fp*31 + slug.charCodeAt(fi)) % 10000;
+    amt.textContent = (19 + fp/10000).toFixed(4) + " USDT (exact amount — do not round)";
+  }` : ""}
   const dnow = new Date();
   const ref = "RWC-" + dnow.getFullYear().toString().slice(-2) + String(dnow.getMonth()+1).padStart(2,"0") + String(dnow.getDate()).padStart(2,"0") + "-" + Math.random().toString(36).slice(2,8).toUpperCase();
   const refEl = document.getElementById("orderRef");
