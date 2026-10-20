@@ -16,7 +16,6 @@ swarm-push-frontend
 swarm-push-main
 swarm-remote-sync
 swarm-repo
-swarm-runner-repo
 swarm-wa
 swarm-worktree-sync
 Nouveau-dossier-3-
@@ -36,13 +35,11 @@ quick-squid
 # Exclude non-essential dirs
 archive
 backups
-logs
 workflow-logs
 latest-run-logs
 venv
 dist
 dist_rwc
-out
 doomsday-vault
 .wwebjs_auth
 workspace-*
@@ -50,5 +47,3 @@ workspace-*
 # Exclude build artifacts
 *.log
 *.tmp
-*.zip
-*.pdf
