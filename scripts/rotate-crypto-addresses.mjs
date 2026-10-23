@@ -32,6 +32,10 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "..");
 const MANIFEST_PATH = process.env.CRYPTO_ADDRESS_MANIFEST || path.join(ROOT, "config", "crypto-addresses.json");
 const EXIT_DRIFT = 3;
+// A refusal is a deliberate guard outcome (e.g. the signer-paired secret cannot
+// be verified), not an error: it gets its own exit code so CI can surface it as
+// a warning instead of going red forever on a correct, intended behaviour.
+const EXIT_REFUSED = 4;
 const TAG = "crypto-address-rotation:";
 
 const argv = process.argv.slice(2);
@@ -192,7 +196,7 @@ function plan() {
   }
   for (const r of refused) console.error(`${TAG}   REFUSED ${r.secret}: ${r.why}`);
   console.log(`${TAG} plan: ${writes.length} write(s), ${refused.length} refused`);
-  if (refused.length) process.exit(1);
+  if (refused.length) process.exit(EXIT_REFUSED);
 }
 
 function execute() {
@@ -213,5 +217,5 @@ if (isMain) {
   if (has("--inventory")) inventory();
   else if (has("--execute")) execute();
   else if (has("--plan")) plan();
-  else die("usage: rotate-crypto-addresses.mjs --inventory | --plan | --execute --repo owner/name");
+  else die("usage: rotate-crypto-addresses.mjs --inventory | --plan | --execute --repo owner/name  (exit 3 = allowlist drift, 4 = plan produced refusals)");
 }

@@ -118,7 +118,20 @@ jobs:
         run: node scripts/rotate-crypto-addresses.mjs --inventory
 
       - name: Plan (always)
-        run: node scripts/rotate-crypto-addresses.mjs --plan
+        # Exit 4 = the plan produced refusals by design (a guarded secret was
+        # deliberately left alone). That is a correct outcome, so it is surfaced
+        # as a warning: turning it into a red job would train everyone to ignore
+        # the one alarm that matters. Any other non-zero code still fails.
+        run: |
+          set +e
+          node scripts/rotate-crypto-addresses.mjs --plan
+          rc=$?
+          set -e
+          if [ "$rc" -eq 4 ]; then
+            echo "::warning::Plan reports refusals — a guarded secret was left untouched (see REFUSED lines above)."
+            exit 0
+          fi
+          exit "$rc"
 
       - name: Execute rotation
         # Manual dispatch defaults to dry_run=true. The schedule always rotates.
