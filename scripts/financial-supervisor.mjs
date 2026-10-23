@@ -22,7 +22,13 @@ import fs from "fs";
 import path from "path";
 
 const PCT = Number(process.env.INFRA_BUDGET_PCT || 30);
-const COST = Number(process.env.UPGRADE_COST_USD || 20);
+// Real plan ladder read from billing.base44.com (2026-10-23, logged-in plans page)
+const PLAN_LADDER = [
+  { plan: "Starter", cost: 16 },
+  { plan: "Builder", cost: 40 },
+  { plan: "Pro", cost: 80 },
+  { plan: "Elite", cost: 160 },
+];
 const LEDGER = path.resolve(process.env.BUDGET_LEDGER || "data/out/infra-budget-ledger.ndjson");
 const RECORD = process.argv.includes("--record");
 
@@ -61,7 +67,9 @@ const main = async () => {
   const ledgerGross = readLedgerGross();
   const gross = bitget; // real on-chain/custodial revenue today
   const budget = prevBudget() + (gross * PCT) / 100;
-  const due = budget >= COST;
+  const affordable = PLAN_LADDER.filter((t) => budget >= t.cost);
+  const target = affordable.length ? affordable[affordable.length - 1] : null;
+  const due = Boolean(target);
   const decision = {
     at: new Date().toISOString(),
     gross_revenue_usdt: Math.round(gross * 10000) / 10000,
@@ -69,9 +77,13 @@ const main = async () => {
     alloc_pct: PCT,
     budget_before: Math.round(prevBudget() * 10000) / 10000,
     budget_after: Math.round(budget * 10000) / 10000,
-    upgrade_cost_usd: COST,
+    target_plan: target ? target.plan : null,
+    target_cost_usd: target ? target.cost : 0,
+    plan_ladder_usd: PLAN_LADDER,
     decision: due ? "UPGRADE_DUE" : "HOLD",
-    action_owner: "owner — purchase at https://billing.base44.com (supervisor never executes payments)",
+    action_owner: due
+      ? "superagent — execute upgrade via logged-in local browser at app.base44.com plans page, then verify"
+      : "hold — accumulate budget from revenue",
   };
   console.log(JSON.stringify(decision, null, 2));
   if (RECORD) {
