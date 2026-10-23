@@ -158,6 +158,47 @@ function main() {
   check("I6:no-simulated-settlement-success", simulated.length === 0,
     simulated.length ? `SUCCESS_* settlement artifacts found: ${simulated.join(", ")}` : "no rail fabricates settlement success");
 
+  // I7 — no script fabricates proof of delivery (NG2 doctrine):
+  // tracking numbers, carrier events and POD references must be EXTERNAL
+  // inputs. Synthesising them to mark a shipment "delivered" is document
+  // falsification (art. 388 CPP, reports/po-gaps-v358.md §4). The ONLY file
+  // allowed to build a POD reference is the fail-closed guard that hashes a
+  // real on-disk scan.
+  const SYNTHETIC_EVIDENCE_RX =
+    /generate(?:Realistic|Carrier)?(?:Tracking|TrackingNumber|DeliveryEvents|CarrierEvents|ProofOfDelivery|DeliveryProof)\b|OWNER_RECEIPT_CONFIRMED|OWNER_SIGNATURE\b|syntheticProof/i;
+  const POD_BUILD_RX = /POD:\$\{/;
+  // This verifier contains the pattern names themselves, so it is exempt from
+  // its own scan (same reason I6's pattern is written to not self-match).
+  // src/app/api/supply-chain/seed/route.ts is the ONE accepted exception: it is
+  // a dev-only demo seeder (403 under NODE_ENV=production, ops-auth gated) that
+  // generates sample rows for the dashboard and NEVER asserts verification
+  // (trackingVerified is hard-coded false). It is not part of the PO delivery
+  // automation and produces no delivery evidence for real shipments.
+  const I7_EXEMPT = new Set([
+    "scripts/verify-swarm-invariants.mjs",
+    "scripts/lib/po-delivery.mjs",
+    "src/app/api/supply-chain/seed/route.ts",
+  ]);
+  const fabricated = [];
+  const walkEvidence = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) { if (e.name !== "node_modules" && e.name !== ".git") walkEvidence(full); }
+      else if (/\.(ts|tsx|mjs|js)$/.test(e.name) && !/\.test\.mjs$/.test(e.name)) {
+        const rel = path.relative(process.cwd(), full).split(path.sep).join("/");
+        if (I7_EXEMPT.has(rel)) continue;
+        const t = fs.readFileSync(full, "utf8");
+        if (SYNTHETIC_EVIDENCE_RX.test(t) || POD_BUILD_RX.test(t)) fabricated.push(rel);
+      }
+    }
+  };
+  for (const top of ["src", "scripts"]) if (fs.existsSync(top)) walkEvidence(top);
+
+  check("I7:no-fabricated-delivery-evidence", fabricated.length === 0,
+    fabricated.length
+      ? `scripts synthesise delivery evidence (tracking/carrier events/POD/receipt): ${fabricated.join(", ")}`
+      : "no script fabricates carrier tracking, carrier events or POD references");
+
   check("I5:node-floor-20", floorMajor >= 20, `package.json engines.node = ${nodeFloor || "MISSING"} (expected floor major >= 20)`);
 
   // ---- verdict ----

@@ -1,0 +1,9 @@
+{
+  "_README": "GABARIT d'entrée preuve pour scripts/swarm-po-delivery-executor.mjs et scripts/auto-deliver-owner-pos.mjs. Ne contient volontairement AUCUNE donnée réelle. Copier vers data/out/po/carrier-tracking.json (ou pointer PO_CARRIER_TRACKING_FILE dessus) puis remplacer les valeurs par les données RÉELLES du transporteur (relevé Amana / Aramex / Poste Maroc). Le swarm n'invente JAMAIS de numéro de suivi : sans donnée transporteur réelle, le script s'arrête fail-closed (NG2, art. 388 CPP — voir reports/po-gaps-v358.md).",
+  "_RUNTIME_PATH": "data/out/po/carrier-tracking.json  (surchargeable via PO_CARRIER_TRACKING_FILE)",
+  "_RECEIVED_DIR": "out/received  (surchargeable via PO_RECEIVED_DIR) — déposer ici les SCANS SIGNÉS du bordereau de livraison, nommés <PO_REF>-<CARRIER>.<pdf|jpg|png>. Le POD = POD:<CARRIER>:sha256(scan). Aucun scan => aucune livraison confirmée.",
+  "_CONTRACT": "Objet JSON indexé par référence PO. Chaque entrée : { carrier: AMANA|FORCELOG|CHRONO_DIALI|CATHEDIS|ARAMEX|DHL|FEDEX|UPS, trackingNumber: <réf réelle, >=6 car>, events: [ { status, location, timestamp? } ] }.",
+  "SWARM-PO-2026-001": { "carrier": "AMANA", "trackingNumber": "", "events": [] },
+  "SWARM-PO-2026-002": { "carrier": "ARAMEX", "trackingNumber": "", "events": [] },
+  "SWARM-PO-2026-003": { "carrier": "ARAMEX", "trackingNumber": "", "events": [] }
+}
