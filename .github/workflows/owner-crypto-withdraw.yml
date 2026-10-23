@@ -300,8 +300,12 @@ jobs:
             evm)
               CHAIN="bsc"
               if [ "$NETWORK" = "ERC20" ]; then CHAIN="ethereum"; fi
+              # Destination resolves from config/crypto-addresses.json (route
+              # evm-usdt-bep20 / evm-usdt-erc20). No caller-supplied address is
+              # accepted here: --to would only be cross-checked against the
+              # registry, so passing the dispatch input would just duplicate it.
               node ./scripts/evm-wallet-rail.mjs --action send --chain "$CHAIN" --token USDT \
-                --amount "$AMOUNT" --to "$ADDR" --confirm > out.json 2>&1
+                --amount "$AMOUNT" --confirm > out.json 2>&1
               ;;
             *)
               echo "::error::unknown rail '$RAIL'"

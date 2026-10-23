@@ -45,6 +45,36 @@
         "note": "Higher network fee; fallback when BEP20 is unavailable."
       },
       {
+        "id": "binance-usdt-bep20",
+        "rail": "binance",
+        "asset": "USDT",
+        "network": "BEP20",
+        "address": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+        "verified": true,
+        "verifiedVia": "EIP-55 checksum + owner declaration (same owner EVM wallet as bitget)",
+        "note": "Same owner wallet as the bitget BEP20 route; declared per-rail so the binance rail resolves it without any caller-supplied address."
+      },
+      {
+        "id": "evm-usdt-bep20",
+        "rail": "evm",
+        "asset": "USDT",
+        "network": "BEP20",
+        "address": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+        "verified": true,
+        "verifiedVia": "EIP-55 checksum + owner declaration (same owner EVM wallet as bitget)",
+        "note": "Direct on-chain send (--chain bsc) to the owner EVM wallet."
+      },
+      {
+        "id": "evm-usdt-erc20",
+        "rail": "evm",
+        "asset": "USDT",
+        "network": "ERC20",
+        "address": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+        "verified": true,
+        "verifiedVia": "EIP-55 checksum + owner declaration (same owner EVM wallet as bitget)",
+        "note": "Direct on-chain send (--chain ethereum) to the owner EVM wallet."
+      },
+      {
         "id": "bitget-usdt-trc20",
         "rail": "bitget",
         "asset": "USDT",
