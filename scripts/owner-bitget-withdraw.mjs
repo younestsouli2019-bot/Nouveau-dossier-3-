@@ -59,7 +59,11 @@ class BitgetClient {
   }
 }
 
-const OWNER_WALLET = "0xA46225a984E2B2b5E5082E52ae8d8915A09FEFE7";
+// EIP-55 canonical casing. The previous literal
+// "0xA46225a984E2B2b5E5082E52ae8d8915A09FEFE7" failed checksum validation
+// (ethers: "bad address checksum"; strict exchange APIs reject it too), so a
+// run that fell back to this default could never settle.
+const OWNER_WALLET = "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7";
 const MAX_DEFAULT = 60;
 const LEDGER = path.resolve("data", "out", "bitget-withdraw-ledger.ndjson");
 
