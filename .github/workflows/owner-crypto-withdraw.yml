@@ -16,10 +16,19 @@ on:
         type: string
         required: true
       audit_only:
-        description: Run validation without submitting withdrawal
+        description: Run validation without submitting withdrawal (probes ALL rails read-only)
         type: boolean
         required: false
         default: false
+      rail:
+        description: "Settlement rail to use for a live withdrawal"
+        type: choice
+        required: false
+        default: bitget
+        options:
+          - bitget
+          - binance
+          - evm
 
 permissions:
   contents: write
@@ -43,9 +52,21 @@ jobs:
       # 2026-10-23: rail switched Binance -> Bitget. Binance (HTTP 451) and
       # Bybit (403) geo-block GitHub's US runner egress, so the previous wiring
       # never moved funds (run 49 artifact: binance_withdraw_err_*.json, 451).
+      # 2026-10-23 (b): every alternative route now wired, selected by the
+      # `rail` dispatch input. bitget = CEX (blocked until the API key is
+      # rotated: 40037), binance = CEX (451 from GitHub egress), evm = direct
+      # on-chain BSC transfer from the trust wallet — no exchange, therefore
+      # immune to exchange geo-blocking, but it needs the wallet private key
+      # and BNB gas.
       BITGET_API_KEY: ${{ secrets.BITGET_API_KEY }}
       BITGET_API_SECRET: ${{ secrets.BITGET_API_SECRET }}
       BITGET_PASSPHRASE: ${{ secrets.BITGET_PASSPHRASE }}
+      BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
+      BINANCE_API_SECRET: ${{ secrets.BINANCE_API_SECRET }}
+      TRUST_WALLET_PRIVATE_KEY: ${{ secrets.TRUST_WALLET_PRIVATE_KEY }}
+      # I8 capability grant for the non-custodial on-chain rail. Fail-closed:
+      # unset secret => the evm send path refuses to sign.
+      CAP_SEND_CRYPTO: ${{ secrets.CAP_SEND_CRYPTO || 'false' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -118,30 +139,80 @@ jobs:
             echo "Install retry ($n)..."
             sleep 5
           done
-      - name: Execute withdraw (Bitget rail)
+      - name: Execute withdraw (${{ inputs.rail }} rail)
         id: withdraw
         run: |
           set -euo pipefail
           AUDIT="${{ steps.validate.outputs.audit_only }}"
           SKIP="${{ steps.validate.outputs.skip_submit }}"
+          RAIL="${{ inputs.rail }}"
+          AMOUNT="${{ inputs.amount }}"
+          NETWORK="${{ inputs.network }}"
+          ADDR="${{ inputs.address }}"
           mkdir -p out/crypto
-          ARGS=("--amount" "${{ inputs.amount }}" "--network" "${{ inputs.network }}")
-          if [ "$AUDIT" != "true" ] && [ "$SKIP" != "true" ]; then
-            ARGS+=("--execute")
-            echo "Live mode: --execute passed (requires SWARM_LIVE=true)."
-          else
-            echo "Audit-only / withdraw disabled; dry-run (no exchange submit, balance still read)."
+
+          LIVE=false
+          if [ "$AUDIT" != "true" ] && [ "$SKIP" != "true" ]; then LIVE=true; fi
+          echo "rail=$RAIL live=$LIVE"
+
+          # ---------------------------------------------------------------
+          # Audit mode: probe EVERY rail read-only, so one run answers "which
+          # routes actually authenticate from GitHub's egress?". Never signs,
+          # never withdraws; failures are recorded per rail, not swallowed.
+          # ---------------------------------------------------------------
+          if [ "$LIVE" != "true" ]; then
+            echo "Audit-only / withdraw disabled -> read-only sweep of all rails."
+            probe() {
+              local name="$1"; shift
+              if node "$@" > "out/crypto/rail-audit-$name.json" 2>&1; then
+                echo "OK   $name: reachable"
+              else
+                echo "WARN $name: unreachable/unauthorized (see out/crypto/rail-audit-$name.json)"
+              fi
+            }
+            probe bitget  ./scripts/bitget-rail.mjs --action balance
+            probe binance ./scripts/binance-rail.mjs --action balance
+            probe evm     ./scripts/evm-wallet-rail.mjs --action balance
+            echo "--- sweep summary ---"
+            for f in out/crypto/rail-audit-*.json; do
+              echo "== $f"; head -c 600 "$f" || true; echo
+            done
+            exit 0
           fi
-          # The previous wiring swallowed failures with '|| true', so a geo-blocked
-          # or rejected withdrawal still reported 'success'. Fail the job instead.
+
+          # ---------------------------------------------------------------
+          # Live mode: exactly one rail, selected at dispatch. No '|| true':
+          # a rail that fails must fail the job (the run 49 false-success bug).
+          # ---------------------------------------------------------------
           set +e
-          node ./scripts/owner-bitget-withdraw.mjs "${ARGS[@]}" > out.json 2>&1
+          case "$RAIL" in
+            bitget)
+              node ./scripts/owner-bitget-withdraw.mjs --amount "$AMOUNT" --network "$NETWORK" --execute > out.json 2>&1
+              ;;
+            binance)
+              node ./scripts/binance-rail.mjs --action withdraw --amount "$AMOUNT" --network bsc --confirm > out.json 2>&1
+              ;;
+            evm)
+              CHAIN="bsc"
+              if [ "$NETWORK" = "ERC20" ]; then CHAIN="ethereum"; fi
+              node ./scripts/evm-wallet-rail.mjs --action send --chain "$CHAIN" --token USDT \
+                --amount "$AMOUNT" --to "$ADDR" --confirm > out.json 2>&1
+              ;;
+            *)
+              echo "::error::unknown rail '$RAIL'"
+              exit 1
+              ;;
+          esac
           RC=$?
           set -e
           cat out.json || true
           if [ "$RC" -ne 0 ]; then
-            echo "::error::owner-bitget-withdraw.mjs exited $RC — no funds moved."
+            echo "::error::$RAIL rail exited $RC — no funds moved."
             exit "$RC"
+          fi
+          if grep -q '"fundsMoved": *false' out.json 2>/dev/null; then
+            echo "::error::$RAIL reported fundsMoved=false — treat as failure."
+            exit 1
           fi
       - name: Upload artifact
         # always(): a failed attempt is the record that matters most for audit —
