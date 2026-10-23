@@ -2,8 +2,16 @@ name: Owner Crypto Withdraw
 on:
   workflow_dispatch:
     inputs:
+      action:
+        description: "withdraw = move funds to an owner route; convert = sell a stranded base balance into the withdrawable asset"
+        type: choice
+        required: false
+        default: withdraw
+        options:
+          - withdraw
+          - convert
       amount:
-        description: USDT amount to withdraw
+        description: USDT amount to withdraw (ignored by convert when convert_all=true)
         type: number
         required: true
       network:
@@ -12,16 +20,26 @@ on:
         required: false
         default: BEP20
       address:
-        description: Recipient wallet address (must be supplied at dispatch — no hardcoded default)
+        description: Recipient wallet address (required for action=withdraw — must be supplied at dispatch, no hardcoded default)
         type: string
-        required: true
+        required: false
+      convert_symbol:
+        description: Market to sell for action=convert (BASE/QUOTE)
+        type: string
+        required: false
+        default: BTC/USDT
+      convert_all:
+        description: action=convert — sell the entire free base balance instead of --amount
+        type: boolean
+        required: false
+        default: true
       audit_only:
         description: Run validation without submitting withdrawal (probes ALL rails read-only)
         type: boolean
         required: false
         default: false
       rail:
-        description: "Settlement rail to use for a live withdrawal"
+        description: "Settlement rail to use for a live withdrawal (convert is bitget-only)"
         type: choice
         required: false
         default: bitget
@@ -67,6 +85,10 @@ jobs:
       # I8 capability grant for the non-custodial on-chain rail. Fail-closed:
       # unset secret => the evm send path refuses to sign.
       CAP_SEND_CRYPTO: ${{ secrets.CAP_SEND_CRYPTO || 'false' }}
+      # I8 capability grant for the bitget convert action (asset -> withdrawable
+      # USDT). No default grant: the conversion stays blocked until this secret
+      # is explicitly set to true.
+      CAP_WITHDRAW_CRYPTO: ${{ secrets.CAP_WITHDRAW_CRYPTO || 'false' }}
       # Optional non-US egress (http://user:pass@host:port). Binance answers 451
       # to GitHub's US runner IPs; routing the rail calls through a proxy outside
       # the restricted region is the only way to use that rail from here.
@@ -78,26 +100,39 @@ jobs:
         id: validate
         run: |
           set -euo pipefail
+          ACTION="${{ inputs.action }}"
           AMOUNT="${{ inputs.amount }}"
           ADDR="${{ inputs.address }}"
           NETWORK="${{ inputs.network }}"
+          echo "action=$ACTION"
           echo "amount=$AMOUNT"
           echo "network=$NETWORK"
-          echo "address=${ADDR:0:6}…${ADDR: -4}"
-          # Amount sanity: positive numeric
-          if ! awk -v a="$AMOUNT" 'BEGIN { exit !(a+0 > 0) }'; then
-            echo "::error::amount must be numeric and > 0"
-            exit 1
-          fi
-          if [ "${#ADDR}" -lt 26 ]; then
-            echo "::error::address looks too short"
-            exit 1
+          if [ "$ACTION" = "convert" ]; then
+            # A conversion has no recipient, so the recipient gates below do not
+            # apply; it is still gated by WITHDRAW_ENABLE + the I8 capability.
+            echo "symbol=${{ inputs.convert_symbol }} all=${{ inputs.convert_all }}"
+            if [ "${{ inputs.rail }}" != "bitget" ]; then
+              echo "::error::action=convert is implemented on the bitget rail only"
+              exit 1
+            fi
+          else
+            echo "address=${ADDR:0:6}…${ADDR: -4}"
+            # Amount sanity: positive numeric
+            if ! awk -v a="$AMOUNT" 'BEGIN { exit !(a+0 > 0) }'; then
+              echo "::error::amount must be numeric and > 0"
+              exit 1
+            fi
+            if [ "${#ADDR}" -lt 26 ]; then
+              echo "::error::address looks too short — a withdrawal needs a recipient"
+              exit 1
+            fi
           fi
           # Live-submission eligibility, computed BEFORE the allowlist gate so the
           # gate can be fail-closed for live runs only (dry-runs stay usable).
           LIVE=false
           if [ "${WITHDRAW_ENABLE}" = "true" ] && [ "${{ inputs.audit_only }}" != "true" ]; then LIVE=true; fi
           echo "live=$LIVE"
+          if [ "$ACTION" != "convert" ]; then
           ALLOWED_RAW="${ALLOWED_WITHDRAW_ADDRESSES}"
           if [ -n "$ALLOWED_RAW" ]; then
             MATCH=0
@@ -124,6 +159,7 @@ jobs:
             exit 1
           else
             echo "::warning::CRYPTO_ALLOWED_ADDRESSES not set — allowlist check skipped (dry-run only; live submission disabled)."
+          fi
           fi
           if [ "${WITHDRAW_ENABLE}" != "true" ]; then
             echo "::warning::CRYPTO_WITHDRAW_ENABLE != true — will still build payload but skip submission (audit-only semantics)"
@@ -185,6 +221,44 @@ jobs:
           LIVE=false
           if [ "$AUDIT" != "true" ] && [ "$SKIP" != "true" ]; then LIVE=true; fi
           echo "rail=$RAIL live=$LIVE"
+
+          # ---------------------------------------------------------------
+          # convert: sell a stranded base balance into the asset the rails can
+          # withdraw. Handled before the rail sweep because it is a single-rail,
+          # single-asset operation. Dry-run unless WITHDRAW_ENABLE=true, and the
+          # script itself still requires the I8 CAP_WITHDRAW_CRYPTO grant.
+          # ---------------------------------------------------------------
+          if [ "${{ inputs.action }}" = "convert" ]; then
+            CONVERT_ARGS="--action convert --symbol ${{ inputs.convert_symbol }}"
+            if [ "${{ inputs.convert_all }}" = "true" ]; then
+              CONVERT_ARGS="$CONVERT_ARGS --all"
+            else
+              CONVERT_ARGS="$CONVERT_ARGS --amount $AMOUNT"
+            fi
+            if [ "$LIVE" = "true" ]; then
+              CONVERT_ARGS="$CONVERT_ARGS --confirm"
+            else
+              echo "convert: dry-run (WITHDRAW_ENABLE != true or audit_only) — no order will be submitted."
+            fi
+            set +e
+            # shellcheck disable=SC2086
+            node ./scripts/bitget-rail.mjs $CONVERT_ARGS > out.json 2>&1
+            RC=$?
+            set -e
+            cat out.json || true
+            if [ "$RC" -ne 0 ]; then
+              echo "::error::convert exited $RC — no conversion submitted."
+              exit "$RC"
+            fi
+            if grep -q '"fundsMoved": *false' out.json 2>/dev/null; then
+              if [ "$LIVE" = "true" ]; then
+                echo "::error::convert reported fundsMoved=false — treat as failure."
+                exit 1
+              fi
+              echo "::notice::dry-run plan only — fundsMoved=false is expected here."
+            fi
+            exit 0
+          fi
 
           # ---------------------------------------------------------------
           # Audit mode: probe EVERY rail read-only, so one run answers "which
