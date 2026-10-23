@@ -26,6 +26,42 @@ PATs cannot be auto-rotated (MFA) — App installation tokens can, and expire by
 - `scripts/mint-app-token.mjs` — RS256 JWT → installation token (1h). `--env` mode for CI.
 - `scripts/rotate-repo-secrets.mjs` — libsodium sealed-box handshake (`public-key` → encrypt → PUT), Shopify pattern. Rotates Actions secrets with the 1h token, e.g. the long-failing `APP_WEBHOOK_URL`/`APP_WEBHOOK_SECRET`.
 
+## Provisioning the rotator App (for `crypto-address-rotation.yml`)
+
+`.github/workflows/crypto-address-rotation.yml` reads `CENTRAL_ROTATOR_APP_ID` and
+`CENTRAL_ROTATOR_PRIVATE_KEY`. While they are absent the workflow runs **read-only**
+(a `::warning::` + `can_execute=false`), so no address is ever rotated. To close it:
+
+```powershell
+# Outside Trae (Admin PowerShell): gh must be authenticated there.
+pwsh -File scripts/provision-rotator-app.ps1
+```
+
+The script is fail-closed and does three things, in order:
+
+1. writes both secrets **piped on stdin** (`gh secret set NAME` with no `--body`),
+   so the PEM never enters shell history or the process argument table;
+2. mints a 1h App installation token — the only proof that the App ID, the PEM and
+   the repo installation actually agree;
+3. reads `GET /repos/{repo}/actions/secrets/public-key` with that token, proving the
+   App carries **Secrets: read**. The PEM is staged in `%TEMP%` (UTF-8, no BOM) and
+   deleted in a `finally` block — it never touches the working tree.
+
+**Required App permissions:** Contents *read/write*, Workflows *read/write*,
+**Secrets *read/write***, Actions *read*, Metadata *read*.
+
+The script cannot prove **Secrets: write** without mutating a secret, so it ends by
+printing the one command that does:
+
+```
+gh workflow run crypto-address-rotation.yml --repo <owner/name> -f dry_run=false
+```
+
+Success = the `Execute rotation` step runs instead of `can_execute=false`.
+
+**Reminder:** a `workflow_dispatch` only resolves from the **default branch**, so this
+workflow must be merged to `main` before the command above can find it.
+
 ## In CI / self-healing loop
 The hourly self-healing workflow can use `actions/create-github-app-token@v1` with
 `CENTRAL_ROTATOR_APP_ID` + `CENTRAL_ROTATOR_PRIVATE_KEY` secrets — same pattern the
