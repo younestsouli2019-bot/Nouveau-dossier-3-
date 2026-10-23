@@ -144,6 +144,9 @@ jobs:
             exit "$RC"
           fi
       - name: Upload artifact
+        # always(): a failed attempt is the record that matters most for audit —
+        # without this the run that proves fail-closed leaves no artifact.
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: owner-crypto-withdraw-${{ github.run_id }}
