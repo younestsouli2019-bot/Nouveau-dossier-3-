@@ -67,6 +67,10 @@ jobs:
       # I8 capability grant for the non-custodial on-chain rail. Fail-closed:
       # unset secret => the evm send path refuses to sign.
       CAP_SEND_CRYPTO: ${{ secrets.CAP_SEND_CRYPTO || 'false' }}
+      # Optional non-US egress (http://user:pass@host:port). Binance answers 451
+      # to GitHub's US runner IPs; routing the rail calls through a proxy outside
+      # the restricted region is the only way to use that rail from here.
+      CRYPTO_EGRESS_PROXY: ${{ secrets.CRYPTO_EGRESS_PROXY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -158,6 +162,17 @@ jobs:
           NETWORK="${{ inputs.network }}"
           ADDR="${{ inputs.address }}"
           mkdir -p out/crypto
+
+          # Non-US egress. Node >= 24 can honour HTTP(S)_PROXY for global fetch
+          # via --use-env-proxy; without it every rail call egresses from the
+          # runner's US IP and Binance answers 451.
+          if [ -n "${CRYPTO_EGRESS_PROXY:-}" ]; then
+            export HTTP_PROXY="$CRYPTO_EGRESS_PROXY" HTTPS_PROXY="$CRYPTO_EGRESS_PROXY"
+            export NODE_OPTIONS="${NODE_OPTIONS:-} --use-env-proxy"
+            echo "egress: via configured proxy"
+          else
+            echo "egress: direct (no CRYPTO_EGRESS_PROXY — Binance will stay 451)"
+          fi
 
           LIVE=false
           if [ "$AUDIT" != "true" ] && [ "$SKIP" != "true" ]; then LIVE=true; fi
