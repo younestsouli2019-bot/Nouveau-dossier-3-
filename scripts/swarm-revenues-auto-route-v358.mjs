@@ -669,7 +669,7 @@ function sha(s){ return createHash('sha256').update(String(s)).digest('hex'); }
   const netSwarmOnly = round2(events.reduce((s,e)=>s+Number(e.amount||0),0));
   if (netSwarmOnly > MAX_WET_RUN_TOTAL_USD || totalCollected > MAX_WET_RUN_TOTAL_USD * 1.3) {
     console.error(`\n[FAIL-CLOSED exit=7 SAFETY_ENVELOPE] TOTAL_COLLECTED=$${totalCollected.toFixed(2)} NET_SWARM=$${netSwarmOnly.toFixed(2)}  > MAX_WET_RUN_TOTAL_USD=$${MAX_WET_RUN_TOTAL_USD}. Refuser LIVE. Écrire plan mode seulement.`);
-    writePlanFile(events, splitsPerEvent, gates, canSendPerPreset, { inbound: allEvents.length, duplicatesRejected, quarantinePerEvent: deadRailEvents.length, safetyEnvelopeBreach: `${netSwarmTotal}/${MAX_WET_RUN_TOTAL_USD}` });
+    writePlanFile(events, splitsPerEvent, gates, canSendPerPreset, { inbound: allEvents.length, duplicatesRejected, quarantinePerEvent: deadRailEvents.length, safetyEnvelopeBreach: `${netSwarmOnly}/${MAX_WET_RUN_TOTAL_USD}` });
     zeroizeAllAfterRun(gates);
     process.exit(7);
   }
