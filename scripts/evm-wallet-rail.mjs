@@ -10,8 +10,14 @@
  * Supported tokens: Native ETH/BNB/MATIC + USDT (ERC20/BEP20)
  *
  *   node scripts/evm-wallet-rail.mjs --action balance
- *   node scripts/evm-wallet-rail.mjs --action send --chain base --token USDT --amount 3.70 --to 0x...
- *   node scripts/evm-wallet-rail.mjs --action send --chain arbitrum --token ETH --amount 0.001 --to 0x...
+ *   node scripts/evm-wallet-rail.mjs --action routes
+ *   node scripts/evm-wallet-rail.mjs --action send --chain bsc --token USDT --amount 3.70
+ *   node scripts/evm-wallet-rail.mjs --action send --chain bsc --route evm-usdt-bep20 --amount 3.70 --confirm
+ *
+ * The destination is NEVER taken from a constant or from the caller: it is
+ * resolved from the owner route registry declared in config/crypto-addresses.json
+ * (scripts/lib/owner-routes.mjs). An unknown, ambiguous, unverified or
+ * address-less route is refused. --to, when supplied, is only cross-checked.
  *
  * Fail-closed: never sends without --action send, never fabricates tx hashes.
  * I8: even with --confirm, a CAP_SEND_CRYPTO capability grant is required before any send.
@@ -22,6 +28,7 @@ import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { assertCapability } from '../src/finance/capabilities.mjs';
+import { loadRoutes, resolveRoute, listRoutes, fold } from './lib/owner-routes.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -128,6 +135,21 @@ const ERC20_ABI = [
   'function symbol() view returns (string)',
 ];
 
+// Which registry network name (config/crypto-addresses.json routes[].network)
+// each chain key answers to. A destination is never taken from a constant:
+// it is resolved from the owner route registry, so this map only says what to
+// look up.
+const CHAIN_NETWORK = {
+  base: 'BASE',
+  arbitrum: 'ARBITRUM',
+  optimism: 'OPTIMISM',
+  polygon: 'POLYGON',
+  bsc: 'BEP20',
+  ethereum: 'ERC20',
+  scroll: 'SCROLL',
+  linea: 'LINEA',
+};
+
 // ── Helpers ──────────────────────────────────────────────────────────────
 function arg(name, dflt) {
   const i = process.argv.indexOf(`--${name}`);
@@ -139,6 +161,11 @@ const PK = process.env.TRUST_WALLET_PRIVATE_KEY;
 const ADDR = process.env.TRUST_WALLET_ADDRESS;
 
 if (!PK) { console.error('TRUST_WALLET_PRIVATE_KEY not set'); process.exit(2); }
+
+/** Fail-closed verdict: print and stop without touching the chain. */
+function refuse(code, error) {
+  console.log(JSON.stringify({ ok: false, code, error, fundsMoved: false }, null, 2));
+}
 
 // ── Actions ──────────────────────────────────────────────────────────────
 async function checkBalances() {
@@ -180,70 +207,155 @@ async function checkBalances() {
 }
 
 async function sendTransaction() {
-  const chainKey = arg('chain', '');
-  const token = (arg('token', 'USDT')).toUpperCase();
+  const chainKey = String(arg('chain', '')).trim().toLowerCase();
+  const routeId = arg('route', undefined);
   const amount = Number(arg('amount', '0'));
-  const to = arg('to', '');
+  const toArg = arg('to', '');
 
   if (!chainKey || !CHAINS[chainKey]) {
     console.error('Valid chains: ' + Object.keys(CHAINS).join(', '));
     process.exit(1);
   }
   if (!(amount > 0)) { console.error('--amount required (>0)'); process.exit(1); }
-  if (!to || !to.startsWith('0x')) { console.error('--to required (0x...)'); process.exit(1); }
 
   const chain = CHAINS[chainKey];
+  const network = CHAIN_NETWORK[chainKey];
+  const asset = String(arg('token', chain.nativeSymbol)).trim().toUpperCase();
+
+  // Destination resolution comes first: no provider, no key use, no signature
+  // until a verified owner route has been resolved from the registry.
+  let registry;
+  try {
+    registry = loadRoutes();
+  } catch (e) {
+    refuse('ROUTE_REGISTRY_UNREADABLE', e?.message ?? String(e));
+    return;
+  }
+
+  const resolved = routeId
+    ? resolveRoute(registry, { id: routeId })
+    : resolveRoute(registry, { rail: 'evm', asset, network });
+  if (!resolved.ok) {
+    refuse(resolved.code, `${resolved.error} | available routes: ${listRoutes(registry).map((r) => r.id).join(', ')}`);
+    return;
+  }
+
+  const route = resolved.route;
+  if (route.network !== network) {
+    refuse('ROUTE_NETWORK_MISMATCH', `route "${route.id}" is on ${route.network}, not ${network} (chain ${chainKey})`);
+    return;
+  }
+  // A destination passed by the caller must BE the registered one.
+  if (toArg && fold(toArg) !== fold(route.address)) {
+    refuse('ROUTE_ADDRESS_MISMATCH', `--to is not the registered address of route "${route.id}"`);
+    return;
+  }
+
+  const token = route.asset;
+  const isNative = token === chain.nativeSymbol;
+  const isUsdt = token === 'USDT' && !!chain.usdt;
+  if (!isNative && !isUsdt) {
+    refuse('TOKEN_UNSUPPORTED', `route "${route.id}" pays ${token}, which this rail does not know on ${chain.name}`);
+    return;
+  }
+
   const provider = new ethers.JsonRpcProvider(chain.rpc, chain.chainId, { staticNetwork: true });
   const wallet = new ethers.Wallet(PK, provider);
+  const to = route.address;
 
-  console.log(JSON.stringify({ chain: chain.name, token, amount, to, from: wallet.address, dryRun: !flag('confirm') }));
+  const plan = {
+    at: new Date().toISOString(),
+    chain: chain.name,
+    network,
+    routeId: route.id,
+    token,
+    amount,
+    to,
+    from: wallet.address,
+    gasMultiplier: chain.gasMultiplier,
+    dryRun: !flag('confirm'),
+    status: 'DRY_RUN',
+    fundsMoved: false,
+  };
 
   if (!flag('confirm')) {
-    console.log('Add --confirm to actually send. This is a dry run.');
+    plan.note = 'Add --confirm to actually send. This is a dry run.';
+    console.log(JSON.stringify(plan, null, 2));
     return;
   }
 
   // I8: explicit capability grant required for actual money movement.
   const cap = assertCapability('SEND_CRYPTO');
   if (!cap.ok) {
-    console.log(JSON.stringify({
-      ok: false,
-      status: 'CAPABILITY_BLOCKED',
-      error: cap.error,
-      fundsMoved: false,
-      note: 'Set the CAP_SEND_CRYPTO flag to the literal boolean true to authorize. Dry-run planning is always allowed.',
-    }, null, 2));
+    plan.status = 'CAPABILITY_BLOCKED';
+    plan.error = cap.error;
+    plan.note = 'Set the CAP_SEND_CRYPTO flag to the literal boolean true to authorize. Dry-run planning is always allowed.';
+    console.log(JSON.stringify(plan, null, 2));
     return;
   }
 
   let tx;
-  if (token === chain.nativeSymbol || token === 'ETH' || token === 'BNB' || token === 'MATIC') {
-    // Native token transfer
-    const value = ethers.parseUnits(String(amount), chain.nativeDecimals);
-    tx = await wallet.sendTransaction({ to, value });
-  } else if (token === 'USDT' && chain.usdt) {
-    // USDT transfer
-    const contract = new ethers.Contract(chain.usdt, ERC20_ABI, wallet);
-    const decimals = await contract.decimals();
-    const value = ethers.parseUnits(String(amount), decimals);
-    tx = await contract.transfer(to, value);
-  } else {
-    console.error(`Token ${token} not supported on ${chain.name}`);
-    process.exit(1);
+  try {
+    if (isNative) {
+      // Native token transfer (chain gas is paid from the same balance).
+      const value = ethers.parseUnits(String(amount), chain.nativeDecimals);
+      tx = await wallet.sendTransaction({ to, value });
+    } else {
+      const contract = new ethers.Contract(chain.usdt, ERC20_ABI, wallet);
+      const decimals = await contract.decimals();
+      const value = ethers.parseUnits(String(amount), decimals);
+      tx = await contract.transfer(to, value);
+    }
+    plan.txHash = tx.hash;
+    plan.explorer = chain.explorer + '/tx/' + tx.hash;
+  } catch (e) {
+    plan.status = 'FAILED';
+    plan.error = (e?.message ?? String(e)).slice(0, 300);
+    console.log(JSON.stringify(plan, null, 2));
+    return;
   }
 
   console.log('TX_SENT: ' + tx.hash);
   console.log('EXPLORER: ' + chain.explorer + '/tx/' + tx.hash);
-  const receipt = await tx.wait();
-  console.log('CONFIRMED in block ' + receipt.blockNumber + ' gasUsed=' + receipt.gasUsed.toString());
 
-  const result = { at: new Date().toISOString(), chain: chain.name, token, amount, to, from: wallet.address, txHash: tx.hash, blockNumber: receipt.blockNumber, gasUsed: receipt.gasUsed.toString(), explorer: chain.explorer + '/tx/' + tx.hash };
-  writeFileSync(resolve(OUT, 'evm-tx-' + tx.hash.slice(0, 10) + '.json'), JSON.stringify(result, null, 2));
-  console.log(JSON.stringify(result, null, 2));
+  try {
+    const receipt = await tx.wait();
+    plan.status = 'CONFIRMED';
+    plan.fundsMoved = true;
+    plan.blockNumber = receipt.blockNumber;
+    plan.gasUsed = receipt.gasUsed.toString();
+    console.log('CONFIRMED in block ' + receipt.blockNumber + ' gasUsed=' + receipt.gasUsed.toString());
+  } catch (e) {
+    // Broadcast but unconfirmed: report honestly, never claim success.
+    plan.status = 'UNCONFIRMED';
+    plan.error = (e?.message ?? String(e)).slice(0, 200);
+  }
+
+  writeFileSync(resolve(OUT, 'evm-tx-' + tx.hash.slice(0, 10) + '.json'), JSON.stringify(plan, null, 2));
+  console.log(JSON.stringify(plan, null, 2));
+}
+
+/** Operator inventory of every declared route and whether it is armed. */
+function checkRoutes() {
+  let registry;
+  try {
+    registry = loadRoutes();
+  } catch (e) {
+    refuse('ROUTE_REGISTRY_UNREADABLE', e?.message ?? String(e));
+    return;
+  }
+  const routes = listRoutes(registry).filter((r) => !r.rail || r.rail === 'evm');
+  console.log(JSON.stringify({
+    ok: true,
+    verifiedAt: registry.verifiedAt,
+    chains: Object.fromEntries(Object.entries(CHAIN_NETWORK).map(([k, v]) => [v, k])),
+    routes,
+  }, null, 2));
 }
 
 // ── Main ─────────────────────────────────────────────────────────────────
 const action = arg('action', 'balance');
 if (action === 'balance') await checkBalances();
+else if (action === 'routes') checkRoutes();
 else if (action === 'send') await sendTransaction();
-else { console.error('actions: balance, send'); process.exit(1); }
+else { console.error('actions: balance, routes, send'); process.exit(1); }

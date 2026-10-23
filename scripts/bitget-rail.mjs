@@ -10,10 +10,12 @@
  *   node scripts/bitget-rail.mjs --action holdings
  *   node scripts/bitget-rail.mjs --action networks
  *   node scripts/bitget-rail.mjs --action routes
+ *   node scripts/bitget-rail.mjs --action transfer --asset VND --from funding --to spot --all
+ *   node scripts/bitget-rail.mjs --action convert --from VND --to USDT --all
+ *   node scripts/bitget-rail.mjs --action convert --symbol BTC/USDT --amount 0.00004 --confirm
+ *   node scripts/bitget-rail.mjs --action convert-dust --coin VND --confirm
  *   node scripts/bitget-rail.mjs --action withdraw --amount 3.3 --route bitget-usdt-bep20
  *   node scripts/bitget-rail.mjs --action withdraw --amount 3.3 --network bsc --confirm
- *   node scripts/bitget-rail.mjs --action convert --from BTC --to USDT --all
- *   node scripts/bitget-rail.mjs --action convert --symbol BTC/USDT --amount 0.00004 --confirm
  *
  * Fail-closed: without --confirm, emits a dry-run plan. Never sends with
  * amount=0, never fabricates tx hashes, never moves funds without the I8
@@ -21,6 +23,10 @@
  * resolve to a verified owner route is refused — there is no default wallet
  * and no fallback chain. A conversion is verified against a fresh balance
  * read, never against the exchange order response alone.
+ *
+ * A balance the spot market cannot price (no BASE/QUOTE pair) is still
+ * reachable: --action convert --method auto falls back to Bitget's own RFQ
+ * convert, and --action transfer unsticks an asset sitting in another wallet.
  */
 import 'dotenv/config';
 import ccxt from 'ccxt';
@@ -75,6 +81,40 @@ const NETWORK_ALIASES = {
 function canonicalNetwork(input) {
   const s = String(input ?? '').trim();
   return NETWORK_ALIASES[s.toLowerCase()] ?? s.toUpperCase();
+}
+
+// Accepted --from/--to wallet shorthands, folded onto the ccxt account-type
+// keys (bitget.options.accountsByType). Anything unknown resolves to null and
+// the transfer is refused rather than guessed.
+const WALLET_ALIASES = {
+  spot: 'spot', funding: 'funding', p2p: 'p2p',
+  cross: 'cross', crossed: 'cross', crossed_margin: 'cross', margin: 'cross',
+  isolated: 'isolated', isolated_margin: 'isolated',
+  swap: 'swap', usdt_futures: 'swap', futures: 'swap',
+  usdc_swap: 'usdc_swap', usdc_futures: 'usdc_swap',
+  future: 'future', coin_futures: 'future',
+  uta: 'uta', unified: 'uta',
+};
+
+// How to read one wallet's free balance back. The classic spot/funding/p2p
+// wallets share the default read; the rest need an account-type hint.
+const WALLET_READ = {
+  spot: {}, funding: {}, p2p: {},
+  uta: { uta: true },
+  swap: { type: 'swap', productType: 'USDT-FUTURES' },
+  usdc_swap: { type: 'swap', productType: 'USDC-FUTURES' },
+  future: { type: 'swap', productType: 'COIN-FUTURES' },
+  cross: { type: 'margin', marginMode: 'cross' },
+  isolated: { type: 'margin', marginMode: 'isolated' },
+};
+
+function canonicalWallet(input) {
+  return WALLET_ALIASES[String(input ?? '').trim().toLowerCase()] ?? null;
+}
+
+async function walletFree(bitget, wallet, asset) {
+  const bal = await bitget.fetchBalance(WALLET_READ[wallet] ?? {});
+  return Number(bal?.free?.[asset] ?? 0);
 }
 
 function makeClient() {
@@ -270,19 +310,130 @@ async function withdraw() {
 }
 
 /**
+ * Move an asset between two wallets of the same account (funding -> spot is
+ * the usual unstick). Internal only: no external address is involved, so the
+ * route registry plays no part here. The guard is instead that the two wallets
+ * must differ, be known, and that the source wallet must actually hold enough —
+ * verified again after the call, never trusted from the response.
+ */
+async function transfer() {
+  const confirm = process.argv.includes('--confirm');
+  const all = process.argv.includes('--all');
+  const asset = String(arg('asset', '')).trim().toUpperCase();
+  const from = canonicalWallet(arg('from', 'funding'));
+  const to = canonicalWallet(arg('to', 'spot'));
+
+  if (!asset) fail('TRANSFER_ASSET_REQUIRED', 'pass --asset <COIN>', 1);
+  if (!from || !to) {
+    fail('TRANSFER_WALLET_UNKNOWN', `unknown wallet — known: ${Object.keys(WALLET_ALIASES).sort().join(', ')}`);
+  }
+  if (from === to) fail('TRANSFER_SAME_WALLET', `--from and --to both resolve to "${from}"`, 1);
+
+  const amountArg = arg('amount', undefined);
+  const requested = amountArg === undefined ? null : Number(amountArg);
+  if (!all && !(requested > 0)) fail('TRANSFER_AMOUNT_REQUIRED', 'pass --amount <qty> or --all', 1);
+
+  requireCreds();
+  const bitget = makeClient();
+  await bitget.loadTimeDifference();
+  await bitget.loadMarkets();
+
+  const free = await walletFree(bitget, from, asset);
+  if (!(free > 0)) {
+    fail('TRANSFER_NOTHING_TO_TRANSFER', `free ${asset} in the ${from} wallet is ${free} — see --action holdings`);
+  }
+
+  const amount = Number((all ? free : requested).toFixed(8));
+  if (!(amount > 0)) fail('TRANSFER_AMOUNT_DUST', 'requested amount rounds to 0');
+  if (amount > free) {
+    fail('TRANSFER_INSUFFICIENT_BALANCE', `requested ${amount} ${asset} > free ${free} ${asset} in ${from}`);
+  }
+
+  const plan = {
+    at: new Date().toISOString(),
+    exchange: 'Bitget',
+    action: 'transfer',
+    asset,
+    from,
+    to,
+    amount,
+    freeBefore: free,
+    dryRun: !confirm,
+    status: 'DRY_RUN',
+    fundsMoved: false,
+  };
+
+  if (!confirm) {
+    plan.note = 'Add --confirm to move the balance between wallets. Nothing is sent without it.';
+    console.log(JSON.stringify(plan, null, 2));
+    return;
+  }
+
+  // I8: same explicit grant as the withdrawal — no flag, no move.
+  const cap = assertCapability('WITHDRAW_CRYPTO');
+  if (!cap.ok) {
+    plan.status = 'CAPABILITY_BLOCKED';
+    plan.error = cap.error;
+    plan.note = 'Set the CAP_WITHDRAW_CRYPTO flag to the literal boolean true to authorize. Dry-run planning is always allowed.';
+    console.log(JSON.stringify(plan, null, 2));
+    return;
+  }
+
+  console.log('Executing Bitget wallet transfer...');
+  let transferId = null;
+  try {
+    const result = await bitget.transfer(asset, amount, from, to, { clientOid: `btr-x-${Date.now()}` });
+    transferId = result?.id ?? result?.info?.transferId ?? null;
+    plan.transferId = transferId ? String(transferId) : null;
+  } catch (e) {
+    plan.status = 'FAILED';
+    plan.error = (e?.message ?? String(e)).slice(0, 300);
+    console.log(JSON.stringify(plan, null, 2));
+    writeArtifact('transfer', plan);
+    return;
+  }
+
+  // Never trust the response alone: the source wallet must actually be lighter.
+  const after = await walletFree(bitget, from, asset);
+  plan.sourceAfter = after;
+  const moved = free - after;
+  if (moved > 0) {
+    plan.status = 'TRANSFERRED';
+    plan.moved = Number(moved.toFixed(8));
+    plan.fundsMoved = true;
+  } else {
+    plan.status = 'TRANSFER_UNCONFIRMED';
+    plan.error = `transfer ${transferId ?? '(no id)'} returned but the ${from} ${asset} balance did not decrease — treated as failure`;
+  }
+
+  writeArtifact('transfer', plan);
+  console.log(JSON.stringify(plan, null, 2));
+}
+
+/**
  * Convert a stranded base balance into the quote asset the payout rails can
- * move (BTC -> USDT today). A market sell is the only way to unstick an
- * asset the rail cannot withdraw; it is deliberately narrow:
- * only a SELL of the base balance, never a buy, never a leveraged product.
+ * move. Two execution paths:
  *
- * Guarded exactly like a withdrawal: dry-run by default, explicit
- * capability grant (I8), live balance re-read before submission, and the
- * result is verified against a fresh balance read instead of trusting the
- * exchange response.
+ *   market — a plain spot market SELL (BASE/QUOTE must be listed).
+ *   native — Bitget's own RFQ convert (v2/convert/quoted-price -> trade), the
+ *            only route for an asset with no spot pair at all (a held VND
+ *            balance, for instance).
+ *
+ * --method auto (the default) picks market when the pair is listed, native
+ * otherwise. Both paths are guarded like a withdrawal: dry-run by default,
+ * explicit capability grant (I8), live balance re-read before submission, and
+ * the outcome is verified against a fresh balance read instead of trusting the
+ * exchange response. A native trade always uses a quote taken immediately
+ * before the call — a stale quote is refused.
  */
 async function convert() {
   const confirm = process.argv.includes('--confirm');
   const all = process.argv.includes('--all');
+  const method = String(arg('method', 'auto')).trim().toLowerCase();
+  if (!['auto', 'market', 'native'].includes(method)) {
+    fail('CONVERT_METHOD_INVALID', `--method must be auto, market or native (got "${method}")`);
+  }
+
   const symbolArg = String(arg('symbol', '')).trim().toUpperCase();
   const symbol = symbolArg || `${String(arg('from', 'BTC')).trim().toUpperCase()}/${String(arg('to', 'USDT')).trim().toUpperCase()}`;
   const [base, quote] = symbol.split('/');
@@ -299,59 +450,86 @@ async function convert() {
   await bitget.loadTimeDifference();
   await bitget.loadMarkets();
 
-  let market;
-  try {
-    market = bitget.market(symbol);
-  } catch (e) {
-    fail('CONVERT_SYMBOL_UNLISTED', `Bitget does not list ${symbol}: ${e?.message ?? String(e)}`);
+  const market = bitget.markets?.[symbol] ?? null;
+  const marketUsable = !!market && market.active !== false;
+  const path = method === 'auto' ? (marketUsable ? 'market' : 'native') : method;
+  if (path === 'market' && !marketUsable) {
+    fail('CONVERT_SYMBOL_UNLISTED', `Bitget does not list ${symbol} — retry with --method native`);
   }
 
   const b = await bitget.fetchBalance();
   const free = Number(b?.free?.[base] ?? 0);
-  if (!(free > 0)) fail('CONVERT_NOTHING_TO_CONVERT', `free ${base} balance is ${free} — nothing to convert`);
-
-  const amount = Number(bitget.amountToPrecision(symbol, all ? free : requested));
-  if (!(amount > 0)) fail('CONVERT_AMOUNT_DUST', `requested amount rounds to 0 at ${symbol} precision`);
-
-  const minAmount = market?.limits?.amount?.min ?? null;
-  if (minAmount !== null && amount < minAmount) {
-    fail('CONVERT_BELOW_MINIMUM', `${amount} ${base} < exchange minimum ${minAmount} ${base}`);
+  if (!(free > 0)) {
+    fail('CONVERT_NOTHING_TO_CONVERT', `free ${base} balance is ${free} — nothing to convert (see --action holdings)`);
   }
+
+  const amount = path === 'market'
+    ? Number(bitget.amountToPrecision(symbol, all ? free : requested))
+    : Number((all ? free : requested).toFixed(8));
+  if (!(amount > 0)) fail('CONVERT_AMOUNT_DUST', 'requested amount rounds to 0 at this precision');
   if (amount > free) fail('CONVERT_INSUFFICIENT_BALANCE', `requested ${amount} ${base} > free ${free} ${base}`);
 
-  const notionalFloor = Number(process.env.CONVERT_MIN_NOTIONAL_USDT ?? 1) || 1;
-  const ticker = await bitget.fetchTicker(symbol);
-  const last = Number(ticker?.last ?? ticker?.close ?? 0);
-  const notional = last > 0 ? amount * last : null;
-  if (notional !== null) {
-    const minCost = market?.limits?.cost?.min ?? null;
-    if (minCost !== null && notional < minCost) {
-      fail('CONVERT_BELOW_MIN_COST', `notional ${notional.toFixed(2)} ${quote} < exchange minimum ${minCost} ${quote}`);
-    }
-    // Dust conversions destroy more value in fees than they recover.
-    if (notional < notionalFloor) {
-      fail('CONVERT_BELOW_NOTIONAL_FLOOR', `notional ${notional.toFixed(2)} ${quote} < floor ${notionalFloor} ${quote} (CONVERT_MIN_NOTIONAL_USDT)`);
+  if (path === 'market') {
+    const minAmount = market?.limits?.amount?.min ?? null;
+    if (minAmount !== null && amount < minAmount) {
+      fail('CONVERT_BELOW_MINIMUM', `${amount} ${base} < exchange minimum ${minAmount} ${base}`);
     }
   }
+
+  const notionalFloor = Number(process.env.CONVERT_MIN_NOTIONAL_USDT ?? 1) || 1;
 
   const plan = {
     at: new Date().toISOString(),
     exchange: 'Bitget',
     action: 'convert',
+    path,
     symbol,
-    side: 'sell',
+    base,
+    quote,
     amount,
     freeBefore: free,
-    lastPrice: last > 0 ? last : null,
-    notionalQuote: notional !== null ? Number(notional.toFixed(8)) : null,
-    quote,
     dryRun: !confirm,
     status: 'DRY_RUN',
     fundsMoved: false,
   };
 
+  // Price the conversion. Read-only on both paths.
+  if (path === 'market') {
+    const ticker = await bitget.fetchTicker(symbol);
+    const last = Number(ticker?.last ?? ticker?.close ?? 0);
+    plan.lastPrice = last > 0 ? last : null;
+    plan.notionalQuote = last > 0 ? Number((amount * last).toFixed(8)) : null;
+    if (plan.notionalQuote !== null) {
+      const minCost = market?.limits?.cost?.min ?? null;
+      if (minCost !== null && plan.notionalQuote < minCost) {
+        fail('CONVERT_BELOW_MIN_COST', `notional ${plan.notionalQuote.toFixed(2)} ${quote} < exchange minimum ${minCost} ${quote}`);
+      }
+      // Dust conversions destroy more value in fees than they recover.
+      if (plan.notionalQuote < notionalFloor) {
+        fail('CONVERT_BELOW_NOTIONAL_FLOOR', `notional ${plan.notionalQuote.toFixed(2)} ${quote} < floor ${notionalFloor} ${quote} (CONVERT_MIN_NOTIONAL_USDT)`);
+      }
+    }
+  } else {
+    let quoteRes;
+    try {
+      quoteRes = await bitget.fetchConvertQuote(base, quote, amount);
+    } catch (e) {
+      fail('CONVERT_QUOTE_UNAVAILABLE', `Bitget convert cannot quote ${symbol}: ${(e?.message ?? String(e)).slice(0, 200)}`);
+    }
+    if (!quoteRes?.id || !(Number(quoteRes?.toAmount) > 0) || !(Number(quoteRes?.price) > 0)) {
+      fail('CONVERT_QUOTE_INCOMPLETE', `Bitget convert returned no usable price for ${symbol}`);
+    }
+    plan.quoteId = quoteRes.id;
+    plan.lastPrice = Number(quoteRes.price);
+    plan.notionalQuote = Number(Number(quoteRes.toAmount).toFixed(8));
+    plan.quoteFee = quoteRes.fee ?? null;
+    if (plan.notionalQuote < notionalFloor) {
+      fail('CONVERT_BELOW_NOTIONAL_FLOOR', `notional ${plan.notionalQuote.toFixed(2)} ${quote} < floor ${notionalFloor} ${quote} (CONVERT_MIN_NOTIONAL_USDT)`);
+    }
+  }
+
   if (!confirm) {
-    plan.note = 'Add --confirm to submit the market sell. Nothing is sent without it.';
+    plan.note = 'Add --confirm to submit the conversion. Nothing is sent without it.';
     console.log(JSON.stringify(plan, null, 2));
     return;
   }
@@ -362,22 +540,42 @@ async function convert() {
   if (!cap.ok) {
     plan.status = 'CAPABILITY_BLOCKED';
     plan.error = cap.error;
-    plan.note = 'Set CAP_WITHDRAW_CRYPTO=true to authorize. Dry-run planning is always allowed.';
+    plan.note = 'Set the CAP_WITHDRAW_CRYPTO flag to the literal boolean true to authorize. Dry-run planning is always allowed.';
     console.log(JSON.stringify(plan, null, 2));
     return;
   }
 
-  console.log('Executing Bitget market sell...');
-  let orderId = null;
+  console.log(`Executing Bitget ${path} convert...`);
+  let orderRef = null;
   try {
-    const order = await bitget.createMarketSellOrder(symbol, amount);
-    orderId = order?.id ?? null;
-    plan.orderId = orderId ? String(orderId) : null;
+    if (path === 'market') {
+      const order = await bitget.createMarketSellOrder(symbol, amount);
+      orderRef = order?.id ?? null;
+    } else {
+      // Re-quote immediately before the trade: a stale quote is refused.
+      const fresh = await bitget.fetchConvertQuote(base, quote, amount);
+      if (!fresh?.id || !(Number(fresh?.toAmount) > 0) || !(Number(fresh?.price) > 0)) {
+        plan.status = 'CONVERT_QUOTE_STALE';
+        plan.error = 'fresh convert quote came back unusable — nothing submitted';
+        console.log(JSON.stringify(plan, null, 2));
+        writeArtifact('convert', plan);
+        return;
+      }
+      const trade = await bitget.createConvertTrade(fresh.id, base, quote, amount, {
+        price: fresh.price,
+        toAmount: fresh.toAmount,
+      });
+      orderRef = trade?.id ?? fresh.id;
+      plan.quoteId = fresh.id;
+      plan.lastPrice = Number(fresh.price);
+      plan.notionalQuote = Number(Number(fresh.toAmount).toFixed(8));
+    }
+    plan.orderId = orderRef ? String(orderRef) : null;
   } catch (e) {
     plan.status = 'FAILED';
     plan.error = (e?.message ?? String(e)).slice(0, 300);
     console.log(JSON.stringify(plan, null, 2));
-    writeConvertArtifact(plan);
+    writeArtifact('convert', plan);
     return;
   }
 
@@ -396,16 +594,88 @@ async function convert() {
     plan.fundsMoved = true;
   } else {
     plan.status = 'CONVERT_UNCONFIRMED';
-    plan.error = `order ${orderId ?? '(no id)'} returned but ${base} free balance did not decrease — treated as failure`;
+    plan.error = `order ${orderRef ?? '(no id)'} returned but ${base} free balance did not decrease — treated as failure`;
   }
 
-  writeConvertArtifact(plan);
+  writeArtifact('convert', plan);
   console.log(JSON.stringify(plan, null, 2));
 }
 
-function writeConvertArtifact(plan) {
+/**
+ * Bitget's own small-asset convert: the last resort for dust too small to
+ * trade on a spot market and too small to withdraw. The listing is read-only;
+ * the trade endpoint is only reached with --confirm and the I8 grant.
+ */
+async function convertDust() {
+  const confirm = process.argv.includes('--confirm');
+  const onlyCoin = String(arg('coin', '')).trim().toUpperCase() || null;
+
+  requireCreds();
+  const bitget = makeClient();
+  await bitget.loadTimeDifference();
+
+  let list;
   try {
-    const outFile = resolve(OUT, `bitget-convert-${Date.now()}.json`);
+    list = parseRawAssets(await bitget.privateUtaGetV3ConvertSmallAssets()).map((a) => a.coin);
+  } catch (e) {
+    fail('CONVERT_DUST_UNREADABLE', `could not list small assets: ${(e?.message ?? String(e)).slice(0, 200)}`);
+  }
+
+  const coins = onlyCoin ? list.filter((c) => c === onlyCoin) : list;
+  if (coins.length === 0) {
+    fail('CONVERT_DUST_EMPTY', onlyCoin ? `${onlyCoin} is not in the convertible small-asset list` : 'no small assets to convert', 1);
+  }
+
+  if (!confirm) {
+    console.log(JSON.stringify({
+      ok: true,
+      action: 'convert-dust',
+      dryRun: true,
+      fundsMoved: false,
+      smallAssets: list,
+      wouldConvert: coins,
+      note: 'Add --confirm to submit each small-asset conversion.',
+    }, null, 2));
+    return;
+  }
+
+  const cap = assertCapability('WITHDRAW_CRYPTO');
+  if (!cap.ok) {
+    console.log(JSON.stringify({
+      ok: false,
+      action: 'convert-dust',
+      status: 'CAPABILITY_BLOCKED',
+      error: cap.error,
+      fundsMoved: false,
+    }, null, 2));
+    return;
+  }
+
+  const results = [];
+  for (const coin of coins) {
+    try {
+      const r = await bitget.privateUtaPostV3ConvertSmallAssetsTrade({ coin });
+      results.push({ coin, ok: true, info: r?.data ?? null });
+    } catch (e) {
+      results.push({ coin, ok: false, error: (e?.message ?? String(e)).slice(0, 200) });
+    }
+  }
+
+  const moved = results.some((r) => r.ok);
+  const report = {
+    ok: moved,
+    action: 'convert-dust',
+    at: new Date().toISOString(),
+    results,
+    fundsMoved: moved,
+  };
+  writeArtifact('convert-dust', report);
+  console.log(JSON.stringify(report, null, 2));
+}
+
+function writeArtifact(kind, plan) {
+  try {
+    const outFile = resolve(OUT, `bitget-${kind}-${Date.now()}.json`);
     writeFileSync(outFile, JSON.stringify(plan, null, 2));
   } catch (e) {
     console.error(`artifact write failed: ${e?.message ?? String(e)}`);
@@ -519,6 +789,16 @@ async function holdings() {
     smallAssets = null;
   }
 
+  // Assets Bitget's RFQ convert will accept at all. This is the path that
+  // matters for a balance with no spot pair (VND, for instance).
+  let convertible = null;
+  try {
+    const cc = await bitget.fetchConvertCurrencies();
+    convertible = new Set(Object.keys(cc ?? {}));
+  } catch {
+    convertible = null;
+  }
+
   const byCoin = new Map();
   for (const scope of scopes) {
     for (const a of scope.assets ?? []) {
@@ -566,6 +846,7 @@ async function holdings() {
         ? Number(entry.totalUnits.toFixed(6))
         : (last ? Number((entry.totalUnits * last).toFixed(6)) : null),
       smallAssetConvertible: smallAssets === null ? null : smallAssets.includes(coin),
+      nativeConvertible: convertible === null ? null : convertible.has(coin),
       withdrawalNetworks: withdrawals,
     });
   }
@@ -620,6 +901,11 @@ if (action === 'balance') await checkBalance();
 else if (action === 'networks') await checkNetworks();
 else if (action === 'routes') checkRoutes();
 else if (action === 'holdings') await holdings();
+else if (action === 'transfer') await transfer();
 else if (action === 'convert') await convert();
+else if (action === 'convert-dust') await convertDust();
 else if (action === 'withdraw') await withdraw();
-else { console.error('actions: balance, holdings, networks, routes, convert, withdraw'); process.exit(1); }
+else {
+  console.error('actions: balance, holdings, networks, routes, transfer, convert, convert-dust, withdraw');
+  process.exit(1);
+}

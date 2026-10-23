@@ -27,9 +27,10 @@
  *   - No credential literals appear in this file.
  */
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
+import { tmpdir } from 'node:os';
 import crypto from 'node:crypto';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -79,8 +80,24 @@ const throwawayPk = '0x' + crypto.randomBytes(32).toString('hex');
 const throwawayPk2 = '0x' + crypto.randomBytes(32).toString('hex');
 const burnTo = '0x0000000000000000000000000000000000000001';
 
+// The EVM rail refuses to send unless the destination resolves to a verified
+// owner route, so the dynamic probe is pointed at a throwaway registry whose
+// single route is the burn address. That keeps the capability gate itself
+// under test — nothing in the real registry is touched or invented.
+const fixtureDir = mkdtempSync(join(tmpdir(), 'i8-fixture-'));
+const fixtureManifest = join(fixtureDir, 'crypto-addresses.json');
+writeFileSync(fixtureManifest, JSON.stringify({
+  version: 3,
+  depositRoutes: { networks: {} },
+  routes: {
+    verifiedAt: 'i8-test',
+    list: [{ id: 'i8-test-evm-base-usdt', rail: 'evm', asset: 'USDT', network: 'BASE', address: burnTo, verified: true }],
+  },
+}, null, 2));
+
 const strippedEnv = {
   ...process.env,
+  CRYPTO_ADDRESS_MANIFEST: fixtureManifest,
   TRUST_WALLET_PRIVATE_KEY: throwawayPk,
   TRUST_WALLET_ADDRESS: '0x000000000000000000000000000000000000dEaD',
   CAP_SEND_CRYPTO: '', CAP_WITHDRAW_CRYPTO: '', CAP_CREATE_DEBT: '', CAP_MODIFY_OWNER_DESTINATION: '',
