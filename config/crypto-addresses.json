@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "updatedAt": "2026-10-23",
+  "note": "Single source of truth for owner crypto receive addresses that are fanned out into repo secrets. Public receive addresses only — never place a private key or seed here. Consumed by scripts/rotate-crypto-addresses.mjs and by the allowlist inventory scan inside .github/workflows/owner-crypto-withdraw.yml.",
+  "canonical": {
+    "evm": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7"
+  },
+  "allowlist": [
+    "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7"
+  ],
+  "extraAllowlist": [],
+  "depositRoutes": {
+    "note": "Custodial exchange deposit routes (customer incoming payments). These are NOT owner wallets and NOT withdrawal destinations: allowlisting one would send a withdrawal into an exchange deposit address. Verified live against the provider API on verifiedAt — re-verify before ever treating one as stale.",
+    "verifiedAt": "2026-10-23",
+    "verifiedVia": "bitget fetchDepositAddress(USDT)",
+    "provider": "bitget",
+    "networks": {
+      "BEP20": "0x2700732a6f050c10c080154ce73cc641c448b704",
+      "ERC20": "0x2700732a6f050c10c080154ce73cc641c448b704",
+      "TRC20": "TUtM17RZ1jCrXPnLa34o7J59BSEqgqYYBE"
+    }
+  },
+  "deprecated": [],
+  "targets": [
+    {
+      "secret": "CRYPTO_ALLOWED_ADDRESSES",
+      "mode": "allowlist",
+      "reason": "Withdrawal allowlist gate. Must carry every payable destination, canonicalised."
+    },
+    {
+      "secret": "OWNER_CRYPTO_BEP20",
+      "mode": "destination",
+      "reason": "Destination read by execute-crypto-settlement.mjs (TARGET_WALLET.address)."
+    },
+    {
+      "secret": "TRUST_WALLET_USDT_BEP20",
+      "mode": "destination",
+      "reason": "Owner USDT BEP20 destination used by the rails."
+    },
+    {
+      "secret": "TRUST_WALLET_USDT_ERC20",
+      "mode": "destination",
+      "reason": "Owner USDT ERC20 destination used by the rails."
+    },
+    {
+      "secret": "TRUST_WALLET_ADDRESS",
+      "mode": "signer",
+      "guardEnv": "TRUST_WALLET_PRIVATE_KEY",
+      "reason": "Address paired with the stored signing key: rotating it blindly would desynchronise key and address. Convergence is refused unless the key derives this exact address."
+    }
+  ]
+}

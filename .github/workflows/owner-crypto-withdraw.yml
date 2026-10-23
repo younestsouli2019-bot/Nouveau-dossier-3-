@@ -151,6 +151,14 @@ jobs:
             echo "Install retry ($n)..."
             sleep 5
           done
+      - name: Allowlist inventory (drift = retired or unlisted address)
+        # Fail-closed convergence check against config/crypto-addresses.json, the
+        # single source of truth. Exit 3 = drift: the withdrawal allowlist still
+        # carries a retired address, or one that nobody ever approved (an exchange
+        # deposit route landing here is exactly the misconfiguration this catches).
+        # Runs before any rail so a drifted allowlist stops the run regardless of
+        # which rail was selected.
+        run: node scripts/rotate-crypto-addresses.mjs --inventory
       - name: Execute withdraw (${{ inputs.rail }} rail)
         id: withdraw
         run: |

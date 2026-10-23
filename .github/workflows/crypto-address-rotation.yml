@@ -1,0 +1,145 @@
+# ───────────────────────────────────────────────────────────────────────────
+# CRYPTO ADDRESS ROTATION (fail-closed · scheduled)
+# ───────────────────────────────────────────────────────────────────────────
+#
+# Directive: "ENSURE ROTATION OF OLD CONTRACT CRYPTO ADDRESSES IN REPO SECRETS
+# FULLY AUTOMATED".
+#
+# Model: config/crypto-addresses.json is the single source of truth. Every
+# address-bearing repo secret is converged onto it by scripts/rotate-crypto-addresses.mjs.
+# Nothing is hardcoded here and no address value is ever printed to the log —
+# the rotator emits secret NAMES only.
+#
+# WHAT IS ROTATED
+#   allowlist    CRYPTO_ALLOWED_ADDRESSES     every payable destination, EIP-55 folded
+#   destination  OWNER_CRYPTO_BEP20           owner self-custody receive address
+#   destination  TRUST_WALLET_USDT_BEP20      owner self-custody receive address
+#   destination  TRUST_WALLET_USDT_ERC20      owner self-custody receive address
+#   signer       TRUST_WALLET_ADDRESS         read-only twin of TRUST_WALLET_PRIVATE_KEY
+#
+# WHAT IS NEVER ROTATED
+#   The signer-paired TRUST_WALLET_ADDRESS is refused unless the stored
+#   TRUST_WALLET_PRIVATE_KEY derives the manifest's canonical address. Rewriting
+#   it blind would desynchronise key and address and strand the funds. A refusal
+#   is a correct outcome, not a failure: the run reports it and continues.
+#
+#   Exchange deposit routes (config → depositRoutes) are verified-live custodial
+#   addresses. They are guarded against, never written: an owner destination must
+#   be self-custody, not an address that sends funds back to the exchange.
+#
+# CREDENTIAL (why this is not the default GITHUB_TOKEN)
+#   GitHub's automatic GITHUB_TOKEN cannot write Actions secrets — it has no such
+#   scope. Writes therefore require a GitHub App installation with the repository
+#   permission "Secrets: read and write". Reuses the existing App secrets already
+#   declared for token-rotation-sync.yml:
+#       CENTRAL_ROTATOR_APP_ID
+#       CENTRAL_ROTATOR_PRIVATE_KEY
+#   Fail-closed: with neither present the job degrades to a read-only plan and
+#   says so with a warning. It never pretends to have rotated, and it starts
+#   writing on the next schedule run the moment the App is provisioned — no code
+#   change required.
+#
+# WHY A SCHEDULE IS ACCEPTABLE HERE (vs. the 2026-09-06 containment)
+#   The containment removed schedules from org-secret-sync.yml because that job
+#   propagated wallet PRIVATE KEYS org-wide. This job touches only PUBLIC receive
+#   addresses, converges them onto a versioned manifest, and refuses anything the
+#   manifest does not sanction. No private key is read, written, or transported.
+#
+# MERGE NOTE: scheduled triggers only fire from the default branch, so this file
+# becomes autonomous once it lands on main.
+# ───────────────────────────────────────────────────────────────────────────
+
+name: Crypto Address Rotation
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Plan only — do not write repo secrets"
+        type: boolean
+        required: false
+        default: true
+  schedule:
+    # Daily convergence sweep. Idempotent: writes only what actually differs.
+    - cron: "17 3 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crypto-address-rotation
+  cancel-in-progress: false
+
+jobs:
+  rotate:
+    runs-on: ubuntu-latest
+    env:
+      # Single source of truth + the allowlist currently stored in secrets.
+      ALLOWED_WITHDRAW_ADDRESSES: ${{ secrets.CRYPTO_ALLOWED_ADDRESSES }}
+      # App credential: the only thing here that can write Actions secrets.
+      ROTATOR_APP_ID: ${{ secrets.CENTRAL_ROTATOR_APP_ID }}
+      ROTATOR_APP_KEY: ${{ secrets.CENTRAL_ROTATOR_PRIVATE_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies (with retries)
+        run: |
+          set -euo pipefail
+          n=0
+          until [ $n -ge 3 ]; do
+            if npm ci --no-audit --no-fund 2>/dev/null; then break; fi
+            n=$((n+1))
+            echo "Install retry ($n)..."
+            sleep 5
+          done
+
+      - name: Preflight (is the rotation credential present?)
+        id: preflight
+        run: |
+          set -euo pipefail
+          if [ -z "${ROTATOR_APP_ID:-}" ] || [ -z "${ROTATOR_APP_KEY:-}" ]; then
+            echo "::warning::No rotator App (CENTRAL_ROTATOR_APP_ID / CENTRAL_ROTATOR_PRIVATE_KEY). Writes stay fail-closed — running read-only."
+            echo "can_execute=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "can_execute=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Inventory — fail on drift (retired / unlisted allowlist entry)
+        # Exit 3 = the stored allowlist carries an address the manifest does not
+        # sanction. This is the alarm that proves the rotation converged; it runs
+        # whether or not the credential exists, so drift is never silent.
+        run: node scripts/rotate-crypto-addresses.mjs --inventory
+
+      - name: Plan (always)
+        run: node scripts/rotate-crypto-addresses.mjs --plan
+
+      - name: Execute rotation
+        # Manual dispatch defaults to dry_run=true. The schedule always rotates.
+        if: ${{ steps.preflight.outputs.can_execute == 'true' && (github.event_name == 'schedule' || inputs.dry_run == false) }}
+        env:
+          GITHUB_APP_ID: ${{ secrets.CENTRAL_ROTATOR_APP_ID }}
+          GITHUB_APP_PRIVATE_KEY: ${{ secrets.CENTRAL_ROTATOR_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          node scripts/rotate-crypto-addresses.mjs --execute --repo "${{ github.repository }}"
+
+      - name: Rotation summary
+        if: always()
+        run: |
+          {
+            echo "### Crypto address rotation"
+            echo ""
+            echo "- trigger: \`${{ github.event_name }}\`"
+            echo "- rotator credential present: \`${{ steps.preflight.outputs.can_execute }}\`"
+            echo "- dry run: \`${{ github.event_name != 'schedule' && inputs.dry_run != false }}\`"
+            echo "- canonical destination: the manifest's \`canonical.evm\` (see plan output above)"
+            echo ""
+            echo "Secret values are never printed — the rotator logs secret names only."
+          } >> "$GITHUB_STEP_SUMMARY"
