@@ -7,6 +7,7 @@
  * config/crypto-addresses.json (resolved by scripts/lib/owner-routes.mjs).
  *
  *   node scripts/bitget-rail.mjs --action balance
+ *   node scripts/bitget-rail.mjs --action holdings
  *   node scripts/bitget-rail.mjs --action networks
  *   node scripts/bitget-rail.mjs --action routes
  *   node scripts/bitget-rail.mjs --action withdraw --amount 3.3 --route bitget-usdt-bep20
@@ -411,6 +412,196 @@ function writeConvertArtifact(plan) {
   }
 }
 
+/**
+ * Every wallet Bitget can hold an asset in. A rail that reads only one of them
+ * will report 0 while the UI shows a balance, so the rail refuses to guess:
+ * holdings are enumerated across all of them and each balance is attributed to
+ * the wallet that actually holds it.
+ */
+const ACCOUNT_SCOPES = [
+  { label: 'spot (classic)', params: { type: 'spot' } },
+  { label: 'uta trading', params: { uta: true } },
+  { label: 'uta funding', params: { uta: true, type: 'funding' } },
+  { label: 'futures USDT-FUTURES', params: { type: 'swap', productType: 'USDT-FUTURES' } },
+  { label: 'futures USDC-FUTURES', params: { type: 'swap', productType: 'USDC-FUTURES' } },
+  { label: 'futures COIN-FUTURES', params: { type: 'swap', productType: 'COIN-FUTURES' } },
+  { label: 'margin crossed', params: { type: 'margin', marginMode: 'cross' } },
+  { label: 'margin isolated', params: { type: 'margin', marginMode: 'isolated' } },
+  { label: 'earn savings', custom: (ex) => ex.privateEarnGetV2EarnSavingsAssets() },
+  { label: 'earn assets', custom: (ex) => ex.privateEarnGetV2EarnAccountAssets() },
+];
+
+/** Best-effort extraction of {coin, free, total} rows from an unparsed response. */
+function parseRawAssets(payload) {
+  const out = [];
+  const seen = new Set();
+  const walk = (node) => {
+    if (Array.isArray(node)) { for (const n of node) walk(n); return; }
+    if (!node || typeof node !== 'object') return;
+    const coin = node.coin ?? node.coinName ?? node.currency ?? node.asset;
+    if (typeof coin === 'string' && coin) {
+      const total = Number(node.total ?? node.totalAmount ?? node.amount ?? node.balance ?? node.available ?? 0);
+      const free = Number(node.available ?? node.free ?? node.amount ?? 0);
+      const key = `${coin}`;
+      if (Number.isFinite(total) && total > 0 && !seen.has(key)) {
+        seen.add(key);
+        out.push({ coin: coin.toUpperCase(), free: Number.isFinite(free) ? free : 0, total });
+      }
+      return;
+    }
+    for (const v of Object.values(node)) walk(v);
+  };
+  walk(payload?.data ?? payload);
+  return out;
+}
+
+async function fetchScope(exchange, scope) {
+  try {
+    if (scope.custom) {
+      const raw = await scope.custom(exchange);
+      return { label: scope.label, ok: true, assets: parseRawAssets(raw) };
+    }
+    const bal = await exchange.fetchBalance(scope.params);
+    const assets = [];
+    for (const code of Object.keys(bal?.total ?? {})) {
+      const total = Number(bal.total[code] ?? 0);
+      if (!(total > 0)) continue;
+      assets.push({
+        coin: code,
+        free: Number(bal.free?.[code] ?? 0),
+        used: Number(bal.used?.[code] ?? 0),
+        total,
+      });
+    }
+    return { label: scope.label, ok: true, assets };
+  } catch (e) {
+    // A scope the account does not have is expected; it is reported, not hidden.
+    return { label: scope.label, ok: false, error: (e?.message ?? String(e)).slice(0, 200) };
+  }
+}
+
+/**
+ * Comprehensive, read-only inventory: WHERE each balance sits, what form it is
+ * in (spot / UTA / funding / futures / margin / earn), what it is worth, and by
+ * which route it could actually leave (spot market, Bitget small-asset convert,
+ * or a withdrawal network). Nothing here moves funds.
+ */
+async function holdings() {
+  requireCreds();
+  const bitget = makeClient();
+  await bitget.loadTimeDifference();
+  await bitget.loadMarkets();
+  const currencies = await bitget.fetchCurrencies();
+
+  const scopes = [];
+  for (const scope of ACCOUNT_SCOPES) {
+    scopes.push(await fetchScope(bitget, scope));
+  }
+
+  // Attach open positions: funds held as margin are not a free balance.
+  let positions = [];
+  try {
+    const raw = await bitget.fetchPositions();
+    positions = (raw ?? [])
+      .filter((p) => Number(p?.contracts ?? 0) > 0)
+      .map((p) => ({ symbol: p.symbol, side: p.side, contracts: p.contracts, notional: p.notional }));
+  } catch (e) {
+    positions = [{ error: (e?.message ?? String(e)).slice(0, 160) }];
+  }
+
+  // Bitget's own small-asset convert: usually the cheapest way out of a dust
+  // balance, and only offered for some assets.
+  let smallAssets = null;
+  try {
+    const raw = await bitget.privateUtaGetV3ConvertSmallAssets();
+    smallAssets = parseRawAssets(raw).map((a) => a.coin);
+  } catch {
+    smallAssets = null;
+  }
+
+  const byCoin = new Map();
+  for (const scope of scopes) {
+    for (const a of scope.assets ?? []) {
+      const entry = byCoin.get(a.coin) ?? { coin: a.coin, totalUnits: 0, locations: [] };
+      entry.totalUnits += a.total;
+      entry.locations.push({ wallet: scope.label, total: a.total, free: a.free ?? null });
+      byCoin.set(a.coin, entry);
+    }
+  }
+
+  const assets = [];
+  for (const entry of byCoin.values()) {
+    const { coin } = entry;
+    const symbol = `${coin}/USDT`;
+    const market = bitget.markets?.[symbol];
+    const currency = currencies?.[coin];
+
+    let last = null;
+    if (market && market.active !== false) {
+      try {
+        const t = await bitget.fetchTicker(symbol);
+        last = Number(t?.last ?? t?.close ?? 0) || null;
+      } catch { last = null; }
+    }
+
+    const withdrawals = Object.values(currency?.networks ?? {})
+      .filter((n) => n && n.active !== false)
+      .map((n) => ({
+        network: n.network ?? n.id ?? null,
+        withdraw: n.withdraw !== false,
+        fee: n.fee ?? null,
+        min: n.limits?.withdraw?.min ?? null,
+        max: n.limits?.withdraw?.max ?? null,
+      }))
+      .filter((n) => n.withdraw && n.network);
+
+    assets.push({
+      coin,
+      totalUnits: Number(entry.totalUnits.toFixed(12)),
+      locations: entry.locations,
+      spotMarket: market ? symbol : null,
+      spotMarketActive: market ? market.active !== false : false,
+      lastUsdt: coin === 'USDT' ? 1 : last,
+      valueUsdt: coin === 'USDT'
+        ? Number(entry.totalUnits.toFixed(6))
+        : (last ? Number((entry.totalUnits * last).toFixed(6)) : null),
+      smallAssetConvertible: smallAssets === null ? null : smallAssets.includes(coin),
+      withdrawalNetworks: withdrawals,
+    });
+  }
+  assets.sort((a, b) => (b.valueUsdt ?? -1) - (a.valueUsdt ?? -1));
+
+  const report = {
+    ok: true,
+    at: new Date().toISOString(),
+    readOnly: true,
+    fundsMoved: false,
+    scopes: scopes.map((s) => ({
+      label: s.label,
+      ok: s.ok,
+      ...(s.ok ? { holdings: s.assets } : { error: s.error }),
+    })),
+    walletsHoldingAssets: scopes.filter((s) => (s.assets ?? []).length > 0).map((s) => s.label),
+    openPositions: positions,
+    totalsByWallet: Object.fromEntries(
+      scopes.map((s) => [s.label, Object.fromEntries((s.assets ?? []).map((a) => [a.coin, a.total]))]),
+    ),
+    assets,
+    answer: assets.length === 0
+      ? 'No asset balance found in any Bitget wallet for this API key. Check the key belongs to the account shown in the UI.'
+      : `${assets.length} asset(s) held in: ${scopes.filter((s) => (s.assets ?? []).length > 0).map((s) => s.label).join(', ')}.`,
+  };
+
+  try {
+    const outFile = resolve(OUT, `bitget-holdings-${Date.now()}.json`);
+    writeFileSync(outFile, JSON.stringify(report, null, 2));
+  } catch (e) {
+    console.error(`artifact write failed: ${e?.message ?? String(e)}`);
+  }
+
+  console.log(JSON.stringify(report, null, 2));
+}
+
 /** Operator inventory of every declared route and whether it is armed. */
 function checkRoutes() {
   let registry;
@@ -428,6 +619,7 @@ const action = arg('action', 'balance');
 if (action === 'balance') await checkBalance();
 else if (action === 'networks') await checkNetworks();
 else if (action === 'routes') checkRoutes();
+else if (action === 'holdings') await holdings();
 else if (action === 'convert') await convert();
 else if (action === 'withdraw') await withdraw();
-else { console.error('actions: balance, networks, routes, convert, withdraw'); process.exit(1); }
+else { console.error('actions: balance, holdings, networks, routes, convert, withdraw'); process.exit(1); }
