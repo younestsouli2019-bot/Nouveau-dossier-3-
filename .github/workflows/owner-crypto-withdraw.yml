@@ -97,10 +97,18 @@ jobs:
           ALLOWED_RAW="${ALLOWED_WITHDRAW_ADDRESSES}"
           if [ -n "$ALLOWED_RAW" ]; then
             MATCH=0
+            # EVM addresses are case-insensitive: the EIP-55 casing is a display
+            # convention, not part of the identity. The stored allowlist carries
+            # "0xA462…A09FEFE7" while the canonical checksum for the same wallet
+            # is "0xA462…A09fEfe7", so an exact string compare rejected the very
+            # address the on-chain rail requires. Fold case for 0x… only; TRON
+            # (base58) and TON addresses stay case-sensitive.
+            fold() { case "$1" in 0x*|0X*) printf '%s' "$1" | tr 'A-F' 'a-f';; *) printf '%s' "$1";; esac; }
+            ADDR_CMP="$(fold "$ADDR")"
             IFS=',' read -ra PARTS <<< "$ALLOWED_RAW"
             for p in "${PARTS[@]}"; do
               CLEAN="$(echo "$p" | tr -d '[:space:]' | tr -d '\r')"
-              if [ "$CLEAN" = "$ADDR" ]; then MATCH=1; break; fi
+              if [ "$(fold "$CLEAN")" = "$ADDR_CMP" ]; then MATCH=1; break; fi
             done
             if [ "$MATCH" != "1" ]; then
               echo "::error::address $ADDR is not in CRYPTO_ALLOWED_ADDRESSES"
