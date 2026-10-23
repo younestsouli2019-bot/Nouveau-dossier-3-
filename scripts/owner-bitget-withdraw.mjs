@@ -10,7 +10,9 @@
  * FAIL-CLOSED rules (mirrors execute-crypto-withdraw.mjs):
  *  - DRY-RUN BY DEFAULT. Real submission requires BOTH --execute AND
  *    SWARM_LIVE=true.
- *  - Destination must be in CRYPTO_ALLOWED_ADDRESSES (repo secret).
+ *  - Destination is OWNER_CRYPTO_ADDRESS when set (the workflow passes the
+ *    validated dispatch input), otherwise the pre-set OWNER_WALLET. Either way
+ *    it must be in CRYPTO_ALLOWED_ADDRESSES (repo secret).
  *  - Amount capped by OWNER_BITGET_MAX_USDT (default 60).
  *  - Balance is fetched and verified BEFORE any submit; amount > available
  *    aborts.
@@ -94,7 +96,7 @@ async function main() {
   const amount = Number(getArg("--amount", MAX_DEFAULT));
   const network = String(getArg("--network", "BEP20")).toUpperCase();
   const execute = process.argv.includes("--execute") && envIsTrue(process.env.SWARM_LIVE);
-  const address = OWNER_WALLET;
+  const address = String(process.env.OWNER_CRYPTO_ADDRESS ?? "").trim() || OWNER_WALLET;
 
   if (!Number.isFinite(amount) || amount <= 0) {
     console.error("amount must be a positive number");

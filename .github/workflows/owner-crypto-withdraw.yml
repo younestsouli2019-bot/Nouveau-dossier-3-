@@ -34,16 +34,18 @@ jobs:
     env:
       SWARM_LIVE: "true"
       CRYPTO_NETWORK: ${{ inputs.network }}
+      OWNER_CRYPTO_ADDRESS: ${{ inputs.address }}
       TRUST_WALLET_ADDRESS: ${{ inputs.address }}
       TRUST_WALLET_USDT_BEP20: ${{ inputs.address }}
       TRUST_WALLET_USDT_ERC20: ${{ inputs.address }}
-      BINANCE_API_BASE: https://api.binance.com
       ALLOWED_WITHDRAW_ADDRESSES: ${{ secrets.CRYPTO_ALLOWED_ADDRESSES }}
       WITHDRAW_ENABLE: ${{ secrets.CRYPTO_WITHDRAW_ENABLE || 'false' }}
-      BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
-      BINANCE_API_SECRET: ${{ secrets.BINANCE_API_SECRET }}
-      BINANCE_ED25519_PRIVATE_KEY: ${{ secrets.BINANCE_ED25519_PRIVATE_KEY }}
-      BINANCE_SIGNATURE_ENCODING: ${{ secrets.BINANCE_SIGNATURE_ENCODING }}
+      # 2026-10-23: rail switched Binance -> Bitget. Binance (HTTP 451) and
+      # Bybit (403) geo-block GitHub's US runner egress, so the previous wiring
+      # never moved funds (run 49 artifact: binance_withdraw_err_*.json, 451).
+      BITGET_API_KEY: ${{ secrets.BITGET_API_KEY }}
+      BITGET_API_SECRET: ${{ secrets.BITGET_API_SECRET }}
+      BITGET_PASSPHRASE: ${{ secrets.BITGET_PASSPHRASE }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -116,24 +118,30 @@ jobs:
             echo "Install retry ($n)..."
             sleep 5
           done
-      - name: Execute withdraw
+      - name: Execute withdraw (Bitget rail)
         id: withdraw
         run: |
           set -euo pipefail
           AUDIT="${{ steps.validate.outputs.audit_only }}"
           SKIP="${{ steps.validate.outputs.skip_submit }}"
           mkdir -p out/crypto
-          if [ -f ./scripts/execute-crypto-withdraw.mjs ]; then
-            if [ "$AUDIT" = "true" ] || [ "$SKIP" = "true" ]; then
-              echo "Audit-only / withdraw disabled; running script without live execution."
-              node ./scripts/execute-crypto-withdraw.mjs --amount "${{ inputs.amount }}" --dry-run > out.json || true
-            else
-              node ./scripts/execute-crypto-withdraw.mjs --amount "${{ inputs.amount }}" > out.json || true
-            fi
-            cat out.json | jq -c 'walk( if type == "string" and (tostring | length > 48) then (.[0:8] + "…" + .[-6:]) else . end )' || true
+          ARGS=("--amount" "${{ inputs.amount }}" "--network" "${{ inputs.network }}")
+          if [ "$AUDIT" != "true" ] && [ "$SKIP" != "true" ]; then
+            ARGS+=("--execute")
+            echo "Live mode: --execute passed (requires SWARM_LIVE=true)."
           else
-            echo '{"status":"SKIPPED","reason":"script not found"}' > out.json
-            echo "scripts/execute-crypto-withdraw.mjs not found"
+            echo "Audit-only / withdraw disabled; dry-run (no exchange submit, balance still read)."
+          fi
+          # The previous wiring swallowed failures with '|| true', so a geo-blocked
+          # or rejected withdrawal still reported 'success'. Fail the job instead.
+          set +e
+          node ./scripts/owner-bitget-withdraw.mjs "${ARGS[@]}" > out.json 2>&1
+          RC=$?
+          set -e
+          cat out.json || true
+          if [ "$RC" -ne 0 ]; then
+            echo "::error::owner-bitget-withdraw.mjs exited $RC — no funds moved."
+            exit "$RC"
           fi
       - name: Upload artifact
         uses: actions/upload-artifact@v7
