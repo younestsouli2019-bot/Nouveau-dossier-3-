@@ -2,18 +2,21 @@
 /**
  * bitget-rail.mjs  (AUTONOMOUS · non-custodial · fail-closed)
  *
- * Direct Bitget API integration (CCXT) for balance check + USDT withdrawal
- * to the owner Trust Wallet address via BEP20 (same destination class as
- * binance-rail.mjs).
+ * Direct Bitget API integration (CCXT) for balance check + withdrawal to one
+ * of the owner's pre-set, verified payout routes declared in
+ * config/crypto-addresses.json (resolved by scripts/lib/owner-routes.mjs).
  *
  *   node scripts/bitget-rail.mjs --action balance
  *   node scripts/bitget-rail.mjs --action networks
- *   node scripts/bitget-rail.mjs --action withdraw --amount 3.3 --network bsc
+ *   node scripts/bitget-rail.mjs --action routes
+ *   node scripts/bitget-rail.mjs --action withdraw --amount 3.3 --route bitget-usdt-bep20
  *   node scripts/bitget-rail.mjs --action withdraw --amount 3.3 --network bsc --confirm
  *
  * Fail-closed: without --confirm, emits a dry-run plan. Never sends with
  * amount=0, never fabricates tx hashes, never moves funds without the I8
- * capability grant (CAP_WITHDRAW_CRYPTO=true).
+ * capability grant (CAP_WITHDRAW_CRYPTO=true). A destination that does not
+ * resolve to a verified owner route is refused — there is no default wallet
+ * and no fallback chain.
  */
 import 'dotenv/config';
 import ccxt from 'ccxt';
@@ -21,6 +24,7 @@ import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { assertCapability } from '../src/finance/capabilities.mjs';
+import { loadRoutes, resolveRoute, listRoutes, fold } from './lib/owner-routes.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -32,22 +36,42 @@ const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 
 const API_KEY = process.env.BITGET_API_KEY;
 const API_SECRET = process.env.BITGET_API_SECRET;
 const PASSPHRASE = process.env.BITGET_PASSPHRASE;
-const TO_ADDRESS = process.env.TRUST_WALLET_ADDRESS;
+// A destination supplied out-of-band (workflow dispatch input) is only ever
+// cross-checked against the registry — it never replaces it.
+const ADDRESS_OVERRIDE = process.env.OWNER_CRYPTO_ADDRESS || process.env.TRUST_WALLET_ADDRESS || null;
 
-if (!API_KEY || !API_SECRET || !PASSPHRASE) {
-  console.error(JSON.stringify({ ok: false, error: 'BITGET_API_KEY or BITGET_API_SECRET or BITGET_PASSPHRASE not set' }));
-  process.exit(2);
-}
-if (!TO_ADDRESS || !/^0x[0-9a-fA-F]{40}$/.test(TO_ADDRESS)) {
-  console.error(JSON.stringify({ ok: false, error: 'TRUST_WALLET_ADDRESS missing or not a valid EVM 0x address' }));
-  process.exit(2);
+function fail(code, error, exitCode = 2) {
+  console.log(JSON.stringify({ ok: false, code, error, fundsMoved: false }, null, 2));
+  process.exit(exitCode);
 }
 
+function requireCreds() {
+  if (!API_KEY || !API_SECRET || !PASSPHRASE) {
+    fail('CREDENTIALS_MISSING', 'BITGET_API_KEY or BITGET_API_SECRET or BITGET_PASSPHRASE not set');
+  }
+}
+
+// Chain metadata for the networks the registry is allowed to name. A route on
+// an unknown network still executes, it just carries no chain/explorer hint.
 const NETWORKS = {
-  bsc: { bitget: 'BEP20', chain: 'BNB Smart Chain', explorer: 'https://bscscan.com' },
-  trc20: { bitget: 'TRC20', chain: 'TRON', explorer: 'https://tronscan.org' },
-  erc20: { bitget: 'ERC20', chain: 'Ethereum', explorer: 'https://etherscan.io' },
+  BEP20: { chain: 'BNB Smart Chain', explorer: 'https://bscscan.com' },
+  ERC20: { chain: 'Ethereum', explorer: 'https://etherscan.io' },
+  TRC20: { chain: 'TRON', explorer: 'https://tronscan.org' },
+  BTC: { chain: 'Bitcoin', explorer: 'https://mempool.space' },
 };
+
+// Accepted --network shorthands, folded onto the registry's network names.
+const NETWORK_ALIASES = {
+  bsc: 'BEP20', bnb: 'BEP20', bep20: 'BEP20',
+  erc20: 'ERC20', eth: 'ERC20', ethereum: 'ERC20',
+  trc20: 'TRC20', tron: 'TRC20',
+  btc: 'BTC', bitcoin: 'BTC',
+};
+
+function canonicalNetwork(input) {
+  const s = String(input ?? '').trim();
+  return NETWORK_ALIASES[s.toLowerCase()] ?? s.toUpperCase();
+}
 
 function makeClient() {
   return new ccxt.bitget({
@@ -74,6 +98,7 @@ function pickNetworkInfo(networks, key) {
 
 async function checkBalance() {
   console.log('Checking Bitget balance...');
+  requireCreds();
   try {
     const bitget = makeClient();
     await bitget.loadTimeDifference();
@@ -88,6 +113,7 @@ async function checkBalance() {
 
 async function checkNetworks() {
   console.log('Checking Bitget USDT withdrawal networks...');
+  requireCreds();
   try {
     const bitget = makeClient();
     await bitget.loadTimeDifference();
@@ -110,29 +136,59 @@ async function checkNetworks() {
 
 async function withdraw() {
   const amount = Number(arg('amount', '0'));
-  const networkKey = arg('network', 'bsc');
   const confirm = process.argv.includes('--confirm');
+  const routeId = arg('route', undefined);
+  const asset = String(arg('asset', 'USDT')).trim().toUpperCase();
+  const requestedNetwork = canonicalNetwork(arg('network', 'bsc'));
 
-  if (!(amount > 0)) { console.error('--amount required (>0)'); process.exit(1); }
+  if (!(amount > 0)) fail('AMOUNT_REQUIRED', '--amount required (>0)', 1);
 
-  const network = NETWORKS[networkKey];
-  if (!network) { console.error('Valid networks: ' + Object.keys(NETWORKS).join(', ')); process.exit(1); }
+  // Destination resolution comes first: no API call, no credential read, and
+  // above all no send until a verified owner route has been resolved.
+  let registry;
+  try {
+    registry = loadRoutes();
+  } catch (e) {
+    fail('ROUTE_REGISTRY_UNREADABLE', e?.message ?? String(e));
+  }
+
+  const resolved = routeId
+    ? resolveRoute(registry, { id: routeId })
+    : resolveRoute(registry, { rail: 'bitget', asset, network: requestedNetwork });
+  if (!resolved.ok) {
+    fail(resolved.code, `${resolved.error} | available routes: ${listRoutes(registry).map((r) => r.id).join(', ')}`);
+  }
+
+  const route = resolved.route;
+  const network = NETWORKS[route.network] ?? { chain: route.network, explorer: null };
+
+  // A destination passed by the caller must BE the registered one; anything
+  // else is an attempt to substitute a wallet we did not verify.
+  if (ADDRESS_OVERRIDE && fold(ADDRESS_OVERRIDE) !== fold(route.address)) {
+    fail(
+      'ROUTE_ADDRESS_MISMATCH',
+      `caller-supplied destination is not the registered address of route "${route.id}"`,
+    );
+  }
+
+  requireCreds();
 
   const bitget = makeClient();
   await bitget.loadTimeDifference();
 
   const currencies = await bitget.fetchCurrencies();
-  const usdt = currencies?.['USDT'];
-  const liveNetwork = usdt?.networks ? pickNetworkInfo(usdt.networks, network.bitget) : null;
+  const coin = currencies?.[route.asset];
+  const liveNetwork = coin?.networks ? pickNetworkInfo(coin.networks, route.network) : null;
 
   const plan = {
     at: new Date().toISOString(),
     exchange: 'Bitget',
-    asset: 'USDT',
+    routeId: route.id,
+    asset: route.asset,
     amount,
-    network: network.bitget,
+    network: route.network,
     chain: network.chain,
-    to: TO_ADDRESS,
+    to: route.address,
     fee: liveNetwork?.fee ?? null,
     minWithdraw: liveNetwork?.min ?? null,
     maxWithdraw: liveNetwork?.max ?? null,
@@ -142,13 +198,13 @@ async function withdraw() {
 
   if (!liveNetwork || liveNetwork.active === false) {
     plan.status = 'NETWORK_UNAVAILABLE';
-    plan.error = `Network ${network.bitget} not available for USDT withdrawal`;
+    plan.error = `Network ${route.network} not available for ${route.asset} withdrawal`;
     console.log(JSON.stringify(plan, null, 2));
     return;
   }
   if (liveNetwork.min !== null && amount < liveNetwork.min) {
     plan.status = 'BELOW_MINIMUM';
-    plan.error = `Amount ${amount} USDT < minimum ${liveNetwork.min} USDT`;
+    plan.error = `Amount ${amount} ${route.asset} < minimum ${liveNetwork.min} ${route.asset}`;
     console.log(JSON.stringify(plan, null, 2));
     return;
   }
@@ -172,10 +228,10 @@ async function withdraw() {
 
   // Live balance re-check immediately before submission.
   const b = await bitget.fetchBalance();
-  const available = Number(b?.free?.['USDT'] ?? 0);
+  const available = Number(b?.free?.[route.asset] ?? 0);
   if (!(available >= amount)) {
     plan.status = 'INSUFFICIENT_BALANCE';
-    plan.error = `Available USDT ${available} < requested ${amount}`;
+    plan.error = `Available ${route.asset} ${available} < requested ${amount}`;
     plan.fundsMoved = false;
     console.log(JSON.stringify(plan, null, 2));
     return;
@@ -183,8 +239,8 @@ async function withdraw() {
 
   console.log('Executing Bitget withdrawal...');
   try {
-    const result = await bitget.withdraw('USDT', amount, TO_ADDRESS, undefined, {
-      network: network.bitget,
+    const result = await bitget.withdraw(route.asset, amount, route.address, undefined, {
+      network: route.network,
       clientOid: `btr-${Date.now()}`,
     });
     const withdrawId = result?.id ?? result?.withdrawId ?? result?.withdrawal?.id ?? null;
@@ -192,7 +248,7 @@ async function withdraw() {
       plan.status = 'WITHDRAWAL_SUBMITTED';
       plan.withdrawId = String(withdrawId);
       plan.fundsMoved = true;
-      plan.explorer = network.explorer + '/address/' + TO_ADDRESS;
+      if (network.explorer) plan.explorer = network.explorer + '/address/' + route.address;
     } else {
       plan.status = 'UNRECOGNIZED_RESPONSE';
       plan.error = JSON.stringify(result).slice(0, 300);
@@ -209,8 +265,22 @@ async function withdraw() {
   console.log(JSON.stringify(plan, null, 2));
 }
 
+/** Operator inventory of every declared route and whether it is armed. */
+function checkRoutes() {
+  let registry;
+  try {
+    registry = loadRoutes();
+  } catch (e) {
+    fail('ROUTE_REGISTRY_UNREADABLE', e?.message ?? String(e));
+  }
+  console.log(
+    JSON.stringify({ ok: true, verifiedAt: registry.verifiedAt, routes: listRoutes(registry) }, null, 2),
+  );
+}
+
 const action = arg('action', 'balance');
 if (action === 'balance') await checkBalance();
 else if (action === 'networks') await checkNetworks();
+else if (action === 'routes') checkRoutes();
 else if (action === 'withdraw') await withdraw();
-else { console.error('actions: balance, networks, withdraw'); process.exit(1); }
+else { console.error('actions: balance, networks, routes, withdraw'); process.exit(1); }

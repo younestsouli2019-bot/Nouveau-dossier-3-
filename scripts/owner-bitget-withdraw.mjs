@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * owner-bitget-withdraw.mjs — sweep swarm revenue USDT from Bitget to the
- * pre-set owner crypto wallet.
+ * owner-bitget-withdraw.mjs — sweep swarm revenue (USDT by default) from
+ * Bitget to one of the pre-set owner crypto routes.
  *
  * Why Bitget: Binance (451) and Bybit (403) geo-block US egress IPs
  * (GitHub runners + agent sandbox); Bitget's API is reachable from US
@@ -10,9 +10,12 @@
  * FAIL-CLOSED rules (mirrors execute-crypto-withdraw.mjs):
  *  - DRY-RUN BY DEFAULT. Real submission requires BOTH --execute AND
  *    SWARM_LIVE=true.
- *  - Destination is OWNER_CRYPTO_ADDRESS when set (the workflow passes the
- *    validated dispatch input), otherwise the pre-set OWNER_WALLET. Either way
- *    it must be in CRYPTO_ALLOWED_ADDRESSES (repo secret).
+ *  - The destination is resolved from the pre-set, verified owner routes in
+ *    config/crypto-addresses.json (scripts/lib/owner-routes.mjs) by --route id
+ *    or by --asset/--network. A destination supplied out-of-band
+ *    (OWNER_CRYPTO_ADDRESS) is only cross-checked against that route, never
+ *    substituted for it; an unresolvable route aborts.
+ *  - On top of that the resolved address must be in CRYPTO_ALLOWED_ADDRESSES.
  *  - Amount capped by OWNER_BITGET_MAX_USDT (default 60).
  *  - Balance is fetched and verified BEFORE any submit; amount > available
  *    aborts.
@@ -21,12 +24,14 @@
  *
  * Usage:
  *   node scripts/owner-bitget-withdraw.mjs --amount 60            # dry-run
- *   SWARM_LIVE=true node scripts/owner-bitget-withdraw.mjs --amount 60 --execute
+ *   node scripts/owner-bitget-withdraw.mjs --amount 60 --route bitget-usdt-bep20
+ *   SWARM_LIVE=true node scripts/owner-bitget-withdraw.mjs --amount 60 --network BEP20 --execute
  */
 import "dotenv/config";
 import fs from "node:fs";
 import path from "node:path";
 import ccxt from "ccxt";
+import { loadRoutes, resolveRoute, listRoutes, fold } from "./lib/owner-routes.mjs";
 
 // Minimal Bitget client (ccxt) — mirrors BitgetClient in src/crypto/crypto-rail.mjs
 // but avoids importing that module, which transitively requires @binance/connector.
@@ -44,26 +49,34 @@ class BitgetClient {
     });
   }
   get credsPresent() { return !!(this.apiKey && this.apiSecret && this.passphrase); }
-  async getUsdtAvailable() {
+  async getAvailable(asset = "USDT") {
     if (!this.credsPresent) return null;
     const bal = await this.exchange.fetchBalance();
-    const usdt = bal?.USDT;
-    return Number(usdt?.free ?? usdt?.total ?? 0);
+    const entry = bal?.[asset];
+    return Number(entry?.free ?? entry?.total ?? 0);
   }
-  async withdrawUSDT({ address, amount, clientOid, network = "BEP20" }) {
+  async withdrawAsset({ asset = "USDT", address, amount, clientOid, network = "BEP20" }) {
     if (!this.credsPresent) throw new Error("Bitget credentials missing");
     const params = { network: network === "BEP20" ? "BSC" : network };
     if (clientOid) params.clientOid = String(clientOid);
-    const tx = await this.exchange.withdraw("USDT", String(amount), address, undefined, params);
-    return { withdrawId: tx?.id ?? null, network, raw: tx };
+    const tx = await this.exchange.withdraw(asset, String(amount), address, undefined, params);
+    return { withdrawId: tx?.id ?? null, network, asset, raw: tx };
   }
 }
 
-// EIP-55 canonical casing. The previous literal
-// "0xA46225a984E2B2b5E5082E52ae8d8915A09FEFE7" failed checksum validation
-// (ethers: "bad address checksum"; strict exchange APIs reject it too), so a
-// run that fell back to this default could never settle.
-const OWNER_WALLET = "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7";
+// Accepted --network shorthands, folded onto the registry's network names.
+const NETWORK_ALIASES = {
+  bsc: "BEP20", bnb: "BEP20", bep20: "BEP20",
+  erc20: "ERC20", eth: "ERC20", ethereum: "ERC20",
+  trc20: "TRC20", tron: "TRC20",
+  btc: "BTC", bitcoin: "BTC",
+};
+
+function canonicalNetwork(input) {
+  const s = String(input ?? "").trim();
+  return NETWORK_ALIASES[s.toLowerCase()] ?? s.toUpperCase();
+}
+
 const MAX_DEFAULT = 60;
 const LEDGER = path.resolve("data", "out", "bitget-withdraw-ledger.ndjson");
 
@@ -98,9 +111,10 @@ function record(entry) {
 
 async function main() {
   const amount = Number(getArg("--amount", MAX_DEFAULT));
-  const network = String(getArg("--network", "BEP20")).toUpperCase();
+  const network = canonicalNetwork(getArg("--network", "BEP20"));
+  const asset = String(getArg("--asset", "USDT")).trim().toUpperCase();
+  const routeId = getArg("--route", null);
   const execute = process.argv.includes("--execute") && envIsTrue(process.env.SWARM_LIVE);
-  const address = String(process.env.OWNER_CRYPTO_ADDRESS ?? "").trim() || OWNER_WALLET;
 
   if (!Number.isFinite(amount) || amount <= 0) {
     console.error("amount must be a positive number");
@@ -112,58 +126,90 @@ async function main() {
     record({ status: "ABORTED", reason: "amount over cap", amount });
     process.exit(1);
   }
+
+  // Destination first: no credential read, no balance call, no send until a
+  // verified owner route has been resolved from the registry.
+  let registry;
+  try {
+    registry = loadRoutes();
+  } catch (err) {
+    console.error(`FAIL-CLOSED: owner route registry unreadable — ${err.message}`);
+    record({ status: "ABORTED", reason: "route registry unreadable", amount });
+    process.exit(1);
+  }
+  const resolved = routeId
+    ? resolveRoute(registry, { id: routeId })
+    : resolveRoute(registry, { rail: "bitget", asset, network });
+  if (!resolved.ok) {
+    console.error(`FAIL-CLOSED: ${resolved.code} — ${resolved.error}`);
+    console.error(`available routes: ${listRoutes(registry).map((r) => r.id).join(", ")}`);
+    record({ status: "ABORTED", reason: resolved.code, amount, asset, network });
+    process.exit(1);
+  }
+  const route = resolved.route;
+
+  // A dispatch-supplied destination must BE the registered one. Anything else
+  // is a substitution of a wallet the owner never verified: refuse.
+  const supplied = String(process.env.OWNER_CRYPTO_ADDRESS ?? "").trim();
+  if (supplied && fold(supplied) !== fold(route.address)) {
+    console.error(`FAIL-CLOSED: supplied destination is not the registered address of route "${route.id}".`);
+    record({ status: "ABORTED", reason: "ROUTE_ADDRESS_MISMATCH", amount, routeId: route.id });
+    process.exit(1);
+  }
+  const address = route.address;
+
   const allow = addressIsAllowlisted(address);
   if (allow !== true) {
     console.error(allow === null
       ? "FAIL-CLOSED: CRYPTO_ALLOWED_ADDRESSES is not set — live withdrawal refused without an allowlist."
       : "FAIL-CLOSED: destination wallet is not in CRYPTO_ALLOWED_ADDRESSES.");
-    record({ status: "ABORTED", reason: allow === null ? "no allowlist" : "not allowlisted", amount });
+    record({ status: "ABORTED", reason: allow === null ? "no allowlist" : "not allowlisted", amount, routeId: route.id });
     process.exit(1);
   }
 
   const client = new BitgetClient();
   if (!client.credsPresent) {
     console.error("FAIL-CLOSED: BITGET_API_KEY / BITGET_API_SECRET / BITGET_PASSPHRASE not all present.");
-    record({ status: "ABORTED", reason: "credentials missing", amount });
+    record({ status: "ABORTED", reason: "credentials missing", amount, routeId: route.id });
     process.exit(1);
   }
 
   let available;
   try {
-    available = await client.getUsdtAvailable();
+    available = await client.getAvailable(route.asset);
   } catch (err) {
     console.error("Bitget balance read failed:", err.message);
     record({ status: "ABORTED", reason: "balance read failed", amount, error: String(err.message).slice(0, 200) });
     process.exit(1);
   }
   if (available === null || !Number.isFinite(available)) {
-    console.error("Could not read Bitget USDT balance.");
+    console.error(`Could not read Bitget ${route.asset} balance.`);
     record({ status: "ABORTED", reason: "balance unreadable", amount });
     process.exit(1);
   }
-  console.log(`Bitget USDT available: ${available}`);
+  console.log(`Bitget ${route.asset} available: ${available}`);
   if (amount > available) {
-    console.error(`FAIL-CLOSED: requested ${amount} USDT exceeds available ${available}.`);
+    console.error(`FAIL-CLOSED: requested ${amount} ${route.asset} exceeds available ${available}.`);
     record({ status: "ABORTED", reason: "insufficient balance", amount, available });
     process.exit(1);
   }
 
   const clientOid = `OWNER-BITGET-WD-${Date.now()}`;
   if (!execute) {
-    console.log(`DRY-RUN OK — would withdraw ${amount} USDT (${network}) to ${address} (clientOid=${clientOid}). No exchange call made.`);
-    record({ status: "DRY_RUN", amount, network, address, clientOid, available });
+    console.log(`DRY-RUN OK — would withdraw ${amount} ${route.asset} (${route.network}) to ${address} via route ${route.id} (clientOid=${clientOid}). No exchange call made.`);
+    record({ status: "DRY_RUN", amount, asset: route.asset, network: route.network, routeId: route.id, address, clientOid, available });
     return;
   }
 
-  console.log(`EXECUTING live withdrawal: ${amount} USDT (${network}) → ${address}`);
+  console.log(`EXECUTING live withdrawal: ${amount} ${route.asset} (${route.network}) → ${address} via route ${route.id}`);
   try {
-    const res = await client.withdrawUSDT({ address, amount, clientOid, network });
+    const res = await client.withdrawAsset({ asset: route.asset, address, amount, clientOid, network: route.network });
     console.log("WITHDRAW SUBMITTED");
-    console.log(JSON.stringify({ ok: true, provider: "bitget", withdrawId: res.withdrawId, network: res.network, amount, address, clientOid }, null, 2));
-    record({ status: "SUBMITTED", amount, network, address, clientOid, withdrawId: res.withdrawId });
+    console.log(JSON.stringify({ ok: true, provider: "bitget", routeId: route.id, asset: route.asset, withdrawId: res.withdrawId, network: res.network, amount, address, clientOid }, null, 2));
+    record({ status: "SUBMITTED", amount, asset: route.asset, network: route.network, routeId: route.id, address, clientOid, withdrawId: res.withdrawId });
   } catch (err) {
     console.error("Withdrawal failed:", err.message);
-    record({ status: "FAILED", amount, network, address, clientOid, error: String(err.message).slice(0, 300) });
+    record({ status: "FAILED", amount, asset: route.asset, network: route.network, routeId: route.id, address, clientOid, error: String(err.message).slice(0, 300) });
     process.exit(1);
   }
 }

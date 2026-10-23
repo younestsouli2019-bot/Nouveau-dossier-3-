@@ -1,7 +1,7 @@
 {
-  "version": 2,
+  "version": 3,
   "updatedAt": "2026-10-23",
-  "note": "Single source of truth for owner crypto receive addresses that are fanned out into repo secrets. Public receive addresses only — never place a private key or seed here. Consumed by scripts/rotate-crypto-addresses.mjs and by the allowlist inventory scan inside .github/workflows/owner-crypto-withdraw.yml.",
+  "note": "Single source of truth for owner crypto receive addresses that are fanned out into repo secrets. Public receive addresses only — never place a private key or seed here. Consumed by scripts/rotate-crypto-addresses.mjs (secret fan-out), by scripts/lib/owner-routes.mjs (payout destination resolution) and by the allowlist inventory scan inside .github/workflows/owner-crypto-withdraw.yml.",
   "canonical": {
     "evm": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7"
   },
@@ -19,6 +19,52 @@
       "ERC20": "0x2700732a6f050c10c080154ce73cc641c448b704",
       "TRC20": "TUtM17RZ1jCrXPnLa34o7J59BSEqgqYYBE"
     }
+  },
+  "routes": {
+    "note": "Pre-set owner destinations, one entry per (rail, asset, network). This is what the payout rails resolve against: a rail MUST refuse to send when the requested route is absent, ambiguous, unverified, or carries no address. Never invent an address to make a route usable — leave verified=false with address=null until the owner supplies a real address they control on that chain. A route is not a deposit route: an exchange deposit address here would bounce funds back to the exchange.",
+    "verifiedAt": "2026-10-23",
+    "list": [
+      {
+        "id": "bitget-usdt-bep20",
+        "rail": "bitget",
+        "asset": "USDT",
+        "network": "BEP20",
+        "address": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+        "verified": true,
+        "verifiedVia": "EIP-55 checksum + owner declaration",
+        "note": "Primary sweep route — lowest fee."
+      },
+      {
+        "id": "bitget-usdt-erc20",
+        "rail": "bitget",
+        "asset": "USDT",
+        "network": "ERC20",
+        "address": "0xA46225a984E2B2B5E5082E52AE8d8915A09fEfe7",
+        "verified": true,
+        "verifiedVia": "EIP-55 checksum + owner declaration",
+        "note": "Higher network fee; fallback when BEP20 is unavailable."
+      },
+      {
+        "id": "bitget-usdt-trc20",
+        "rail": "bitget",
+        "asset": "USDT",
+        "network": "TRC20",
+        "address": null,
+        "verified": false,
+        "verifiedVia": null,
+        "note": "Refused until the owner supplies a Tron wallet they control. The TRC20 address in depositRoutes is a Bitget deposit route, not an owner wallet."
+      },
+      {
+        "id": "bitget-btc-btc",
+        "rail": "bitget",
+        "asset": "BTC",
+        "network": "BTC",
+        "address": null,
+        "verified": false,
+        "verifiedVia": null,
+        "note": "Refused until the owner supplies an owner-controlled BTC address. Without it, a stranded BTC balance can only be moved by converting to USDT first."
+      }
+    ]
   },
   "deprecated": [],
   "targets": [
