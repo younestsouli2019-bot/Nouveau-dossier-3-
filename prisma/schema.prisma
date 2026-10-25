@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
 }
 
 model User {
@@ -229,9 +229,9 @@ model PurchaseOrder {
   currency        String    @default("USD")
   lineItemCount   Int       @default(0)
   totalAmount     Float     @default(0)
-  createdBy       String?   @db.VarChar(64) // P6: identité vérifiée (requireOpsAuth) - plus "user" littéral
+  createdBy       String?    // P6: identité vérifiée (requireOpsAuth) - plus "user" littéral
   submittedAt     DateTime?
-  submittedBy     String?   @db.VarChar(64) // P6: identité vérifiée (requireOpsAuth)
+  submittedBy     String?    // P6: identité vérifiée (requireOpsAuth)
   approvedBy      String?
   approvedAt      DateTime?
   rejectedBy      String?
@@ -384,7 +384,7 @@ model OwnerPaymentConfig {
   splitPercentage      Float // e.g. 10.0 for 10%
   ribLabel             String?
   ribNumber            String? // deprecated (backward compat 90d) — use ribFingerprintSha256 instead
-  ribFingerprintSha256 String?        @db.VarChar(64) // P5: sha256(rib) hex 64 — source de vérité future
+  ribFingerprintSha256 String?         // P5: sha256(rib) hex 64 — source de vérité future
   swiftCode            String?
   bankName             String?
   isActive             Boolean        @default(true)
@@ -407,8 +407,8 @@ model OwnerPayment {
   destinationType      String    @default("external_bank") // external_bank, transition_pool, banking_circle, operational_pool
   destinationLabel     String? // e.g. "RIB ...594182" or "Banking Circle Internal"
   ribNumber            String?   // deprecated (90d backward compat) — P5 use ribFingerprintSha256 + ribDisplayMasked
-  ribFingerprintSha256 String?   @db.VarChar(64) // P5: sha256(rib) hex 64 — résolution DB OwnerAccount
-  ribDisplayMasked     String?   @db.VarChar(24) // P5: cache affichage "***last6" seulement, jamais rib full
+  ribFingerprintSha256 String?    // P5: sha256(rib) hex 64 — résolution DB OwnerAccount
+  ribDisplayMasked     String?    // P5: cache affichage "***last6" seulement, jamais rib full
   failureReason        String?
   recovered            Boolean   @default(false)
   recoveredAt          DateTime?
@@ -789,7 +789,7 @@ model SwarmDecision {
   action    String
   outcome   String
   weight    Float    @default(1)
-  metadata  Json     @default("{}")
+  metadata  Json?
   createdAt DateTime @default(now())
 
   @@index([agent])
@@ -814,7 +814,7 @@ model SwarmErrorLog {
   degradePolicy String   @default("retry")
   remediation   String?
   state         String   @default("degraded")
-  metadata      Json     @default("{}")
+  metadata      Json?
   createdAt     DateTime @default(now())
 
   @@index([agent, createdAt])
@@ -825,7 +825,7 @@ model SwarmIntegration {
   kind      String
   baseUrl   String
   status    String   @default("unknown")
-  metadata  Json     @default("{}")
+  metadata  Json?
   updatedAt DateTime @default(now())
 }
 
