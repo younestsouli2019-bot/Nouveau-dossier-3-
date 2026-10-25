@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+*.db
+*.db-journal
+data/out
+reports
+logs
+download
+.env.local
+.keys
