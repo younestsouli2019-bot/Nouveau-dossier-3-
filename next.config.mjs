@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   // Next.js 16: eslint config moved out of next.config — use next.config ESLint plugin or .eslintrc
   typescript: { ignoreBuildErrors: true },
   // Next.js 16: serverComponentsExternalPackages → serverExternalPackages
