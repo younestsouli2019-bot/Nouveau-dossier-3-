@@ -16,8 +16,9 @@ import {
   ChevronDown, ChevronRight, AlertCircle, Info, Ban, Wrench, CircleDot,
   Ship, Plane, Train, TruckIcon, MapPinned, Target, Banknote, Coins,
   Sun, Moon, Search, Filter, Download, MoreHorizontal, Copy, Check,
-  ClipboardCheck, Building2, ThumbsUp, ThumbsDown, Send, Globe, Mail,
+  ClipboardCheck, Building2, ThumbsUp, ThumbsDown, Send, Globe, Mail, Rocket,
 } from 'lucide-react'
+import Link from 'next/link'
 
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -401,6 +402,12 @@ export default function SupplyChainDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Link href="/ops/deploy">
+              <Button size="sm" className="text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-[0_0_12px_rgba(16,185,129,0.5)]">
+                <Rocket className="w-3.5 h-3.5" />
+                DEPLOY
+              </Button>
+            </Link>
             <AlertDialog open={seedDialogOpen} onOpenChange={setSeedDialogOpen}>
               <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm" disabled={seedLoading} className="text-xs gap-1.5">
