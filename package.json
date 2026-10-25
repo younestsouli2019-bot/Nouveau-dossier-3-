@@ -63,6 +63,8 @@
   "dependencies": {
     "@base44/sdk": "^0.8.13",
     "@binance/connector": "^3.6.1",
+    "@libsql/client": "^0.18.0",
+    "@prisma/adapter-libsql": "^7.10.1",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "@radix-ui/react-alert-dialog": "^1.1.23",
