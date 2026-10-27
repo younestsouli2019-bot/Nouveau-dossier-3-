@@ -84,10 +84,14 @@ async function binancePost(path, params = {}, base = BASE) {
   const timestamp = await serverTimeMs();
   const body = new URLSearchParams({ ...params, timestamp, recvWindow: 10000 }).toString();
   const signature = sign(body);
-  const r = await fetch(`${base}${path}?signature=${signature}`, {
+  // -1022 fix: the signature must be appended to the SIGNED PAYLOAD (the body),
+  // not sent separately in the URL query — Binance matches the HMAC against the
+  // exact form-urlencoded bytes it receives, so signature-in-URL fails closed.
+  const signed = `${body}&signature=${signature}`;
+  const r = await fetch(`${base}${path}`, {
     method: 'POST',
     headers: { 'X-MBX-APIKEY': API_KEY, 'Content-Type': 'application/x-www-form-urlencoded' },
-    body,
+    body: signed,
   });
   return { status: r.status, data: await r.json() };
 }
