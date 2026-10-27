@@ -1,0 +1,106 @@
+The root cause of your BinanceAPIError(HTTP=400, code=-1022, msg=Signature for this request is not valid.) comes down to a subtle difference in how httpx handles raw queries versus how your _build_query_string logic encodes parameters.
+Your implementation explicitly builds the query string using quote_via=quote, explicitly aiming to match httpx internally. However, for POST requests, Binance endpoints typically expect standard application/x-www-form-urlencoded parsing, which treats spaces as + (quote_plus) rather than %20 (quote). More importantly, the way you are passing your generated query string directly into url = f"{path}?{final_query}" forces httpx to parse a raw string. When httpx processes a string URL containing a query component, it performs its own internal canonical sanitization and character escaping before transmitting the bytes over the wire. This slightly mutates your perfectly ordered, raw signature string.
+Here are the specific lines causing the mismatch and how to fix them:
+
+The Vulnerability in _request
+
+In your _request function, you are baking the query string manually into the URL path:
+python
+# Line 158
+url = f"{path}?{final_query}" if final_query else path
+...
+# Line 172
+resp = await self._client.request(method, url, params=None)
+Use code with caution.
+When httpx receives url as a string, its internal URL parser unpacks it and Normalizes it. If there are special characters or symbols inside final_query, httpx modifies the URL during compilation, invalidating your cryptographic signature payload.
+
+The Solution
+
+Instead of passing a combined string to the url argument, you should keep the url restricted to the clean path, and pass the pre-calculated, raw query string directly to httpx's content parameter for POST requests, or let httpx handle the parameter encoding using a dictionary while matching your signature sequence exactly.
+Alternatively, the most robust fix for httpx when handling pre-signed strings is to construct a pre-built httpx.URL object using its raw byte properties to guarantee httpx leaves your query string completely untouched.
+Update your _request method in bbc_v3/src/core/binance_client.py with this safe approach:
+python
+    async def _request(
+        self,
+        method: str,
+        path: str,
+        params: Optional[Dict[str, Any]] = None,
+        signed: bool = False,
+        weight: int = 1,
+        weight_group: str = "uid",
+        retry_on_429: bool = True,
+    ) -> Dict[str, Any]:
+        if self._client is None:
+            await self.connect()
+
+        params = dict(params or {})
+
+        if signed:
+            if not self._api_key or not self._api_secret:
+                raise BinanceAPIError(0, -1, "API key/secret not configured", {})
+
+            # 1. Inject mandatory authentication fields
+            params["timestamp"] = int(time.time() * 1000)
+            params["recvWindow"] = params.get("recvWindow", 5000)
+
+            # 2. Build canonical query string using quote_plus for form-urlencoded endpoints
+            # Binance POST endpoints rely on form-encoded parsing standards
+            query_string = urlencode([(k, v) for k, v in params.items() if v is not None])
+
+            # 3. Generate cryptographic signature
+            signature = self._sign(query_string, self._api_secret)
+            final_query = f"{query_string}&signature={signature}"
+        else:
+            if params:
+                final_query = urlencode([(k, v) for k, v in params.items() if v is not None])
+            else:
+                final_query = ""
+
+        # 4. CRITICAL FIX: Build an explicit httpx.URL with raw query bytes 
+        # This completely bypasses httpx's internal string re-encoding logic.
+        if final_query:
+            if method.upper() == "POST":
+                # For POST requests, move the payload securely into the request body 
+                # instead of leaving it exposed in the URL parameters.
+                url = path
+                headers = {"Content-Type": "application/x-www-form-urlencoded"}
+                content = final_query.encode("utf-8")
+            else:
+                # For GET requests, use httpx.URL with raw_query to prevent alteration
+                url = httpx.URL(path, query=final_query.encode("utf-8"))
+                headers = {}
+                content = None
+        else:
+            url = path
+            headers = {}
+            content = None
+
+        # Rate limit BEFORE the call
+        await rate_limiter.acquire(group=weight_group, weight=weight)
+        self.stats.weight_consumed += weight
+        self.stats.total_requests += 1
+        self.stats.last_request_at = time.time()
+        self.stats.by_endpoint[path] = self.stats.by_endpoint.get(path, 0) + 1
+
+        attempt = 0
+        while True:
+            attempt += 1
+            try:
+                # Pass the protected URL, headers, and the body content safely
+                resp = await self._client.request(
+                    method, 
+                    url, 
+                    headers=headers, 
+                    content=content,
+                    params=None
+                )
+            except (httpx.ConnectError, httpx.ReadTimeout, httpx.WriteTimeout) as e:
+                # ... rest of your error and retry loop remains unchanged ...
+Use code with caution.
+
+Why this fixes the issue:
+
+1. Separates POST Body and GET Queries: Your client calls endpoints like /sapi/v1/giftcard/verify via POST. Passing query signatures inside the string URL header during a POST operation breaks validation patterns on Binance's API Gateway. Moving the payload into content as application/x-www-form-urlencoded mirrors standard SDK formats.
+2. Bypasses String Normalization: Constructing an explicit httpx.URL(..., query=final_query.encode('utf-8')) flags the library's internal router to treat the exact byte sequence as raw output, eliminating unexpected normalization transformations.
+If you still experience issues after making this change, tell me:
+• Are you receiving this error on all endpoints (like get_account_info), or does it only happen on the POST endpoints like verify_gift_card or redeem_gift_card?
