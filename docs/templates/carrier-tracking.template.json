@@ -1,0 +1,19 @@
+{
+  "_README": "Carrier tracking store consumed by scripts/lib/po-delivery.mjs (PO_CARRIER_TRACKING_FILE, default data/out/po/carrier-tracking.json). Copy this template to carrier-tracking.json and fill REAL values. The engine fails closed on placeholders (TODO/XXXX/TBD/n/a) and on numbers shorter than 6 chars; it never invents tracking references. 'events' is optional carrier scan history (label_created -> in_transit -> delivered). A PO only reaches 'delivered' when a REAL signed receipt scan exists under receivedDir (default data/out/po/received/<PO>/<carrier>-*.pdf|jpg|png) — that is a physical human step.",
+  "_carriers": "Authorized: AMANA | ARAMEX | POSTE MAROC (aliases normalized by the module).",
+  "SWARM-PO-2026-001": {
+    "carrier": "AMANA",
+    "trackingNumber": "",
+    "events": []
+  },
+  "SWARM-PO-2026-002": {
+    "carrier": "ARAMEX",
+    "trackingNumber": "",
+    "events": []
+  },
+  "SWARM-PO-2026-003": {
+    "carrier": "POSTE MAROC",
+    "trackingNumber": "",
+    "events": []
+  }
+}
