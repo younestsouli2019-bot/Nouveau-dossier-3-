@@ -61,20 +61,66 @@ function sign(queryString) {
   return crypto.createHmac('sha256', API_SECRET).update(queryString).digest('hex');
 }
 
+// ── Server-time offset cache (pattern adopted from bbc_v3 2026-10-29) ───────
+// Fetch Binance's clock once per 5 min and reuse the offset instead of one
+// round trip per signed call. Survives local clock drift of hours, which is
+// the -1021/-1022 failure mode when a sandbox or runner clock is off.
+const TIME_SYNC_INTERVAL_MS = 5 * 60 * 1000;
+let _timeOffsetMs = null;
+let _lastTimeSync = 0;
+
 async function serverTimeMs() {
+  const now = Date.now();
+  if (_timeOffsetMs !== null && now - _lastTimeSync < TIME_SYNC_INTERVAL_MS) {
+    return now + _timeOffsetMs;
+  }
   try {
     const r = await fetch(`${BASE}/api/v3/time`);
     const j = await r.json();
-    if (j.serverTime) return j.serverTime;
+    if (j.serverTime) {
+      _timeOffsetMs = Number(j.serverTime) - Date.now();
+      _lastTimeSync = Date.now();
+      return Date.now() + _timeOffsetMs;
+    }
   } catch {}
-  return Date.now();
+  return Date.now(); // fail-open to local clock; a bad clock surfaces as -1021
+}
+
+// ── Retry with Retry-After + exponential backoff (adopted from bbc_v3) ──────
+// Binance answers over-limit traffic with 429 (and bans with 418): honor
+// Retry-After rather than hammering, and back off on transport errors.
+const RETRYABLE_STATUS = new Set([418, 429, 500, 502, 503, 504]);
+const MAX_RETRIES = 2;
+
+async function fetchWithRetry(url, opts = {}, maxRetries = MAX_RETRIES) {
+  let attempt = 0;
+  for (;;) {
+    attempt += 1;
+    let r;
+    try {
+      r = await fetch(url, opts);
+    } catch (e) {
+      if (attempt > maxRetries) throw e;
+      await new Promise((res) => setTimeout(res, Math.min(2 ** attempt, 8) * 500));
+      continue;
+    }
+    if (RETRYABLE_STATUS.has(r.status) && attempt <= maxRetries) {
+      const retryAfter = Number(r.headers?.get?.('Retry-After') || 0);
+      const waitMs = retryAfter > 0
+        ? Math.min((retryAfter + 1) * 1000, 10000)
+        : Math.min(2 ** attempt, 8) * 500;
+      await new Promise((res) => setTimeout(res, waitMs));
+      continue;
+    }
+    return r;
+  }
 }
 
 async function binanceGet(path, params = {}, base = BASE) {
   const timestamp = await serverTimeMs();
   const qs = new URLSearchParams({ ...params, timestamp, recvWindow: 10000 }).toString();
   const signature = sign(qs);
-  const r = await fetch(`${base}${path}?${qs}&signature=${signature}`, {
+  const r = await fetchWithRetry(`${base}${path}?${qs}&signature=${signature}`, {
     headers: { 'X-MBX-APIKEY': API_KEY },
   });
   return { status: r.status, data: await r.json() };
@@ -88,7 +134,7 @@ async function binancePost(path, params = {}, base = BASE) {
   // not sent separately in the URL query — Binance matches the HMAC against the
   // exact form-urlencoded bytes it receives, so signature-in-URL fails closed.
   const signed = `${body}&signature=${signature}`;
-  const r = await fetch(`${base}${path}`, {
+  const r = await fetchWithRetry(`${base}${path}`, {
     method: 'POST',
     headers: { 'X-MBX-APIKEY': API_KEY, 'Content-Type': 'application/x-www-form-urlencoded' },
     body: signed,
@@ -642,7 +688,7 @@ function checkRoutes() {
 // ── Main ─────────────────────────────────────────────────────────────────
 // Exported for signature tests (scripts/test-binance-rail.mjs). Executing this
 // file directly still runs the CLI dispatch below, unchanged.
-export { sign, binanceGet, binancePost };
+export { sign, binanceGet, binancePost, serverTimeMs, fetchWithRetry };
 
 const action = arg('action', 'balance');
 const isDirectRun = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);

@@ -22,11 +22,28 @@ process.env.BINANCE_API_SECRET = process.env.BINANCE_API_SECRET || 'test-secret'
 
 const FIXED_SERVER_TIME = 1793275200000; // fixed server clock for determinism
 const captures = [];
+let timeCalls = 0;
+let postAttempts = 0;
+let rateLimitNextPost = false; // when true, next POST answers 429 with Retry-After
 
 globalThis.fetch = async (url, opts = {}) => {
   const u = String(url);
   const isTime = u.includes('/api/v3/time');
   const isPost = (opts.method || 'GET').toUpperCase() === 'POST';
+  if (isTime) timeCalls += 1;
+  if (isPost) {
+    postAttempts += 1;
+    if (rateLimitNextPost) {
+      rateLimitNextPost = false; // one 429, then success
+      return {
+        status: 429,
+        ok: false,
+        headers: { get: (h) => (String(h).toLowerCase() === 'retry-after' ? '0' : null) },
+        json: async () => ({ code: -1003, msg: 'Too many requests' }),
+        text: async () => '{"code":-1003}',
+      };
+    }
+  }
   const entry = {
     url: u,
     method: opts.method || 'GET',
@@ -100,6 +117,22 @@ check('POST: HMAC matches body-minus-signature', postSig === sign(postUnsigned),
 check('POST: form-urlencoded content-type', /application\/x-www-form-urlencoded/.test(String(postCall.headers?.['Content-Type'] || '')));
 check('POST: X-MBX-APIKEY header sent', String(postCall.headers?.['X-MBX-APIKEY'] || '').length > 0);
 check('POST: body carries timestamp + recvWindow', /timestamp=\d+/.test(postBody) && /recvWindow=10000/.test(postBody));
+
+// ── 4. Server-time offset cache (bbc_v3 pattern) ────────────────────────────
+timeCalls = 0;
+await binanceGet('/api/v3/account', { omitZeroBalances: true });
+await binanceGet('/api/v3/account', { omitZeroBalances: true });
+await binancePost('/sapi/v1/asset/transfer', { type: 'MAIN_FUNDING', asset: 'USDT', amount: '1' });
+// The offset was primed by the earlier assertions; a 5-min TTL means these three
+// further signed calls must reuse it — i.e. ZERO additional /api/v3/time fetches.
+check('time: offset cached across signed calls (0 refetches within TTL)', timeCalls === 0, `timeCalls=${timeCalls}`);
+
+// ── 5. 429 handling with Retry-After ────────────────────────────────────────
+captures.length = 0;
+postAttempts = 0;
+rateLimitNextPost = true;
+const retryResult = await binancePost('/sapi/v1/asset/transfer', { type: 'MAIN_FUNDING', asset: 'USDT', amount: '1' });
+check('429: request retried after Retry-After instead of failing', postAttempts === 2 && retryResult.status === 200, `attempts=${postAttempts}, status=${retryResult.status}`);
 
 // ── Report ──────────────────────────────────────────────────────────────────
 let failed = 0;
