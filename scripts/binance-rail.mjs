@@ -640,8 +640,15 @@ function checkRoutes() {
 }
 
 // ── Main ─────────────────────────────────────────────────────────────────
+// Exported for signature tests (scripts/test-binance-rail.mjs). Executing this
+// file directly still runs the CLI dispatch below, unchanged.
+export { sign, binanceGet, binancePost };
+
 const action = arg('action', 'balance');
-if (action === 'balance') await checkBalance();
+const isDirectRun = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (!isDirectRun) {
+  // imported as a module (tests) — do not execute a CLI action
+} else if (action === 'balance') await checkBalance();
 else if (action === 'holdings') await holdings();
 else if (action === 'networks') await checkNetworks();
 else if (action === 'routes') checkRoutes();
