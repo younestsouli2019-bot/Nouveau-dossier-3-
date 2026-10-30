@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ensureDataContinuity } from '@/lib/db'
 import { enforcePrepaidPolicy } from '@/lib/strict-enforcement/strict-procurement'
+import { ensureSeeded } from '@/lib/auto-seed'
 
 // GET /api/procurement - List all procurement items with optional filters and summary stats
 export async function GET(request: NextRequest) {
   try {
+    // Continuity safeguard: restore from JSON backup if DB was wiped
+    await ensureDataContinuity()
+    // Auto-seed if DB is empty (continuity after container recycle)
+    await ensureSeeded()
+
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
     const category = searchParams.get('category')

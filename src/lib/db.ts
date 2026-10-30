@@ -1,10 +1,13 @@
 import { PrismaClient } from '@prisma/client'
 import { installTruthGuards } from './strict-enforcement/truth-guards'
+import { existsSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
   __prismaAdapter: unknown | undefined
   __prismaAdapterUrl: string | undefined
+  __seedRestoreAttempted: boolean | undefined
 }
 
 /**
@@ -73,3 +76,70 @@ export const db =
 export const prisma = db
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
+
+/**
+ * Continuity safeguard: restore supply-chain data from JSON backup on first
+ * empty-DB access. Runs once per process lifetime (idempotent via flag).
+ * Safe to call from anywhere; no-op if data already exists or backup missing.
+ *
+ * If tables are missing (fresh DB), runs `prisma db push` first to create them.
+ */
+export async function ensureDataContinuity(): Promise<void> {
+  if (globalForPrisma.__seedRestoreAttempted) return
+  globalForPrisma.__seedRestoreAttempted = true
+
+  try {
+    let count = 0
+    try {
+      count = await db.procurementItem.count()
+    } catch (schemaErr) {
+      // Tables missing → push schema first
+      console.log('[continuity] Schema missing, pushing schema...')
+      const { execSync } = await import('node:child_process')
+      try {
+        execSync('npx prisma db push --schema=prisma/schema.prisma --accept-data-loss', {
+          stdio: 'pipe',
+          timeout: 30_000,
+          cwd: process.cwd(),
+        })
+        console.log('[continuity] Schema pushed')
+        count = await db.procurementItem.count()
+      } catch (pushErr) {
+        console.warn('[continuity] schema push failed:', pushErr instanceof Error ? pushErr.message.slice(0, 100) : String(pushErr))
+        return
+      }
+    }
+
+    if (count > 0) {
+      console.log(`[continuity] DB already has ${count} procurement items — no restore needed`)
+      return
+    }
+
+    // Try JSON backup (works in any environment)
+    const backupPath = join(process.cwd(), 'scripts', 'data', 'seed-backup.json')
+    if (existsSync(backupPath)) {
+      console.log('[continuity] DB empty — restoring from JSON backup...')
+      const backup = JSON.parse(readFileSync(backupPath, 'utf8'))
+      const MODELS = ['procurementItem', 'shipment', 'ownerPayment', 'ownerPaymentConfig'] as const
+      let created = 0
+      for (const model of MODELS) {
+        const rows = backup[model] || []
+        for (const row of rows) {
+          try {
+            const existing = await (db as any)[model].findUnique({ where: { id: row.id } })
+            if (existing) continue
+            await (db as any)[model].create({ data: row })
+            created++
+          } catch { /* skip duplicates / schema mismatches */ }
+        }
+      }
+      if (created > 0) {
+        console.log(`[continuity] ✅ Restored ${created} rows from JSON backup`)
+      }
+    } else {
+      console.warn('[continuity] No JSON backup found at', backupPath)
+    }
+  } catch (e) {
+    console.warn('[continuity] restore failed:', e instanceof Error ? e.message : String(e))
+  }
+}
