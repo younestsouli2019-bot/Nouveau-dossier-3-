@@ -62,7 +62,9 @@ function createPrismaClient() {
     transactionOptions: {
       maxWait: 8000,
       timeout: 15000,
-      isolationLevel: 'ReadCommitted',
+      // Prisma 7 typings accept Serializable here; ReadCommitted is rejected by
+      // the generated client type, which is why CI was failing during tsc.
+      isolationLevel: 'Serializable',
     },
   })
 
