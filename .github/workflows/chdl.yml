@@ -1,0 +1,41 @@
+name: Space-Z Preview C health check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/15 * * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: spacez-preview-c-health
+  cancel-in-progress: true
+
+jobs:
+  health-check:
+    name: Verify Preview C is serving healthy app
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      PREVIEW_URL: ${{ secrets.SPACEZ_PREVIEW_C_URL || 'https://preview-chat-c00bebd6-0736-4444-bdaf-950f1172cd81.space-z.ai' }}
+    steps:
+      - name: Probe health endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          response="$RUNNER_TEMP/preview-c-health.json"
+          status=$(curl --silent --show-error --max-time 20 \
+            --output "$response" --write-out '%{http_code}' \
+            "$PREVIEW_URL/api/healthz")
+          echo "Preview C /api/healthz returned HTTP $status"
+          if [ "$status" != "200" ]; then
+            echo "::error::Preview C is not healthy (HTTP $status). Check the Space-Z dashboard and redeploy the preview instance if needed."
+            exit 1
+          fi
+          if ! jq -e '.ok == true and .status == "healthy"' "$response" >/dev/null; then
+            echo "::error::Preview C returned HTTP 200 but its health payload is not healthy."
+            jq '{ok, status, version, commit}' "$response" || true
+            exit 1
+          fi
+          jq '{ok, status, version, commit}' "$response"
