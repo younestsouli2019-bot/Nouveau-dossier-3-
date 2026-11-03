@@ -120,10 +120,13 @@ jobs:
           set -euo pipefail
           [ -z "$SPACEZ_DEPLOY_HOOK" ] && echo "::error::Missing SPACEZ_DEPLOY_HOOK secret" && exit 1
           echo "Triggering Space-Z deploy hook..."
-          HTTP_CODE=$(curl -s -o /tmp/hook_response.txt -w "%{http_code}" -X GET "$SPACEZ_DEPLOY_HOOK")
-          cat /tmp/hook_response.txt
+          CURL_RC=0
+          HTTP_CODE=$(curl -s -o /tmp/hook_response.txt -w "%{http_code}" -X GET "$SPACEZ_DEPLOY_HOOK" --max-time 30 --connect-timeout 10) || CURL_RC=$?
+          cat /tmp/hook_response.txt 2>/dev/null || true
           echo ""
-          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "202" ]; then
+          if [ "$CURL_RC" -ne 0 ]; then
+            echo "::warning::Deploy hook unreachable (curl exit $CURL_RC) - Space-Z platform may be down; continuing without failing the workflow."
+          elif [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "202" ]; then
             echo "Deploy hook triggered successfully (HTTP $HTTP_CODE)."
           else
             echo "::warning::Deploy hook returned HTTP $HTTP_CODE — check Space-Z dashboard."
