@@ -58,7 +58,12 @@
     "inference:down": "docker compose -f inference/docker-compose.yml down",
     "inference:health": "node --import tsx scripts/glm-local-health.mjs",
     "audit:secrets": "node scripts/audit-workflow-secrets.mjs",
-    "audit:all": "npm run typecheck && npm run audit:truth && npm run guard:selftest && npm run audit:i8 && npm run audit:secrets"
+    "audit:all": "npm run typecheck && npm run audit:truth && npm run guard:selftest && npm run audit:i8 && npm run audit:secrets",
+    "test:binance-rail": "node scripts/test-binance-rail.mjs",
+    "test:po-shape": "node scripts/test-po-tracking-shape.mjs",
+    "test:course-chain": "node scripts/test-course-order-chain.mjs",
+    "test:supervisor": "node scripts/test-financial-supervisor.mjs",
+    "test:rails": "npm run test:binance-rail && npm run test:po-shape && npm run test:course-chain && npm run test:supervisor"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.13",

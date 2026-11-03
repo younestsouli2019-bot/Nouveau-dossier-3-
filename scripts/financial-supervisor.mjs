@@ -20,6 +20,7 @@
  */
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 
 const PCT = Number(process.env.INFRA_BUDGET_PCT || 30);
 // Real plan ladder read from billing.base44.com (2026-10-23, logged-in plans page)
@@ -53,12 +54,49 @@ function readLedgerGross() {
   } catch { return 0; }
 }
 
-function prevBudget() {
+function prevState() {
   try {
     const rows = fs.readFileSync(LEDGER, "utf-8").split("\n").filter(Boolean);
     const last = JSON.parse(rows[rows.length - 1]);
-    return last.budget_after ?? 0;
-  } catch { return 0; }
+    return {
+      budget: last.budget_after ?? 0,
+      cum: last.cum_gross_usdt ?? 0,
+    };
+  } catch { return { budget: 0, cum: 0 }; }
+}
+
+/**
+ * Pure decision model (exported for tests).
+ *
+ * The budget accrues PCT% of NEW revenue only, tracked with a high-water mark
+ * on cumulative gross. A constant balance therefore adds nothing on the next
+ * run, and a sweep that lowers the balance never claws budget back.
+ * (Earlier versions added PCT% of the whole balance every run — the budget
+ * inflated without any new sale.)
+ */
+export function computeDecision({ gross, budgetBefore = 0, cumBefore = 0, pct = PCT, ladder = PLAN_LADDER, now = new Date().toISOString() }) {
+  const g = Number(gross) || 0;
+  const cumAfter = Math.max(Number(cumBefore) || 0, g);
+  const delta = cumAfter - (Number(cumBefore) || 0);
+  const budgetAfter = (Number(budgetBefore) || 0) + (delta * pct) / 100;
+  const affordable = ladder.filter((t) => budgetAfter >= t.cost);
+  const target = affordable.length ? affordable[affordable.length - 1] : null;
+  return {
+    at: now,
+    gross_revenue_usdt: Math.round(g * 10000) / 10000,
+    cum_gross_usdt: Math.round(cumAfter * 10000) / 10000,
+    new_revenue_usdt: Math.round(delta * 10000) / 10000,
+    alloc_pct: pct,
+    budget_before: Math.round((Number(budgetBefore) || 0) * 10000) / 10000,
+    budget_after: Math.round(budgetAfter * 10000) / 10000,
+    target_plan: target ? target.plan : null,
+    target_cost_usd: target ? target.cost : 0,
+    plan_ladder_usd: ladder,
+    decision: target ? "UPGRADE_DUE" : "HOLD",
+    action_owner: target
+      ? "superagent — execute upgrade via logged-in local browser at app.base44.com plans page, then verify"
+      : "hold — accumulate budget from revenue",
+  };
 }
 
 const main = async () => {
@@ -66,24 +104,10 @@ const main = async () => {
   try { bitget = await bitgetUsdt(); } catch (e) { console.log("bitget unreachable:", e.message.slice(0, 80)); }
   const ledgerGross = readLedgerGross();
   const gross = bitget; // real on-chain/custodial revenue today
-  const budget = prevBudget() + (gross * PCT) / 100;
-  const affordable = PLAN_LADDER.filter((t) => budget >= t.cost);
-  const target = affordable.length ? affordable[affordable.length - 1] : null;
-  const due = Boolean(target);
+  const prev = prevState();
   const decision = {
-    at: new Date().toISOString(),
-    gross_revenue_usdt: Math.round(gross * 10000) / 10000,
+    ...computeDecision({ gross, budgetBefore: prev.budget, cumBefore: prev.cum }),
     ledger_gross_usdt: Math.round(ledgerGross * 10000) / 10000,
-    alloc_pct: PCT,
-    budget_before: Math.round(prevBudget() * 10000) / 10000,
-    budget_after: Math.round(budget * 10000) / 10000,
-    target_plan: target ? target.plan : null,
-    target_cost_usd: target ? target.cost : 0,
-    plan_ladder_usd: PLAN_LADDER,
-    decision: due ? "UPGRADE_DUE" : "HOLD",
-    action_owner: due
-      ? "superagent — execute upgrade via logged-in local browser at app.base44.com plans page, then verify"
-      : "hold — accumulate budget from revenue",
   };
   console.log(JSON.stringify(decision, null, 2));
   if (RECORD) {
@@ -93,4 +117,5 @@ const main = async () => {
   }
   process.exit(0);
 };
-main();
+const isDirectRun = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isDirectRun) main();
