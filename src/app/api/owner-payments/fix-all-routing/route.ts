@@ -3,182 +3,119 @@ import { createHash } from 'node:crypto'
 import { db } from '@/lib/db'
 import { requireOpsAuth } from '@/lib/api-auth'
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
+const ROUTES = [
+  { label: 'Debts', splitPercentage: 40, ownerAccountLabel: 'Debts', bankName: 'Attijariwafa Compte sur Carnet' },
+  { label: 'Operational Costs', splitPercentage: 25, ownerAccountLabel: 'Salary', bankName: 'Attijariwafa Bank' },
+  { label: 'Infrastructure', splitPercentage: 15, ownerAccountLabel: 'Salary', bankName: 'Attijariwafa Bank' },
+  { label: 'Salary', splitPercentage: 10, ownerAccountLabel: 'Salary', bankName: 'Attijariwafa Bank' },
+  { label: 'Emergency', splitPercentage: 10, ownerAccountLabel: 'Salary', bankName: 'Attijariwafa Bank' },
+] as const
+
 /**
  * POST /api/owner-payments/fix-all-routing
- * Fixes ALL stuck payments by correcting their routing to external bank.
- *
- * 🚧 PROTÉGÉ: requireOpsAuth (fail-closed 401).
- * 🚧 RIB literals supprimés (P5): résolution fingerprints depuis DB OwnerAccount
- *    par label (Salary/Debts). Zéro RIB en source.
+ * Configuration-only route correction. This endpoint never creates, updates,
+ * or marks OwnerPayment records recovered, processing, or completed, and never
+ * submits a payment to any provider.
  */
 export async function POST(request: NextRequest) {
   const denied = requireOpsAuth(request)
   if (denied) return denied
 
   try {
-    // Résoudre fingerprints depuis DB (zéro littéral)
-    const salaryFp = await fingerprintOfActiveLabel('Salary')
-    const debtsFp = await fingerprintOfActiveLabel('Debts')
-    const salaryDisplay = salaryFp ? await resolveDisplayRibByFingerprint(salaryFp) : '***'
-    const debtsDisplay = debtsFp ? await resolveDisplayRibByFingerprint(debtsFp) : '***'
+    const accounts = await db.ownerAccount.findMany({
+      where: { isActive: true, label: { in: ['Salary', 'Debts'] } },
+      select: { label: true, accountNumber: true },
+    })
 
-    // Fix all configs that are not yet routing-fixed
+    const accountsByLabel = new Map<string, { accountNumber: string; fingerprint: string; masked: string }>()
+    for (const label of ['Salary', 'Debts'] as const) {
+      const matching = accounts.filter(account => account.label === label && account.accountNumber)
+      if (matching.length !== 1) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Route update blocked: each destination must resolve to exactly one active owner account.',
+            unresolvedDestination: label,
+            paymentsChanged: 0,
+            payoutsInitiated: 0,
+          },
+          { status: 422 },
+        )
+      }
+      const accountNumber = String(matching[0].accountNumber).trim()
+      const fingerprint = createHash('sha256').update(accountNumber.toLowerCase()).digest('hex')
+      accountsByLabel.set(label, {
+        accountNumber,
+        fingerprint,
+        masked: accountNumber.length >= 6 ? `***${accountNumber.slice(-6)}` : '***',
+      })
+    }
+
     const configs = await db.ownerPaymentConfig.findMany({
-      where: { routingFixed: false },
+      where: { label: { in: ROUTES.map(route => route.label) } },
+      select: { id: true, label: true, splitPercentage: true },
     })
-
-    const configUpdates: { label: string; fixed: boolean }[] = []
-    for (const config of configs) {
-      const isDebts = config.label === 'Debts'
-      const bankName = isDebts ? 'Attijariwafa Compte sur Carnet' : 'Attijariwafa Bank'
-      const display = isDebts ? debtsDisplay : salaryDisplay
-
-      await db.ownerPaymentConfig.update({
-        where: { id: config.id },
-        data: {
-          routingFixed: true,
-          routingFixedAt: new Date(),
-          notes: `Routing fixed at ${new Date().toISOString()}. Corrected to route to ${bankName} RIB ${display} (fingerprint resolved from DB OwnerAccount).`,
+    const configByLabel = new Map(configs.map(config => [config.label, config]))
+    const missing = ROUTES.filter(route => {
+      const config = configByLabel.get(route.label)
+      return !config || Number(config.splitPercentage) !== route.splitPercentage
+    })
+    if (missing.length > 0 || ROUTES.reduce((sum, route) => sum + route.splitPercentage, 0) !== 100) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Route update blocked: configured allocation labels or percentages do not match the reviewed 100% split.',
+          mismatchedRoutes: missing.map(route => route.label),
+          paymentsChanged: 0,
+          payoutsInitiated: 0,
         },
-      })
-      configUpdates.push({ label: config.label, fixed: true })
+        { status: 422 },
+      )
     }
 
-    // Find ALL stuck payments
-    const stuckPayments = await db.ownerPayment.findMany({
-      where: {
-        status: 'stuck_in_transition',
-        recovered: false,
-      },
+    const updatedAt = new Date()
+    await db.$transaction(async tx => {
+      for (const route of ROUTES) {
+        const config = configByLabel.get(route.label)!
+        const destination = accountsByLabel.get(route.ownerAccountLabel)!
+        // @ts-ignore Prisma client is regenerated with the fingerprint column.
+        await tx.ownerPaymentConfig.update({
+          where: { id: config.id },
+          data: {
+            ribLabel: `${route.ownerAccountLabel} Account`,
+            // @ts-ignore Prisma client is regenerated with the fingerprint column.
+            ribFingerprintSha256: destination.fingerprint,
+            bankName: route.bankName,
+            routingFixed: true,
+            routingFixedAt: updatedAt,
+            notes: `Configuration verified ${updatedAt.toISOString()}: ${route.splitPercentage}% routes to the active ${route.ownerAccountLabel} owner account (${destination.masked}). Configuration only; no payout was initiated.`,
+          },
+        })
+      }
     })
-
-    const recoveryResults: {
-      id: string
-      configLabel: string
-      amount: number
-      fromDestType: string
-      toDestType: string
-      recoveryTxRef: string
-    }[] = []
-
-    let totalRecovered = 0
-
-    for (const payment of stuckPayments) {
-      const isDebts = payment.configLabel === 'Debts'
-      const bankLabel = isDebts ? 'Attijariwafa Compte sur Carnet' : 'Attijariwafa Bank'
-      const fp = isDebts ? debtsFp : salaryFp
-      const display = isDebts ? debtsDisplay : salaryDisplay
-      const recoveryTxRef = `REC-${payment.configLabel.replace(/\s+/g, '_').toUpperCase()}-${payment.id.slice(-8).toUpperCase()}`
-
-      await db.ownerPayment.update({
-        where: { id: payment.id },
-        data: {
-          recovered: true,
-          recoveredAt: new Date(),
-          recoveryAmount: payment.amount,
-          recoveryTxRef,
-          status: 'processing',
-          destinationType: 'external_bank',
-          destinationLabel: `${bankLabel} - RIB ${display}`,
-          // @ts-ignore
-          ribFingerprintSha256: fp,
-          ribDisplayMasked: display,
-          failureReason: null,
-        },
-      })
-
-      recoveryResults.push({
-        id: payment.id,
-        configLabel: payment.configLabel,
-        amount: payment.amount,
-        fromDestType: payment.destinationType,
-        toDestType: 'external_bank',
-        recoveryTxRef,
-      })
-      totalRecovered += payment.amount
-    }
-
-    // Check for MT103 stuck in banking_circle (from supply-chain seed)
-    const mt103Stuck = await db.ownerPayment.findMany({
-      where: {
-        status: 'stuck_in_transition',
-        destinationType: 'banking_circle',
-        recovered: false,
-      },
-    })
-
-    for (const payment of mt103Stuck) {
-      const recoveryTxRef = `REC-MT103-${payment.id.slice(-8).toUpperCase()}`
-      await db.ownerPayment.update({
-        where: { id: payment.id },
-        data: {
-          recovered: true,
-          recoveredAt: new Date(),
-          recoveryAmount: payment.amount,
-          recoveryTxRef,
-          status: 'processing',
-          destinationType: 'external_bank',
-          destinationLabel: `Attijariwafa Compte sur Carnet - RIB ${debtsDisplay}`,
-          // @ts-ignore
-          ribFingerprintSha256: debtsFp,
-          ribDisplayMasked: debtsDisplay,
-          failureReason: null,
-        },
-      })
-
-      recoveryResults.push({
-        id: payment.id,
-        configLabel: payment.configLabel,
-        amount: payment.amount,
-        fromDestType: 'banking_circle',
-        toDestType: 'external_bank',
-        recoveryTxRef,
-      })
-      totalRecovered += payment.amount
-    }
 
     return NextResponse.json({
       success: true,
-      message: `All routing fixed. ${configs.length} configs updated, ${recoveryResults.length} payments recovered ($${totalRecovered.toFixed(2)})`,
-      configsUpdated: configUpdates,
-      paymentsRecovered: recoveryResults.length,
-      totalRecoveredAmount: totalRecovered,
-      recoveryDetails: recoveryResults,
+      message: 'Route configuration updated only. No payment records changed and no payouts were initiated.',
+      configsUpdated: ROUTES.map(route => ({
+        label: route.label,
+        splitPercentage: route.splitPercentage,
+        destination: route.ownerAccountLabel,
+        maskedAccount: accountsByLabel.get(route.ownerAccountLabel)!.masked,
+        routingFixed: true,
+      })),
+      paymentsChanged: 0,
+      payoutsInitiated: 0,
+      updatedAt: updatedAt.toISOString(),
     })
   } catch (error) {
-    console.error('[POST /api/owner-payments/fix-all-routing] Error:', error)
+    console.error('[POST /api/owner-payments/fix-all-routing] Configuration-only update failed:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to fix all routing' },
-      { status: 500 }
+      { success: false, error: 'Failed to update route configuration. No payout was initiated.' },
+      { status: 500 },
     )
   }
-}
-
-async function fingerprintOfActiveLabel(label: string): Promise<string | null> {
-  const rows = await db.ownerAccount.findMany({
-    where: { isActive: true, label },
-    select: { accountNumber: true },
-  })
-  for (const r of rows) {
-    if (!r.accountNumber) continue
-    return createHash('sha256').update(String(r.accountNumber).trim().toLowerCase()).digest('hex')
-  }
-  return null
-}
-
-async function resolveDisplayRibByFingerprint(fp: string): Promise<string | null> {
-  if (!fp || fp.length !== 64) return null
-  const accounts = await db.ownerAccount.findMany({
-    where: { isActive: true, NOT: { accountNumber: null } },
-    select: { accountNumber: true },
-  })
-  for (const a of accounts) {
-    if (!a.accountNumber) continue
-    const hex = createHash('sha256').update(String(a.accountNumber).trim().toLowerCase()).digest('hex')
-    if (hex === fp) {
-      const s = String(a.accountNumber)
-      return s.length >= 6 ? '***' + s.slice(-6) : '***'
-    }
-  }
-  return null
 }
