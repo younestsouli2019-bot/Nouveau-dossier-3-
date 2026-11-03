@@ -18,19 +18,20 @@
 import "dotenv/config";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import ccxt from "ccxt";
 
 const BASE = Number(process.env.RWC_BASE_PRICE_USD) || 19;
 const LEDGER = path.resolve("data", "out", "course-orders.ndjson");
 const RECORD = process.argv.includes("--record");
 
-function fingerprintCents(slug) {
+export function fingerprintCents(slug) {
   let h = 0;
   for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) % 10000;
   return Math.round((BASE + h / 10000) * 10000);
 }
 
-function loadCatalog() {
+export function loadCatalog() {
   const snap = JSON.parse(fs.readFileSync("src/data/rwc-catalog-snapshot.json", "utf8"));
   const byCents = new Map();
   for (const c of snap) {
@@ -41,7 +42,7 @@ function loadCatalog() {
   return { byCents };
 }
 
-function existingTxids() {
+export function existingTxids() {
   try {
     return new Set(
       fs.readFileSync(LEDGER, "utf8").split("\n").filter(Boolean).map((l) => {
@@ -49,6 +50,39 @@ function existingTxids() {
       }).filter(Boolean),
     );
   } catch { return new Set(); }
+}
+
+/**
+ * Pure per-deposit matcher: returns the order row for a confirmed
+ * fingerprint-matching deposit, or null when it isn't a course payment.
+ * Exported so the chain can be tested without touching the exchange.
+ */
+export function matchDeposit(d, byCents) {
+  const statusOk = ["ok", "success", "finished", "credited"].includes(String(d.status ?? "").toLowerCase());
+  const txid = d.txid ?? d.id ?? "";
+  if (!txid) return null;
+  const cents = Math.round(Number(d.amount) * 10000);
+  const candidates = byCents.get(cents) ?? [];
+  if (candidates.length === 0) return null;
+  if (!statusOk) return null;
+  const label = candidates.map((c) => c.t).join(" | ");
+  return {
+    candidates,
+    order: {
+      ts: new Date().toISOString(),
+      event_id: `crypto-deposit-${txid.slice(0, 12)}`,
+      session_id: txid,
+      email: "",
+      slug: candidates.length === 1 ? candidates[0].s : candidates.map((c) => c.s).join(","),
+      title: candidates.length === 1 ? candidates[0].t : label,
+      amount_total: Number(d.amount),
+      currency: "usdt",
+      status: "PAID",
+      delivery: "PENDING",
+      delivery_detail: "crypto deposit matched by fingerprint; buyer email pending order reference",
+      network: d.network ?? "",
+    },
+  };
 }
 
 async function main() {
@@ -103,4 +137,7 @@ async function main() {
   console.log(`fingerprint-matched deposits: ${matched} (${RECORD ? "record mode" : "dry-run — pass --record to append"})`);
 }
 
-main().catch((e) => { console.error(e.message); process.exit(1); });
+const isDirectRun = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isDirectRun) {
+  main().catch((e) => { console.error(e.message); process.exit(1); });
+}
