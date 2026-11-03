@@ -26,6 +26,7 @@ import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
 
+const BUYER_EMAIL = 'sara.benali@examcandidate.ma'; // real-shaped, not a placeholder domain
 const results = [];
 const check = (name, cond, detail = '') => results.push({ name, ok: Boolean(cond), detail });
 
@@ -56,8 +57,31 @@ check('order row is PAID + delivery PENDING', hit?.order?.status === 'PAID' && h
 // ── 3. flush to a local mock provider ──────────────────────────────────────
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'rwc-chain-'));
 const ledger = path.join(tmp, 'course-orders.ndjson');
-const row = { ...hit.order, email: 'buyer@example.com' }; // email arrives via order-reference flow
-fs.writeFileSync(ledger, JSON.stringify(row) + '\n');
+// the watcher records email:"" — the buyer is joined AFTER matching, by the
+// attach tool (email lives in the private intent store, not on the chain)
+fs.writeFileSync(ledger, JSON.stringify(hit.order) + '\n');
+
+// ── 3a. attach the buyer email (the join step) ──────────────────────────────
+const rel = (p) => path.join(process.cwd(), p);
+await execFileAsync('node', ['scripts/rwc-attach-buyer.mjs', '--amount', String(amount), '--email', BUYER_EMAIL], {
+  env: { ...process.env, RWC_ORDERS_LEDGER: ledger }, encoding: 'utf8', timeout: 60000,
+});
+const afterAttach = JSON.parse(fs.readFileSync(ledger, 'utf8').trim());
+check('attach: buyer email written onto the matched order', afterAttach.email === BUYER_EMAIL, afterAttach.email);
+check('attach: row still PENDING (no send yet)', afterAttach.delivery === 'PENDING', afterAttach.delivery);
+
+// attach refusals: bad address, unknown amount
+const refusals = [];
+for (const badArgs of [['--amount', String(amount), '--email', 'not-an-email'], ['--amount', '999.9999', '--email', 'x@y.co']]) {
+  try {
+    await execFileAsync('node', ['scripts/rwc-attach-buyer.mjs', ...badArgs], {
+      env: { ...process.env, RWC_ORDERS_LEDGER: ledger }, encoding: 'utf8', timeout: 60000,
+    });
+    refusals.push('accepted');
+  } catch (e) { refusals.push(String(e.code ?? 'rejected')); }
+}
+check('attach: invalid email refused', refusals[0] !== 'accepted', String(refusals[0]));
+check('attach: unknown amount refused', refusals[1] !== 'accepted', String(refusals[1]));
 
 const received = [];
 const server = http.createServer((req, res) => {
@@ -97,7 +121,7 @@ const out1 = await flush();
 check('flush sent exactly one receipt', received.length === 1, `sent=${received.length} · ${out1.split('\n').slice(-2).join(' ')}`);
 if (received.length) {
   const payload = JSON.parse(received[0].body || '{}');
-  check('receipt goes to the buyer', Array.isArray(payload.to) ? payload.to.includes('buyer@example.com') : payload.to === 'buyer@example.com', JSON.stringify(payload.to));
+  check('receipt goes to the buyer', Array.isArray(payload.to) ? payload.to.includes(BUYER_EMAIL) : payload.to === BUYER_EMAIL, JSON.stringify(payload.to));
   check('sender is billing@realworldcerts.com', String(payload.from || '').includes('billing@realworldcerts.com'), String(payload.from));
   check('bearer auth carries the key', String(received[0].auth).startsWith('Bearer re_test_mock_key'));
   check('subject names the course', String(payload.subject || '').length > 10, String(payload.subject));
