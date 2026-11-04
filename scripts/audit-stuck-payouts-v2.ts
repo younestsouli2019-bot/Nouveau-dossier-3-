@@ -5,6 +5,30 @@ async function main() {
   console.log('============= STUCK PAYOUT AUDIT (Neon pooler) ============\n');
 
   const items = await db.payoutItem.findMany({});
+  if (process.env.AUDIT_SUMMARY_ONLY === '1') {
+    const byStatus: Record<string, number> = {};
+    let awaitingRealConfirmation = 0;
+    for (const item of items) {
+      const status = String(item.status || 'unknown');
+      byStatus[status] = (byStatus[status] || 0) + 1;
+      const normalizedStatus = status.toLowerCase();
+      const needsConfirmation = normalizedStatus.includes('manual')
+        || normalizedStatus === 'processing'
+        || normalizedStatus.includes('pending')
+        || normalizedStatus.includes('confirm');
+      const ref = (item.externalRef || '').trim();
+      const hasRealRef = Boolean(ref) && !(/PLACEHOLDER|TBD|REPLACE|DEMO_/i.test(ref) || ref.length < 6);
+      if (needsConfirmation && !hasRealRef) awaitingRealConfirmation++;
+    }
+    console.log(JSON.stringify({
+      payoutItems: items.length,
+      byStatus,
+      awaitingRealConfirmation,
+      detail: 'Summary only; no payout identifiers, recipient data, references, or amounts emitted.',
+    }, null, 2));
+    return;
+  }
+
   console.log(`PayoutItem total N=${items.length} rows.`);
 
   // Group by batchNumber + status

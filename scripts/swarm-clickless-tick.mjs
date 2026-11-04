@@ -39,17 +39,26 @@ function runStatic(name, script, args = [], { tsx = false } = {}) {
   }
 }
 
-function runDbAudit(name, script) {
+function runDbAudit(name, script, { tsx = false, summaryOnly = false } = {}) {
   const p = join(ROOT, script);
   if (!process.env.DATABASE_URL || !existsSync(p)) {
     results.push({ name, status: process.env.DATABASE_URL ? 'skip_missing' : 'skip_no_db' });
     return;
   }
   try {
-    const out = execSync(`node "${p}"`, { encoding: 'utf8', timeout: 90000 });
+    const runner = tsx ? `node --import tsx "${p}"` : `node "${p}"`;
+    const out = execSync(runner, {
+      encoding: 'utf8',
+      timeout: 90000,
+      env: summaryOnly ? { ...process.env, AUDIT_SUMMARY_ONLY: '1' } : process.env,
+    });
     results.push({ name, status: 'ok', tail: out.trim().slice(-400) });
   } catch (e) {
-    results.push({ name, status: 'error', tail: String(e?.stderr || e?.message || e).slice(-400) });
+    results.push({
+      name,
+      status: 'error',
+      ...(summaryOnly ? {} : { tail: String(e?.stderr || e?.message || e).slice(-400) }),
+    });
   }
 }
 
@@ -61,6 +70,18 @@ runStatic('url-guard-self-test', 'scripts/url-guard-self-test.mjs', [], { tsx: t
 runDbAudit('payout-reconcile', 'scripts/verify-payout-reconcile.mjs');
 runDbAudit('postgres-integrity', 'scripts/postgres-integrity-audit.mjs');
 runStatic('inbound-scout', 'scripts/inbound-scout.mjs', ['--dir', 'data/inbound/receipts']);
+
+// Daily scheduled window (05:00-05:59 UTC) and manual dispatch use the
+// existing secret-enabled workflow; never emit payout-level data into logs.
+const now = new Date();
+const scheduledAuditWindow = process.env.GITHUB_EVENT_NAME === 'schedule'
+  && now.getUTCHours() === 5;
+if (scheduledAuditWindow || process.env.GITHUB_EVENT_NAME === 'workflow_dispatch') {
+  runDbAudit('stuck-payout-summary', 'scripts/audit-stuck-payouts-v2.ts', {
+    tsx: true,
+    summaryOnly: true,
+  });
+}
 
 // ── Phase 3: rail health (read-only probe) ───────────────────────────────────
 if (existsSync(join(ROOT, 'scripts/rail-health-report.mjs'))) {
