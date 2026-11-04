@@ -4,7 +4,12 @@ from openai import OpenAI
 
 
 def run_anti_regression(platform_target, environment):
-    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        print("::warning::Anti-regression check skipped: OPENAI_API_KEY is not configured.")
+        return
+
+    client = OpenAI(api_key=api_key)
 
     regression_prompt = f"""
     You are a Platform Integration Regression Analyst.

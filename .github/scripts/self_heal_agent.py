@@ -4,7 +4,12 @@ from openai import OpenAI
 
 
 def autonomous_self_heal(platform_target):
-    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        print("::warning::Self-heal patch skipped: OPENAI_API_KEY is not configured.")
+        return
+
+    client = OpenAI(api_key=api_key)
 
     error_logs = f"Error: Payload validation failed for {platform_target}. Required field 'tenant_id' is missing."
     broken_code_file = f"src/adapters/{platform_target}_adapter.py"
