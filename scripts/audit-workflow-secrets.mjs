@@ -144,6 +144,13 @@ const ALLOWED_GITHUB_NATIVE = new Set([
   'STRIPE_SECRET_KEY',
   'TRUST_WALLET_PRIVATE_KEY',
   'WISE_API_KEY',
+  // Signatory closeout workflow consumes these directly from GitHub Actions;
+  // keep their names inventoried here, never their values.
+  'ARBISCAN_API_KEY',
+  'ARBITRUM_RPC',
+  'OWNER_PRIVATE_KEY_USDC',
+  'OWNER_USDC_ARBITRUM_ADDRESS',
+  'WISE_PROFILE_ID',
 ]);
 
 const results = [];
