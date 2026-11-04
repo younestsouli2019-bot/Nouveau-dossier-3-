@@ -60,9 +60,10 @@ Kind regards,
 
 ## Internal notes — do not send
 
-- No monetary figure appears in this letter. The previously drafted $8,520
-  correction is withdrawn entirely: a letter that raises an unverifiable
-  figure and then retracts it is weaker than one that never mentions it.
+- No monetary figure appears in this letter. An earlier draft carried a
+  figure that could not be reproduced from the evidence; it is withdrawn
+  entirely. A letter that raises an unverifiable number and then retracts it
+  is weaker than one that never mentions it.
 - If the bank asks for the number, answer only with the audited total from
   the evidence artifact, and attach it.
 - Open question: verified recipient address for Banking Circle onboarding.
