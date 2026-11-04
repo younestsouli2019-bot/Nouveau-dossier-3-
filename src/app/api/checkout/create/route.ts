@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { findCourse, priceFor, SITE_ORIGIN } from '@/lib/rwc-catalog';
 import { resolveHostedCheckout, configuredHostedRails } from '@/lib/checkout-rails';
+import { createOrder, isPayPalConfigured } from '@/lib/paypal-checkout';
 
 /**
  * POST /api/checkout/create
@@ -39,6 +40,22 @@ export async function POST(request: NextRequest) {
   }
   const title = course?.t ?? courseTitle;
   const effectiveSlug = course?.s ?? slug;
+
+  // PayPal: automated Orders v2 when configured. The static instruction page
+  // remains only as a fallback so a misconfigured rail never loses the sale.
+  if (method === 'paypal' && isPayPalConfigured()) {
+    try {
+      const order = await createOrder({
+        slug: effectiveSlug,
+        title,
+        amountUsd: priceFor(effectiveSlug),
+        email,
+      });
+      return NextResponse.json({ success: true, url: order.approveUrl, provider: 'paypal', order_id: order.id });
+    } catch (err) {
+      console.error('[checkout] paypal order create failed:', (err as Error)?.message);
+    }
+  }
 
   // Manual methods: keep the existing static instruction pages as the flow.
   const manual: Record<string, string> = {
