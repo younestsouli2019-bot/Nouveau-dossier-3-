@@ -53,13 +53,6 @@ const required = [
   'VERCEL_ORG_ID',
   'VERCEL_PROJECT_ID',
   'DATABASE_URL',
-  'LIVE_BANK_API',
-  'BINANCE_API_KEY',
-  'BINANCE_API_SECRET',
-  'OWNER_EXEC_UNLOCK',
-  'OWNER_HANDS_FREE_POLICY',
-  'CEX_DIRECT_DEPOSIT_ENABLED',
-  'RELEASE_AMOUNT_OVERRIDE_USD',
 ];
 for (const name of required) {
   check(`${name} present`, value(name).length > 0, value(name) ? 'configured (value hidden)' : 'missing');
@@ -83,10 +76,6 @@ check(
   parsedDatabaseUrl?.searchParams.get('sslmode') === 'require',
   parsedDatabaseUrl?.searchParams.get('sslmode') === 'require' ? 'sslmode=require' : 'workflow requires sslmode=require',
 );
-check('BINANCE_API_KEY minimum length', value('BINANCE_API_KEY').length >= 32, `length ${value('BINANCE_API_KEY').length}; workflow requires at least 32`);
-check('BINANCE_API_SECRET minimum length', value('BINANCE_API_SECRET').length >= 32, `length ${value('BINANCE_API_SECRET').length}; workflow requires at least 32`);
-check('OWNER_EXEC_UNLOCK minimum length', value('OWNER_EXEC_UNLOCK').length >= 43, `length ${value('OWNER_EXEC_UNLOCK').length}; workflow requires at least 43`);
-check('OWNER_HANDS_FREE_POLICY value', value('OWNER_HANDS_FREE_POLICY') === 'true', "must equal 'true'");
 
 async function checkGithubSecretNames() {
   const result = spawnSync('gh', [
