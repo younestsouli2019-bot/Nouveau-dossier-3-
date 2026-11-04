@@ -2,6 +2,13 @@ import { PrismaClient } from '@prisma/client'
 import { installTruthGuards } from './strict-enforcement/truth-guards'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { createRequire } from 'node:module'
+
+// Prisma 7 driver adapters are CommonJS-only. Under ESM (tsx / node --esm /
+// server entry points) a bare `require` is undefined, which crashed the
+// supervisor before it could reach the database. createRequire makes the same
+// call legal in ESM without changing the sync adapter construction.
+const require = createRequire(import.meta.url)
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
