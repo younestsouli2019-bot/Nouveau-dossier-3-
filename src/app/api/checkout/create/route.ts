@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { findCourse, priceFor, SITE_ORIGIN } from '@/lib/rwc-catalog';
+import { resolveHostedCheckout, configuredHostedRails } from '@/lib/checkout-rails';
 
 /**
  * POST /api/checkout/create
@@ -71,11 +72,22 @@ export async function POST(request: NextRequest) {
 
   const secret = process.env.STRIPE_SECRET_KEY;
   if (!secret) {
+    // No Stripe key (expected for a Moroccan entity — Stripe does not onboard
+    // MA-registered businesses). Fall through to a Merchant-of-Record hosted
+    // checkout if one is configured for this course.
+    const hosted = resolveHostedCheckout(effectiveSlug);
+    if (hosted) {
+      return NextResponse.json({ success: true, url: hosted.url, provider: hosted.provider });
+    }
+    const rails = configuredHostedRails();
     return NextResponse.json(
       {
         success: false,
         error: 'Card payments are being enabled right now — please use PayPal or USDT meanwhile.',
-        setup: 'Card checkout will go live as soon as the Stripe key is configured (STRIPE_SECRET_KEY).',
+        setup:
+          'No card rail is configured yet. Set STRIPE_SECRET_KEY, or map this course to a hosted checkout with ' +
+          'CHECKOUT_LINK_MAP_PADDLE / CHECKOUT_LINK_MAP_LEMONSQUEEZY. Configured hosted rails: ' +
+          JSON.stringify(rails),
       },
       { status: 503 },
     );
