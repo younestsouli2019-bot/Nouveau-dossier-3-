@@ -173,7 +173,36 @@ export async function middleware(request: NextRequest) {
   // authenticates internally, but reject unauthenticated calls here so
   // they never reach the handler.
   if (request.method === 'GET') {
-    const ADMIN_READ_PATHS = ['/api/orders', '/api/owner-payments'];
+    // Money/PII artifacts may NOT be read anonymously. Audit 2026-11-04:
+    // /api/owner-accounts (accountNumber, swiftCode, walletAddress, paypalEmail),
+    // /api/payout-items (recipientEmail, amount), /api/procurement (deliveryAddress),
+    // /api/shipments (destinationAddress) all answered 200 to anonymous callers.
+    const ADMIN_READ_PATHS = [
+      '/api/orders',
+      '/api/owner-payments',
+      '/api/owner-accounts',
+      '/api/payouts',
+      '/api/payout-items',
+      '/api/payout-batches',
+      '/api/procurement',
+      '/api/purchase-orders',
+      '/api/shipments',
+      '/api/settlements',
+      '/api/treasury',
+      '/api/vault',
+      '/api/revenue',
+      '/api/revenue-events',
+      '/api/crypto-accounts',
+      '/api/exchanges',
+      '/api/payoneer',
+      '/api/bank-reconciliation',
+      '/api/audit',
+      '/api/suppliers',
+      '/api/carrier-tracking',
+      '/api/attijari',
+      '/api/escalations',
+      '/api/dashboard',
+    ];
     const path = request.nextUrl.pathname;
     if (ADMIN_READ_PATHS.some(p => path === p || path.startsWith(`${p}/`))) {
       const operatorToken = process.env.OPERATOR_TOKEN;
