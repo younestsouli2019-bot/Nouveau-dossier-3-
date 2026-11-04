@@ -29,6 +29,18 @@ describe('deploy-space-z.yml + healthz route + record endpoint AC-7/AC-8/AC-9', 
     expect(yml).toMatch(/WAIT_SECONDS\s*=\s*15/);
   });
 
+  it('AC-7e: deploy degrades to SKIPPED (green) when SPACEZ_DEPLOY_HOOK is absent', () => {
+    // build-verify resolves + exports the hook presence...
+    expect(yml).toMatch(/hook_present:\s*\$\{\{\s*steps\.hook\.outputs\.present\s*\}\}/);
+    expect(yml).toMatch(/id:\s*hook/);
+    expect(yml).toMatch(/echo\s+"present=false"\s*>>\s*"\$GITHUB_OUTPUT"/);
+    // ...trigger-deploy is skipped unless present...
+    expect(yml).toMatch(/needs\.build-verify\.outputs\.hook_present\s*==\s*'true'/);
+    // ...and the smoke gate only runs after a deploy actually succeeded.
+    expect(yml).toMatch(/needs\.trigger-deploy\.result\s*==\s*'success'/);
+    expect(yml).not.toMatch(/if:\s*\$\{\{\s*!cancelled\(\)\s*\}\}/);
+  });
+
   it('AC-8: src/app/api/healthz/route.ts exists (path check)', () => {
     expect(fs.existsSync(path.join(ROOT, 'src', 'app', 'api', 'healthz', 'route.ts'))).toBe(true);
   });

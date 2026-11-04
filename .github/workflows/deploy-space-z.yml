@@ -74,10 +74,26 @@ jobs:
 
   build-verify:
     runs-on: ubuntu-latest
+    outputs:
+      hook_present: ${{ steps.hook.outputs.present }}
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+
+      - name: Detect SPACEZ_DEPLOY_HOOK availability (masked)
+        id: hook
+        env:
+          SPACEZ_DEPLOY_HOOK: ${{ secrets.SPACEZ_DEPLOY_HOOK }}
+        run: |
+          set -euo pipefail
+          if [ -n "${SPACEZ_DEPLOY_HOOK:-}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+            echo "SPACEZ_DEPLOY_HOOK detected — the Space-Z deploy trigger is enabled."
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::SPACEZ_DEPLOY_HOOK is not provisioned — the deploy trigger will be SKIPPED (not failed). Add the secret (Space-Z dashboard -> Deploy Hook URL) to enable automated deploys. Build/test gates below still run."
+          fi
 
       - uses: actions/setup-node@v5
         with:
@@ -111,7 +127,10 @@ jobs:
   trigger-deploy:
     needs: build-verify
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    # Skipped (green, not failed) when the deploy hook is not provisioned, so a
+    # missing secret no longer turns every push to main red. The in-step
+    # fail-closed guard below stays as a second layer.
+    if: ${{ (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main') && needs.build-verify.outputs.hook_present == 'true' }}
     steps:
       - name: Trigger Space-Z rebuild via deploy hook
         env:
@@ -134,7 +153,10 @@ jobs:
 
   post-deploy-smoke:
     needs: [trigger-deploy]
-    if: ${{ !cancelled() }}
+    # Only probe when a deploy actually ran. When trigger-deploy is skipped
+    # (no SPACEZ_DEPLOY_HOOK), the smoke gate is skipped too instead of failing
+    # against a stale/undeployed target.
+    if: ${{ needs.trigger-deploy.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
