@@ -2,15 +2,19 @@ name: validate-price-book
 run-name: price-book contract — ${{ github.sha }} @ ${{ github.ref_name }}
 
 # Why this is separate from ci.yml: ci.yml only fires on a push to
-# main/master/release/**/develop, plus pull requests. The price book was gutted
-# by a direct push to a feature branch (690abde: 298 entries -> 10), which no
-# existing workflow watched. This runs on every push, on any branch, so that
-# path is covered.
+# main/master/release/**/develop, plus pull requests. This contract check runs
+# on every branch, but skips documentation-only changes.
 
 on:
   push:
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
   workflow_dispatch: {}
 
 concurrency:
