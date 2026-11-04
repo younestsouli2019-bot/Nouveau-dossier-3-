@@ -1,0 +1,79 @@
+name: Audit stuck payouts
+
+# Read-only payout audit. Runs against the production environment so the
+# DATABASE_URL / POOLER environment secrets resolve — fail-closed if absent
+# (never reports a false zero).
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 5 * * *" # daily 05:15 UTC
+
+permissions:
+  contents: read
+
+# Workflow-level only. A job-level group with the same name would self-deadlock
+# (GitHub holds the workflow-level lock for the run's lifetime) — see
+# scripts/lint-workflow-concurrency.mjs.
+concurrency:
+  group: audit-stuck-payouts
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    environment: production # resolves environment secrets DATABASE_URL + POOLER
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      POOLER: ${{ secrets.POOLER }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Install dependencies (with retries)
+        run: |
+          for i in 1 2 3; do npm ci && break || sleep 15; done
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Fail closed if DATABASE_URL is missing
+        run: |
+          if [ -z "${DATABASE_URL:-}" ]; then
+            echo "::error::DATABASE_URL is not available from the production environment. Refusing to run — an empty audit would be a false clean."
+            exit 1
+          fi
+          echo "DATABASE_URL present (environment: production)."
+
+      - name: Stuck payout audit
+        run: |
+          mkdir -p audit-out
+          npm run audit:stuck | tee audit-out/audit-stuck.txt
+
+      - name: Routing / audit ledger totals
+        run: |
+          node --import tsx scripts/audit-ledger-totals.ts | tee audit-out/ledger-totals.txt
+
+      - name: Publish to job summary
+        if: always()
+        run: |
+          {
+            echo "## Stuck payout audit"
+            echo '```'
+            cat audit-out/audit-stuck.txt 2>/dev/null || echo "(no output)"
+            echo '```'
+            echo "## Routing / audit ledger totals"
+            echo '```'
+            cat audit-out/ledger-totals.txt 2>/dev/null || echo "(no output)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload evidence artifact (90 days)
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: audit-evidence-${{ github.run_id }}
+          path: audit-out/
+          retention-days: 90
