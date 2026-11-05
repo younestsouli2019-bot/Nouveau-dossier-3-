@@ -1,0 +1,11 @@
+{
+  "id": "EXAMPLE-do-not-execute",
+  "commit": "0000000000000000000000000000000000000000",
+  "diffHash": "sha256:replace-with-sha256-of-the-reviewed-diff",
+  "riskTier": "schema",
+  "proposedAt": "2026-01-01T00:00:00.000Z",
+  "proposedBy": "owner",
+  "quorum": 2,
+  "approvals": [],
+  "status": "pending"
+}
