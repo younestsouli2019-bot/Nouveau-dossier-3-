@@ -135,3 +135,4 @@ logs/**
 #     leave a sidecar copy must never enter a commit (2026-10-16).
 .github/workflows/*.bak
 .github/workflows/*.bak-*
+.orchestrator/
