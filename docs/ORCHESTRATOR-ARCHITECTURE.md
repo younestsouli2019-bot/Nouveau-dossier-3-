@@ -228,3 +228,21 @@ Implemented: `src/lib/orchestrator/*`, `scripts/orchestrator-run.ts`,
 2. Enable `RUNTIME_HEALTH_URL` and migration drift checks in production.
 3. Only then consider the Go daemon (VM/container) for higher-frequency probes.
 4. Metrics last, once the semantics above are stable.
+
+---
+
+## Implementation map (TypeScript)
+
+| Go primitive | TypeScript implementation | File |
+|---|---|---|
+| `atomic.Pointer[TelemetryPayload]` | `SnapshotStore` — frozen immutable snapshot, single reference swap | `src/lib/orchestrator/snapshot.ts` |
+| `sync.RWMutex` write path | serialized promise-queue `update()` (no lost read-modify-write) | `snapshot.ts` |
+| `context.WithTimeout` + `errgroup.SetLimit` | `mapWithConcurrency` — bounded workers, per-task deadline, ordered results | `concurrency.ts` |
+| `sync.WaitGroup` + error channel | `PromiseSettledResult[]` — no unhandled rejections, failures become `unknown` checks | `concurrency.ts` |
+| `time.NewTicker` + overlap guard | `startDaemon` — jitter, never overlaps, cooperative stop awaits in-flight | `daemon.ts` |
+| HTTP telemetry handler | `/api/maintenance/status` — bearer auth, snapshot-first O(1), DB fallback | `src/app/api/maintenance/status/route.ts` |
+| Durable state | `AutoPilotRun` lease row + `pg_try_advisory_xact_lock` + heartbeat | `lease.ts` |
+
+Deliberate divergences: no unbounded goroutine per probe (bounded workers), no
+reflection, and no in-process daemon in serverless mode — the scheduler invokes
+one bounded pass instead.

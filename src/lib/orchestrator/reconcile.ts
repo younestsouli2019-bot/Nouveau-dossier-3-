@@ -2,6 +2,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import type { CheckResult } from './types';
+import { mapWithConcurrency } from './concurrency';
 
 const LEDGER = path.join(process.cwd(), 'data', 'out', 'course-orders.ndjson');
 
@@ -93,6 +94,33 @@ export async function checkLastSuccess(intervalMs: number): Promise<CheckResult>
   }
 }
 
-export async function runChecks(intervalMs: number): Promise<CheckResult[]> {
-  return [await checkDatabase(), await checkMigrations(), await checkPendingDeliveries(), await checkRuntime(), await checkLastSuccess(intervalMs)];
+const CHECK_DEFS: Array<{ name: string; required?: boolean; run: (intervalMs: number) => Promise<CheckResult> }> = [
+  { name: 'database', required: true, run: () => checkDatabase() },
+  { name: 'migrations', required: true, run: () => checkMigrations() },
+  { name: 'pending-deliveries', run: () => checkPendingDeliveries() },
+  { name: 'runtime', run: () => checkRuntime() },
+  { name: 'last-success', required: true, run: (i) => checkLastSuccess(i) },
+];
+
+/**
+ * Bounded fan-out (errgroup.SetLimit semantics): at most `concurrency` probes
+ * in flight, each with its own deadline. A probe that times out becomes an
+ * 'unknown' check — it never stalls or fails the whole pass.
+ */
+export async function runChecks(
+  intervalMs: number,
+  concurrency = 3,
+  perCheckMs = 15_000,
+): Promise<CheckResult[]> {
+  const settled = await mapWithConcurrency(CHECK_DEFS, concurrency, (d) => d.run(intervalMs), perCheckMs);
+  return settled.map((result, i) => {
+    const def = CHECK_DEFS[i];
+    if (result.status === 'fulfilled') return result.value;
+    return {
+      name: def.name,
+      status: 'unknown' as const,
+      detail: `probe failed: ${String((result as PromiseRejectedResult).reason).slice(0, 180)}`,
+      required: def.required,
+    };
+  });
 }

@@ -9,6 +9,7 @@
  * 'healthy'.
  */
 import { NextResponse } from 'next/server';
+import { runSnapshot } from '@/lib/orchestrator/snapshot';
 
 export function checkStatusAuth(header: string | null, token: string | undefined): number {
   if (!token) return 503;
@@ -32,6 +33,23 @@ export async function GET(request: Request) {
   }
 
   const intervalMs = Number(process.env.ORCHESTRATOR_INTERVAL_MS || DEFAULT_INTERVAL_MS);
+
+  // O(1) path: the in-process snapshot is the freshest view of a running pass.
+  const snapshot = runSnapshot.load();
+  if (snapshot.seq > 0) {
+    const ageMs = Date.now() - Date.parse(snapshot.updatedAt);
+    return NextResponse.json(
+      {
+        status: snapshot.status === 'ok' ? 'fresh' : 'stale',
+        fresh: snapshot.status === 'ok' && ageMs <= intervalMs * 2,
+        source: 'memory',
+        intervalMs,
+        snapshot,
+        lastRunAgeMs: ageMs,
+      },
+      { status: 200, headers: { 'Cache-Control': 'no-store' } },
+    );
+  }
 
   try {
     const { db } = await import('@/lib/db');

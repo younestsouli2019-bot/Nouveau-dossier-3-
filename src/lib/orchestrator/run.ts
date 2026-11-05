@@ -1,6 +1,8 @@
 /** One bounded reconciliation pass. Safe to call from a cron or a CLI. */
 import { acquireLease } from './lease';
 import { runChecks } from './reconcile';
+import { publishSnapshot } from './snapshot';
+import { withTimeout } from './concurrency';
 import { notifyIfUnhealthy } from './notify';
 import type { CheckResult, OrchestratorOptions, RunRecord, RunStatus, StepName } from './types';
 
@@ -14,14 +16,6 @@ export function deriveStatus(checks: CheckResult[]): RunStatus {
   return 'ok';
 }
 
-async function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
-  let timer: NodeJS.Timeout;
-  const timeout = new Promise<never>((_, rej) => {
-    timer = setTimeout(() => rej(new Error(`${label} timed out after ${ms}ms`)), ms);
-  });
-  try { return await Promise.race([p, timeout]); } finally { clearTimeout(timer!); }
-}
-
 export async function executePass(opts: OrchestratorOptions): Promise<RunRecord> {
   const startedAt = new Date().toISOString();
   const base: RunRecord = { id: 'unclaimed', trigger: opts.trigger, status: 'skipped', startedAt, steps: {}, checks: [], notes: [] };
@@ -30,6 +24,8 @@ export async function executePass(opts: OrchestratorOptions): Promise<RunRecord>
   if (!lease) {
     return { ...base, notes: ['another run holds the lease — skipped, not failed'] };
   }
+
+  await publishSnapshot({ status: 'running', trigger: opts.trigger, step: 'TEST', startedAt });
 
   const steps: RunRecord['steps'] = { TEST: 'running' };
   let checks: CheckResult[] = [];
@@ -40,6 +36,7 @@ export async function executePass(opts: OrchestratorOptions): Promise<RunRecord>
   try {
     // Keep the lease warm while probes run; a slow probe must not look dead.
     hb = setInterval(() => { void lease.heartbeat('RECONCILE').catch(() => {}); }, 30_000);
+    await publishSnapshot({ step: 'RECONCILE' });
     checks = await withTimeout(runChecks(opts.intervalMs ?? DEFAULT_INTERVAL_MS), 60_000, 'reconcile');
     steps.TEST = checks.find((c) => c.name === 'database')?.status === 'ok' ? 'ok' : 'unknown';
     steps.RECONCILE = 'ok';
@@ -68,6 +65,12 @@ export async function executePass(opts: OrchestratorOptions): Promise<RunRecord>
     notes,
   };
   try { await lease.finish(record); } finally { await lease.release(); }
+  await publishSnapshot({
+    status,
+    step: 'IDLE',
+    durationMs: record.durationMs,
+    lastError: status === 'ok' ? undefined : notes.join('; ').slice(0, 300),
+  });
   await notifyIfUnhealthy(record);
   return record;
 }
