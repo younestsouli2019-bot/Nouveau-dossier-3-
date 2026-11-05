@@ -129,6 +129,31 @@ const report = {
 writeFileSync(join(ROOT, TMP, `tick-${stamp}.json`), JSON.stringify(report, null, 2));
 writeFileSync(join(ROOT, TMP, 'latest.json'), JSON.stringify(report, null, 2));
 
+// AUDIT_STUCK_PAYOUTS_BLOCK — host-side stuck-payout audit.
+// Runs only where a real DATABASE_URL is injected (CI/host), never locally, and
+// is strictly READ-ONLY: the v2 audit only SELECTs. Output goes to the job log so
+// payout/PII detail never lands in a public repo (standing isolation rule).
+if (process.env.DATABASE_URL) {
+  const { spawnSync } = await import('node:child_process');
+  try {
+    const run = spawnSync('npx', ['--yes', 'tsx', 'scripts/audit-stuck-payouts-v2.ts'], {
+      cwd: ROOT, encoding: 'utf8', timeout: 240000,
+      env: { ...process.env },
+    });
+    const out = `${run.stdout || ''}${run.stderr || ''}`.trim();
+    results.push({ phase: 'stuck-payout-audit', status: run.status === 0 ? 'ok' : 'error', detail: out.slice(-4000) });
+    console.log('\n===== STUCK PAYOUT AUDIT (host, read-only) =====');
+    console.log(run.status === 0 ? 'audit rc=0' : `audit rc=${run.status}`);
+    console.log(out || '(no output)');
+    console.log('===== end stuck payout audit =====\n');
+  } catch (e) {
+    results.push({ phase: 'stuck-payout-audit', status: 'error', detail: String(e && e.message || e) });
+    console.log(`stuck-payout-audit failed to run: ${String(e && e.message || e)}`);
+  }
+} else {
+  console.log('stuck-payout-audit skipped: DATABASE_URL not present in this environment.');
+}
+
 const failed = results.filter((r) => r.status === 'error');
 console.log(JSON.stringify(report, null, 2));
 console.log(`\nclickless tick complete: ${results.length} phases, ${failed.length} error(s). READ-ONLY — no money moved.`);
