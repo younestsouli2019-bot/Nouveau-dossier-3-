@@ -1,0 +1,27 @@
+# Isolated promo pipeline. No docker.sock, no host mounts beyond ./data, non-root, read-only rootfs.
+# ComfyUI runs separately (GPU host); point COMFY_URL at it.
+services:
+  promo:
+    image: python:3.12-slim
+    working_dir: /app
+    user: "10001:10001"
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 2g
+    cpus: 2
+    volumes:
+      - ./:/app:ro
+      - ./data:/data
+    environment:
+      PROMO_WORKDIR: /data/out
+      PROMO_APPROVALS: /data/approvals
+      PROMO_LEDGER: /data/out/ledger.sqlite
+      PINATA_JWT: ${PINATA_JWT:-}
+      YT_CLIENT_ID: ${YT_CLIENT_ID:-}
+      YT_CLIENT_SECRET: ${YT_CLIENT_SECRET:-}
+      YT_REFRESH_TOKEN: ${YT_REFRESH_TOKEN:-}
+      YT_PRIVACY: ${YT_PRIVACY:-private}
+      PYTHONDONTWRITEBYTECODE: "1"
+    command: ["sh", "-c", "echo 'use: python -m pipeline.cli run /data/brief.json' && sleep infinity"]

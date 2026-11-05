@@ -12,6 +12,7 @@
  * Fail-closed: never sends without --confirm AND an I8 CAP_SEND_CRYPTO capability grant; never fabricates tx hashes.
  */
 import 'dotenv/config';
+import { fetchResilient } from '../src/lib/http-resilience.mjs';
 import { TonClient, WalletContractV4, internal, toNano, fromNano, beginCell } from '@ton/ton';
 import { mnemonicToWalletKey } from '@ton/crypto';
 import { writeFileSync, existsSync, mkdirSync } from 'fs';
@@ -40,10 +41,11 @@ const USDT_TON_MASTER = 'EQAlO-lYt1VqzZMkEqc4a0bPQuBTHolWi8AsLKtR4MlWnQcJ';
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 async function apiFetch(url, options = {}) {
-  const r = await fetch(url, {
+  const r = await fetchResilient(url, {
     headers: { 'Content-Type': 'application/json', ...options.headers },
     ...options,
-  });
+  }, { timeoutMs: 15000 });
+  if (!r.ok) throw new Error(`HTTP ${r.status} from ${new URL(url).host}`);
   return r.json();
 }
 
