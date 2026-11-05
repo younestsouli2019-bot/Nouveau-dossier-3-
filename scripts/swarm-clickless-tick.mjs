@@ -14,6 +14,12 @@
 // Run:  node scripts/swarm-clickless-tick.mjs
 // Env:  DATABASE_URL (optional — without it, DB-backed audits are skipped,
 //       static/health audits still run) . PLAN_TRANSITION_MODE=1 set by CI.
+//
+// Journal: logs/swarm_clickless/tick-<stamp>.json + latest.json, written AFTER
+// every phase completes. The stuck-payout-audit entry is REDACTED to a bare
+// status (full output stays in the job log) so payout/PII detail never reaches
+// logs/swarm_clickless — which the swarm-tick workflow may autocommit to this
+// public repo (standing isolation rule).
 
 import 'dotenv/config';
 import { execSync } from 'node:child_process';
@@ -115,7 +121,41 @@ runStatic('legal-entity-audit', 'scripts/legal-entity-audit.mjs');
 runStatic('legal-quarantine-sweep', 'scripts/legal-quarantine-sweep.mjs');
 runStatic('provider-fraud-scan', 'scripts/provider-metadata-fraud-scan.mjs');
 
-// ── Phase 4: journal stamp ───────────────────────────────────────────────────
+// AUDIT_STUCK_PAYOUTS_BLOCK — host-side stuck-payout audit.
+// Runs only where a real DATABASE_URL is injected (CI/host), never locally, and
+// is strictly READ-ONLY: the v2 audit only SELECTs. Full output goes to the job
+// log ONLY — the journal entry pushed below is REDACTED to a bare status, so
+// payout/PII detail never lands in logs/swarm_clickless even when the swarm-tick
+// workflow autocommits that directory to this public repo (standing isolation
+// rule). Entries use the same {name,status,tail} schema as every other phase.
+if (process.env.DATABASE_URL) {
+  const { spawnSync } = await import('node:child_process');
+  const REDACTED = '(redacted: full stuck-payout audit output stays in the job log — standing isolation rule)';
+  try {
+    const run = spawnSync('npx', ['--yes', 'tsx', 'scripts/audit-stuck-payouts-v2.ts'], {
+      cwd: ROOT, encoding: 'utf8', timeout: 240000,
+      env: { ...process.env },
+    });
+    const out = `${run.stdout || ''}${run.stderr || ''}`.trim();
+    results.push({ name: 'stuck-payout-audit', status: run.status === 0 ? 'ok' : 'error', tail: REDACTED });
+    console.log('\n===== STUCK PAYOUT AUDIT (host, read-only) =====');
+    console.log(run.status === 0 ? 'audit rc=0' : `audit rc=${run.status}`);
+    console.log(out || '(no output)');
+    console.log('===== end stuck payout audit =====\n');
+  } catch (e) {
+    results.push({ name: 'stuck-payout-audit', status: 'error', tail: REDACTED });
+    console.log(`stuck-payout-audit failed to run: ${String(e && e.message || e)}`);
+  }
+} else {
+  results.push({ name: 'stuck-payout-audit', status: 'skip_no_db' });
+  console.log('stuck-payout-audit skipped: DATABASE_URL not present in this environment.');
+}
+
+// ── Phase 4: journal stamp ─────────────────────────────────────────────────
+// Written AFTER every phase (incl. the host stuck-payout audit above) so the
+// journal reflects the complete tick. Previously the report was serialized
+// before this block ran, so latest.json / tick-*.json silently omitted the
+// stuck-payout-audit result even though the console summary counted it.
 const report = {
   at: new Date().toISOString(),
   uid: `clickless-${stamp}`,
@@ -124,35 +164,10 @@ const report = {
   readonly: true,
   moved_money: false,
   phases: results,
-  note: 'READ-ONLY reconcile/guard/audit tick. No payouts, no card funding, no delivered flips without a real waybill. Delivered remains gated on a real carrier scan.',
+  note: 'READ-ONLY reconcile/guard/audit tick. No payouts, no card funding, no delivered flips without a real waybill. Delivered remains gated on a real carrier scan. stuck-payout-audit journal entries are status-only (redacted; full output stays in the job log).',
 };
 writeFileSync(join(ROOT, TMP, `tick-${stamp}.json`), JSON.stringify(report, null, 2));
 writeFileSync(join(ROOT, TMP, 'latest.json'), JSON.stringify(report, null, 2));
-
-// AUDIT_STUCK_PAYOUTS_BLOCK — host-side stuck-payout audit.
-// Runs only where a real DATABASE_URL is injected (CI/host), never locally, and
-// is strictly READ-ONLY: the v2 audit only SELECTs. Output goes to the job log so
-// payout/PII detail never lands in a public repo (standing isolation rule).
-if (process.env.DATABASE_URL) {
-  const { spawnSync } = await import('node:child_process');
-  try {
-    const run = spawnSync('npx', ['--yes', 'tsx', 'scripts/audit-stuck-payouts-v2.ts'], {
-      cwd: ROOT, encoding: 'utf8', timeout: 240000,
-      env: { ...process.env },
-    });
-    const out = `${run.stdout || ''}${run.stderr || ''}`.trim();
-    results.push({ phase: 'stuck-payout-audit', status: run.status === 0 ? 'ok' : 'error', detail: out.slice(-4000) });
-    console.log('\n===== STUCK PAYOUT AUDIT (host, read-only) =====');
-    console.log(run.status === 0 ? 'audit rc=0' : `audit rc=${run.status}`);
-    console.log(out || '(no output)');
-    console.log('===== end stuck payout audit =====\n');
-  } catch (e) {
-    results.push({ phase: 'stuck-payout-audit', status: 'error', detail: String(e && e.message || e) });
-    console.log(`stuck-payout-audit failed to run: ${String(e && e.message || e)}`);
-  }
-} else {
-  console.log('stuck-payout-audit skipped: DATABASE_URL not present in this environment.');
-}
 
 const failed = results.filter((r) => r.status === 'error');
 console.log(JSON.stringify(report, null, 2));
