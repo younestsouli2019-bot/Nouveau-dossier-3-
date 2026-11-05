@@ -1,6 +1,7 @@
 /** One bounded reconciliation pass. Safe to call from a cron or a CLI. */
 import { acquireLease } from './lease';
 import { runChecks } from './reconcile';
+import { notifyIfUnhealthy } from './notify';
 import type { CheckResult, OrchestratorOptions, RunRecord, RunStatus, StepName } from './types';
 
 export const DEFAULT_INTERVAL_MS = 6 * 60 * 60 * 1000;
@@ -34,8 +35,11 @@ export async function executePass(opts: OrchestratorOptions): Promise<RunRecord>
   let checks: CheckResult[] = [];
   let status: RunStatus = 'unknown';
   const notes: string[] = [`lease=${lease.strategy}`];
+  let hb: NodeJS.Timeout | undefined;
 
   try {
+    // Keep the lease warm while probes run; a slow probe must not look dead.
+    hb = setInterval(() => { void lease.heartbeat('RECONCILE').catch(() => {}); }, 30_000);
     checks = await withTimeout(runChecks(opts.intervalMs ?? DEFAULT_INTERVAL_MS), 60_000, 'reconcile');
     steps.TEST = checks.find((c) => c.name === 'database')?.status === 'ok' ? 'ok' : 'unknown';
     steps.RECONCILE = 'ok';
@@ -50,6 +54,8 @@ export async function executePass(opts: OrchestratorOptions): Promise<RunRecord>
   } catch (e) {
     status = 'failed';
     notes.push(`fatal: ${(e as Error).message.slice(0, 200)}`);
+  } finally {
+    if (hb) clearInterval(hb);
   }
 
   const record: RunRecord = {
@@ -62,5 +68,6 @@ export async function executePass(opts: OrchestratorOptions): Promise<RunRecord>
     notes,
   };
   try { await lease.finish(record); } finally { await lease.release(); }
+  await notifyIfUnhealthy(record);
   return record;
 }

@@ -43,6 +43,7 @@
     "revenue:reconcile": "node --import tsx scripts/reconcile-revenue-ledger.mjs",
     "rail:table": "node scripts/payment-routing-table.mjs",
     "po:orchestrator": "node scripts/po-fulfillment-orchestrator.mjs",
+    "orchestrator:run": "tsx scripts/orchestrator-run.ts",
     "wallet:balance": "node scripts/evm-wallet-rail.mjs --action balance",
     "wallet:send": "node scripts/evm-wallet-rail.mjs --action send",
     "wallet:payout": "node scripts/owner-payout-evm.mjs",
