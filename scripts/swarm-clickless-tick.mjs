@@ -14,16 +14,29 @@
 // Run:  node scripts/swarm-clickless-tick.mjs
 // Env:  DATABASE_URL (optional — without it, DB-backed audits are skipped,
 //       static/health audits still run) . PLAN_TRANSITION_MODE=1 set by CI.
+//
+// Journal: logs/swarm_clickless/tick-<stamp>.json + latest.json, written AFTER
+// every phase completes. The stuck-payout-audit entry is REDACTED to a bare
+// status (full output stays in the job log) so payout/PII detail never reaches
+// logs/swarm_clickless — which the swarm-tick workflow may autocommit to this
+// public repo (standing isolation rule).
 
 import 'dotenv/config';
 import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import {
+  buildTickReport,
+  phaseEntry,
+  redactedAuditDetail,
+  summarizePhases,
+  tickStamp,
+} from './lib/swarm-tick-report.mjs';
 
 const ROOT = process.cwd();
 const TMP = 'logs/swarm_clickless';
 mkdirSync(join(ROOT, TMP), { recursive: true });
-const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+const stamp = tickStamp();
 const results = [];
 const t0 = Date.now();
 
@@ -115,24 +128,13 @@ runStatic('legal-entity-audit', 'scripts/legal-entity-audit.mjs');
 runStatic('legal-quarantine-sweep', 'scripts/legal-quarantine-sweep.mjs');
 runStatic('provider-fraud-scan', 'scripts/provider-metadata-fraud-scan.mjs');
 
-// ── Phase 4: journal stamp ───────────────────────────────────────────────────
-const report = {
-  at: new Date().toISOString(),
-  uid: `clickless-${stamp}`,
-  elapsed_ms: Date.now() - t0,
-  plan_transition_mode: process.env.PLAN_TRANSITION_MODE ?? 'unset',
-  readonly: true,
-  moved_money: false,
-  phases: results,
-  note: 'READ-ONLY reconcile/guard/audit tick. No payouts, no card funding, no delivered flips without a real waybill. Delivered remains gated on a real carrier scan.',
-};
-writeFileSync(join(ROOT, TMP, `tick-${stamp}.json`), JSON.stringify(report, null, 2));
-writeFileSync(join(ROOT, TMP, 'latest.json'), JSON.stringify(report, null, 2));
-
 // AUDIT_STUCK_PAYOUTS_BLOCK — host-side stuck-payout audit.
 // Runs only where a real DATABASE_URL is injected (CI/host), never locally, and
-// is strictly READ-ONLY: the v2 audit only SELECTs. Output goes to the job log so
-// payout/PII detail never lands in a public repo (standing isolation rule).
+// is strictly READ-ONLY: the v2 audit only SELECTs. Full output goes to the job
+// log ONLY — the journal entry pushed below is REDACTED to a bare status, so
+// payout/PII detail never lands in logs/swarm_clickless even when the swarm-tick
+// workflow autocommits that directory to this public repo (standing isolation
+// rule). Entries use the same {name,status,tail} schema as every other phase.
 if (process.env.DATABASE_URL) {
   const { spawnSync } = await import('node:child_process');
   try {
@@ -141,22 +143,39 @@ if (process.env.DATABASE_URL) {
       env: { ...process.env },
     });
     const out = `${run.stdout || ''}${run.stderr || ''}`.trim();
-    results.push({ phase: 'stuck-payout-audit', status: run.status === 0 ? 'ok' : 'error', detail: out.slice(-4000) });
+    results.push(phaseEntry('stuck-payout-audit', run.status === 0 ? 'ok' : 'error', redactedAuditDetail()));
     console.log('\n===== STUCK PAYOUT AUDIT (host, read-only) =====');
     console.log(run.status === 0 ? 'audit rc=0' : `audit rc=${run.status}`);
     console.log(out || '(no output)');
     console.log('===== end stuck payout audit =====\n');
   } catch (e) {
-    results.push({ phase: 'stuck-payout-audit', status: 'error', detail: String(e && e.message || e) });
+    results.push(phaseEntry('stuck-payout-audit', 'error', redactedAuditDetail()));
     console.log(`stuck-payout-audit failed to run: ${String(e && e.message || e)}`);
   }
 } else {
+  results.push(phaseEntry('stuck-payout-audit', 'skip_no_db'));
   console.log('stuck-payout-audit skipped: DATABASE_URL not present in this environment.');
 }
 
-const failed = results.filter((r) => r.status === 'error');
+// ── Phase 4: journal stamp ─────────────────────────────────────────────────
+// Written AFTER every phase (incl. the host stuck-payout audit above) so the
+// journal reflects the complete tick. Previously the report was serialized
+// before this block ran, so latest.json / tick-*.json silently omitted the
+// stuck-payout-audit result even though the console summary counted it.
+// Assembly/redaction live in scripts/lib/swarm-tick-report.mjs (unit-tested).
+const report = buildTickReport({
+  phases: results,
+  startedAt: t0,
+  now: new Date(),
+  env: process.env,
+  stamp,
+});
+writeFileSync(join(ROOT, TMP, `tick-${stamp}.json`), JSON.stringify(report, null, 2));
+writeFileSync(join(ROOT, TMP, 'latest.json'), JSON.stringify(report, null, 2));
+
+const summary = summarizePhases(results);
 console.log(JSON.stringify(report, null, 2));
-console.log(`\nclickless tick complete: ${results.length} phases, ${failed.length} error(s). READ-ONLY — no money moved.`);
+console.log(`\nclickless tick complete: ${summary.total} phases, ${summary.errors} error(s). READ-ONLY — no money moved.`);
 // Non-fatal by design: audit errors never block the journal; exit reflects only
 // a hard tooling failure, never to force a payout.
 process.exit(0);
