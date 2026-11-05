@@ -1,10 +1,10 @@
-# swarm-core integrity manifest â€” generated 2026-10-17T18:31:39Z
+# swarm-core integrity manifest — generated 2026-11-05T18:32:00Z
 # files=43  algorithm=SHA-256  encoding=hex  path-base=repo-root
 # Re-generate with: powershell -File scripts/guard/verify-core.ps1 -Init
 # Protect this file from write via: attrib +R scripts/guard/core-integrity.sha256manifest
-ba18a114946a80b97edc1cd07ce8d9780b5af52dae3cce121c2baa53fb2476da  .gitignore
+c4b185fa698023125e846d8ded1c480acf5c7d7b635d174bfea5f950f54f87f5  .gitignore
 22723f24a3f74a681275e5e73c426f24ec1dc0366fa34a6fe9fd5c18b4bfc21e  .gitattributes
-cc6c8c5489b0168dd988b094991dd7b9602f823ac5392391aefeb956367a260b  package.json
+034ac9676e78af4120f8653c048df0104207dd0c17ab2171232d8dbbdb101ebb  package.json
 bd027a993ca7bf5b83d21625bfe76a3e8431d7b5abb11c0e3738c999fb914d81  package-lock.json
 cb9369556decebfc2e6c814049e57953d2837e0ca11f0b7f72bdccc1306661c3  prisma/schema.prisma
 f69fdcf58dd8c5eb6b25b320d0bf8c06ea6e287bedd07a49727dedff17f8a57e  CHANGELOG.md
