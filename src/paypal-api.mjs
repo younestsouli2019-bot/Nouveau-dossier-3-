@@ -1,3 +1,5 @@
+import { classifyFailure, fetchResilient } from "./lib/http-resilience.mjs";
+
 const PAYPAL_API_BASE =
 	process.env.PAYPAL_API_BASE_URL ??
 	((process.env.PAYPAL_MODE ?? "live").toLowerCase() === "sandbox"
@@ -108,29 +110,33 @@ export async function paypalRequest(
 		? "https://api-m.paypal.com"
 		: (process.env.PAYPAL_API_BASE_URL ?? "https://api-m.paypal.com");
 
-	const controller = new AbortController();
-	const timeout = setTimeout(() => controller.abort(), getHttpTimeoutMs());
-	let res;
-	try {
-		res = await fetch(`${effectiveBase}${path}`, {
-			method,
-			headers: {
-				...(token ? { Authorization: `Bearer ${token}` } : {}),
-				...(body ? { "Content-Type": "application/json" } : {}),
-				...(headers ?? {}),
-			},
-			...(body ? { body: JSON.stringify(body) } : {}),
-			signal: controller.signal,
-		});
-	} finally {
-		clearTimeout(timeout);
-	}
+	const reqHeaders = {
+		...(token ? { Authorization: `Bearer ${token}` } : {}),
+		...(body ? { "Content-Type": "application/json" } : {}),
+		...(headers ?? {}),
+	};
+	// Retries only for GETs or POSTs carrying a PayPal-Request-Id (PayPal dedupes on it).
+	const hasIdempotencyKey = Object.keys(reqHeaders).some(
+		(k) => k.toLowerCase() === "paypal-request-id",
+	);
+	const res = await fetchResilient(
+		`${effectiveBase}${path}`,
+		{ method, headers: reqHeaders, ...(body ? { body: JSON.stringify(body) } : {}) },
+		{
+			timeoutMs: getHttpTimeoutMs(),
+			idempotent: method.toUpperCase() === "GET" || hasIdempotencyKey,
+		},
+	);
 
 	if (!res.ok) {
 		const text = await res.text().catch(() => "");
-		throw new Error(
+		const err = new Error(
 			`PayPal request failed (${res.status}) ${method} ${path}: ${text}`,
 		);
+		err.status = res.status;
+		err.debugId = res.headers.get("paypal-debug-id") || undefined;
+		err.retryable = classifyFailure({ status: res.status }) === "retryable";
+		throw err;
 	}
 
 	const contentType = res.headers.get("content-type") || "";

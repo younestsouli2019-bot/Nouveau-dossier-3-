@@ -1,0 +1,56 @@
+# Autonomous Dependabot handling, independent of any interactive session.
+# - Security/patch/minor Dependabot PRs are approved and set to auto-merge once required checks pass.
+# - Major bumps are left for a human.
+# - Weekly: if `npm audit` finds high/critical issues with no open Dependabot PR, open a fix PR via `npm audit fix`.
+name: Dependabot Auto-Remediate
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    if: github.event_name == 'pull_request_target' && github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - id: meta
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Enable auto-merge for non-major updates
+        if: steps.meta.outputs.update-type != 'version-update:semver-major'
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr review --approve "$PR_URL" || true
+          gh pr merge --auto --squash "$PR_URL"
+
+  audit-fix:
+    if: github.event_name != 'pull_request_target'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - name: Fix high/critical advisories
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if npm audit --audit-level=high >/dev/null 2>&1; then echo "clean"; exit 0; fi
+          npm audit fix --ignore-scripts || true
+          if git diff --quiet; then echo "no automatic fix available"; npm audit --audit-level=high || true; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "auto/audit-fix-$(date +%Y%m%d)"
+          git commit -am "chore(deps): npm audit fix"
+          git push -u origin HEAD
+          gh pr create --fill --title "chore(deps): npm audit fix" --body "Automated remediation of high/critical npm advisories."

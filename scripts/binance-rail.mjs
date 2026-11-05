@@ -92,7 +92,11 @@ async function serverTimeMs() {
 const RETRYABLE_STATUS = new Set([418, 429, 500, 502, 503, 504]);
 const MAX_RETRIES = 2;
 
-async function fetchWithRetry(url, opts = {}, maxRetries = MAX_RETRIES) {
+// 429/418 mean the request was rejected before processing, so retrying is always safe.
+// Other failures are ambiguous for money-moving POSTs; those retry only with `ambiguousOk`.
+const NOT_PROCESSED_STATUS = new Set([418, 429]);
+
+async function fetchWithRetry(url, opts = {}, maxRetries = MAX_RETRIES, ambiguousOk = true) {
   let attempt = 0;
   for (;;) {
     attempt += 1;
@@ -100,11 +104,12 @@ async function fetchWithRetry(url, opts = {}, maxRetries = MAX_RETRIES) {
     try {
       r = await fetch(url, opts);
     } catch (e) {
-      if (attempt > maxRetries) throw e;
+      if (!ambiguousOk || attempt > maxRetries) throw e;
       await new Promise((res) => setTimeout(res, Math.min(2 ** attempt, 8) * 500));
       continue;
     }
-    if (RETRYABLE_STATUS.has(r.status) && attempt <= maxRetries) {
+    const retryable = ambiguousOk ? RETRYABLE_STATUS.has(r.status) : NOT_PROCESSED_STATUS.has(r.status);
+    if (retryable && attempt <= maxRetries) {
       const retryAfter = Number(r.headers?.get?.('Retry-After') || 0);
       const waitMs = retryAfter > 0
         ? Math.min((retryAfter + 1) * 1000, 10000)
@@ -126,6 +131,9 @@ async function binanceGet(path, params = {}, base = BASE) {
   return { status: r.status, data: await r.json() };
 }
 
+// Money-moving POSTs are retried only when they carry an idempotency key
+// (withdrawOrderId): after a timeout/5xx the first attempt may have succeeded,
+// and Binance rejects a duplicate withdrawOrderId instead of paying twice.
 async function binancePost(path, params = {}, base = BASE) {
   const timestamp = await serverTimeMs();
   const body = new URLSearchParams({ ...params, timestamp, recvWindow: 10000 }).toString();
@@ -138,7 +146,7 @@ async function binancePost(path, params = {}, base = BASE) {
     method: 'POST',
     headers: { 'X-MBX-APIKEY': API_KEY, 'Content-Type': 'application/x-www-form-urlencoded' },
     body: signed,
-  });
+  }, MAX_RETRIES, Boolean(params.withdrawOrderId));
   return { status: r.status, data: await r.json() };
 }
 
@@ -447,6 +455,9 @@ async function withdraw() {
     network: network.binance,
     address: route.address,
     amount: String(amount),
+    withdrawOrderId: crypto.createHash('sha256')
+      .update(`${route.asset}|${network.binance}|${route.address}|${amount}|${process.env.WITHDRAW_IDEMPOTENCY_KEY || plan.at}`)
+      .digest('hex').slice(0, 32),
   });
 
   if (status === 200 && data.id) {
@@ -457,6 +468,8 @@ async function withdraw() {
   } else {
     plan.status = 'FAILED';
     plan.error = data.msg || JSON.stringify(data).slice(0, 300);
+    // -2015 is terminal: retrying cannot help until the key/IP whitelist/permissions are fixed.
+    if (data.code === -2015) plan.hint = 'Whitelist this host IP and enable the required permission on the API key.';
   }
 
   writeFileSync(resolve(OUT, `binance-withdrawal-${Date.now()}.json`), JSON.stringify(plan, null, 2));
