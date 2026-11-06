@@ -18,23 +18,47 @@ const { store_domain } = shopConfig;
 const apiKey = process.env.SHOPIFY_ADMIN_API_KEY;
 const API = `https://${store_domain}/admin/api/2024-01`;
 
+let catalog = { items: [] };
+try {
+  catalog = JSON.parse(readFileSync(join(process.cwd(), 'rank/output/data/catalog.json'), 'utf8'));
+} catch {}
+const titles = new Map((catalog.items || catalog).map?.((c) => [c.slug, c.title]) ?? []);
+
 const metrics = { sellable: 0, skipped: 0, quote_required: 0, 'fixed-without-amount': 0 };
 const itemsToPublish = [];
 
 for (const [slug, meta] of Object.entries(priceBook.courses || {})) {
-  if (meta.type === 'quote_required') {
+  if (meta.mode === 'quote_required') {
     metrics.skipped++;
     metrics.quote_required++;
     continue;
   }
-  if (meta.type === 'fixed' && (!meta.amount || meta.amount <= 0)) {
+  if (meta.mode !== 'fixed' || !(meta.amountMinor > 0)) {
     metrics.skipped++;
     metrics['fixed-without-amount']++;
     continue;
   }
   metrics.sellable++;
-  itemsToPublish.push({ slug, ...meta });
+  itemsToPublish.push({ slug, source: 'owner', title: titles.get(slug), amount: meta.amountMinor / 10 ** (priceBook.minorUnits ?? 2), currency: priceBook.currency });
 }
+
+// Affiliate products: data/affiliate-products.json = [{ slug, title, price, currency, affiliate_url, network, description? }]
+let affiliates = [];
+try {
+  affiliates = JSON.parse(readFileSync(join(process.cwd(), 'data/affiliate-products.json'), 'utf8'));
+} catch {}
+let invalidAffiliates = 0;
+for (const a of affiliates) {
+  let okUrl = false;
+  try { okUrl = new URL(a.affiliate_url).protocol === 'https:'; } catch {}
+  if (!a.slug || !a.title || !(Number(a.price) > 0) || !okUrl) {
+    invalidAffiliates++;
+    continue;
+  }
+  itemsToPublish.push({ ...a, source: 'affiliate', amount: Number(a.price) });
+}
+metrics.affiliate = affiliates.length - invalidAffiliates;
+metrics.affiliate_invalid = invalidAffiliates;
 
 console.log('📊 Price Book Analysis:', metrics);
 
@@ -56,15 +80,24 @@ async function upsert(item) {
   const found = await call('GET', `/products.json?handle=${encodeURIComponent(item.slug)}&fields=id,variants`);
   const existing = found.products?.[0];
   const price = String(item.amount);
+  const affiliate = item.source === 'affiliate';
+  const extra = affiliate
+    ? {
+        vendor: item.network || 'affiliate',
+        tags: 'affiliate',
+        body_html: `${item.description || ''}<p><em>Affiliate link: we may earn a commission at no extra cost to you.</em></p><p><a href="${item.affiliate_url}" rel="sponsored nofollow noopener">Buy from the merchant</a></p>`,
+        metafields: [{ namespace: 'custom', key: 'affiliate_url', type: 'url', value: item.affiliate_url }],
+      }
+    : {};
   if (existing) {
     const variantId = existing.variants?.[0]?.id;
     const { product } = await call('PUT', `/products/${existing.id}.json`, {
-      product: { id: existing.id, title: item.title || item.slug, variants: [{ id: variantId, price }] },
+      product: { id: existing.id, title: item.title || item.slug, ...extra, variants: [{ id: variantId, price }] },
     });
     return { id: product.id, action: 'updated' };
   }
   const { product } = await call('POST', '/products.json', {
-    product: { title: item.title || item.slug, handle: item.slug, variants: [{ sku: item.slug, price }] },
+    product: { title: item.title || item.slug, handle: item.slug, ...extra, variants: [{ sku: item.slug, price }] },
   });
   return { id: product.id, action: 'created' };
 }

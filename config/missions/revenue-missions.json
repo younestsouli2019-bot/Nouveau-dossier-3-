@@ -8,34 +8,60 @@
   },
   "integrations": {
     "shopify": {
-      "secrets": ["SHOPIFY_STORE_DOMAIN", "SHOPIFY_ADMIN_API_KEY"],
-      "scopes": ["read_products", "write_products", "read_orders"]
+      "secrets": [
+        "SHOPIFY_STORE_DOMAIN",
+        "SHOPIFY_ADMIN_API_KEY"
+      ],
+      "scopes": [
+        "read_products",
+        "write_products",
+        "read_orders"
+      ]
     },
     "base44": {
-      "secrets": ["BASE44_API_KEY", "BASE44_APP_ID"]
+      "secrets": [
+        "BASE44_API_KEY",
+        "BASE44_APP_ID"
+      ]
     }
   },
   "missions": [
     {
       "id": "SHOPIFY_CATALOG_SYNC",
-      "goal": "Sync product catalog between Shopify and Base44 and keep prices aligned with the price book",
-      "integrations": ["shopify", "base44"],
+      "goal": "Sync owner courses AND affiliate products (data/affiliate-products.json) to Shopify via scripts/shopify/sync-catalog.mjs",
+      "integrations": [
+        "shopify",
+        "base44"
+      ],
       "schedule": "0 */6 * * *",
-      "guardrails": ["no price below price-book floor", "dry-run by default"]
+      "guardrails": [
+        "no price below price-book floor",
+        "dry-run by default",
+        "affiliate listings carry disclosure and https affiliate_url"
+      ]
     },
     {
       "id": "BASE44_STOREFRONT_PUBLISH",
       "goal": "Publish listings/landing pages generated in Base44 and link them to Shopify checkout",
-      "integrations": ["shopify", "base44"],
+      "integrations": [
+        "shopify",
+        "base44"
+      ],
       "schedule": "0 3 * * *",
-      "guardrails": ["human review of new listings before publish"]
+      "guardrails": [
+        "human review of new listings before publish"
+      ]
     },
     {
       "id": "ORDER_REVENUE_RECONCILE",
       "goal": "Reconcile Shopify orders into the ledger and prepare an owner payout proposal",
-      "integrations": ["shopify"],
+      "integrations": [
+        "shopify"
+      ],
       "schedule": "0 0 * * *",
-      "guardrails": ["proposal only; payout executes via owner-payout workflow with 'payouts' environment approval"]
+      "guardrails": [
+        "proposal only; payout executes via owner-payout workflow with 'payouts' environment approval"
+      ]
     }
   ]
 }
