@@ -34,7 +34,7 @@ try { plan = JSON.parse(m2.stdout.slice(m2.stdout.indexOf('{'), m2.stdout.lastIn
 ok('M2 emits a JSON plan', !!plan);
 
 const book = JSON.parse(readFileSync('rank/output/data/pricing/prices.json', 'utf8'));
-const fixed = Object.values(book.courses).filter((c) => c.mode === 'fixed' && c.amount != null).length;
+const fixed = Object.values(book.courses).filter((c) => c.mode === 'fixed' && Number.isFinite(c.amountMinor) && c.amountMinor > 0).length;
 ok('M2 sellable count equals fixed-with-amount in the book',
    plan && plan.sellable === fixed, `plan=${plan?.sellable} book=${fixed}`);
 
@@ -45,6 +45,28 @@ ok('M2 never publishes quote_required courses',
 // M2 execute must refuse without SWARM_LIVE
 const m2e = run('scripts/shopify-catalog-sync.mjs', ['--execute'], { SWARM_LIVE: '' });
 ok('M2 --execute refuses without SWARM_LIVE', m2e.status === 2, `got ${m2e.status}`);
+
+// ---- price generator (utils-price-generator.mjs) ----
+import { createHash } from 'node:crypto';
+const hash = (p) => createHash('sha256').update(readFileSync(p)).digest('hex');
+const BOOK = 'rank/output/data/pricing/prices.json';
+
+const before = hash(BOOK);
+const genDry = run('scripts/utils-price-generator.mjs', ['--base-mad', '4500']);
+ok('generator dry-run exits 0', genDry.status === 0, `got ${genDry.status}`);
+ok('generator dry-run writes nothing', hash(BOOK) === before);
+ok('generator requires --base-mad', run('scripts/utils-price-generator.mjs').status === 2);
+ok('generator --apply refuses without --approve-by',
+   run('scripts/utils-price-generator.mjs', ['--base-mad', '4500', '--apply']).status === 2);
+
+let gplan = null;
+try { gplan = JSON.parse(genDry.stdout.slice(genDry.stdout.indexOf('{'), genDry.stdout.lastIndexOf('}') + 1)); } catch {}
+const convertible = Object.values(book.courses).filter(
+  (c) => c.mode === 'quote_required' || (c.mode === 'fixed' && !(Number.isFinite(c.amountMinor) && c.amountMinor > 0))).length;
+ok('generator convertible count matches book (mode/amountMinor aware)',
+   gplan && gplan.convertible === convertible, `plan=${gplan?.convertible} book=${convertible}`);
+ok('generator would NOT touch absent courses',
+   gplan && gplan.skipped_absent === Object.values(book.courses).filter((c) => (c.mode || 'absent') === 'absent').length);
 
 console.log(`\nresult: ${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

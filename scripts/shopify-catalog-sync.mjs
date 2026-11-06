@@ -38,13 +38,13 @@ const skipped = [];
 for (const [slug, entry] of Object.entries(priceBook.courses || {})) {
   const mode = entry.mode;
   if (mode !== 'fixed') { skipped.push({ slug, reason: mode || 'absent' }); continue; }
-  if (entry.amount == null) { skipped.push({ slug, reason: 'fixed-without-amount' }); continue; }
+  if (!Number.isFinite(entry.amountMinor) || entry.amountMinor <= 0) { skipped.push({ slug, reason: 'fixed-without-amountMinor' }); continue; }
   const meta = bySlug.get(slug);
   if (!meta) { skipped.push({ slug, reason: 'not-in-catalog' }); continue; }
   planned.push({
     sku: slug,
     title: meta.title,
-    price: (Number(entry.amount) / 10 ** minor).toFixed(minor),
+    price: (Number(entry.amountMinor) / 10 ** minor).toFixed(minor),
     currency,
     description: (meta.description || '').slice(0, 5000),
     tags: [meta.category, meta.language].filter(Boolean),
