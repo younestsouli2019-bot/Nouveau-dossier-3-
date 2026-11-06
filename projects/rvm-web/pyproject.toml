@@ -1,0 +1,56 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rvm"
+version = "0.2.0"
+description = "Local AI media studio — background removal, upscaling, image & video editing in one web UI"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10,<3.13"
+keywords = [
+    "background-removal", "video-matting", "pytorch", "fastapi",
+    "ai", "deep-learning", "robustvideomatting", "alpha-channel",
+    "video-background-remover", "remove-video-background", "no-green-screen",
+    "transparent-video", "real-esrgan", "upscaling", "rembg", "demucs",
+    "vocal-remover", "offline", "local-first"
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.29.0",
+    "python-multipart>=0.0.9",
+    "av>=12.0.0",
+    "tqdm>=4.0.0",
+    "pims>=0.6.0",
+    "torch>=2.2.0",
+    "torchvision>=0.17.0",
+    "rembg[cpu]>=2.0.50",
+    "pillow>=10.0.0",
+    "numpy>=1.24.0",
+    "imageio-ffmpeg>=0.4.9",
+    "demucs>=4.1.0",
+]
+
+[project.scripts]
+rvm = "rvm.main:main"
+rvm-web = "rvm.main:main"  # backwards-compatible alias
+
+[project.urls]
+Homepage   = "https://github.com/metiutek/rvm-web"
+Repository = "https://github.com/metiutek/rvm-web"
+Issues     = "https://github.com/metiutek/rvm-web/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rvm"]
+
+[tool.uv]
+# Auto-detect the local CUDA driver and pull matching torch wheels.
+# Without this, PyPI serves CPU-only torch on Windows.
+torch-backend = "auto"
