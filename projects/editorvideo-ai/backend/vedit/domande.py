@@ -1,0 +1,167 @@
+"""Domande all'utente: l'assistente si ferma e chiede, invece di decidere da solo.
+
+E' l'equivalente della schermata di domande di Claude Code: da una a quattro
+domande, ognuna con due-sei opzioni cliccabili (piu' "altro" per scrivere).
+Serve per tutto quello che spetta a chi guarda il video — lo stile, la durata,
+quale versione tenere — e soprattutto per l'export: un file si scrive solo
+quando l'utente dice di si'.
+
+Qui sta la parte pura (forma delle domande e delle risposte). L'attesa vera,
+che tiene ferma la chiamata finche' nel browser non si risponde, sta in
+``api.chiedi``: e' li' che c'e' l'interfaccia.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+MAX_DOMANDE = 4
+MAX_OPZIONI = 6
+
+SCHEMA = {
+    "type": "object",
+    "properties": {
+        "domande": {
+            "type": "array", "minItems": 1, "maxItems": MAX_DOMANDE,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "domanda": {"type": "string", "description": "la domanda, chiara e completa"},
+                    "titolo": {"type": "string", "description": "etichetta brevissima (max 12 caratteri)"},
+                    "opzioni": {
+                        "type": "array", "minItems": 2, "maxItems": MAX_OPZIONI,
+                        "items": {"type": "object", "properties": {
+                            "etichetta": {"type": "string"},
+                            "descrizione": {"type": "string"}},
+                            "required": ["etichetta"]},
+                    },
+                    "multipla": {"type": "boolean", "description": "si possono scegliere piu' opzioni"},
+                },
+                "required": ["domanda", "opzioni"],
+            },
+        },
+    },
+    "required": ["domande"],
+}
+
+DESCRIZIONE = (
+    "Fa all'utente da 1 a 4 domande con opzioni cliccabili e aspetta la risposta "
+    "(l'utente puo' sempre scrivere un'alternativa). Usalo quando una scelta spetta a "
+    "lui — stile, durata, formato, quale versione tenere, se esportare — invece di "
+    "decidere a caso o di fare domande nel testo. Metti per prima l'opzione che "
+    "consigli. Torna le risposte, oppure che l'utente ha annullato.")
+
+
+def valida(domande: Any) -> list[dict]:
+    """Normalizza le domande; un errore qui torna al modello come messaggio."""
+    if isinstance(domande, dict) and "domande" in domande:
+        domande = domande["domande"]
+    if not isinstance(domande, list) or not domande:
+        raise ValueError("a list of questions is needed")
+    if len(domande) > MAX_DOMANDE:
+        raise ValueError(f"at most {MAX_DOMANDE} questions at a time")
+    out = []
+    for d in domande:
+        if not isinstance(d, dict) or not str(d.get("domanda", "")).strip():
+            raise ValueError("each question needs the 'domanda' field")
+        opz = []
+        for o in d.get("opzioni") or []:
+            if isinstance(o, str):
+                o = {"etichetta": o}
+            if isinstance(o, dict) and str(o.get("etichetta", "")).strip():
+                opz.append({"etichetta": str(o["etichetta"]).strip()[:80],
+                            "descrizione": str(o.get("descrizione", "")).strip()[:240]})
+        if len(opz) < 2:
+            raise ValueError(f"question {d['domanda']!r} needs at least two options")
+        out.append({
+            "domanda": str(d["domanda"]).strip(),
+            "titolo": str(d.get("titolo") or "").strip()[:24],
+            "opzioni": opz[:MAX_OPZIONI],
+            "multipla": bool(d.get("multipla", False)),
+        })
+    return out
+
+
+def conferma_export(output: str, quality: str) -> list[dict]:
+    """La domanda che precede ogni export chiesto dall'assistente.
+
+    Il nome del file nella domanda, la cartella nella descrizione: un percorso
+    intero e' una riga illeggibile proprio dove si deve decidere.
+    """
+    from pathlib import Path
+
+    f = Path(output)
+    return [{
+        "domanda": f"The assistant wants to export the video as \"{f.name}\". Go ahead?",
+        "titolo": "Export",
+        "opzioni": [
+            {"etichetta": "Yes, export",
+             "descrizione": f"{quality} quality, in the folder {f.parent}"},
+            {"etichetta": "No, not yet", "descrizione": "the video stays in the editor, I keep working on it"},
+        ],
+        "multipla": False,
+    }]
+
+
+def conferma_pubblica(piattaforma: str, file: str, titolo: str, privacy: str) -> list[dict]:
+    """La domanda che precede ogni pubblicazione chiesta dall'assistente."""
+    from pathlib import Path
+
+    dove = {"youtube": f"YouTube ({privacy})", "tiktok": "your TikTok inbox, as a draft"}
+    return [{
+        "domanda": f"The assistant wants to publish \"{Path(file).name}\" to "
+                   f"{dove.get(piattaforma, piattaforma)}. Go ahead?",
+        "titolo": "Publish",
+        "opzioni": [
+            {"etichetta": "Yes, publish", "descrizione": titolo or Path(file).stem},
+            {"etichetta": "No, not now", "descrizione": "nothing leaves this computer"},
+        ],
+        "multipla": False,
+    }]
+
+
+def conferma_genera(tipo: str, prompt: str, servizio: str, modello: str) -> list[dict]:
+    """La domanda che precede ogni generazione chiesta dall'assistente: costa, e il
+    servizio e' di terzi (il prompt parte da questo computer)."""
+    testo = " ".join(prompt.split())
+    if len(testo) > 160:
+        testo = testo[:157] + "..."
+    cosa = {"image": "an image", "video": "a video"}.get(tipo, tipo)
+    return [{
+        "domanda": f"The assistant wants to generate {cosa} with {servizio}. Go ahead?",
+        "titolo": "Generate",
+        "opzioni": [
+            {"etichetta": "Yes, generate", "descrizione": f"{modello}: \"{testo}\". It may cost "
+                                                          "credits on your account."},
+            {"etichetta": "No", "descrizione": "nothing is sent, nothing is spent"},
+        ],
+        "multipla": False,
+    }]
+
+
+def conferma_skill(sorgente: str) -> list[dict]:
+    """La domanda che precede l'installazione di una skill chiesta dall'assistente:
+    una skill sono istruzioni che il modello seguira'."""
+    return [{
+        "domanda": f"The assistant wants to add the editing skill from \"{sorgente}\". "
+                   "Its instructions will guide the assistant from now on. Go ahead?",
+        "titolo": "Add skill",
+        "opzioni": [
+            {"etichetta": "Yes, add it", "descrizione": "it goes in ~/.vedit/skills, removable any time"},
+            {"etichetta": "No", "descrizione": "nothing is installed"},
+        ],
+        "multipla": False,
+    }]
+
+
+def approvato(esito: dict) -> bool:
+    """Vero solo se l'utente ha scelto esplicitamente di esportare."""
+    if esito.get("annullata"):
+        return False
+    risposte = list((esito.get("risposte") or {}).values())
+    if not risposte:
+        return False
+    r = risposte[0]
+    r = r[0] if isinstance(r, list) and r else r
+    # "yes" dalla UI in inglese; "si" resta valido per chi risponde a parole
+    return isinstance(r, str) and r.lower().startswith(("yes", "si", "sì"))

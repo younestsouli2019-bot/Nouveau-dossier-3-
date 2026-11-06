@@ -1,0 +1,948 @@
+<p align="center"><img src="https://raw.githubusercontent.com/metiutek/editorvideo-ai/main/docs/logo/logo.png" alt="vedit logo" width="120"/></p>
+
+<h1 align="center">vedit — tell an AI to edit your video, and watch it happen</h1>
+
+<p align="center">
+  <strong>A normal video editor — timeline, clips, cuts, transitions — except an AI can use it for you.</strong><br/>
+  You say what you want in plain words. It does the editing while you watch the clips move, and you can grab the mouse and fix anything at any point.
+</p>
+
+<p align="center">
+  <a href="https://github.com/metiutek/editorvideo-ai/actions/workflows/ci.yml"><img src="https://github.com/metiutek/editorvideo-ai/actions/workflows/ci.yml/badge.svg" alt="CI"/></a>
+  <a href="https://pypi.org/project/vedit-mcp/"><img src="https://img.shields.io/pypi/v/vedit-mcp.svg?style=flat-square" alt="PyPI"/></a>
+  <a href="https://pypi.org/project/vedit-mcp/"><img src="https://img.shields.io/pypi/pyversions/vedit-mcp.svg?style=flat-square" alt="Python versions"/></a>
+  <img src="https://img.shields.io/badge/AI%20tools-130-blueviolet?style=flat-square" alt="130 AI tools"/>
+  <img src="https://img.shields.io/badge/runs-100%25%20local-brightgreen?style=flat-square" alt="Runs locally"/>
+  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License"/>
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/metiutek/editorvideo-ai/main/docs/vedit-promo.gif" alt="vedit promo — you say what you want, the agent edits the timeline, checks its own work, and you stay in control with Ctrl+Z" width="820"/>
+</p>
+
+> 🇮🇹 Italiano: [README.it.md](https://github.com/metiutek/editorvideo-ai/blob/main/README.it.md)
+
+## Install — 3 steps
+
+**1. Install uv** (it installs Python apps for you). Then **close and reopen the terminal**.
+
+| Windows (PowerShell) | macOS | Linux |
+|---|---|---|
+| `winget install astral-sh.uv` | `brew install uv` | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
+
+**2. Install vedit and ffmpeg**
+
+```bash
+uv tool install vedit-mcp
+vedit install-ffmpeg
+```
+
+If the terminal says `vedit` is not recognized, run `uv tool update-shell`, then close and
+reopen the terminal.
+
+**3. Open the editor**
+
+```bash
+vedit ui
+```
+
+The editor opens in your browser at <http://127.0.0.1:8760>. That's it.
+
+**Optional — let Claude Code edit for you:** `claude mcp add vedit -- vedit-mcp`. This only
+connects Claude Code to vedit; it does not install anything, so do step 2 first.
+
+Something wrong? `vedit doctor` tells you what is missing and how to fix it.
+
+**Update** to the latest version: `uv tool upgrade vedit-mcp`.
+
+## Using it — the 2-minute tour
+
+1. **New project** (top bar → *new*): pick the format — 16:9 for YouTube, 9:16 for
+   Reels/Shorts/TikTok, 1:1, 4:5… — and the quality. You can change it later from the
+   format button in the top bar.
+2. **Add your footage**: drag files onto the window, or search the web from the **web** tab
+   on the left and click *add* on a photo or video.
+3. **Ask the assistant** (right panel → *assistant*): the first time, pick a model — if you
+   have Claude Code installed there is nothing to configure. Then write what you want:
+   *"make a 30-second vertical video with these clips, on the beat of the music, with
+   titles"*. The edit appears on the timeline while it works; Ctrl+Z undoes anything.
+   Click the model pill at the top of the chat to switch model and **effort** in one click;
+   every project keeps **its own conversation**, so reopening it picks up where you left.
+   Click the model pill at the top of the chat to switch model and **effort** in one click;
+   every project keeps **its own conversation**, so reopening it picks up where you left.
+4. **Voiceover**: top bar → *voice*, write the text, click *generate and add*. The system
+   voice works with nothing to set up; OpenAI, ElevenLabs or Piper sound better.
+5. **Export** (top bar → *export*), then **publish** to YouTube or TikTok if you like
+   (top bar → *publish*, sign in once).
+
+The assistant **remembers your preferences across projects** (your usual format, style,
+voice…): see and edit them from the bookmark button in the assistant tab. In the model
+settings, *what the assistant can use* lets it also use **your skills, MCP servers, plugins
+and Chrome** — or the whole computer, if you choose so.
+
+---
+
+## What it is
+
+vedit is a video editor. The ordinary kind: a timeline, video and audio tracks, clips you
+drag, cut, speed up, colour-grade and fade into each other.
+
+The difference is that **everything you can do with the mouse, an AI can also do on command** —
+because the buttons and the AI call the exact same operations. Nothing is AI-only, nothing
+is mouse-only.
+
+So instead of half an hour of trimming, you type:
+
+> *"Cut the first 40 seconds, remove the pauses where I say nothing, speed the screen recording
+> up 2×, cut the b-roll on the beat of the music, and burn in subtitles."*
+
+and the clips rearrange themselves on the timeline in front of you. If it puts a cut in the
+wrong place, you drag that one clip and keep going. It is not a black box that hands you a
+finished file you cannot touch — it is your editing software, with a second pair of hands.
+
+## Who it is for
+
+- **Anyone who edits talking-head, tutorial or gameplay video** and is tired of spending
+  two hours on decisions that were never creative: finding the good take, cutting dead air,
+  matching cuts to music, redoing the same volume curve.
+- **People who already work with Claude Code, Cursor or Codex.** One line of setup and your
+  coding agent can edit video, the same way it edits files.
+- **Developers who want video editing in a script or a pipeline** — the whole project is a
+  JSON document, so it can be generated, diffed and version-controlled like source code.
+
+## Why use it instead of the alternatives
+
+| | |
+|---|---|
+| **vs. "AI video generators"** | They give you a finished clip you cannot fix. vedit gives you the project, every clip, every knob — and the AI only moves the same controls you would have moved. |
+| **vs. Premiere / DaVinci / CapCut** | Those give you every control and none of your time back. Here the boring 80 % is delegated and the last 20 % stays in your hands. |
+| **vs. an ffmpeg script** | Same speed and precision, but you can actually see what happened, scrub it, and undo it. |
+| **Cost and privacy** | Runs on your machine. No subscription, no upload, no watermark, no render queue. MIT licensed. |
+
+> The interface is in English; code and comments are in Italian — that is the project convention.
+
+---
+
+## What makes it work
+
+An AI that cannot see the edit produces garbage. These are the parts that make the
+difference between a demo and something you would actually cut a video with:
+
+| | |
+|---|---|
+| **An agent can actually edit** | 130 MCP tools that are the *same* operations as the buttons: cut, split, speed, keyframes, effects, transitions, render. Nothing is agent-only, nothing is UI-only. |
+| **The agent can see what it did** | `preview_frame` returns the **real rendered frame**, `preview_grid` the whole edit as a contact sheet. An agent that guesses produces garbage; this one looks. |
+| **It cuts on the beat, for real** | `music_beats` returns BPM, beat and bar length, first-beat offset and an energy profile, so cuts land on the music instead of near it. |
+| **It picks the takes** | `plan_edit` splits shots longer than 12s into their own segments and scores them individually — three minutes of continuous footage becomes dozens of candidates with a real in-point. |
+| **Same project, same file** | The render is deterministic. No hidden state, no "works in the preview, breaks on export". |
+| **You keep the timeline** | Whatever the agent does shows up in the web UI, on the same in-memory project, and undoes with one Ctrl+Z. |
+
+---
+
+## Table of contents
+
+- [Install — 3 steps](#install--3-steps)
+- [Using it — the 2-minute tour](#using-it--the-2-minute-tour)
+- [Install, in detail](#install)
+- [Quick start](#quick-start)
+- [Driving it from an agent (MCP)](#driving-it-from-an-agent-mcp)
+- [The web interface, panel by panel](#the-web-interface-panel-by-panel)
+- [Keyboard shortcuts](#keyboard-shortcuts)
+- [Command line](#command-line)
+- [What it can do](#what-it-can-do)
+- [Keyframes](#keyframes)
+- [How it works](#how-it-works)
+- [Tests](#tests)
+- [Known limits](#known-limits)
+- [FAQ](#faq)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## Install
+
+### Just to use it — nothing to clone
+
+The three steps are at the [top of this page](#install--3-steps). Details:
+
+- The package on PyPI is **`vedit-mcp`** (the name `vedit` was taken; the commands are still
+  `vedit` and `vedit-mcp`). The compiled web interface ships inside it: no build step.
+- `claude mcp add` only *registers* the server with Claude Code, it installs nothing. Without
+  step 2 the `vedit` command does not exist.
+- No permanent install? `uvx --from vedit-mcp vedit ui` downloads and runs it on the spot.
+- Prefer pipx? `pipx install vedit-mcp` does the same as `uv tool install`.
+
+Same JSON for every other client (Cursor `.cursor/mcp.json`, Codex, VS Code):
+
+```json
+{ "mcpServers": { "vedit": { "command": "vedit-mcp", "args": [] } } }
+```
+
+**ffmpeg** is the one thing pip cannot bring along — it is a program, not a Python package.
+If it is missing, don't go hunting: `vedit install-ffmpeg` downloads a static build of ffmpeg
+*and* ffprobe into `~/.vedit/bin`. No administrator rights, no system changes, uninstalled by
+deleting the folder. The agent has the same thing as the `install_ffmpeg` tool. If ffmpeg is
+already on your `PATH`, that one wins — it usually has more hardware encoders.
+
+### To hack on it — one command
+
+```bash
+git clone https://github.com/metiutek/editorvideo-ai.git
+cd editorvideo-ai
+python scripts/setup.py
+```
+
+The script does everything: Python dependencies, compiled web interface, MCP server
+registered, then `vedit doctor` and the fast tests as verification. It prints one line per
+step and ends by telling you what is still missing and how to fix it. Re-running it is safe —
+anything already in place is skipped.
+
+```bash
+python scripts/setup.py --venv             # dependencies in .venv instead of the current interpreter
+python scripts/setup.py --install-ffmpeg   # try winget / brew / apt
+python scripts/setup.py --no-frontend      # CLI and MCP only, no web interface
+python scripts/setup.py --rebuild          # rebuild the UI after touching frontend/src
+python scripts/setup.py --json             # machine-readable result, for scripts and agents
+```
+
+Then `vedit ui` → <http://127.0.0.1:8760>.
+
+### Requirements
+
+| | |
+|---|---|
+| Python | 3.10+ |
+| ffmpeg + ffprobe | on `PATH`, downloaded with `vedit install-ffmpeg`, or pointed at with `VEDIT_FFMPEG` / `VEDIT_FFPROBE` |
+| Node.js | 18+, **only** to compile the interface from source the first time |
+| GPU | optional. NVIDIA / Intel / AMD are detected and used for rendering automatically |
+
+### Optional extras
+
+Everything below is optional; without them the rest of the editor behaves identically and the
+tools that need them say what to install.
+
+```bash
+pip install -e ".[chat]"        # anthropic — Claude with an API key in the assistant (other models need nothing)
+pip install -e ".[vision]"      # ultralytics — detect_subjects, track_mask, auto_reframe, remove_background, pin_to_subject (pulls torch)
+pip install -e ".[transcribe]"  # faster-whisper — transcribe, make_captions, tighten_speech, censor_speech
+pip install -e ".[html]"        # playwright — renders HTML clips (uses the Chrome or Edge you already have)
+pip install -e ".[plugin]"      # pedalboard — VST3 / AU audio plugins (VST2 .dll are not supported)
+pip install -e ".[web]"         # yt-dlp — web_download from video pages (YouTube, Vimeo, social...)
+```
+
+`numpy` and Pillow are **not** extras: footage analysis, music-timed editing, `preview_grid`
+and `color_scopes` stand on them, and looking at your edit is rule number one.
+
+---
+
+## Quick start
+
+End to end, three commands:
+
+```bash
+vedit new film.json --preset 1080p
+vedit import film.json shots/*.mp4 music.mp3 && vedit info film.json   # prints media ids
+vedit add film.json <media_id> --duration 3 && vedit render film.json out.mp4
+```
+
+Or open the editor and do it by hand:
+
+```bash
+vedit ui                                     # http://127.0.0.1:8760
+vedit ui --project film.json                 # opening a project directly
+vedit ui --port 9000 --no-browser
+```
+
+The `.json` **is** the project: your video files stay where they are, nothing is copied.
+Formats: any aspect ratio — `16:9`, `9:16` (reels, shorts, TikTok), `1:1`, `4:5` (feed),
+`4:3`, `3:4`, `21:9`, `2:3` — or an exact `WIDTHxHEIGHT`; `--size` sets the short side
+(720, 1080, 2160). The named presets still work: `1080p`, `1080p60`, `4k`, `720p`,
+`vertical`, `vertical60`, `square`. Change it later with `vedit format film.json 9:16 --fill`,
+from the format button in the top bar, or with `project_settings(format=...)` over MCP:
+the timeline stays, the frame changes, and `--fill` crops the clips instead of leaving bars.
+
+**Cover.** The thumbnail you make elsewhere (an image editor, an image generator, the
+assistant) goes in the *cover* tab: full size in the video's format and small next to the
+title, as it looks in a feed, with a warning when its ratio differs from the video's or it is
+too small or too heavy for YouTube. *Make 6 from the video* builds cover options from the
+sharpest frames of the edit, with your title on them; click one to see it full screen, pick it,
+download it. Over MCP: `make_covers`, `add_covers`, `set_cover(path)`. The render does not use it.
+
+---
+
+## Driving it from an agent (MCP)
+
+**No VS Code needed.** Someone who downloads vedit just runs `vedit ui` (or
+`uvx --from vedit-mcp vedit ui`) and works in the browser; the assistant inside the app can be
+Claude Code itself (see *Assistant* below). Editors and terminals are one option, not a
+requirement.
+
+**The running editor is an MCP server too**, at `http://127.0.0.1:8760/mcp/`. Any client that
+connects there works on *the project open in the browser* — one project in memory, one writer,
+every edit visible as it happens:
+
+```bash
+claude mcp add --transport http vedit-live http://127.0.0.1:8760/mcp/
+```
+
+The classic stdio server is still there for agents that start without a UI:
+
+`.mcp.json` is already in the repo, so opening this folder in Claude Code offers the `vedit`
+server on first launch (approve it once). Anywhere else:
+
+```bash
+claude mcp add vedit -- uvx vedit-mcp
+```
+
+**As a plugin or skill** — the repo is also a Claude Code plugin marketplace:
+`claude plugin marketplace add metiutek/editorvideo-ai` then `claude plugin install vedit@vedit`
+installs the MCP server and the editing skill together; `npx skills add metiutek/editorvideo-ai`
+installs just the skill (`skills/vedit/SKILL.md`) for Codex, Cursor and other agents.
+
+Typical tool flow:
+
+```
+project_create → import_media → plan_edit (choose the material) → add_clips
+   → refine (set_transition, set_speed, set_transform, add_effect, set_audio)
+   → preview_grid to look at it → render_video
+```
+
+Times are in seconds. Every animatable parameter also accepts a keyframe block —
+`{"kf": [{"t": 0, "v": 0}, {"t": 2, "v": 1, "ease": "ease_in_out"}]}`, with `t` relative to
+the start of the clip. `project_info` returns the timeline state with ids.
+
+**Cutting many clips:** use `add_clips`, which places all cuts in a single atomic call. One
+call per cut is slow, floods the undo history for what is one gesture, and leaves half a
+timeline behind if something breaks midway.
+
+```json
+[{"media": "m1b1a", "start": 0.0, "in": 122.5, "duration": 1.5},
+ {"media": "m9155", "start": 1.5, "in": 98.5,  "duration": 0.75}]
+```
+
+**Spending fewer tokens:** every tool call re-reads the agent's whole context, so an edit
+costs *calls × context*. Tool replies are compact JSON without echoes, and `batch` applies
+any list of edits (`[{"tool": "set_transform", "args": {...}}, ...]`) in one atomic call with
+one undo step. `transcribe(media=["*"])` and `preview_media(media=["*"])` cover all the
+footage in a single call; `preview_frame(t=[...])` shows several instants in one image, and
+`add_html(vars=...)` fills the `{{placeholders}}` of one template file for many title cards.
+
+**Showing the result:** `open_ui` starts the web interface **inside the MCP server process**
+and returns the address. It is not a second instance — the UI works on the *same* `Store`
+object as the agent, and every change shows up in the browser live. One writer, no file
+contention. `close_ui` shuts it down.
+
+**The editing rules ship with the server.** `mcp_server.ISTRUZIONI` states them, so they reach
+any client, and they are there because they are the actual defects of videos that come out of
+here — decisions not made, not tool limits:
+
+1. **the music must move** — a fixed volume for the whole duration is the first thing that
+   makes a video feel flat; automate the gain with keyframes and pick the section with
+   `music_beats`;
+2. **not every cut is a hard cut** — the hard cut is the default, not the only option; every
+   transition still needs a reason;
+3. **never the same shot twice** — if the material is not enough, make the video shorter;
+4. **after ten seconds you owe the viewer new information** — cutting faster on the same
+   images saves nothing;
+5. **cinematic is a choice, not a filter** — one strong moment held for three seconds beats
+   ten half-seconds.
+
+Full agent contract, including the code map and the rules for modifying it:
+[`AGENTS.md`](https://github.com/metiutek/editorvideo-ai/blob/main/AGENTS.md) (imported by `CLAUDE.md`, so it applies to Claude Code, Codex, Cursor
+and the rest).
+
+> **One project per file at a time.** The UI and the MCP server both autosave; if you keep the
+> same `.json` open in two processes, the last one to save wins. With `open_ui` the problem
+> does not arise.
+
+---
+
+## The web interface, panel by panel
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  bar: new · open · save · ↶↷ · +video +audio +text · export          │
+├───────────────┬──────────────────────────────────┬───────────────────┤
+│ media         │  program / source                │ properties        │
+│ library       │  ┌────────────────────────────┐  │ assistant         │
+│               │  │        preview             │  │                   │
+│  (tabs)       │  └────────────────────────────┘  │   (tabs)          │
+│               │  ▶ ⏮  0:01.2/0:13.0  zoom tracks │                   │
+│               ├──────────────────────────────────┤                   │
+│               │  timeline: V3 V2 V1 A1 …         │                   │
+└───────────────┴──────────────────────────────────┴───────────────────┘
+```
+
+Panels resize by dragging the dividers, and the sizes are remembered.
+
+**1. Media.** `+` imports files *leaving them where they are*; **import folder** takes a whole
+folder with its subfolders (a camera card, a shoot of hundreds of files). Dragging files from the
+desktop **copies** them into `media/` next to the project (the browser does not hand over the
+source path): the copy goes in chunks, with progress and a stop button, and resumes where it left
+off — dropping the same files again does not copy them twice. For heavy shoots use `+`, which copies nothing. `📁+` creates a folder, which is just a label on the media.
+Click opens a media in the *source* monitor, double click appends it to the timeline, drag
+puts it exactly where you want.
+
+**2. Library.** Pre-tuned looks, audio chains and transitions, with a name instead of twenty
+parameters: colour looks (cinema teal & orange, black and white, warm sunset, faded film…),
+stylised (VHS, dream, censor), retouch (sharpen, clean up, vignette, stabilise); voice and
+music chains; dissolve, iris, wipe and slide in four directions. Click applies to the selected
+clip — a video look with nothing selected goes on the **master**, i.e. the whole video. Drag a
+preset **onto a clip** to apply it there. A preset is only a chain of effects: one Ctrl+Z
+undoes it and every parameter stays editable.
+
+**3. Monitor and preview.** Two tabs: *program* (the timeline) and *source* (one media alone).
+When paused, the preview is the frame **rendered by ffmpeg**, so it is identical to the final
+result, effects included. ▶ plays 12-second segments while preparing the next one in the
+background; hit **proxy** in the top bar to make everything much faster. With a clip selected
+you get the transform box: drag the image to move it, the corners to scale it. In the *source*
+monitor, `[` and `]` mark in and out, then **insert** puts just that piece at the playhead.
+
+**4. Timeline and tracks.** Track count is **not fixed**: a new project has one video and one
+audio track, and you add more with `+ video` / `+ audio`. Every track header carries: rename
+(double click), ▲▼ to reorder (for video, order **is** the stacking — higher = drawn on top),
+👁/🔊 hide or mute, **S** for solo, 🔒 lock (protects clips from moves, cuts, effects and
+deletion), ✕ delete, and a volume slider. A track excluded from the render is visibly faded
+with a struck-through name; a locked one is hatched. Clips drag between tracks, edges trim,
+snapping catches other clips and the playhead, video clips show filmstrips and audio clips
+their waveform.
+
+**5. Properties.** With a clip selected: name, start, duration, in-point, framing, speed and
+reverse, fades, outgoing transition, position / scale / rotation / opacity, audio (gain in dB,
+pan, fades), effects. The **◆** button next to a parameter makes it **animated** and opens the
+keyframe editor, with times relative to the start of the clip. With nothing selected you get
+the project: resolution, fps, background, EBU R128 normalisation of the mix, master effects.
+
+**6. Assistant.** Ask for a change in plain language and it happens on the project — "drop the
+first 2 seconds of the first clip", "dissolve between the two shots", "make an animated lower
+third with my name". Its tools **are the same operations as the buttons**: what it does
+appears in the timeline and undoes with Ctrl+Z, exactly like your own edit.
+
+*Pick any model* from the chip at the top of the tab — no environment variables, no restart:
+
+- **Claude Code** already installed on your computer: uses your Claude subscription, no key.
+  It works on the open project through the editor's own MCP server, so you watch every edit
+  land in the timeline as it happens;
+- **Anthropic** (Claude) with an API key;
+- anything that speaks the **OpenAI chat/completions** protocol: OpenAI, Google Gemini,
+  OpenRouter, Groq, Mistral, DeepSeek, xAI, local models in **Ollama** or **LM Studio**, or any
+  other address you paste.
+
+Keys stay on your machine in `~/.vedit/llm.json`, never in the project file.
+
+*Point at things.* Under the message box: **instant** (the playhead), **span** (start, move,
+end), **clip** (the selected one, or "ask" in its properties), **area** (draw a box on the
+frame). Each becomes a numbered chip; write "make the title in 2 bigger" and the model gets the
+reference with the actual frame in front of it — the area drawn in red, and its position
+already converted to the `x`/`y` that `set_transform` uses. Files (drag, paste a
+screenshot), links (a page arrives as text, a direct video is downloaded) and folders work the
+same way.
+
+*It asks, it doesn't assume.* When a choice is yours — style, length, format, which version to
+keep — the assistant shows a question card with options to click (`ask_user`, also available
+to any MCP agent connected to the open editor). **It never exports on its own**: inside the
+editor every `render_video` first asks you, and without a yes no file is written. Each step
+shows what it touches and opens to its exact parameters; **stop** halts it mid-turn.
+
+*Editing styles.* Pick one from the chip in the chat — cinematic, dynamic/social,
+documentary, vlog, trailer, music video, minimal, retro/VHS — and it guides every choice:
+cut rhythm, transitions, colour, titles, music.
+
+**7. Export.** Destination file, quality (`draft` / `medium` / `high` / `max`), codec (H.264,
+HEVC, AV1, VP9), optionally just a portion of the timeline. To hand the edit over to Premiere,
+Resolve, Avid or Final Cut there are **ProRes** and **DNxHR** (intra-frame, 10 bit, in `.mov`
+or `.mxf`, with 24-bit PCM audio): quality picks the profile — Proxy/LB, 422/SQ, HQ,
+4444/HQX. The extension picks the container: `.mp4` `.mov` `.mkv` `.mxf` `.webm` `.gif`
+`.mp3` `.wav`. The progress bar is ffmpeg's real progress.
+
+The same window exports the **timeline** for another editor, with no re-encoding: **FCPXML**
+(Final Cut, Resolve), **OTIO** (OpenTimelineIO: Resolve, Premiere with the plugin, Avid,
+studio pipelines) with every track, or a CMX3600 **EDL** for a single track. Out go cuts,
+positions, speed (not in FCPXML) and dissolves, with the original files where they are;
+effects, colour, titles and HTML graphics stay in vedit, and the warnings list what did not go.
+The other way round, picking or dropping an `.fcpxml`, `.otio` or `.edl` in *import* appends
+that timeline to the project, dissolves rebuilt, in one undo step (`export_timeline`,
+`import_timeline` for the agent).
+
+**Subtitles.** An existing `.srt`, `.vtt` or `.ass`, picked or dropped in *import*, becomes a
+*subtitles* track of text clips you can fix, move and cut (`import_subtitles`). On export that
+track can go out **burnt in** or as a **subtitle stream inside the file** — the player turns it
+on and off, YouTube reads it — with its language (`mov_text` in .mp4/.mov, SRT in .mkv, WebVTT
+in .webm); *save .srt* writes it as a separate file (`export_subtitles`).
+The final render **always uses the originals**, never the proxies.
+
+---
+
+## Keyboard shortcuts
+
+| Key | Action |
+|---|---|
+| `space` | play / pause |
+| `←` `→` | one frame (with `shift`: one second) |
+| `Home` / `End` | start / end |
+| `S` | split at the playhead |
+| `Del` | delete the clip (with `shift`: close the gap) |
+| `Ctrl+Z` / `Ctrl+Y` | undo / redo |
+| `+` `-` | timeline zoom |
+| `J` `K` `L` | back one second / stop / play; holding `K`, `J` and `L` step one frame |
+| `Q` / `W` | ripple the selected clip to the playhead: trim head / tail and close the gap |
+| `,` `.` | slip by one frame (with `shift`: ten) |
+| `Ctrl+←` `Ctrl+→` | slide by one frame (with `shift`: ten) |
+
+Dragging in the timeline: an edge with `shift` is a **ripple** (the rest of the track
+follows), with `Ctrl` a **roll** (moves the cut with the neighbouring clip); the clip body with
+`Ctrl` is a **slip** (same place, another stretch of the source), with `shift` a **slide**
+(it glides between its neighbours). Mode and offset show on the clip while dragging. `Alt`
+turns snapping off.
+
+---
+
+## Command line
+
+Everything the interface does is also available in the terminal, on the same project file.
+
+```bash
+vedit new project.json --preset 1080p
+vedit import project.json shots/*.mp4 music.mp3
+vedit info project.json                  # media and timeline with ids
+vedit add project.json m1a2b3c4 --duration 8
+vedit proxy project.json                 # 540p proxies: much faster previews
+vedit frame project.json 12.5 check.jpg
+vedit normalize project.json --lufs -14
+vedit render project.json final.mp4 --quality high
+vedit render project.json master.mov --codec prores   # for finishing elsewhere
+vedit export-timeline project.json edit.fcpxml        # .fcpxml .otio .edl
+vedit import-timeline project.json from_resolve.otio  # appended to the timeline
+vedit effects video                      # effect catalogue with parameters
+vedit doctor                             # ffmpeg, encoders, filters
+vedit install-ffmpeg                     # download ffmpeg + ffprobe into ~/.vedit/bin
+vedit ui                                 # web interface
+```
+
+---
+
+## What it can do
+
+**Editing** — cut, split, trim, move (across tracks too), ripple delete, close gaps, any number
+of video and audio tracks with ordering, solo and lock, bin folders, undo/redo.
+
+**Transitions** — dissolve, wipe in four directions, slide in four directions, iris. The next
+clip is pulled in and overlapped automatically; audio always crossfades.
+
+**Speed** — 0.01x to 100x with pitch-correct audio (chained `atempo`), reverse, motion blur or
+frame interpolation for slow motion.
+
+**Colour** — exposure in stops, brightness, contrast, saturation, gamma (all animatable),
+vibrance, white balance (temperature and green–magenta tint) plus an automatic one,
+lift/gamma/gain per channel for shadows, midtones and highlights, levels, hue rotation,
+secondary correction of a single colour family (bluer sky, less yellow grass), curves, `.cube`
+LUTs, `match_color` between shots, `color_scopes`. **Scopes** in the editor's *scope* tab —
+waveform in IRE, RGB parade, vectorscope, log histogram — measured on the originals, not the
+proxies (`scope_image` for the agent). Every colour tool is checked by a test that
+renders it and looks at which way the pixels moved.
+
+**Composition** — position, scale, rotation and opacity per clip, all animatable with keyframes
+and easing; PiP, graphic overlays, text with box/outline/shadow, chroma key, crop, mirror,
+pixelate, vignette, grain, glow, stabilisation, and **blend modes** per clip (screen, add,
+multiply, overlay, soft/hard light, darken, lighten, difference, exclusion, dodge, burn).
+
+**Special effects** — glitch bursts (repeatable: same seed, same frames hit), chromatic
+aberration, warps (wave, ripple, swirl, bulge), fisheye/pincushion lens, camera shake that
+never reveals the edges, **3D card rotation** with real perspective (animatable yaw and
+pitch), sky replacement by keying the sky above a horizon line, object/logo removal
+(animatable rectangle). **Particles** — `add_particles`: snow, rain, sparks, confetti, dust,
+bokeh, stars, fireflies, or **custom particles** (`kind="custom"`: shape — circle, star,
+heart, ring, emoji… —, motion — fall, rise, wind, float, burst, still —, colours, size,
+speed, spin, glow), designed in the editor with a live preview and saved for reuse
+(`create_particles`); `set_particles` changes them on a clip already in the timeline. A
+transparent HTML clip computed in closed form, so preview and render match frame for frame. *(extra `vision`)* **AI background removal without a green
+screen** — `remove_background` segments the subject frame by frame (any COCO class, or
+inverted to keep only the background); **motion tracking** — `pin_to_subject` pins a title
+or graphic to a moving subject. **Highlighting** — `track_mask` follows a subject with a blur,
+mosaic, coloured outline, spotlight (everything else dimmed) or colour box; pass a `box` and it
+follows *any* object you point at, not just the 80 COCO classes (template tracking in numpy,
+no extra needed). `highlight_subject` uses the real silhouette instead: glow, tint or
+spotlight.
+
+**Styles that actually edit** — `apply_style` turns a style (cinematic, dynamic, documentary,
+vlog, trailer, music video, minimal, retro, or your own) into a real base on the timeline:
+look on the master, push-ins or punch-ins on keyframes, transitions at section changes, opening
+and closing fades, accents, and music gain that moves. `review_edit` reads the timeline and
+says when an edit is just cuts — no movement, colour, graphics or music automation — and which
+tool fixes it. The agent can also **create styles** on its own with `create_style`: a written
+guide plus a recipe (look, movement, transitions, music curve, accents) that lands in your
+style menu and that `apply_style` actually executes.
+
+<p align="center"><img src="https://raw.githubusercontent.com/metiutek/editorvideo-ai/main/docs/blocchi/demo.gif" alt="Ten of the ready-made blocks, edited and rendered by vedit itself" width="560"/></p>
+
+**Ready-made motion graphics** — `list_blocks` / `add_block` puts a tuned animation on a track
+in one call, no CSS to write. 52 blocks in six families — titles (`lower_third`, `title`,
+`mask_reveal_title`, `glitch_title`, `word_cycle`, `countdown`, `logo_shine`, `chapter_card`,
+`end_card`), text (`caption_pill`, `kinetic_words`, `typewriter`, `chat_messages`,
+`notification_toast`, `location_pin`, `ticker`, `sticker_text`, `speech_bubble`, `quote`...), data
+(`counter`, `bar_chart`, `donut_chart`, `line_chart`, `timeline`, `rating_stars`, `price_tag`,
+`checklist`, `stat_card`, `steps`, `comparison`...), emphasis (`highlight_box`, `circle_highlight`,
+`arrow_pointer`, `marker_highlight`, `subscribe_button`, `alert_banner`), transitions
+(`color_wipe`, `flash_frame`, `iris_wipe`, `blinds_wipe`) and style (`letterbox`, `vignette`,
+`film_grain`, `light_leak`, `scanlines`, `viewfinder`). In the app: *library → graphics*, pick one, fill
+in its text and add it at the playhead. [See them all, rendered by
+vedit itself](docs/blocchi/README.md). Every parameter has a default and is checked (a text is never read as HTML),
+sizes are relative so the same block looks right in 16:9, 9:16 and 1:1, and each one fades out
+inside its own duration. It is an ordinary clip afterwards: move it, trim it, open its HTML.
+
+**Camera moves** — `camera_move` puts a real move on a clip instead of hand-written keyframes: 16
+recipes (`list_moves`) — push in / pull out, pans and tilts, Ken Burns drift, punch-in on a beat,
+zoom burst, whip pan, impact shake, a pulse on every beat of the music (give it the BPM from
+`music_beats`), hand-held, sway, dutch tilt. Pans and tilts start zoomed in just enough that the
+edges never show, the shake is a hash and not `random()` (same clip, same render), and one undo
+removes the whole move.
+
+**A plan before the work** — for a long edit, or anything that generates images or video (it costs),
+`propose_plan` puts the scene list in front of you first: what, how many seconds, which source, an
+estimated cost per scene. You see the times and the totals and approve or ask for changes; nothing is
+built or generated before that. An approved plan is saved next to the project.
+
+**Generate images and video** — `generate_media` makes an image or a video from a prompt
+(optionally starting from an image, to keep the same subject across scenes) and imports it.
+Services: OpenAI or anything with the same `/images/generations` shape (also a local server),
+and fal.ai for images and video (Kling, Veo, Seedance, MiniMax... models are yours to set).
+Keys live in `~/.vedit/gen.json` — set them in the app (the *generate* button, which also lets you generate by hand) or with `vedit gen-setup fal --key …` — never in the project. It costs
+credits, so it is never the agent's call: the editor asks you first, and the same request is
+never paid twice (the file is named after its fingerprint).
+
+**HTML motion graphics** — `add_html` puts an HTML/CSS/JS document on a track as a clip:
+lower thirds, animated titles, counters, infographics, whole screens. The background is
+transparent, so the footage shows through. The page's clock is the clip's clock: CSS
+animations and transitions, Web Animations, GSAP, `requestAnimationFrame` and `setTimeout`
+are all stepped one frame at a time, or define `window.veditRender = t => …` to draw each
+frame yourself. In the web UI the clip plays **live** in an iframe that follows the playhead,
+and you can edit its source in the properties panel while it plays. At render time Chromium
+steps through the same frames and captures them with alpha, so what you previewed is what you
+get.
+
+**Audio** — gain in dB (animatable), pan, fades, a 3-band EQ and a **parametric EQ** (up to ten
+bands — bell, shelves, high/low pass, notch — with a draggable response curve), compressor,
+**sidechain compressor** (the music ducks by itself whenever the voice track plays), limiter,
+noise reduction, gate, **de-esser**, reverb, echo, pitch shift, dynamic normalisation, two-pass
+EBU R128 normalisation of the mix, and **VST3/AU plugins** through pedalboard (pick an installed
+plugin, tweak its parameters in the panel); `duck_music`, `jl_cut`, `detach_audio`.
+A **mixer** tab with one strip per track plus the master: fader in dB, mute/solo, and meters
+(peak, RMS, peak hold) read under the playhead from levels the server measures by rendering
+each track on its own — the levels that will end up in the file. **5.1 surround**: switch the
+project to 5.1 and route each track (front, centre for dialogue, surround, all, LFE); the file
+comes out with six channels (AAC at double bitrate, Opus, PCM), an `.mp3` folds back to stereo
+(`project_settings(audio_layout=...)`, `set_track(surround=...)`).
+
+**Footage and rhythm** — `plan_edit` (segment and score the takes), `inspect_footage`,
+`preview_media` (look at imported footage without putting it on the timeline),
+`music_beats` (BPM, bars, energy profile, cut grid), `check_cuts`, `smooth_cuts`,
+`preview_grid`, `verify_edit`.
+
+**Speech and subject** *(extras)* — `transcribe`, `make_captions`, `tighten_speech`,
+`censor_speech`; `detect_subjects`, `track_mask`, `auto_reframe`, `remove_background`,
+`pin_to_subject`, `highlight_subject`.
+
+**Voiceover from text** — `generate_voice` (or the *voice* button) turns text into a voice on
+a `VO` audio track: one line at the playhead, or many lines in one call, each starting after
+the previous. Engines: **OpenAI** and any service with the same `/audio/speech` shape —
+including local servers like Kokoro-FastAPI or LocalAI —, **ElevenLabs**, **Google Gemini**
+(pace and tone said in words: *"fast, punchy explainer"*), **Piper** fully
+offline, or the **system voice** (SAPI on Windows, `say` on macOS, `espeak-ng` on Linux) with
+nothing to install. Keys live in `~/.vedit/tts.json`; the audio files sit next to the project,
+and the same line with the same settings is never generated twice.
+
+**Videos told by a voice** (explainers, faceless shorts, animation with no footage) are cut
+the other way round: the audio leads, the picture follows. `speech_times` says at which
+second of the *timeline* the voice says each phrase of the script — taking clip position,
+in-point and speed into account, and searching in script order so a phrase said twice
+lands on the right occurrence — and every animation starts from those times, never from a
+guess. The assistant follows a written method for these videos: sources for every number,
+a script written for the voice, the pace asked to the voice engine (never a sped-up
+track), one animated scene per chapter with visual metaphors instead of text cards, and
+several rounds of frame checks.
+
+**One conversation per project** — the chat is saved next to the project
+(`<project>.chat.json`) and comes back when you reopen it: with Claude Code the session
+resumes, with API models the history is reloaded, and if the model changed the
+conversation is handed over as text. The trash button starts it over.
+
+**Publishing** — the *publish* button (or `publish_video`) uploads an exported file to
+**YouTube** (your own OAuth client, sign in once in the browser; uploads start **private**
+unless you pick otherwise) or to your **TikTok** inbox as a draft you post from the app
+(access token from your TikTok developer app). Nothing is ever published without your click,
+or your yes when the agent asks. Instagram is not supported: its API needs a business account
+tied to a Facebook page and an approved Meta app.
+
+**The web** — no fixed sites: `web_search` searches the whole web (pages, images, videos,
+news), `web_read` reads any page and lists its images and videos, `web_download` grabs any
+image, video or audio — video pages too, with yt-dlp — and imports it into the bin, folder
+`web`. The *web* tab in the left panel does the same by hand. Search works with no key
+(DuckDuckGo, Bing for images) or with Brave, Tavily or your SearXNG. Every file's origin goes
+into `FONTI.md` next to the project: check the license before publishing. Local and private
+network addresses are always refused.
+
+**Your skills and MCP servers in the assistant** — in the model settings, *what the assistant
+can use*: **only the editor**; **editor + my skills and MCP servers** (with Claude Code as the
+model it loads your MCP servers, skills, plugins, claude.ai connectors and Chrome, and safe
+actions run on their own while risky ones are refused; with API models vedit connects to the
+MCP servers configured in Claude Code, Claude Desktop or `~/.vedit/mcp.json` and hands the
+model your skills); or **full access** (Claude Code with no permission prompts: commands,
+files, computer and browser control). Each MCP server can be switched off on its own.
+
+**Learn a style from a video** — show it an edited video you like and vedit learns how it is
+cut. In the style menu, *learn a style from a video*: paste a link (YouTube, TikTok,
+Instagram, Vimeo — through yt-dlp, the `web` extra — or a direct `.mp4`), a file path, or
+upload the video. vedit measures the pace (cuts per minute, shot lengths, how they vary and
+whether the edit speeds up), cuts on the beat against the music's BPM, dissolves and dips to
+black, white flashes, slow zooms and punch-ins, shake on the cuts, colour and the closest
+look, format and letterbox bars, title cards on black, fade in and out. It turns them into a
+personal style: a guide with the real numbers plus a recipe that `apply_style` applies —
+including the reference's actual colour, carried onto every shot with `colormatch` — then
+opens it so you can read and adjust it. It also measures what makes narrated videos what
+they are: whether a voice carries the video (how much it speaks, phrase and pause length, and
+how many scene changes land on a pause), slow zooms *and* slow pans, how much happens
+inside a scene while the camera stays still (animation), the dominant palette as hex colours
+and flat-colour chapter cards. Text, characters and graphics can't be measured: from the app,
+the model you picked in the assistant settings looks at two contact sheets (one frame per
+shot, and the longest shots frame by frame) and writes the *visual language* into the saved
+style; from chat or MCP the agent gets the same sheets and adds it to the guide. Also from the chat ("edit it like this video"), MCP (`learn_style`) and the terminal
+(`vedit style learn <link|file> --name … --max-seconds 600`). The first ten minutes are
+analysed by default, and from a video page only that stretch is downloaded; downloads go to
+`~/.vedit/riferimenti`. YouTube needs a recent yt-dlp with its JavaScript solver: the `web`
+extra installs `yt-dlp[default]`, and Node.js is used when there is no Deno.
+
+**Built-in animation and editing skills** — nine skills ship inside the package and the agent
+reads them *before* doing that kind of work (`list_skills`, `use_skill`): `motion-craft` (timing,
+easing, springs, title holds, transitions with a cause), `kinetic-typography`, `data-animation`
+(counters, charts, races), `short-form-video` (retention arc, hooks, caption grouping),
+`lower-thirds`, `explainer-styles` (story arc, whiteboard draw-on), `product-launch` (hook /
+tease / reveal / montage cut to the drop), `talking-head-edit` (word-boundary cuts, padding, audio
+fades, self-checks) and `external-engines` (what to make in Manim, Remotion, HyperFrames or
+Three.js and how to import it). They are condensed and adapted for vedit's own tools from the
+MIT and Apache-2.0 skills of [iart.ai](https://github.com/iart-ai/motion-skills),
+[HyperFrames](https://github.com/heygen-com/hyperframes),
+[video-use](https://github.com/browser-use/video-use) and
+[video-shotcraft](https://github.com/Vincentwei1021/video-shotcraft), with attribution in
+`backend/vedit/skills_incluse/NOTICE.md`. Write a skill with the same name in `~/.vedit/skills`
+and yours wins.
+
+**Editing skills** — your own ways of editing (a podcast format, your travel reels, a channel's
+look) saved as skills: a folder with a `SKILL.md`, the same format as Claude Code skills. Add
+them in the model settings under *editing skills*: paste a GitHub link (repo, folder or
+`SKILL.md`), a `.zip`, `.md` or folder path, upload a file, or *write one* there. From the
+terminal: `vedit skill add <link|path>`, `vedit skill new <name> -d "when to use it" -f
+steps.md`, `vedit skill list`, `vedit skill rm <name>`. They live in `~/.vedit/skills` (and
+`.claude/skills` next to the project) and work everywhere: the in-app assistant at every
+access level (typing `/name` invokes one), Claude Code inside the editor, and any MCP agent
+(`list_skills`, `use_skill`, `create_skill`; `install_skill` asks you first). Ask the
+assistant to *save this as a skill* and it writes one for you.
+
+**Memory across projects** — `~/.vedit/MEMORIA.md`: the assistant and the MCP agent note your
+lasting preferences there (usual format, style, voice, channel, things you don't want) with
+`remember` / `forget`, and read them back at every project. Edit it by hand, or from the
+bookmark button in the assistant tab.
+
+---
+
+## Keyframes
+
+Any animatable parameter accepts a keyframe block instead of a number:
+
+```json
+{"kf": [{"t": 0, "v": 1.0, "ease": "ease_in_out"}, {"t": 3, "v": 1.4}]}
+```
+
+`t` is **relative to the start of the clip**. Easing: `linear`, `hold`, `ease_in`, `ease_out`,
+`ease_in_out` and the `_cubic` variants.
+
+Keyframes become ffmpeg expressions evaluated frame by frame, so animation does not cost an
+extra render pass.
+
+---
+
+## How it works
+
+```
+backend/vedit/
+  model.py       project document (dataclass ↔ JSON)
+  keyframes.py   keyframes → ffmpeg expressions
+  effects.py     effect registry: parameters, validation, filters
+  presets.py     pre-tuned looks, audio chains and transitions
+  graph.py       timeline → filter_complex
+  render.py      execution, progress, analysis (loudness, stabilisation)
+  proxy.py       proxies, waveforms, thumbnails
+  store.py       editing operations + undo/redo + atomic save
+  chat.py        assistant: its tools are Store's operations
+  tts.py         voice from text: OpenAI-compatible, ElevenLabs, Piper, system voice
+  social.py      publishing: YouTube (OAuth, resumable upload), TikTok inbox
+  memoria.py     memory across projects (~/.vedit/MEMORIA.md)
+  allinea.py     when the voice says what, in timeline seconds (speech_times)
+  conversazioni.py  the chat of each project, saved next to it
+  web.py         web search, page reading, media download from any site
+  estensioni.py  the user's skills and MCP servers for the in-app assistant
+  apprendi.py    learn an editing style from an edited video
+  mcp_server.py  MCP tools
+  api.py         REST/WebSocket API for the UI
+  cli.py         command line
+frontend/        web interface (React + Vite)
+tests/           tests, including real renders of every effect
+```
+
+**One source of truth.** The interface, the assistant and the MCP agent all call methods on
+`Store`. There is no privileged path for modifying the project, so there is no "works from
+here, breaks from there". Add an operation to `store.py` first, then expose it where needed —
+never write into the document from `api.py`, `mcp_server.py` or `cli.py`.
+
+The less obvious choices, and why:
+
+- **Composition**: a canvas plus one `overlay` per clip. Handles multi-track, PiP and
+  dissolves with no special cases.
+- **Placement**: `tpad` with transparent frames instead of shifting PTS, so `overlay` never
+  sits waiting for frames.
+- **Draw order**: video tracks stack in list order. Inside a track the clip that starts first
+  is on top (so its outgoing transition reveals the next one); titles and solid colours are the
+  exception and always sit above media.
+- **Preview**: `slice_project` cuts out the requested portion, so rendering second 300 costs no
+  more than second 3. Sliced clips keep their original timing, so a dissolve framed halfway
+  shows the right frame — there is a test comparing preview against final render.
+- **Transitions**: they exploit the draw order. Wipes and iris erase pixels of the outgoing
+  clip with a `geq` alpha mask; slides add a term to the overlay's `x`/`y` expressions. No
+  second branch in the graph, no extra composition cost.
+- **Filmstrips**: one image per media (`tile`), positioned with CSS from in-point, speed and
+  zoom. Zooming the timeline issues no requests at all.
+- **Preview cache**: every frame and segment is written to a temporary file and moved into
+  place only when finished. Otherwise the player would get an mp4 with no `moov` atom yet and
+  playback would not start.
+- **Saving**: same idea, atomic `os.replace`. An interruption cannot leave a truncated project.
+- **Filtergraph from file** (`-filter_complex_script`): long timelines blow past Windows'
+  32k command-line limit.
+- **Rendering in pieces**: a single graph keeps every clip open for the whole timeline, and the
+  `tpad` waiting frames make the cost grow with the square of the number of cuts (a 2-minute,
+  370-cut edit rendered at 1/69 of real time). Above 20 s the export is split into ~4 s pieces
+  on cut points, each compiled with only its own clips (`slice_project`), rendered in parallel
+  within a memory budget, and joined with no re-encode; audio is mixed in one pass.
+- **Piece cache**: since the render is a pure function of the project, a finished piece is kept in
+  `~/.vedit/pezzi`, keyed by its ffmpeg command and the files it reads (size and date of the
+  sources, content of temporary text files). Exporting again only redoes the pieces an edit
+  touches, like Resolve's Render in Place or Premiere's previews: a re-export of an unchanged
+  timeline takes seconds. Capped at 4 GB (`VEDIT_CACHE_PEZZI_MB`, `0` turns it off), emptied
+  by `clear_cache`. The faithful preview's segments use the same content key, so an edit
+  elsewhere in the timeline does not throw away the segments already rendered.
+- **HTML graphics in blocks**: an HTML clip is captured in 4 s blocks aligned to the clip's own
+  time, each cached on its own; any stretch (a preview segment, a frame, an export piece)
+  reuses the blocks it touches, read in sequence through an `ffconcat` list. A single frame
+  captures only its own frames. Render caches are pruned least-recently-used first, never
+  touching files used in the last hour (`VEDIT_CACHE_HTML_MB`, `VEDIT_CACHE_ANTEPRIMA_MB`).
+- **Children die with vedit**: on Windows `vedit ui` and the MCP server join a Job Object, so
+  closing them also closes the ffmpeg and Chromium processes they started.
+- **Distortions on a small map**: `warp` and `glitch` evaluate their expression on a map a few
+  times smaller and apply it with `displace` / `remap`, instead of `geq` on every pixel. Zooms
+  that go below 1 use a per-frame `scale` instead of a 4x canvas for `zoompan`.
+
+---
+
+## Tests
+
+```bash
+pytest                  # everything, real renders included (3–5 min)
+pytest -m "not slow"    # logic and API, no renders (2–3 min)
+
+cd frontend
+node test-util.mjs                       # pure UI functions
+npm run build && node smoke.mjs          # mounts the built UI in jsdom
+```
+
+**ffmpeg is needed even by the fast tests**: `tests/conftest.py` generates synthetic sources
+with it, and half the suite reads media with ffprobe. The `slow` marker separates real
+*renders*, not the use of ffmpeg.
+
+The suite covers keyframes, editing operations, graph compilation, a real render for each
+effect and each transition, preview-versus-final-render agreement, MCP tools, the UI API and
+the command line. `tests/test_dipendenze.py` reads the backend's imports and requires each one
+to be declared in `pyproject.toml`, so a package that happens to sit on a developer's machine
+cannot silently go missing from the wheel.
+
+---
+
+## Known limits
+
+- Animated opacity and wipes use `geq` (per-pixel evaluation): they work, but they slow the
+  render down. Dissolves and slides do not carry that cost.
+- `glitch`, `warp` and `sky_key` also use `geq`; blend modes add a few full-frame passes per
+  blended clip. `remove_background` is fast rotoscoping, not compositing-grade: hair and thin
+  edges are approximate. `remove_object` rebuilds the rectangle from its border pixels — clean
+  on flat backgrounds, a soft smudge on busy ones.
+- Animated scale goes through `zoompan`: below 0.25x the value is clamped.
+- Preview playback is segmented: the first segment has to be waited for, the following ones are
+  prepared while you watch.
+- Files dragged from the desktop are copied (the browser does not pass the source path); for
+  large files use the import button.
+- The transform box does not edit animated parameters — for those, use the keyframes.
+- If two processes hold the same `.json` open, one autosave can overwrite the other's work.
+  There is no project-file lock yet.
+
+---
+
+## FAQ
+
+**Does it upload my footage anywhere?**
+No. Everything runs on your machine: ffmpeg does the work, the project is a local `.json`, the
+media never leaves the folder it is in. The only thing that talks to the network is the
+optional chat assistant (your own Anthropic key) and `install-ffmpeg`, which downloads ffmpeg.
+
+**Do I need a GPU?**
+No. If you have one (NVIDIA / Intel / AMD) it is detected and used for encoding automatically;
+without one everything still works, renders just take longer.
+
+**Which agents can drive it?**
+Any MCP client: Claude Code, Claude Desktop, Cursor, Codex, VS Code, or your own via the MCP
+SDK. `claude mcp add vedit -- uvx vedit-mcp`, or the equivalent JSON in the client's config.
+
+**Is this "AI generated video"?**
+No. Nothing is generated — it edits *your* footage with ffmpeg. The AI part is the agent
+deciding *where to cut*, and you can see and undo every decision in the timeline.
+
+**Does the agent edit blind?**
+It doesn't have to: `preview_frame` returns the real rendered frame and `preview_grid` the
+whole edit as a contact sheet, so the agent looks at its own work before rendering.
+
+**What if ffmpeg is missing?**
+`vedit install-ffmpeg` puts a static ffmpeg + ffprobe in `~/.vedit/bin`. No admin rights, no
+system changes, removed by deleting the folder.
+
+**Can I use it without the agent, as a normal editor?**
+Yes — `vedit ui` is a full timeline editor with tracks, keyframes, effects and export. MCP is
+one of three front ends, not a requirement.
+
+---
+
+## Contributing
+
+Issues and pull requests are welcome — see [CONTRIBUTING.md](https://github.com/metiutek/editorvideo-ai/blob/main/CONTRIBUTING.md). In short:
+
+- read [`AGENTS.md`](https://github.com/metiutek/editorvideo-ai/blob/main/AGENTS.md) — it is the contract for humans and coding agents alike;
+- code, comments and user-facing messages are **in Italian**, like the rest of the project
+  (this README and the docs are the English front door);
+- every new behaviour comes with a test; real renders go behind the `slow` marker;
+- new effect → `effects.py`; new MCP tool → a method in `store.py`, a wrapper in
+  `mcp_server.py`, a test in `tests/test_mcp.py`; UI change → `npm run build`;
+- before claiming it works: `pytest -m "not slow"` plus the part of `slow` it touches, and
+  `cd frontend && npm test` if you changed the UI.
+
+Agents that edit with vedit log what breaks, what is clumsy and what is missing with the
+`report_issue` MCP tool, into [`SEGNALAZIONI.md`](SEGNALAZIONI.md) (from a clone) or
+`~/.vedit/SEGNALAZIONI.md`: it is the to-do list for improving the editor.
+
+No new dependencies without a reason: the core stands on ffmpeg, the standard library, `numpy`
+and Pillow.
+
+---
+
+## License
+
+MIT — see [LICENSE](https://github.com/metiutek/editorvideo-ai/blob/main/LICENSE).
+
+---
+
+made by https://metiu.xyz/

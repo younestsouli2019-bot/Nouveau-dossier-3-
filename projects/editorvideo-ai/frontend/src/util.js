@@ -1,0 +1,269 @@
+export const fmt = (s) => {
+  if (!isFinite(s)) return '0:00.0'
+  const neg = s < 0
+  s = Math.abs(s)
+  const m = Math.floor(s / 60)
+  const sec = s - m * 60
+  return `${neg ? '-' : ''}${m}:${sec.toFixed(1).padStart(4, '0')}`
+}
+
+export const isKf = (v) => !!(v && typeof v === 'object' && Array.isArray(v.kf))
+
+// Valore del parametro al tempo t (stessa interpolazione del backend, per la UI).
+export function sampleKf(value, t) {
+  if (!isKf(value)) return Number(value) || 0
+  const keys = [...value.kf].sort((a, b) => a.t - b.t)
+  if (t <= keys[0].t) return keys[0].v
+  if (t >= keys[keys.length - 1].t) return keys[keys.length - 1].v
+  for (let i = 0; i < keys.length - 1; i++) {
+    const a = keys[i], b = keys[i + 1]
+    if (t >= a.t && t <= b.t) {
+      const span = b.t - a.t
+      const p = span <= 0 ? 0 : (t - a.t) / span
+      return a.v + (b.v - a.v) * ease(a.ease || 'linear', p)
+    }
+  }
+  return keys[keys.length - 1].v
+}
+
+function ease(name, p) {
+  switch (name) {
+    case 'hold': return 0
+    case 'ease_in': return p * p
+    case 'ease_out': return 1 - (1 - p) ** 2
+    case 'ease_in_out': return p * p * (3 - 2 * p)
+    case 'ease_in_cubic': return p ** 3
+    case 'ease_out_cubic': return 1 - (1 - p) ** 3
+    case 'ease_in_out_cubic': return p < 0.5 ? 4 * p ** 3 : 1 - 4 * (1 - p) ** 3
+    default: return p
+  }
+}
+
+export const EASINGS = ['linear', 'hold', 'ease_in', 'ease_out', 'ease_in_out',
+  'ease_in_cubic', 'ease_out_cubic', 'ease_in_out_cubic']
+
+/**
+ * Impronta breve di un testo (FNV-1a). Serve all'anteprima delle clip html:
+ * entra nell'indirizzo dell'iframe, che cosi' si ricarica solo quando il
+ * documento cambia davvero e non a ogni aggiornamento del progetto.
+ */
+export function impronta(testo) {
+  let h = 0x811c9dc5
+  const s = String(testo ?? '')
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i)
+    h = Math.imul(h, 0x01000193) >>> 0
+  }
+  return h.toString(36)
+}
+
+const base = (p) => String(p).split(/[\\/]/).filter(Boolean).pop() || String(p)
+const corto = (s, n = 32) => (s.length > n ? `${s.slice(0, n - 1)}…` : s)
+
+/**
+ * Su cosa lavora un passo dell'assistente, in poche parole: "clip intro ·
+ * 0:23.5" invece del solo "posizione e scala". Legge gli argomenti dello
+ * strumento cosi' come arrivano (UI, API o MCP: i nomi cambiano un po').
+ */
+export function dettaglioStrumento(nome, input, project) {
+  const a = input && typeof input === 'object' ? input : {}
+  const clips = project ? project.tracks.flatMap((t) => t.clips) : []
+  const media = project?.media || []
+  const parti = []
+  const nomeClip = (id) => {
+    const c = clips.find((x) => x.id === id)
+    return `clip ${c ? (c.name || c.id) : id}`
+  }
+  for (const k of ['clip_id', 'clip', 'clip_a']) {
+    if (typeof a[k] === 'string') { parti.push(nomeClip(a[k])); break }
+  }
+  if (typeof a.clip_b === 'string') parti.push(`→ ${nomeClip(a.clip_b)}`)
+  for (const k of ['media_id', 'media']) {
+    if (typeof a[k] === 'string') {
+      const m = media.find((x) => x.id === a[k])
+      parti.push(m ? m.name : a[k]); break
+    }
+  }
+  if (typeof a.track_id === 'string' || typeof a.track === 'string') parti.push(`track ${a.track_id || a.track}`)
+  const percorsi = a.paths || a.files || (typeof a.path === 'string' ? [a.path] : null)
+    || (typeof a.file_path === 'string' ? [a.file_path] : null)
+  if (Array.isArray(percorsi) && percorsi.length) parti.push(corto(percorsi.map(base).join(', ')))
+  if (Array.isArray(a.clips)) parti.push(`${a.clips.length} cuts`)
+  const t = [a.at, a.t, a.time, a.quando].find((v) => typeof v === 'number')
+  if (t != null) parti.push(fmt(t))
+  if (typeof a.start === 'number' && typeof a.duration === 'number') {
+    parti.push(`${fmt(a.start)} → ${fmt(a.start + a.duration)}`)
+  } else if (typeof a.start === 'number') parti.push(`from ${fmt(a.start)}`)
+  else if (typeof a.duration === 'number') parti.push(`${a.duration}s`)
+  if (typeof a.effect === 'string') parti.push(a.effect)
+  if (typeof a.preset_id === 'string') parti.push(a.preset_id)
+  if (typeof a.type === 'string' && /transition|crossfade/.test(nome)) parti.push(a.type)
+  if (typeof a.speed === 'number') parti.push(`${a.speed}x`)
+  if (typeof a.text === 'string') parti.push(`«${corto(a.text, 28)}»`)
+  if (typeof a.note === 'string') parti.push(`«${corto(a.note, 28)}»`)
+  if (typeof a.html === 'string') parti.push(`${a.html.length} characters`)
+  if (typeof a.kind === 'string') parti.push(a.kind)
+  if (typeof a.color === 'string' && nome === 'add_color') parti.push(a.color)
+  const tr = ['x', 'y', 'scale', 'rotation', 'opacity'].filter((k) => a[k] != null)
+  if (tr.length) parti.push(tr.join(', '))
+  if (typeof a.url === 'string') { try { parti.push(new URL(a.url).host) } catch { parti.push(corto(a.url)) } }
+  if (typeof a.pattern === 'string') parti.push(corto(a.pattern))
+  if (typeof a.output === 'string') parti.push(base(a.output))
+  if (Array.isArray(a.domande) && a.domande.length) {
+    const d = a.domande[0]
+    parti.push(a.domande.length > 1 ? `${a.domande.length} questions` : corto(String(d.titolo || d.domanda || ''), 40))
+  }
+  return parti.join(' · ')
+}
+
+/**
+ * Risposta in dB dell'equalizzatore parametrico alla frequenza f.
+ *
+ * Stesse formule dei biquad di ffmpeg (Audio EQ Cookbook di R. Bristow-Johnson),
+ * cosi' la curva disegnata e' quella che si sente.
+ */
+export function rispostaEq(bands, f, fs = 48000) {
+  let db = 0
+  for (const b of bands || []) {
+    if (b.on === false) continue
+    const w0 = (2 * Math.PI * b.freq) / fs
+    const cw = Math.cos(w0)
+    const sw = Math.sin(w0)
+    const q = Math.max(0.1, b.q || 1)
+    const alpha = sw / (2 * q)
+    const A = 10 ** ((b.gain || 0) / 40)
+    const sA = 2 * Math.sqrt(A) * alpha
+    let c
+    switch (b.type) {
+      case 'peak':
+        c = [1 + alpha * A, -2 * cw, 1 - alpha * A, 1 + alpha / A, -2 * cw, 1 - alpha / A]; break
+      case 'lowshelf':
+        c = [A * ((A + 1) - (A - 1) * cw + sA), 2 * A * ((A - 1) - (A + 1) * cw), A * ((A + 1) - (A - 1) * cw - sA),
+          (A + 1) + (A - 1) * cw + sA, -2 * ((A - 1) + (A + 1) * cw), (A + 1) + (A - 1) * cw - sA]; break
+      case 'highshelf':
+        c = [A * ((A + 1) + (A - 1) * cw + sA), -2 * A * ((A - 1) + (A + 1) * cw), A * ((A + 1) + (A - 1) * cw - sA),
+          (A + 1) - (A - 1) * cw + sA, 2 * ((A - 1) - (A + 1) * cw), (A + 1) - (A - 1) * cw - sA]; break
+      case 'lowpass':
+        c = [(1 - cw) / 2, 1 - cw, (1 - cw) / 2, 1 + alpha, -2 * cw, 1 - alpha]; break
+      case 'highpass':
+        c = [(1 + cw) / 2, -(1 + cw), (1 + cw) / 2, 1 + alpha, -2 * cw, 1 - alpha]; break
+      case 'notch':
+        c = [1, -2 * cw, 1, 1 + alpha, -2 * cw, 1 - alpha]; break
+      default: continue
+    }
+    const w = (2 * Math.PI * f) / fs
+    const re = (k0, k1, k2) => k0 + k1 * Math.cos(w) + k2 * Math.cos(2 * w)
+    const im = (k1, k2) => -(k1 * Math.sin(w) + k2 * Math.sin(2 * w))
+    const num = Math.hypot(re(c[0], c[1], c[2]), im(c[1], c[2]))
+    const den = Math.hypot(re(c[3], c[4], c[5]), im(c[4], c[5]))
+    db += 20 * Math.log10(Math.max(1e-9, num / den))
+  }
+  return db
+}
+
+export const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
+
+/**
+ * Geometria del riquadro di trasformazione: dai valori del progetto (pixel del
+ * canvas, origine al centro) ai pixel dell'immagine mostrata a schermo.
+ *
+ * E' una funzione pura per poterla verificare senza browser: e' il punto in cui
+ * un errore di conversione sposterebbe il riquadro rispetto all'immagine.
+ */
+export function transformBox({ box, canvas, native, x = 0, y = 0, scale = 1 }) {
+  const k = box.w / canvas.width          // pixel a schermo per pixel di progetto
+  const w = native.width * scale * k
+  const h = native.height * scale * k
+  const cx = box.left + box.w / 2 + x * k
+  const cy = box.top + box.h / 2 + y * k
+  return { k, left: cx - w / 2, top: cy - h / 2, width: w, height: h }
+}
+
+export const allClips = (project) =>
+  project ? project.tracks.flatMap((t) => t.clips.map((c) => ({ ...c, trackId: t.id, kind: t.kind }))) : []
+
+export const findClip = (project, id) => allClips(project).find((c) => c.id === id)
+
+/**
+ * Cosa produce davvero una clip nel render: immagine, suono o tutti e due.
+ *
+ * Decide cosa ha senso mostrare nell'ispettore. Una clip su traccia audio non
+ * viene mai disegnata, quindi colore, posizione e transizioni non le fanno
+ * niente; testo, colore e html non hanno suono. La regola e' quella del grafo:
+ * una clip su traccia video da' audio solo se e' un media che ne ha.
+ */
+export function natura(clip, project) {
+  if (!clip) return { video: false, audio: false }
+  const track = project?.tracks?.find((t) => t.clips.some((c) => c.id === clip.id))
+  const kind = track?.kind || clip.kind || 'video'
+  const media = clip.type === 'media'
+    ? (project?.media || []).find((m) => m.id === clip.media) : null
+  if (kind === 'audio') return { video: false, audio: true }
+  return { video: true, audio: !!media?.audio }
+}
+
+/**
+ * Quando la diretta lascia il posto al fotogramma calcolato da ffmpeg: da
+ * fermi, dove il browser non sa rifare quello che c'e' (glitch, warp, LUT...),
+ * e solo quando il fotogramma pronto e' quello della testina — uno vecchio
+ * mentre si trascina mostrerebbe l'istante sbagliato.
+ */
+export function mostraEsatto({ diretta, prova, approssimato, playing, url, pending }) {
+  return !!(diretta && !prova && approssimato && !playing && url && !pending)
+}
+
+/**
+ * Formati del video per rapporto d'aspetto. Il lato corto e' la qualita':
+ * 9:16 a 1080 fa 1080x1920 (lo stesso conto di ``store.risoluzione``).
+ */
+export const FORMATI_VIDEO = [
+  { id: '16:9', a: 16, b: 9, uso: 'YouTube, TV' },
+  { id: '9:16', a: 9, b: 16, uso: 'Reels, Shorts, TikTok' },
+  { id: '1:1', a: 1, b: 1, uso: 'square feed' },
+  { id: '4:5', a: 4, b: 5, uso: 'Instagram feed' },
+  { id: '4:3', a: 4, b: 3, uso: 'classic' },
+  { id: '3:4', a: 3, b: 4, uso: 'portrait' },
+  { id: '21:9', a: 21, b: 9, uso: 'cinema' },
+  { id: '2:3', a: 2, b: 3, uso: 'Pinterest' },
+]
+
+/** Larghezza e altezza di un formato col lato corto dato, pari come vuole l'encoder. */
+export function dimensioni(id, lato) {
+  const f = FORMATI_VIDEO.find((x) => x.id === id)
+  if (!f) return null
+  const [w, h] = f.a >= f.b ? [lato * f.a / f.b, lato] : [lato, lato * f.b / f.a]
+  return [2 * Math.round(w / 2), 2 * Math.round(h / 2)]
+}
+
+/** Formato di una risoluzione, se e' uno di quelli noti. */
+export function formatoDi(w, h) {
+  const f = FORMATI_VIDEO.find((x) => Math.abs(w * x.b - h * x.a) <= Math.max(x.a, x.b) * 2)
+  return f ? f.id : null
+}
+
+// comandi della chat che fa l'editor da se': non arrivano al modello
+const COMANDI = [
+  { name: 'clear', description: 'Start the conversation over' },
+  { name: 'stop', description: 'Stop the assistant' },
+  { name: 'model', description: 'Model and effort' },
+  { name: 'style', description: 'Editing style' },
+  { name: 'memory', description: 'What the assistant remembers across projects' },
+  { name: 'settings', description: 'All model settings and what the assistant can use' },
+]
+
+/**
+ * Le voci del menu che si apre scrivendo "/": i comandi dell'editor, poi le
+ * skill dell'utente. Prima chi comincia con quanto scritto, poi chi lo
+ * contiene nel nome o nella descrizione. Il menu c'e' solo finche' si scrive
+ * il nome (niente spazi).
+ */
+export function vociComando(input, skill = []) {
+  const m = /^\/(\S*)$/.exec(input)
+  if (!m) return null
+  const q = m[1].toLowerCase()
+  const tutte = [...COMANDI.map((c) => ({ ...c, locale: true })), ...skill]
+  const inizio = tutte.filter((v) => v.name.toLowerCase().startsWith(q))
+  const dentro = tutte.filter((v) => !inizio.includes(v)
+    && (v.name.toLowerCase().includes(q) || (q.length > 2 && (v.description || '').toLowerCase().includes(q))))
+  return [...inizio, ...dentro].slice(0, 40)
+}

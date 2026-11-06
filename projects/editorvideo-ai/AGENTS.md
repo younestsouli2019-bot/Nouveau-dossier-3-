@@ -1,0 +1,543 @@
+# Istruzioni per un agente su questa repo
+
+Questo file è il contratto per chi arriva qui con un agente di codice (Claude Code, Codex,
+Cursor, Copilot…). Chi legge deve poter partire da una repo appena clonata e arrivare a un
+editor funzionante senza fare domande.
+
+`CLAUDE.md` importa questo file: le istruzioni sono le stesse per tutti.
+
+---
+
+## 0. Se devi solo *usarlo*
+
+Il pacchetto sta su PyPI col nome `vedit-mcp` (il nome `vedit` era occupato; il modulo Python
+resta `vedit`). Niente clone, niente compilazione:
+
+```bash
+claude mcp add vedit -- uvx vedit-mcp
+```
+
+L'interfaccia web viaggia già compilata dentro il pacchetto. ffmpeg no — è un programma, non
+un pacchetto Python: se manca, `vedit install-ffmpeg` (strumento MCP `install_ffmpeg`) scarica
+ffmpeg *e* ffprobe in `~/.vedit/bin` senza toccare il sistema.
+
+Il resto di questo file serve a chi la repo la deve **modificare**.
+
+---
+
+## 1. Installazione: un comando
+
+```bash
+python scripts/setup.py
+```
+
+Fa tutto: dipendenze Python (`pip install -e ".[dev,chat]"`), interfaccia web compilata
+(`npm ci && npm run build`), server MCP registrato, `vedit doctor`, test veloci.
+Rilanciarlo è sicuro: i passi già a posto vengono saltati.
+
+Opzioni utili:
+
+| Opzione | Quando |
+|---|---|
+| `--venv` | tenere le dipendenze in `.venv` invece che nell'interprete corrente |
+| `--install-ffmpeg` | provare a installare ffmpeg con winget / brew / apt |
+| `--no-frontend` | serve solo CLI o MCP, niente interfaccia web |
+| `--no-test` | installazione rapida, verifica dopo |
+| `--rebuild` | ricompilare la UI dopo aver toccato `frontend/src` |
+| `--reinstall` | forzare `pip install` (di norma saltato se le dipendenze ci sono) |
+| `--json` | esito leggibile da programma: un oggetto JSON e basta |
+
+**Con `--json` l'unico output è un JSON** con `result` (`ok` / `warn` / `fail`) e la lista dei
+passi con `status`, `detail`, `hint`. Se sei un agente, usa questa forma e leggi `hint` prima
+di inventarti una diagnosi.
+
+### Cosa può ancora fallire, e cosa fare
+
+| Sintomo | Rimedio |
+|---|---|
+| `ffmpeg non trovato` | `vedit install-ffmpeg` (scarica ffmpeg e ffprobe in `~/.vedit/bin`, nessun permesso di amministratore), oppure `python scripts/setup.py --install-ffmpeg` che usa winget / brew / apt, oppure indica i binari con `VEDIT_FFMPEG` / `VEDIT_FFPROBE`. Senza ffmpeg non si renderizza niente: è l'unica dipendenza davvero obbligatoria. |
+| `externally-managed-environment` | gestito da solo: lo script crea `.venv` e ci reinstalla dentro. |
+| `eseguibile in uso` (Windows) | l'interfaccia o il server MCP sono avviati e tengono `vedit-mcp.exe`. Chiudili e rilancia. |
+| `npm non trovato` | Node.js 18+ manca: CLI e MCP funzionano lo stesso, resta fuori solo l'interfaccia web. |
+| `Could not load symbol cudnnGetLibConfig` durante una trascrizione | cuDNN di torch e di ctranslate2 non allineate. La trascrizione gira in un processo a parte e si rifà da sola su CPU (il risultato porta `avviso`); per non provare nemmeno la GPU: `VEDIT_ASR_DEVICE=cpu`. |
+| extra `chat` non installabile | l'assistente in chat resta spento, tutto il resto è identico. |
+
+L'assistente in chat dentro la UI si configura dall'app (scheda *assistente*): Claude Code
+installato sul computer, Claude con chiave, o qualunque servizio compatibile OpenAI. Le chiavi
+stanno in `~/.vedit/llm.json`, mai nel progetto. Senza modello la scheda dice cosa manca;
+nessun'altra funzione ne risente. Il codice sta in `llm.py` (motori) e `chat.py` (strumenti,
+riferimenti).
+
+---
+
+## 2. Verificare che funzioni davvero
+
+```bash
+vedit doctor                             # ffmpeg, encoder GPU, filtri
+pytest -m "not slow"                     # logica e API, niente render (2-3 min)
+pytest                                   # tutto, render reali inclusi (3-5 min)
+cd frontend && npm test                  # funzioni pure UI + montaggio in jsdom
+```
+
+**ffmpeg serve anche ai test veloci**: `tests/conftest.py` genera i sorgenti
+sintetici con ffmpeg, e mezza suite legge i media con ffprobe. Il marker `slow`
+separa i *render* veri, non l'uso di ffmpeg. I tempi qui sopra sono misurati su
+una macchina con GPU: senza, la parte `slow` va parecchio piu' lenta.
+
+Prova end-to-end in tre comandi, utile come verifica dopo una modifica:
+
+```bash
+vedit new /tmp/p.json --preset 1080p
+vedit import /tmp/p.json un_video.mp4 && vedit info /tmp/p.json   # stampa gli id dei media
+vedit add /tmp/p.json <id_media> --duration 3 && vedit render /tmp/p.json /tmp/out.mp4
+```
+
+---
+
+## 3. Come è fatto (quel tanto che serve per non sbagliare)
+
+Il progetto è **un documento JSON**. Il render è una funzione pura di quel documento,
+compilata in un unico `filter_complex` di ffmpeg. Stesso progetto, stesso file in uscita.
+
+```
+backend/vedit/
+  model.py       documento di progetto (dataclass <-> JSON)
+  store.py       operazioni di editing + undo/redo + salvataggio atomico
+  keyframes.py   keyframe -> espressioni ffmpeg
+  effects.py     registro effetti: parametri, validazione, filtri
+  presets.py     look, catene audio, transizioni gia' tarate
+  graph.py       timeline -> filter_complex
+  render.py      esecuzione ffmpeg, progresso, analisi (loudness, stabilizzazione)
+  interscambio.py timeline per e da altri montaggi: EDL, FCPXML, OTIO
+  proxy.py       proxy, forme d'onda, miniature
+  chat.py        assistente: i suoi strumenti sono i metodi di Store
+  tts.py         voce dal testo (OpenAI e compatibili, ElevenLabs, Piper, sistema)
+  blocchi.py     grafiche animate pronte per add_html (add_block / list_blocks)
+  blocchi_piu.py altri 23 blocchi, registrati da blocchi.py (non importarlo da solo)
+  moves.py       movimenti di camera a keyframe (camera_move / list_moves)
+  piano.py       piano del video da approvare prima di montare (propose_plan)
+  generativo.py  immagini e video generati (OpenAI e compatibili, fal.ai), chiavi in ~/.vedit/gen.json
+  social.py      pubblicare su YouTube e TikTok
+  memoria.py     memoria comune a tutti i progetti (~/.vedit/MEMORIA.md)
+  allinea.py     tempi della voce in timeline (speech_times) e metodo dei video a voce
+  conversazioni.py  chat di ogni progetto, salvata in <progetto>.chat.json
+  web.py         ricerca web, lettura di pagine, download di media da qualunque sito
+  estensioni.py  skill e server MCP dell'utente per l'assistente della chat
+  apprendi.py    stile di montaggio imparato da un video di riferimento
+  mcp_server.py  strumenti MCP
+  api.py         API REST/WebSocket per la UI
+  cli.py         riga di comando
+frontend/src/    interfaccia web (React + Vite)
+tests/           test, inclusi render reali di ogni effetto
+```
+
+**Regola che tiene in piedi tutto: ogni modifica al progetto passa da `Store`.** UI, assistente
+e agente MCP chiamano gli stessi metodi. Se aggiungi un'operazione, mettila in `store.py` e poi
+esponila dove serve — mai scrivere dentro il documento da `api.py`, `mcp_server.py` o `cli.py`.
+
+Conseguenze pratiche quando modifichi qualcosa:
+
+- **nuovo effetto** → `effects.py` (registro con parametri e validazione); il test parametrico
+  in `tests/test_effects.py` lo renderizza davvero, quindi un filtro sbagliato si vede subito.
+  Renderizzare non basta: un effetto di colore o audio vuole anche un test che guardi il
+  *risultato* (`tests/test_colore.py`, `tests/test_audio_pro.py`) — il `colorbalance` e il
+  `deesser` di ffmpeg rendono senza errori e non fanno quello che promettono, e la temperatura
+  colore era descritta al contrario;
+- **nuovo strumento MCP** → metodo in `store.py`, wrapper in `mcp_server.py`, test in
+  `tests/test_mcp.py`;
+- **cambio alla UI** → `npm run build` (o `python scripts/setup.py --rebuild`), altrimenti il
+  server continua a servire il `dist` vecchio;
+- **cambio al grafo** → `pytest -m slow` esegue i render reali: è lì che si scoprono le
+  regressioni di composizione.
+
+Le scelte tecniche meno ovvie (ordine di disegno, `tpad` invece dei PTS, transizioni fatte con
+maschere alpha, filtergraph su file per il limite di 32k di Windows, render a pezzi paralleli
+con budget di memoria, distorsioni su mappa ridotta) sono spiegate nel README,
+sezione *Come è fatto*: leggila prima di toccare `graph.py`.
+
+---
+
+## 4. Guidare l'editor da agente (MCP)
+
+`.mcp.json` è già nella repo e `scripts/setup.py` lo allinea all'interprete che ha installato
+davvero il pacchetto. Claude Code lo propone all'apertura della cartella; per registrarlo
+altrove:
+
+```bash
+claude mcp add vedit -- vedit-mcp
+```
+
+Configurazione equivalente per gli altri client (Cursor `.cursor/mcp.json`, Codex, VS Code):
+
+```json
+{ "mcpServers": { "vedit": { "command": "vedit-mcp", "args": [] } } }
+```
+
+Se hai installato con `--venv`, al posto di `vedit-mcp` va il percorso assoluto
+(`.venv/bin/vedit-mcp`, su Windows `.venv\Scripts\vedit-mcp.exe`) — è esattamente quello che
+`scripts/setup.py` scrive in `.mcp.json`.
+
+Flusso tipico degli strumenti:
+
+```
+project_create -> import_media -> add_clip / add_clips / add_text -> modifiche (split,
+set_speed, add_effect, set_transform) -> preview_frame per guardare il fotogramma -> render_video
+```
+
+`preview_frame` restituisce **l'immagine vera**: guardala invece di dare per scontato il
+risultato. I tempi sono in secondi. Ogni parametro animabile accetta anche un blocco keyframe
+`{"kf": [{"t": 0, "v": 0}, {"t": 2, "v": 1, "ease": "ease_in_out"}]}` con `t` relativo
+all'inizio della clip. `project_info` dà lo stato della timeline con gli id.
+
+### Montare tanti tagli
+
+Un montaggio serrato è fatto di decine o centinaia di tagli: **usa `add_clips`**, che li mette
+tutti in una chiamata sola. Una chiamata per taglio è lenta, riempie la cronologia di undo per
+quello che è un gesto solo, e se qualcosa si rompe a metà lascia mezza timeline costruita.
+`add_clips` è atomico: o entrano tutti o non entra nessuno. `append_sequence` serve solo per
+accodare media *interi*, senza punto d'attacco.
+
+Stessa regola per tutto il resto: **`batch`** prende una lista di `{"tool", "args"}` e la
+applica in un blocco atomico con un solo undo (`mcp_server._STRUMENTI`, fuori anteprime,
+export, domande e undo). Ogni chiamata rilegge l'intero contesto dell'agente, quindi il
+costo di un montaggio è giri × contesto: le risposte degli strumenti escono in JSON compatto
+(`mcp_server._compatto`) e non ripetono ciò che l'agente ha appena passato. Uno strumento
+nuovo che restituisce l'eco dei suoi argomenti o un elenco lungo va contro questa regola.
+`transcribe` e `preview_media` accettano `media=["*"]` per lavorare su tutto il girato in
+una chiamata; `preview_frame(t=[...])` e `batch(look=[...])` fanno vedere piu' istanti in
+un'immagine; `add_html(vars=...)` riempie i `{{segnaposto}}` di un file modello
+(`Store._sorgente_html`); `duck_music` accetta tracce intere.
+
+Uno strumento lungo deve passare da `mcp_server._off`: manda i battiti di progresso senza i
+quali Claude Code lo interrompe a 300 secondi (`_avanza(frazione, nota)` per la
+percentuale vera). Gli schemi pubblicati passano da `_snello`: se aggiungi un parametro,
+il modello pydantic resta quello che valida.
+
+```json
+[{"media": "m1b1a", "start": 0.0,   "in": 122.5, "duration": 1.5},
+ {"media": "m9155", "start": 1.5,   "in": 98.5,  "duration": 0.75}]
+```
+
+Per ritoccare i tagli gia' fatti c'e' `trim_edit` (`Store.ripple_trim`, `roll_edit`,
+`slip_clip`, `slide_clip`): spostano bordi senza aprire buchi ne' creare sovrapposizioni. Tutti
+passano da `Store._bordo`, che traduce lo scarto in timeline in attacco e durata tenendo conto
+di velocita' e reverse, e da `Store._tutto_o_niente`: se un passo e' impossibile il progetto
+torna com'era, anche dentro un `batch()`.
+
+### Montare a tempo di musica
+
+`music_beats` dà BPM, durata di battito e battuta, scostamento del primo battito e il profilo
+di energia per blocchi di 4 secondi — cioè dove stanno intro, stacco e ritornello. Con
+`every=1|4|8` restituisce anche `griglia`, gli istanti veri su cui far cadere gli stacchi.
+**Non stimare il tempo a occhio:** un errore dell'1% su novanta secondi è quasi una battuta di
+deriva, e gli stacchi finiscono progressivamente fuori tempo.
+
+### Scegliere il materiale
+
+`plan_edit` spezza le riprese più lunghe di 12 secondi nei loro tratti e le valuta a tratti, non
+a file: da tre minuti di ripresa continua escono decine di candidati con un punto d'attacco
+vero. Leggi il piano prima di applicarlo (`apply=True` costruisce davvero la timeline).
+
+Per guardare il girato prima di montarlo: `preview_media` restituisce i fotogrammi di un
+media importato (o di un file) **senza metterlo in timeline**; `inspect_footage` vuole il
+**file sorgente** in `path`, oppure `media=` / `clip=`; il progetto va sempre in `project=`. `preview_grid` mostra
+tutto il montaggio insieme ed è il modo più rapido per accorgersi che un punto d'attacco è
+caduto sull'inquadratura sbagliata.
+
+### Stili: ricetta, non solo testo
+
+La guida di uno stile (`stili.STILI`) e' testo per il modello, e un testo si legge e si
+ignora: l'agente metteva le clip in fila e si fermava. `stili.RICETTE` e' la parte dello stile
+che si applica senza capire il girato — look, movimento a keyframe, transizioni ai cambi di
+sezione, dissolvenze, accenti, curva del volume della musica — ed `apply_style`
+(`stili.applica`) la mette in timeline in un blocco solo, senza toccare cio' che e' gia'
+deciso. `review_edit` (`review.ricchezza`) conta le scelte nella timeline e segnala il
+montaggio di soli tagli. Uno stile nuovo vuole la sua ricetta, e `tests/test_ricette.py` la
+renderizza. Gli stili personali li crea anche l'agente (`create_style`, `delete_style`; nella
+chat `create_style`): guida a parole piu' una ricetta parziale che `stili.valida_ricetta`
+controlla e che corregge quella del ritmo di base. `list_styles` mostra stili, ricette e look
+ammessi; il menu stili della UI si ricarica a ogni apertura, quindi lo stile creato compare
+senza ricaricare la pagina.
+
+### Effetti speciali
+
+Fusione per clip con `set_clip(blend=...)` (screen/add per luci, fumo e particelle su fondo
+nero; multiply per texture). Distorsioni, glitch, tremolio, `tilt3d`, `sky_key`,
+`remove_object` sono effetti normali (`add_effect`). Per evidenziare: `track_mask` con
+`mask_outline`, `mask_spotlight` o `mask_box` semitrasparente; con `box=[x,y,w,h]` segue un
+oggetto qualsiasi (`vision.track_box`, correlazione normalizzata in numpy, niente YOLO), e le
+coordinate della maschera passano per `vision.to_canvas` perche' gli effetti lavorano dopo
+l'adattamento al canvas. `highlight_subject` (`Store.highlight_subject`) duplica la clip su
+una traccia sopra, muta, con lo scontorno: glow, tint o spotlight sulla sagoma vera. `remove_background` (scontorno IA) mette
+`matte` in **testa** alla catena: la maschera e' allineata all'immagine prima degli effetti, e
+`graph._matte` la fa passare per le stesse operazioni della clip (attacco, velocita', reverse,
+inquadratura). `pin_to_subject` porta la traccia del soggetto dal tempo della sorgente al
+tempo locale della clip agganciata (`Store.pin_to_subject`). `add_particles` genera una clip
+html da `particelle.py`, con le posizioni in forma chiusa del tempo: niente simulazione a
+passi, quindi anteprima e render coincidono. `kind="custom"` prende la ricetta in `custom`,
+controllata da `particelle.valida`; i parametri con cui e' nata la clip viaggiano nel suo
+html (`particelle.parametri`) ed e' da li' che `set_particles` la rigenera. Le particelle
+salvate (`create_particles`) stanno in `~/.vedit/particelle.json`, come gli stili. Il glitch usa un hash di `sin`, mai `random()`:
+il render deve restare una funzione pura del progetto.
+
+### Grafica in HTML
+
+`add_html` mette un documento HTML/CSS/JS in traccia come clip, con sfondo trasparente: va su
+una traccia *sopra* la ripresa. La pagina misura quanto il progetto in pixel CSS e il suo
+tempo e' quello della clip (`htmlclip.OROLOGIO`): animazioni CSS, GSAP, rAF e timer avanzano
+a passi di fotogramma, identici nell'anteprima dal vivo della UI e nel render. Controlla
+sempre con `preview_frame`: al render Chromium la fotografa davvero.
+
+**Blocchi pronti prima di scrivere HTML.** `blocchi.py` (con `blocchi_piu.py`) ha 52 grafiche tarate in sei famiglie
+(titoli, testi, dati, enfasi, transizioni, stile; `list_blocks` le elenca): `Store.add_block` le compone con
+`blocchi.documento` e le mette in traccia come clip html, quindi dopo sono clip normali. I
+parametri sono controllati (testo sempre `html.escape`, colori e numeri validati, errori con
+l'elenco di quelli ammessi), le misure sono in `vw`/`vh` e l'uscita in dissolvenza sta su un
+contenitore *esterno* (`.out`): la regola `animation` di un blocco sullo stesso elemento la
+cancellerebbe. Un blocco nuovo e' una funzione `(css, corpo)` piu' una voce in `BLOCCHI` (il CSS e' testo
+con segnaposto `§nome§`, riempito da `_t`: le graffe del CSS e le f-string non vanno
+d'accordo) e, se serve, un istante in `_VETRINA`; `tests/test_blocchi.py` lo compone con i
+default e, nei `slow`, lo fotografa in Chromium e controlla che l'uscita lo spenga.
+`python scripts/blocchi_galleria.py` rifa' `docs/blocchi/` (un'immagine per blocco, renderizzata
+davvero). La UI li legge da `/api/state` (`blocchi`): scheda *graphics* della libreria
+(`Library.jsx`), che manda `add_block` con solo i parametri cambiati.
+
+**Movimenti di camera.** `moves.py` ha 16 ricette (`MOSSE`) che `Store.camera_move` applica con
+un solo `set_transform`: restituiscono i quattro campi (x, y, scala, rotazione; quelli non usati
+tornano al valore neutro, cosi' non resta un vecchio spostamento) e *non scoprono mai i bordi*
+(`_copre` per le rotazioni, scala di partenza per panoramiche e inclinazioni).
+`tests/test_moves.py` lo verifica sul fotogramma reale (angoli pieni) e con una funzione che
+controlla, per ogni movimento, dimensione e intensita', che il canvas stia dentro l'immagine.
+Il tremolio e' un hash di `sin`, mai `random()`. **Con la scala animata lo spostamento x/y sta
+dentro `zoompan`** (`graph._scale_transform`, `_posizione_dentro`): zoompan ritaglia la tela
+prima dell'overlay, quindi spostare dopo scopriva una barra nera dal lato opposto; la finestra di
+zoompan resta da sola dentro l'immagine. Un movimento nuovo e' una funzione e una voce in `MOSSE`.
+
+**Piano da approvare.** `piano.py` + `propose_plan` (MCP e chat): scene `{what, duration, source,
+cost?, note?}`, totali, domanda nell'editor (`api.chiedi`), e il piano approvato in
+`<progetto>.piano.json`. Il costo lo scrive l'agente: vedit non conosce i listini e un numero
+sbagliato sarebbe peggio di nessuno; una scena generata senza stima e' segnata "cost unknown".
+Senza editor torna `plan_text` e vuole `confirmed=True` dopo il si' dell'utente, come l'export.
+
+**Generare media.** `generativo.genera` (immagini: OpenAI e compatibili; immagini e video: coda
+di fal.ai) scrive in `<progetto>_gen/` con nome dall'impronta di servizio, modello, prompt e
+parametri: la stessa richiesta non si ripaga. Costa e il prompt parte verso un terzo, quindi
+non e' una decisione dell'agente: `domande.conferma_genera` con l'editor aperto, `confirmed=True`
+senza (MCP), e dalla chat `api.esegui_op` chiede *prima* e genera fuori dal lock. Le chiavi
+stanno in `~/.vedit/gen.json`, mai nel progetto e mai in `generativo.stato()`. I test usano
+servizi finti: `python scripts/gen_smoke.py --kind image --yes` prova il servizio *vero* con la
+chiave configurata (senza `--yes` stampa solo cosa partirebbe) ed e' l'unico modo di sapere se i
+modelli predefiniti esistono ancora.
+
+L'ordine degli effetti conta e si cambia con `move_effect`: denoise prima di sharpen pulisce e
+poi incide, l'ordine opposto incide anche il rumore.
+
+### Come montare (non solo come chiamare gli strumenti)
+
+Il server MCP dichiara le regole di montaggio nelle proprie istruzioni
+(`mcp_server.ISTRUZIONI`), così arrivano a qualunque client. Sono lì perché sono i difetti
+veri dei video che escono da qui, non limiti degli strumenti — sono scelte che non vengono
+fatte:
+
+1. **la musica deve muoversi** — volume fisso per tutta la durata è la prima cosa che rende un
+   video piatto; automatizza il guadagno con i keyframe e scegli la sezione con `music_beats`;
+2. **non tutti stacchi secchi** — il taglio secco è il default, non l'unica scelta; ogni
+   transizione però deve avere un motivo;
+3. **mai la stessa inquadratura due volte** — se il materiale non basta, accorcia il video;
+4. **dopo dieci secondi serve informazione nuova** — tagliare più veloce sulle stesse immagini
+   non salva niente;
+5. **cinematografico è una scelta, non un filtro** — un momento forte tenuto tre secondi vale
+   più di dieci da mezzo.
+
+Se cambi quelle istruzioni, `tests/test_mcp.py` verifica che le regole restino: sono la parte
+che l'agente legge sempre.
+
+### Lavorare dentro l'editor aperto (MCP su HTTP)
+
+`vedit ui` espone anche il server MCP su `http://127.0.0.1:8760/mcp/` (`api._PonteMcp`). Chi si
+collega li' lavora sul progetto aperto nel browser: senza `project` gli strumenti agiscono su
+`api.S.store` (`mcp_server._ospite`). E' cosi' che l'assistente "Claude Code" della chat tocca
+il progetto, ed e' il modo giusto anche per un agente esterno quando l'utente ha gia' l'editor
+aperto: `claude mcp add --transport http vedit-live http://127.0.0.1:8760/mcp/`.
+
+### Segnalare cio' che non va
+
+`report_issue` (`segnalazioni.py`) aggiunge una voce a `SEGNALAZIONI.md` — alla radice della
+repo se il pacchetto gira da un clone, altrimenti `~/.vedit/SEGNALAZIONI.md`
+(`VEDIT_SEGNALAZIONI` lo sposta). Tipi: `bug`, `scomodo`, `sbagliato`, `manca`, `lento`.
+L'agente lo usa da solo mentre monta, senza fermarsi; chi modifica la repo parte da li' e
+cancella le voci risolte.
+
+### Voce, pubblicazione, memoria
+
+`generate_voice` genera le battute con `tts.battute` (fuori dal lock: e' rete o sintesi) e le
+mette in timeline con `Store.add_voiceover`, sulla traccia audio `VO`, in un solo undo. Il nome
+del file e' l'impronta di testo e parametri: la stessa battuta non si rigenera. Le chiavi
+stanno in `~/.vedit/tts.json`, mai nel progetto.
+
+`publish_video` (`social.py`, solo libreria standard) carica un file **gia' esportato**. Come
+l'export, non e' una decisione dell'agente: con l'editor aperto chiede conferma
+(`domande.conferma_pubblica`), senza editor vuole `confirmed=True` dopo il si' dell'utente.
+YouTube parte privato. I test usano un server HTTP finto (`tests/test_social.py`): nessuna
+chiamata vera a Google o TikTok.
+
+`web.py` da' all'agente tutto il web, senza siti fissi: `web_search` (web, immagini, video,
+notizie; motore senza chiave DuckDuckGo + Bing per le immagini, oppure Brave, Tavily,
+SearXNG), `web_read` (testo e media di una pagina), `web_download` (file diretti e pagine
+video con yt-dlp, importati nella cartella `web` del bin, con la fonte in `FONTI.md`). Gli
+indirizzi locali e privati sono chiusi anche dopo un redirect: una pagina non deve poter
+parlare all'API dell'editor. I test usano `VEDIT_WEB_LOCALE=1` e un server finto.
+
+L'assistente della chat ha tre livelli di accesso (`llm.ACCESSI`, scelti nelle impostazioni
+del modello): `editor` (solo vedit, com'era), `estensioni` (anche skill, server MCP, plugin e
+Chrome dell'utente), `completo`. Con Claude Code come motore e' `llm.argomenti_accesso` a
+decidere le opzioni: `--strict-mcp-config` solo nel primo livello; poi `--chrome`, lo
+strumento `Skill` e `--permission-mode auto` (le azioni sicure passano, le rischiose no), e
+`bypassPermissions` solo nel livello completo. Con i modelli via API `estensioni.py` fa da
+client MCP verso i server di Claude Code, Claude Desktop e `~/.vedit/mcp.json` (sessioni
+aperte in un ciclo asincrono a parte, `GESTORE`; un server che non risponde non si ritenta a
+ogni messaggio) e passa le skill (`SKILL.md` in `~/.claude/skills`, sincronizzate
+dall'account, dei plugin) come indice piu' `use_skill`. I connettori di claude.ai e il
+computer use passano solo da Claude Code.
+
+**Video raccontati da una voce.** `allinea.METODO` e' il metodo (fonti, copione per la voce,
+voce prima, tempi misurati, una clip html per capitolo con metafore animate, controlli sui
+fotogrammi): entra nelle istruzioni MCP, nel `SYSTEM` della chat e, come rimando, in
+`SISTEMA_CLAUDE_CODE`. Viene dal confronto fra uno short venuto male dall'assistente (una
+pagina html unica, voce accelerata con `set_speed`, tempi scritti a occhio, cartelli di testo)
+e uno venuto bene. `speech_times` (`allinea.tempi`) porta le parole della trascrizione dai
+secondi della sorgente a quelli della timeline e cerca le frasi del copione in ordine, con i
+numeri normalizzati in lettere (`$725` = "seven hundred twenty-five"); senza faster-whisper
+stima dal nome delle clip di `generate_voice`. `stili.applica` non tratta piu' la traccia
+della voce come musica.
+
+**Chat per progetto.** `api.S.vista` (i turni come li mostra la chat) e `api.S.chat` (lo
+stato del motore: cronologia API, sessione di Claude Code) si salvano in
+`<progetto>.chat.json` a ogni turno (`conversazioni.py`, cronologia ripulita da immagini e
+ragionamento) e tornano in `api.attach` quando cambia lo Store. Se la cronologia riparte vuota
+(altro modello, sessione persa) `chat.run(precedente=...)` passa la conversazione come testo.
+Cambiare modello o livello d'accesso non cancella piu' la chat. Modello e sforzo si cambiano
+dalla pastiglia in cima (`/api/llm/rapido`, `llm.imposta_rapido`): Claude Code riceve
+`--effort`, Claude via API `output_config.effort`.
+
+`memoria.py` tiene `~/.vedit/MEMORIA.md` (`VEDIT_MEMORIA` lo sposta): `remember` / `forget` /
+`memory` da MCP e dalla chat; `project_create` e `project_open` restituiscono `memoria`, e la
+chat la passa al modello una volta per conversazione. Ci va solo cio' che vale oltre il
+progetto aperto.
+
+### Stile da un video di riferimento
+
+`learn_style` (`apprendi.impara`) prende un file, un link (scaricato con `web.scarica`, quindi
+anche yt-dlp) o un media importato e misura come e' montato, con un solo flusso ffmpeg a
+96 px e 10 fps piu' lo scene score per i tagli netti: un secondo rilevatore di salti trova i
+punch-in che lo scene score non vede; le dissolvenze sono fotogrammi che valgono la media dei
+vicini, e le sfumature dal nero (stessa immagine, solo piu' scura) non contano; i tratti di
+nero fra due scene sono passaggi sul nero; bande nere e cartelli su nero si leggono sulle
+righe sempre nere e sui pixel chiari di un'inquadratura buia; il BPM viene da
+`analyze.beats`. `ricetta()` e `guida()` traducono le misure in stile (`stili.salva`):
+quello che esce deve passare `stili.valida_ricetta`. Il colore non e' un look indovinato:
+la ricetta porta `colore` (media e deviazione per canale, senza bande nere) e
+`stili.applica` mette `colormatch` su ogni ripresa a `FORZA_COLORE`. Il foglio dei
+fotogrammi arriva anche ai modelli via API: `chat.execute` restituisce `llm.ConImmagine`
+(una stringa con un'immagine attaccata), che `run_anthropic` mette nel `tool_result` e
+`run_openai` in un messaggio utente subito dopo. Le misure non si fermano al taglio: la
+camera si stima per coppie di fotogrammi a 1,5 s (`_moto`: scala e spostamento che
+spiegano meglio la differenza, con l'errore calcolato sul 70% dei pixel che differiscono
+meno, cosi' i personaggi che si muovono da soli non coprono la camera) e distingue zoom,
+panoramica e animazione dentro la scena; la voce si stima dall'energia della banda del
+parlato a blocchi di 50 ms (`_voce`: due livelli distinti e pause vere, "probabile" e non
+certo) e dice quanti cambi cadono su una pausa; i passaggi su colore piatto e la palette
+sono esadecimali pronti per chi disegna grafica nello stesso stile; il BPM oltre 160 si
+dimezza (l'autocorrelazione confonde battito e doppio battito). Cio' che le misure non vedono
+(personaggi, testi, grafica) lo scrive un modello che guarda i fogli: da chat e MCP e' l'agente,
+dalla UI e dalla CLI `impara(descrivi=True)` chiama `llm.chiedi_con_immagini` con il modello
+scelto nelle impostazioni, e senza modello lo stile esce lo stesso con un avviso. Da un link si scarica solo il tratto
+analizzato (`web.scarica(secondi=)`, `--download-sections`), e se il sito rifiuta il
+taglio si ripiega sul video intero. I numeri si tarano su video veri: un
+riferimento sintetico fatto con vedit stesso (`tests/test_apprendi.py`, anche `slow`) deve
+restituire esattamente tagli, dissolvenze e punch-in che ci sono stati messi.
+
+### Plugin e skill per altri agenti
+
+La repo e' anche un marketplace di plugin per Claude Code: `.claude-plugin/plugin.json`
+(porta il server MCP, `uvx vedit-mcp`), `.claude-plugin/marketplace.json` e `skills/vedit/SKILL.md`
+(il flusso, le regole di montaggio e cio' che va confermato con l'utente; installabile anche con
+`npx skills add`). `tests/test_skill_plugin.py` tiene la versione del plugin uguale a quella del
+pacchetto — **a ogni release va cambiata anche in `plugin.json`** — e pretende che ogni
+strumento nominato nella skill esista nel server MCP.
+
+### Skill incluse (animazione e montaggio)
+
+`backend/vedit/skills_incluse/` porta nove skill nel pacchetto (`package-data`): `motion-craft`,
+`kinetic-typography`, `data-animation`, `short-form-video`, `lower-thirds`, `explainer-styles`,
+`product-launch`, `talking-head-edit`, `external-engines`. Sono sintesi *adattate* agli strumenti
+di vedit (non copie) di skill MIT e Apache-2.0 di terzi: ogni `SKILL.md` dichiara la fonte nella
+riga `source:` e `NOTICE.md` porta l'attribuzione e i testi delle licenze. **Non copiare** da
+fonti senza licenza o AGPL (OpenMontage, OpenChatCut): `NOTICE.md` dice cosa e' stato lasciato
+fuori e perche'. Origine `incluse` in `estensioni._cartelle_skill`: ultima fra quelle di vedit,
+quindi una skill dell'utente con lo stesso nome la sostituisce; `project_create`/`project_open`
+non le ripetono (sono nelle istruzioni MCP, `list_skills` le mostra). `tests/test_skill_incluse.py`
+pretende fonte dichiarata, attribuzione per ogni skill e che ogni strumento nominato esista.
+Per uno stile che vuole un altro motore (Manim, Remotion, Three.js) `external-engines` dice cosa
+fare altrove e come importarlo: vedit non lo finge con CSS.
+
+### Skill di montaggio
+
+Le skill che l'utente aggiunge a vedit stanno in `~/.vedit/skills/<nome>/SKILL.md` (piu'
+`.claude/skills` accanto al progetto): `estensioni.crea_skill`, `installa_skill` (cartella o
+raccolta, `.md`, `.zip`, link GitHub/zip/.md scaricato con `web._richiesta`, quindi niente
+indirizzi locali; zip controllati contro i percorsi che escono), `elimina_skill` (solo quelle
+di vedit). A differenza delle altre skill dell'utente arrivano a ogni livello d'accesso:
+nella chat con `indice_skill(solo_vedit=True)` e `esegui(..., solo_vedit=...)`, a Claude Code
+e agli agenti dal server MCP (`list_skills`, `use_skill`, `create_skill`, `delete_skill`;
+`project_create`/`project_open` restituiscono `skill`). `install_skill` da MCP chiede
+conferma come `publish_video` (`domande.conferma_skill`): una skill sono istruzioni che il
+modello seguira'. UI: `SkillMontaggio` in `Chat.jsx`, API `/api/estensioni/skill*`; CLI
+`vedit skill`.
+
+### Domande all'utente ed export
+
+`ask_user` mostra nell'editor una scheda di domande con opzioni (`domande.py` per la forma,
+`api.chiedi` per l'attesa) e torna le risposte: usalo per le scelte che spettano all'utente
+invece di decidere a caso. **L'export non e' una decisione dell'agente**: quando l'editor e'
+aperto, `render_video` chiede conferma con `ask_user` e senza un si' non scrive il file
+(`tests/test_assistente.py` lo verifica). Gli stili di montaggio della chat stanno in
+`stili.py`.
+
+### Far vedere il montaggio (open_ui)
+
+`open_ui` avvia l'interfaccia web **dentro il processo del server MCP** e restituisce
+l'indirizzo. Non è una seconda istanza: `api.attach()` fa lavorare la UI sullo *stesso* oggetto
+`Store` dell'agente, e `Store.on_change` fa aggiornare il browser a ogni modifica. Un solo
+scrittore, nessun file conteso. `close_ui` la chiude.
+
+**Un progetto alla volta per file.** Vale ancora se apri l'editor in un *altro* processo
+(`vedit ui` da terminale mentre l'agente monta): lì sono due Store sullo stesso `.json` e
+l'ultimo che salva vince, non c'è un lock. Con `open_ui` il problema non si pone.
+
+---
+
+## 5. Convenzioni della repo
+
+- Codice e commenti **in italiano**, come il resto del progetto. Quello che legge chi usa
+  l'editor e' invece **in inglese**: testi dell'interfaccia, messaggi di errore, nomi e
+  descrizioni di effetti, look, transizioni, stili e particelle, avvisi degli strumenti.
+  I test che controllano un messaggio cercano il testo inglese. L'assistente risponde nella
+  lingua in cui gli si scrive. La vetrina pubblica: `README.md` in inglese (e' anche la
+  pagina PyPI), la versione italiana e' `README.it.md`. Se cambi uno dei due, allinea l'altro.
+- Niente dipendenze nuove senza motivo. Il core sta su ffmpeg, libreria standard e `numpy`
+  — quest'ultimo non è facoltativo: senza, restano fuori `music_beats`, `plan_edit`,
+  `inspect_footage`, `match_color` e `check_cuts`, cioè scelta del materiale e montaggio a
+  tempo. Stessa cosa per Pillow: `preview_grid` e `color_scopes` ci stanno sopra, e guardare
+  il montaggio è la regola prima. Gli extra veri sono sei: `chat` (`anthropic`, l'assistente
+  nella UI), `vision` (`ultralytics`, riconoscimento del soggetto — si tira dietro torch),
+  `transcribe` (`faster-whisper`, sottotitoli e pulizia del parlato), `html` (`playwright`,
+  render delle clip html — usa Chrome o Edge gia' installati), `plugin` (`pedalboard`,
+  plugin audio VST3/AU) e `web` (`yt-dlp`, scaricare dalle pagine dei video). Senza gli extra il resto
+  dell'editor funziona identico e gli strumenti che li vogliono dicono come installarli.
+- `tests/test_dipendenze.py` legge gli import del backend e pretende che ognuno sia dichiarato
+  in `pyproject.toml`: un pacchetto che c'è sulla macchina di chi sviluppa ma non nel wheel
+  non si vede finché qualcuno non installa da PyPI.
+- Ogni comportamento nuovo arriva con un test; i render reali stanno dietro il marker `slow`.
+- Prima di dire che una modifica funziona: `pytest -m "not slow"` più il pezzo di `slow` che la
+  tocca. Se hai cambiato la UI, anche `cd frontend && npm test`.

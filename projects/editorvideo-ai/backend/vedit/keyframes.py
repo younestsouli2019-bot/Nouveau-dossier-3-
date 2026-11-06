@@ -1,0 +1,233 @@
+"""Compilazione dei keyframe in espressioni ffmpeg.
+
+Molti filtri ffmpeg valutano i loro parametri per ogni frame (overlay x/y,
+rotate, eq con eval=frame, volume con eval=frame, ...). Sfruttiamo questo:
+una lista di keyframe diventa una singola espressione ``if()`` annidata in
+funzione di ``t``, quindi l'animazione costa zero passaggi extra.
+
+Formato keyframe::
+
+    {"kf": [{"t": 0.0, "v": 0.0, "ease": "ease_out"},
+             {"t": 1.5, "v": 1.0}]}
+
+``ease`` descrive la transizione *verso* il keyframe successivo e sta sul
+keyframe di partenza del segmento.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+EASINGS = (
+    "linear",
+    "hold",
+    "ease_in",
+    "ease_out",
+    "ease_in_out",
+    "ease_in_cubic",
+    "ease_out_cubic",
+    "ease_in_out_cubic",
+)
+
+
+def is_kf(value: Any) -> bool:
+    return isinstance(value, dict) and isinstance(value.get("kf"), list) and len(value["kf"]) > 0
+
+
+def _sorted_keys(value: dict) -> list[dict]:
+    return sorted(value["kf"], key=lambda k: float(k.get("t", 0.0)))
+
+
+def _num(x: Any, default: float = 0.0) -> float:
+    try:
+        return float(x)
+    except (TypeError, ValueError):
+        return default
+
+
+# --------------------------------------------------------------------------
+# easing
+# --------------------------------------------------------------------------
+
+
+def _ease_expr(name: str, p: str) -> str:
+    """Espressione ffmpeg per l'easing, ``p`` e' il progresso 0..1."""
+    if name == "hold":
+        return "0"
+    if name == "ease_in":
+        return f"({p})*({p})"
+    if name == "ease_out":
+        return f"(1-(1-({p}))*(1-({p})))"
+    if name == "ease_in_out":
+        return f"({p})*({p})*(3-2*({p}))"
+    if name == "ease_in_cubic":
+        return f"({p})*({p})*({p})"
+    if name == "ease_out_cubic":
+        return f"(1-(1-({p}))*(1-({p}))*(1-({p})))"
+    if name == "ease_in_out_cubic":
+        return f"if(lt({p},0.5),4*({p})*({p})*({p}),1-4*(1-({p}))*(1-({p}))*(1-({p})))"
+    return p  # linear
+
+
+def _ease_py(name: str, p: float) -> float:
+    if name == "hold":
+        return 0.0
+    if name == "ease_in":
+        return p * p
+    if name == "ease_out":
+        return 1 - (1 - p) ** 2
+    if name == "ease_in_out":
+        return p * p * (3 - 2 * p)
+    if name == "ease_in_cubic":
+        return p**3
+    if name == "ease_out_cubic":
+        return 1 - (1 - p) ** 3
+    if name == "ease_in_out_cubic":
+        return 4 * p**3 if p < 0.5 else 1 - 4 * (1 - p) ** 3
+    return p
+
+
+# --------------------------------------------------------------------------
+# API
+# --------------------------------------------------------------------------
+
+
+def sample(value: Any, t: float = 0.0, default: float = 0.0) -> float:
+    """Valuta il parametro al tempo ``t`` in Python (preview, fallback statici)."""
+    if not is_kf(value):
+        return _num(value, default)
+    keys = _sorted_keys(value)
+    if t <= _num(keys[0].get("t")):
+        return _num(keys[0].get("v"))
+    if t >= _num(keys[-1].get("t")):
+        return _num(keys[-1].get("v"))
+    for a, b in zip(keys, keys[1:]):
+        t0, t1 = _num(a.get("t")), _num(b.get("t"))
+        if t0 <= t <= t1:
+            v0, v1 = _num(a.get("v")), _num(b.get("v"))
+            span = t1 - t0
+            p = 0.0 if span <= 0 else (t - t0) / span
+            return v0 + (v1 - v0) * _ease_py(str(a.get("ease", "linear")), p)
+    return _num(keys[-1].get("v"))
+
+
+def expr(value: Any, tvar: str = "t", default: float = 0.0) -> str:
+    """Compila il parametro in un'espressione ffmpeg.
+
+    ``tvar`` e' l'espressione del tempo *locale alla clip*: dentro la catena
+    della clip e' ``"t"``, sul canvas della timeline e' ``"(t-<start>)"``.
+    """
+    if not is_kf(value):
+        return _fmt(_num(value, default))
+
+    keys = _sorted_keys(value)
+    if len(keys) == 1:
+        return _fmt(_num(keys[0].get("v")))
+
+    # (fine del tratto, espressione del tratto); dopo l'ultimo keyframe tiene il valore
+    tratti = []
+    for a, b in zip(keys, keys[1:]):
+        t0, t1 = _num(a.get("t")), _num(b.get("t"))
+        v0, v1 = _num(a.get("v")), _num(b.get("v"))
+        span = t1 - t0
+        if span <= 0:
+            seg = _fmt(v1)
+        else:
+            p = f"(({tvar}-{_fmt(t0)})/{_fmt(span)})"
+            e = _ease_expr(str(a.get("ease", "linear")), p)
+            seg = f"({_fmt(v0)}+{_fmt(v1 - v0)}*({e}))"
+        tratti.append((t1, seg))
+    ultimo = _fmt(_num(keys[-1].get("v")))
+
+    # Ricerca binaria sui tratti, non una catena di if uno dentro l'altro: il
+    # parser di ffmpeg regge circa cento livelli di annidamento, e un
+    # duck_music su nove minuti di voce mette centinaia di keyframe sul volume
+    # della musica ("Missing ')' or too many args" a fine export).
+    def albero(da: int, a: int) -> str:
+        """Il tratto giusto fra ``da`` e ``a`` compresi (``len(tratti)`` = dopo l'ultimo)."""
+        if da == a:
+            return tratti[da][1] if da < len(tratti) else ultimo
+        m = (da + a) // 2
+        return f"if(lt({tvar},{_fmt(tratti[m][0])}),{albero(da, m)},{albero(m + 1, a)})"
+
+    first_t = _num(keys[0].get("t"))
+    out = albero(0, len(tratti))
+    return f"if(lt({tvar},{_fmt(first_t)}),{_fmt(_num(keys[0].get('v')))},{out})"
+
+
+def animated(*values: Any) -> bool:
+    return any(is_kf(v) for v in values)
+
+
+def bounds(value: Any, default: float = 0.0) -> tuple[float, float]:
+    """(min, max) dei valori assunti nei keyframe: serve per il dimensionamento."""
+    if not is_kf(value):
+        v = _num(value, default)
+        return v, v
+    vs = [_num(k.get("v")) for k in value["kf"]]
+    return min(vs), max(vs)
+
+
+def _fmt(x: float) -> str:
+    """Numero senza notazione scientifica (ffmpeg non la accetta ovunque)."""
+    s = f"{float(x):.6f}".rstrip("0").rstrip(".")
+    return s if s not in ("", "-") else "0"
+
+
+def validate(value: Any) -> None:
+    """Solleva ValueError se il blocco keyframe e' malformato.
+
+    Anche un numero illeggibile e' un errore: alla compilazione diventerebbe
+    zero in silenzio, e un'opacita' o un volume a zero non si notano finche'
+    non si guarda il render.
+    """
+    if isinstance(value, str):
+        _numero(value, "valore")
+        return
+    if not isinstance(value, dict) or "kf" not in value:
+        return
+    kf = value["kf"]
+    if not isinstance(kf, list) or not kf:
+        raise ValueError("keyframe block empty or not a list")
+    for k in kf:
+        if not isinstance(k, dict) or "t" not in k or "v" not in k:
+            raise ValueError(f"a keyframe needs 't' and 'v': {k!r}")
+        _numero(k["t"], "t")
+        _numero(k["v"], "v")
+        ease = str(k.get("ease", "linear"))
+        if ease not in EASINGS:
+            raise ValueError(f"unknown easing {ease!r}, expected: {', '.join(EASINGS)}")
+
+
+def _numero(x: Any, nome: str) -> None:
+    if isinstance(x, bool):
+        return
+    try:
+        float(x)
+    except (TypeError, ValueError):
+        raise ValueError(f"{nome} must be a number, not {x!r}") from None
+
+
+def coerce(value: Any) -> Any:
+    """Riporta a numero un valore animabile arrivato come stringa.
+
+    Un parametro animabile accetta sia un numero sia un blocco keyframe, quindi
+    non puo' essere dichiarato ``float`` nello schema degli strumenti: un client
+    che manda ``"-3"`` invece di ``-3`` scrive una stringa nel progetto. Alla
+    lettura funziona lo stesso, perche' la conversione avviene li', ma il file
+    finisce con tipi diversi per lo stesso campo e chi lo rilegge — la UI, un
+    diff, un altro agente — trova ``"gain_db": "-3"`` accanto a ``"gain_db": 0.0``.
+    """
+    if isinstance(value, bool) or value is None:
+        return value
+    if isinstance(value, str):
+        try:
+            return float(value)
+        except ValueError:
+            return value
+    if isinstance(value, dict) and isinstance(value.get("kf"), list):
+        out = dict(value)
+        out["kf"] = [{**k, **{c: coerce(k[c]) for c in ("t", "v") if c in k}}
+                     for k in value["kf"] if isinstance(k, dict)]
+        return out
+    return value

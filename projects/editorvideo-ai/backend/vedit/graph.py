@@ -1,0 +1,981 @@
+"""Compilazione della timeline in un filter_complex ffmpeg.
+
+Modello di composizione: si parte da un canvas (sorgente ``color`` della durata
+del progetto) e si sovrappone una clip alla volta con ``overlay``. E' l'unico
+schema che regge multi-traccia, PiP, overlay grafici e dissolvenze senza casi
+speciali; il costo e' un overlay per clip, trascurabile rispetto a decodifica e
+scaling.
+
+Posizionamento temporale: ogni clip viene allungata all'inizio con ``tpad``
+(frame trasparenti) invece di spostare i PTS. Cosi' l'overlay ha sempre frame
+disponibili su entrambi gli ingressi e non si blocca in attesa.
+
+Ordine di disegno: le tracce video vanno dal basso verso l'alto secondo
+l'ordine della lista. Dentro la stessa traccia le clip successive sono disegnate
+*sotto* le precedenti, cosi' la dissolvenza in uscita di una clip scopre quella
+dopo (cross-dissolve gratuito).
+"""
+
+from __future__ import annotations
+
+import math
+from dataclasses import dataclass, field
+from functools import lru_cache
+from pathlib import Path
+
+from . import effects as fx
+from . import keyframes as kf
+from .model import Clip, Media, Project, Track
+
+DEFAULT_FONTS = (
+    "C:/Windows/Fonts/arial.ttf",
+    "C:/Windows/Fonts/segoeui.ttf",
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    "/System/Library/Fonts/Helvetica.ttc",
+)
+
+MAX_PREPAD = 4.0
+
+# Modalita' di fusione della clip con le tracce sotto -> nome in ffmpeg blend.
+BLEND_FFMPEG = {
+    "normal": "",
+    "add": "addition",
+    "multiply": "multiply",
+    "screen": "screen",
+    "overlay": "overlay",
+    "softlight": "softlight",
+    "hardlight": "hardlight",
+    "darken": "darken",
+    "lighten": "lighten",
+    "difference": "difference",
+    "exclusion": "exclusion",
+    "dodge": "dodge",
+    "burn": "burn",
+}
+
+# Clip generate che stanno sopra ai media della stessa traccia.
+GRAFICA = ("text", "color", "html")  # limite al pre-ingrandimento usato per lo zoom animato
+
+
+@dataclass
+class Compiled:
+    inputs: list[str]  # argomenti -i (in ordine)
+    filtergraph: str
+    video_label: str | None
+    audio_label: str | None
+    duration: float
+    warnings: list[str] = field(default_factory=list)
+
+
+@dataclass
+class CompileOptions:
+    width: int | None = None  # override risoluzione (preview)
+    height: int | None = None
+    fps: float | None = None
+    use_proxy: bool = False
+    audio: bool = True
+    video: bool = True
+    start: float | None = None  # taglio della porzione di timeline da rendere
+    end: float | None = None
+    workdir: str | None = None  # per i file di testo di drawtext
+    # metodo di decodifica accelerata gia' verificato ("" = decodifica software).
+    # Mai "auto": la scelta la fa hw.detect() provandola davvero.
+    hwaccel: str = ""
+    stab_files: dict = field(default_factory=dict)  # clip_id -> file .trf di vidstab
+    # clip_id -> (file .mov con alpha, tempo del suo primo fotogramma): le clip
+    # html fotografate da htmlclip.prepare. Il grafo resta puro, il browser no.
+    html_files: dict = field(default_factory=dict)
+    # clip_id -> (wav gia' passato nei plugin VST, attacco da cui parte):
+    # plugins.prepare. Come per l'html, il grafo usa il file e resta puro.
+    audio_files: dict = field(default_factory=dict)
+
+
+# --------------------------------------------------------------------------
+# utilita'
+# --------------------------------------------------------------------------
+
+
+def n(x: float) -> str:
+    s = f"{float(x):.6f}".rstrip("0").rstrip(".")
+    return s or "0"
+
+
+@lru_cache(maxsize=1)
+def _default_font() -> str | None:
+    return next((f for f in DEFAULT_FONTS if Path(f).exists()), None)
+
+
+def _atempo_chain(speed: float) -> list[str]:
+    """atempo accetta 0.5..100 per istanza: decomponiamo i fattori estremi."""
+    out: list[str] = []
+    s = float(speed)
+    if abs(s - 1.0) < 1e-6:
+        return out
+    while s > 2.0:
+        out.append("atempo=2.0")
+        s /= 2.0
+    while s < 0.5:
+        out.append("atempo=0.5")
+        s /= 0.5
+    out.append(f"atempo={n(s)}")
+    return out
+
+
+def _simple_ramp(value) -> tuple[str, float, float] | None:
+    """Riconosce l'opacita' animata che e' solo una comparsa o una scomparsa.
+
+    Due keyframe lineari da 0 a 1 (o da 1 a 0) sono esattamente cio' che fa il
+    filtro ``fade``, che lavora sul piano alpha senza valutare ogni pixel.
+    """
+    if not kf.is_kf(value):
+        return None
+    keys = sorted(value["kf"], key=lambda k: float(k.get("t", 0)))
+    if len(keys) != 2 or str(keys[0].get("ease", "linear")) != "linear":
+        return None
+    t0, t1 = float(keys[0].get("t", 0)), float(keys[1].get("t", 0))
+    v0, v1 = float(keys[0].get("v", 0)), float(keys[1].get("v", 0))
+    if t1 - t0 <= 1e-6 or t0 < 0:
+        return None
+    if abs(v0) < 1e-6 and abs(v1 - 1) < 1e-6:
+        return "in", t0, t1 - t0
+    if abs(v0 - 1) < 1e-6 and abs(v1) < 1e-6:
+        return "out", t0, t1 - t0
+    return None
+
+
+def clip_offset(clip: Clip) -> float:
+    """Tempo locale del primo fotogramma visibile (>0 solo nei segmenti)."""
+    return getattr(clip, "_slice_offset", 0.0)
+
+
+def clip_visible(clip: Clip) -> float:
+    """Quanto della clip resta visibile: nel progetto intero e' la sua durata."""
+    return getattr(clip, "_slice_visible", None) or clip.duration
+
+
+def clip_origin(clip: Clip) -> float:
+    """Posizione originale in timeline, usata per l'ordine di sovrapposizione.
+
+    Nei segmenti di anteprima piu' clip finiscono a start 0: senza questo dato
+    l'ordine di disegno cambierebbe rispetto al render completo.
+    """
+    return getattr(clip, "_slice_origin", clip.start)
+
+
+def slice_project(project: Project, start: float, end: float) -> Project:
+    """Nuovo progetto contenente solo la porzione [start, end), riportata a 0.
+
+    Serve per rendere segmenti di anteprima senza decodificare dall'inizio.
+
+    Le clip tagliate mantengono ``duration``, ``fade_*`` e i keyframe originali:
+    viene annotato solo *da dove* riprendere (``_slice_offset``) e *quanto*
+    mostrare (``_slice_visible``). Cosi' una dissolvenza o una transizione
+    inquadrata a meta' mostra esattamente il fotogramma che si vedrebbe nel
+    render completo, invece di ripartire da capo. Sono annotazioni interne al
+    compilatore: non finiscono nel file di progetto.
+    """
+    import copy
+
+    out = copy.deepcopy(project)
+    for track in out.tracks:
+        kept: list[Clip] = []
+        for c in track.clips:
+            if c.end <= start or c.start >= end:
+                continue
+            head = max(0.0, start - c.start)  # quanto della clip cade prima del taglio
+            tail = max(0.0, c.end - end)
+            visible = c.duration - head - tail
+            if visible <= 1e-6:
+                continue
+            # all'indietro la sorgente scorre al contrario: tagliare la testa in
+            # timeline accorcia la *fine* del tratto sorgente, tagliare la coda
+            # ne sposta l'inizio
+            c.in_ = c.in_ + (tail if c.reverse else head) * abs(c.speed or 1.0)
+            c._slice_origin = clip_origin(c)
+            c.start = max(0.0, c.start - start)
+            c._slice_offset = clip_offset(c) + head
+            c._slice_visible = visible
+            kept.append(c)
+        track.clips = kept
+    # gli effetti del master leggono il tempo della timeline: un segmento deve
+    # vedere quello vero, non ripartire da zero (keyframe, grana, onde)
+    out._slice_start = getattr(project, "_slice_start", 0.0) + start
+    return out
+
+
+# --------------------------------------------------------------------------
+# compilatore
+# --------------------------------------------------------------------------
+
+
+class _Builder:
+    def __init__(self, project: Project, opts: CompileOptions):
+        self.p = project
+        self.o = opts
+        s = project.settings
+        self.w = int(opts.width or s.width)
+        self.h = int(opts.height or s.height)
+        self.fps = float(opts.fps or s.fps)
+        # in preview si rende piu' piccolo: tutto cio' che e' espresso in pixel
+        # (posizioni, corpo del testo, raggi di sfocatura) va riscalato
+        self.scale = self.w / float(s.width or self.w)
+        self.sr = int(s.sample_rate)
+        # layout del mix: stereo, oppure 5.1 con le tracce instradate (Track.surround)
+        self.layout = "5.1" if getattr(s, "audio_layout", "stereo") == "5.1" else "stereo"
+        self.inputs: list[str] = []
+        self.chains: list[str] = []
+        self.warnings: list[str] = []
+        self._n = 0
+        self._text_files = 0
+        self._durata_audio = 0.0
+        # clip il cui spostamento x/y sta gia' dentro zoompan (vedi _scale_transform)
+        self._posizione_dentro: set[str] = set()
+
+    # -- infrastruttura -------------------------------------------------
+    def label(self, prefix: str) -> str:
+        self._n += 1
+        return f"{prefix}{self._n}"
+
+    def add_input(self, args: list[str]) -> int:
+        idx = sum(1 for a in self.inputs if a == "-i")
+        self.inputs.extend(args)
+        return idx
+
+    def chain(self, src: str, filters: list[str], dst: str) -> str:
+        body = ",".join(f for f in filters if f) or "null"
+        self.chains.append(f"[{src}]{body}[{dst}]")
+        return dst
+
+    def src_path(self, media: Media) -> str:
+        if self.o.use_proxy and media.proxy and Path(media.proxy).exists():
+            return media.proxy
+        return media.path
+
+    # -- ingressi -------------------------------------------------------
+    def input_for(self, clip: Clip, media: Media, kind: str = "video") -> int:
+        path = self.src_path(media)
+        args: list[str] = []
+        if self.o.hwaccel and media.kind == "video" and kind == "video":
+            args += ["-hwaccel", self.o.hwaccel]
+        visible = clip_visible(clip)
+        if media.kind == "image":
+            args += ["-loop", "1", "-framerate", n(self.fps), "-t", n(visible + 0.1)]
+        else:
+            src_dur = visible * abs(clip.speed or 1.0)
+            if clip.in_ > 0:
+                args += ["-ss", n(clip.in_)]
+            args += ["-t", n(src_dur + 0.05)]
+        # ogni ingresso serve a un ramo solo: l'altro flusso non va nemmeno
+        # letto dal demuxer (centinaia di clip = centinaia di flussi inutili)
+        args += ["-an" if kind == "video" else "-vn", "-i", path]
+        return self.add_input(args)
+
+    # -- catena video di una clip ---------------------------------------
+    def video_clip(self, clip: Clip, track: Track) -> str | None:
+        """Ritorna l'etichetta del flusso pronto per l'overlay sul canvas."""
+        media = self.p.media_by_id(clip.media) if clip.media else None
+        ctx = fx.Ctx(width=self.w, height=self.h, fps=self.fps, sample_rate=self.sr,
+                     tvar="t", duration=clip.duration, scale=self.scale,
+                     offset=clip_offset(clip),
+                     extra={"clip": clip.id, "trf": self.o.stab_files.get(clip.id)})
+
+        f: list[str] = []
+        if clip.type == "html":
+            got = self.o.html_files.get(clip.id)
+            if not got:
+                self.warnings.append(f"clip {clip.id}: html non rasterizzato, esclusa dal render")
+                return None
+            path, t0 = got
+            # nei segmenti l'attacco (in_) e' gia' avanzato della parte tagliata;
+            # il file parte da t0, quindi si salta solo la differenza
+            args: list[str] = []
+            # all'inizio del fotogramma che copre l'attacco: a meta' fotogramma
+            # ffmpeg scarta proprio quello, e negli ultimi due fotogrammi della
+            # clip (il file ne ha uno o due) non restava niente, cioe' nero
+            salto = math.floor((clip.in_ - float(t0)) * self.fps + 1e-6) / self.fps
+            if salto > 1e-6:
+                args += ["-ss", n(salto)]
+            args += ["-t", n(clip_visible(clip) + 0.05)]
+            if path.endswith(".ffconcat"):
+                # piu' blocchi fotografati in fila (htmlclip.rasterize)
+                args += ["-f", "concat", "-safe", "0"]
+            args += ["-i", path]
+            src = f"{self.add_input(args)}:v"
+            # il file puo' essere a piena misura anche in anteprima (la cache di
+            # un export): scale passa senza lavoro quando la misura e' gia' quella
+            f += ["setpts=PTS-STARTPTS", f"fps={n(self.fps)}",
+                  f"scale={self.w}:{self.h}:flags=bicubic"]
+        elif clip.type == "media":
+            if media is None or not media.has_video:
+                return None
+            idx = self.input_for(clip, media)
+            src = f"{idx}:v"
+            if clip.reverse:
+                f.append("reverse")
+                if clip.duration > 20:
+                    self.warnings.append(
+                        f"clip {clip.id}: reverse su {clip.duration:.0f}s tiene tutti i frame in RAM"
+                    )
+            f.append("setpts=PTS-STARTPTS")
+            if abs(clip.speed - 1.0) > 1e-6:
+                f.append(f"setpts=PTS/{n(clip.speed)}")
+            f.append(f"fps={n(self.fps)}")
+        else:
+            # sorgenti generate: nessun ingresso, la catena parte da un filtro
+            src = None
+            dur = clip_visible(clip)
+            if clip.type == "color":
+                gen = f"color=c={clip.color}:s={self.w}x{self.h}:r={n(self.fps)}:d={n(dur)}"
+            else:  # text
+                gen = f"color=c=black@0:s={self.w}x{self.h}:r={n(self.fps)}:d={n(dur)}"
+            f.append(gen)
+            f.append("format=yuva420p")
+            if clip.type == "text":
+                f.append(self._drawtext(clip, ctx))
+
+        # Nei segmenti di anteprima il tempo locale riparte dall'offset invece
+        # che da zero, e va fatto subito: tutto quello che segue (effetti con
+        # eval=frame, maschere di transizione, dissolvenze) legge il tempo del
+        # fotogramma e deve vedere quello vero della clip.
+        off = clip_offset(clip)
+        if off > 0:
+            f.append(f"setpts=PTS-STARTPTS+{n(off)}/TB")
+
+        # inquadratura sul canvas
+        if clip.type == "media":
+            f.extend(self._fit(clip, media))
+        f.append("setsar=1")
+
+        # effetti video della clip
+        if clip.type == "media":
+            ctx.extra["matte"] = self._matte(clip, media)
+        f.extend(fx.build_chain(clip.effects, ctx, "video"))
+
+        # trasformazioni
+        f.append("format=yuva420p")
+        f.extend(self._scale_transform(clip))
+        f.extend(self._rotate(clip))
+        f.extend(self._opacity(clip))
+
+        # dissolvenze (tempo locale alla clip)
+        if clip.fade_in > 0:
+            f.append(f"fade=t=in:st=0:d={n(clip.fade_in)}:alpha=1")
+        if clip.fade_out > 0:
+            st = max(0.0, clip.duration - clip.fade_out)
+            f.append(f"fade=t=out:st={n(st)}:d={n(clip.fade_out)}:alpha=1")
+
+        f.extend(self._transition_mask(clip))
+
+        # limite di durata e posizionamento in timeline
+        f.append(f"trim={n(off)}:{n(off + clip_visible(clip))}")
+        f.append("setpts=PTS-STARTPTS")
+        if clip.start > 1e-6:
+            f.append(f"tpad=start_duration={n(clip.start)}:start_mode=add:color=black@0")
+
+        out = self.label("v")
+        if src is None:
+            self.chains.append(",".join(f) + f"[{out}]")
+        else:
+            self.chain(src, f, out)
+        return out
+
+    def _matte(self, clip: Clip, media: Media) -> str | None:
+        """Maschera dello scontorno IA, allineata fotogramma per fotogramma alla clip.
+
+        Il file copre la sorgente a partire da ``t0``: si apre con lo stesso
+        attacco e passa per le stesse operazioni della clip (reverse, velocita',
+        cadenza, inquadratura), cosi' a ogni fotogramma corrisponde la sua
+        maschera. Ritorna l'etichetta che l'effetto ``matte`` fonde come alpha.
+        """
+        e = next((e for e in clip.effects if e.type == "matte" and e.enabled), None)
+        if e is None:
+            return None
+        path = str((e.params or {}).get("file") or "")
+        if not path or not Path(path).exists():
+            self.warnings.append(f"clip {clip.id}: maschera di scontorno mancante, ignorata")
+            return None
+        p = e.params or {}
+        args: list[str] = []
+        salto = clip.in_ - float(p.get("t0") or 0.0)
+        if salto > 1e-6:
+            args += ["-ss", n(salto)]
+        args += ["-t", n(clip_visible(clip) * abs(clip.speed or 1.0) + 0.05), "-i", path]
+        idx = self.add_input(args)
+        f: list[str] = []
+        if clip.reverse:
+            f.append("reverse")
+        f.append("setpts=PTS-STARTPTS")
+        if abs(clip.speed - 1.0) > 1e-6:
+            f.append(f"setpts=PTS/{n(clip.speed)}")
+        f.append(f"fps={n(self.fps)}")
+        off = clip_offset(clip)
+        if off > 0:
+            f.append(f"setpts=PTS-STARTPTS+{n(off)}/TB")
+        if media.width and media.height:
+            f.append(f"scale={media.width}:{media.height}:flags=bilinear")
+        f.extend(self._fit(clip, media))
+        f.append("setsar=1")
+        f.append("format=gray")
+        sfuma = float(p.get("feather") or 0.0) * self.scale
+        if sfuma > 0.05:
+            f.append(f"gblur=sigma={n(sfuma)}")
+        if fx.flag(p, "invert"):
+            f.append("negate")
+        return self.chain(f"{idx}:v", f, self.label("mt"))
+
+    def _fit(self, clip: Clip, media: Media) -> list[str]:
+        w, h = self.w, self.h
+        mode = clip.fit
+        if mode == "none":
+            # dimensione nativa: in preview va comunque ridotta come il canvas
+            if abs(self.scale - 1.0) > 1e-6:
+                return [f"scale=iw*{n(self.scale)}:ih*{n(self.scale)}:flags=bicubic"]
+            return []
+        if mode == "stretch":
+            return [f"scale={w}:{h}:flags=bicubic"]
+        if mode == "cover":
+            return [
+                f"scale={w}:{h}:force_original_aspect_ratio=increase:flags=bicubic",
+                f"crop={w}:{h}",
+            ]
+        return [  # contain
+            f"scale={w}:{h}:force_original_aspect_ratio=decrease:flags=bicubic",
+            "format=yuva420p",
+            f"pad={w}:{h}:(ow-iw)/2:(oh-ih)/2:color=black@0",
+        ]
+
+    def _scale_transform(self, clip: Clip) -> list[str]:
+        s = clip.transform.scale
+        if not kf.is_kf(s):
+            v = float(kf.sample(s, 0, 1.0))
+            if abs(v - 1.0) < 1e-6:
+                return []
+            return [f"scale=iw*{n(v)}:ih*{n(v)}:flags=bicubic"]
+
+        smin, smax = kf.bounds(s, 1.0)
+        rot = clip.transform.rotation
+        if smin < 1.0 and not kf.is_kf(rot) and abs(float(kf.sample(rot, 0, 0.0))) < 1e-6:
+            # Zoom che scende sotto 1: scale rivalutato a ogni fotogramma, che
+            # produce immagini di misura variabile. overlay le centra da se'
+            # (x/y usano w e h del fotogramma), fade e tpad le accettano. La
+            # strada di zoompan voleva una tela K volte piu' grande (fino a
+            # 7680x4320 a 1080p): ogni fotogramma in coda costava 80 MB e un
+            # pezzo di render arrivava a due giga. Con una rotazione resta
+            # zoompan: rotate fissa la misura d'uscita una volta sola.
+            expr = kf.expr(s, "t", 1.0)
+            dim = "max(2,trunc({}*clip({},0.001,10)/2)*2)"
+            return [f"scale=w={fx.quoted(dim.format('iw', expr))}"
+                    f":h={fx.quoted(dim.format('ih', expr))}:eval=frame:flags=bicubic",
+                    "format=yuva420p"]
+
+        # zoom animato: zoompan non scende sotto 1, quindi pre-ingrandiamo il
+        # canvas di K e chiediamo zoom = K*s(t), che a video vale esattamente s(t).
+        k = 1.0 if smin >= 1.0 else min(MAX_PREPAD, 1.0 / max(smin, 1e-3))
+        if smin < 1.0 / MAX_PREPAD:
+            self.warnings.append(
+                f"clip {clip.id}: scala animata sotto {1 / MAX_PREPAD:.2f} limitata a {1 / MAX_PREPAD:.2f}"
+            )
+        # zoompan non espone il tempo: con d=1 vale un frame in uscita per frame
+        # in ingresso, quindi il tempo e' il numero di frame diviso gli fps.
+        expr = kf.expr(s, f"(on/{n(self.fps)}+{n(clip_offset(clip))})", 1.0)
+        z = f"clip({n(k)}*({expr}),1,10)"
+        out: list[str] = []
+        if k > 1.0:
+            bw, bh = int(self.w * k), int(self.h * k)
+            bw += bw % 2
+            bh += bh % 2
+            out.append(f"pad={bw}:{bh}:(ow-iw)/2:(oh-ih)/2:color=black@0")
+        # Con la scala animata zoompan ritaglia la tela *prima* dell'overlay: spostare
+        # dopo (x/y a keyframe, un tracking) scopre una barra nera dal lato opposto.
+        # Lo spostamento entra quindi nella finestra di zoompan, che resta dentro
+        # l'immagine da sola (x e y sono limitati al bordo): niente barre, mai.
+        tx, ty = clip.transform.x, clip.transform.y
+        xz, yz = "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"
+        if kf.animated(tx, ty) or abs(kf.sample(tx, 0, 0.0)) > 1e-9 or abs(kf.sample(ty, 0, 0.0)) > 1e-9:
+            tz = f"(on/{n(self.fps)}+{n(clip_offset(clip))})"
+            sc = f"(zoom/{n(k)})"                        # pixel d'uscita per pixel d'ingresso
+            kr = n(self.scale)                           # pixel del progetto -> pixel di render
+            xz += f"-({kf.expr(tx, tz, 0.0)})*{kr}/{sc}"
+            yz += f"-({kf.expr(ty, tz, 0.0)})*{kr}/{sc}"
+            self._posizione_dentro.add(clip.id)
+        out.append(
+            f"zoompan=z={fx.quoted(z)}:x={fx.quoted(xz)}:y={fx.quoted(yz)}"
+            f":d=1:s={self.w}x{self.h}:fps={n(self.fps)}"
+        )
+        # zoompan riscrive i timestamp partendo da zero e butta via l'offset
+        # della fetta: senza rimetterlo il trim piu' avanti scarta ogni
+        # fotogramma e la clip sparisce dall'anteprima (schermo nero).
+        off = clip_offset(clip)
+        if off > 0:
+            out.append(f"setpts=PTS-STARTPTS+{n(off)}/TB")
+        out.append("format=yuva420p")
+        if k * smax > 10:
+            self.warnings.append(f"clip {clip.id}: scala massima {smax:.2f} oltre il limite di zoompan (10x)")
+        return out
+
+    def _rotate(self, clip: Clip) -> list[str]:
+        r = clip.transform.rotation
+        if not kf.is_kf(r) and abs(float(kf.sample(r, 0, 0.0))) < 1e-6:
+            return []
+        expr = kf.expr(r, "t", 0.0)
+        # rotate lavora in radianti; allarghiamo alla diagonale per non tagliare
+        return [
+            f"rotate=a={fx.quoted(f'({expr})*PI/180')}:ow='hypot(iw,ih)':oh='hypot(iw,ih)'"
+            f":c=black@0:fillcolor=black@0"
+        ]
+
+    def _opacity(self, clip: Clip) -> list[str]:
+        op = clip.transform.opacity
+        if not kf.is_kf(op):
+            v = float(kf.sample(op, 0, 1.0))
+            if v >= 0.999:
+                return []
+            return [f"colorchannelmixer=aa={n(max(0.0, v))}"]
+        # Caso comune (comparsa o scomparsa lineare): lo fa il filtro fade, che
+        # non costa nulla. Solo le animazioni piu' complesse passano da geq.
+        ramp = _simple_ramp(op)
+        if ramp:
+            kind, st, d = ramp
+            return [f"fade=t={kind}:st={n(st)}:d={n(d)}:alpha=1"]
+
+        # opacita' animata generica: geq sul solo piano alpha.
+        # In geq la variabile temporale si chiama T, non t.
+        expr = kf.expr(op, "T", 1.0)
+        self.warnings.append(f"clip {clip.id}: opacita' animata usa geq, render piu' lento")
+        return [
+            "geq=lum='lum(X,Y)':cb='cb(X,Y)':cr='cr(X,Y)':"
+            f"a='alpha(X,Y)*clip({expr},0,1)'"
+        ]
+
+    def _transition_mask(self, clip: Clip) -> list[str]:
+        """Tendine e iris: maschera sul canale alpha che cancella la clip uscente.
+
+        Con l'ordine di disegno adottato (la clip che inizia prima sta sopra),
+        togliere pixel alla clip in uscita scopre quella successiva: una sola
+        maschera realizza la transizione, senza secondo ramo del grafo.
+        """
+        tr = clip.transition_out
+        if not tr or tr.duration <= 0 or tr.type in ("dissolve", ""):
+            return []
+        d = min(tr.duration, clip.duration)
+        ts = max(0.0, clip.duration - d)
+        # in geq il tempo si chiama T e W/H sono le dimensioni dell'immagine
+        p = f"clip((T-{n(ts)})/{n(d)},0,1)"
+
+        masks = {
+            "wipe_right": f"gt(X,W*{p})",
+            "wipe_left": f"lt(X,W*(1-{p}))",
+            "wipe_down": f"gt(Y,H*{p})",
+            "wipe_up": f"lt(Y,H*(1-{p}))",
+            "iris": f"lt(hypot(X-W/2,Y-H/2),hypot(W/2,H/2)*(1-{p}))",
+        }
+        cond = masks.get(tr.type)
+        if cond is None:
+            return []  # slide: si realizza spostando l'overlay, non mascherando
+        # geq costa (valuta ogni pixel): con enable lavora solo durante la
+        # transizione, il resto della clip passa senza essere toccato
+        return [
+            "geq=lum='lum(X,Y)':cb='cb(X,Y)':cr='cr(X,Y)':"
+            f"a='alpha(X,Y)*({cond})'"
+            f":enable={fx.quoted(f'gte(t,{n(ts)})')}"
+        ]
+
+    def _slide_offset(self, clip: Clip) -> tuple[str, str]:
+        """Spostamento (x, y) della clip uscente durante una transizione slide."""
+        tr = clip.transition_out
+        if not tr or tr.duration <= 0 or not tr.type.startswith("slide"):
+            return "0", "0"
+        d = min(tr.duration, clip.duration)
+        # sul canvas: nei segmenti di anteprima la clip puo' essere entrata a
+        # meta', quindi l'inizio vero e' start meno l'offset gia' consumato
+        ts = clip.start - clip_offset(clip) + max(0.0, clip.duration - d)
+        p = f"clip((t-{n(ts)})/{n(d)},0,1)"
+        return {
+            "slide_left": (f"-W*{p}", "0"),
+            "slide_right": (f"W*{p}", "0"),
+            "slide_up": ("0", f"-H*{p}"),
+            "slide_down": ("0", f"H*{p}"),
+        }.get(tr.type, ("0", "0"))
+
+    def _drawtext(self, clip: Clip, ctx: fx.Ctx) -> str:
+        st = clip.text
+        font = st.font_file or _default_font()
+        args = []
+        if font:
+            args.append(f"fontfile='{fx.esc_path(font)}'")
+        else:
+            self.warnings.append("nessun font trovato: drawtext potrebbe fallire")
+
+        # il testo passa da file: niente problemi di escape con apici, due punti,
+        # virgole, percentuali o a capo
+        if self.o.workdir:
+            self._text_files += 1
+            tf = Path(self.o.workdir) / f"text_{clip.id}_{self._text_files}.txt"
+            tf.write_text(st.text, encoding="utf-8")
+            args.append(f"textfile='{fx.esc_path(str(tf))}'")
+        else:
+            args.append(f"text='{fx.esc_str(st.text)}'")
+
+        k = self.scale
+        args += [
+            f"fontsize={max(4, int(st.font_size * k))}",
+            f"fontcolor={fx.esc_str(st.color)}",
+            f"line_spacing={int(st.line_spacing * k)}",
+            "expansion=none",
+            "y=(h-text_h)/2",
+        ]
+        if st.align == "left":
+            args.append("x=0.06*w")
+        elif st.align == "right":
+            args.append("x=0.94*w-text_w")
+        else:
+            args.append("x=(w-text_w)/2")
+        if st.box:
+            args += [
+                "box=1",
+                f"boxcolor={fx.esc_str(st.box_color)}@{n(st.box_opacity)}",
+                f"boxborderw={max(0, int(st.box_padding * k))}",
+            ]
+        if st.border_width:
+            args += [f"borderw={max(1, int(st.border_width * k))}",
+                     f"bordercolor={fx.esc_str(st.border_color)}"]
+        if st.shadow_x or st.shadow_y:
+            args += [
+                f"shadowx={int(st.shadow_x * k)}", f"shadowy={int(st.shadow_y * k)}",
+                f"shadowcolor={fx.esc_str(st.shadow_color)}",
+            ]
+        return "drawtext=" + ":".join(args)
+
+    # -- composizione video ---------------------------------------------
+    def build_video(self, duration: float) -> str | None:
+        bg = self.p.settings.background or "black"
+        base = self.label("bg")
+        self.chains.append(
+            f"color=c={bg}:s={self.w}x{self.h}:r={n(self.fps)}:d={n(duration)},format=yuv420p[{base}]"
+        )
+
+        drawn = 0
+        # live_tracks applica nascosto e solo: quello che resta e' esattamente
+        # cio' che si compone, dal basso verso l'alto
+        for track in self.p.live_tracks("video"):
+            # Ordine di sovrapposizione dentro la traccia:
+            #  - le clip che iniziano dopo vanno sotto, cosi' la transizione in
+            #    uscita di una scopre la seguente;
+            #  - titoli, colori pieni e grafica html stanno comunque sopra i media: un titolo
+            #    messo sulla stessa traccia di una ripresa deve vedersi.
+            # A parita' di posizione vince l'ordine della lista (sort stabile).
+            for clip in sorted(track.clips,
+                               key=lambda c: (c.type in GRAFICA, -clip_origin(c))):
+                if not clip.enabled or clip.duration <= 0:
+                    continue
+                lab = self.video_clip(clip, track)
+                if lab is None:
+                    continue
+                out = self.label("ov")
+                # tempo locale della clip visto dal canvas, offset del segmento incluso
+                origin = clip.start - clip_offset(clip)
+                tvar = f"(t-{n(origin)})" if abs(origin) > 1e-9 else "t"
+                if clip.id in self._posizione_dentro:
+                    x = y = "0"
+                else:
+                    x = kf.expr(clip.transform.x, tvar, 0.0)
+                    y = kf.expr(clip.transform.y, tvar, 0.0)
+                k = n(self.scale)  # offset in pixel del progetto -> pixel di render
+                sx, sy = self._slide_offset(clip)
+                pos = (f"x={fx.quoted(f'(W-w)/2+({x})*{k}+({sx})')}"
+                       f":y={fx.quoted(f'(H-h)/2+({y})*{k}+({sy})')}"
+                       f":eof_action=pass:repeatlast=0"
+                       f":enable={fx.quoted(f'between(t,{n(clip.start)},{n(clip.start + clip_visible(clip))})')}")
+                modo = BLEND_FFMPEG.get(getattr(clip, "blend", "normal") or "normal")
+                if modo:
+                    base = self._blend(base, lab, pos, modo, duration, out)
+                else:
+                    self.chains.append(f"[{base}][{lab}]overlay={pos}[{out}]")
+                    base = out
+                drawn += 1
+
+        inizio = getattr(self.p, "_slice_start", 0.0)
+        tail = fx.build_chain(self.p.master.effects, fx.Ctx(
+            width=self.w, height=self.h, fps=self.fps, sample_rate=self.sr,
+            duration=duration, scale=self.scale, offset=inizio), "video")
+        if tail and inizio > 1e-9:
+            tail = [f"setpts=PTS+{n(inizio)}/TB", *tail, "setpts=PTS-STARTPTS"]
+        tail.append("format=yuv420p")
+        out = self.label("vout")
+        self.chain(base, tail, out)
+        return out
+
+    def _blend(self, base: str, lab: str, pos: str, modo: str, duration: float, out: str) -> str:
+        """Fusione della clip con quello che sta sotto (screen, multiply...).
+
+        ``blend`` di ffmpeg vuole due immagini intere della stessa misura e non
+        conosce l'alpha: la clip si posa prima su un canvas trasparente, si
+        fonde l'immagine intera con la base, e il risultato torna sopra la base
+        usando come maschera l'alpha della clip. Cosi' posizione, opacita',
+        dissolvenze e transizioni restano quelle dell'overlay normale.
+        """
+        tela, posata, p1, p2, b1, b2 = (self.label(x) for x in ("bt", "bp", "bq", "br", "bb", "bc"))
+        pc, bc, fuso, alfa, mascherato = (self.label(x) for x in ("bx", "by", "bz", "ba", "bm"))
+        self.chains += [
+            f"color=c=black@0:s={self.w}x{self.h}:r={n(self.fps)}:d={n(duration)},format=yuva420p[{tela}]",
+            f"[{tela}][{lab}]overlay={pos}:format=yuv420[{posata}]",
+            f"[{posata}]split[{p1}][{p2}]",
+            f"[{base}]split[{b1}][{b2}]",
+            f"[{p1}]format=gbrp[{pc}]",
+            f"[{b1}]format=gbrp[{bc}]",
+            f"[{bc}][{pc}]blend=all_mode={modo}[{fuso}]",
+            f"[{p2}]alphaextract[{alfa}]",
+            f"[{fuso}]format=gbrap[{mascherato}x]",
+            f"[{mascherato}x][{alfa}]alphamerge[{mascherato}]",
+            f"[{b2}][{mascherato}]overlay=eof_action=pass:repeatlast=0[{out}]",
+        ]
+        return out
+
+    # -- catena audio di una clip ---------------------------------------
+    def audio_clip(self, clip: Clip, track: Track) -> str | None:
+        if clip.type != "media" or clip.audio.mute:
+            return None
+        media = self.p.media_by_id(clip.media) if clip.media else None
+        if media is None or not media.has_audio:
+            return None
+
+        # la clip video ha gia' creato il proprio ingresso: ne apriamo un altro
+        # solo per l'audio, cosi' i due rami restano indipendenti
+        lavorato = self.o.audio_files.get(clip.id)
+        if lavorato:
+            path, in0 = lavorato
+            args: list[str] = []
+            salto = clip.in_ - float(in0)
+            if salto > 1e-6:
+                args += ["-ss", n(salto)]
+            args += ["-t", n(clip_visible(clip) * abs(clip.speed or 1.0) + 0.05), "-i", path]
+            idx = self.add_input(args)
+        else:
+            idx = self.input_for(clip, media, "audio")
+        off = clip_offset(clip)
+        f = []
+        if clip.reverse:
+            # il video va all'indietro: l'audio deve seguirlo, se no immagine e
+            # suono raccontano due cose diverse
+            f.append("areverse")
+        f.append("asetpts=PTS-STARTPTS")
+        f += _atempo_chain(clip.speed)
+        if off > 0:  # come per il video: il tempo locale riparte dall'offset
+            f.append(f"asetpts=PTS-STARTPTS+{n(off)}/TB")
+        f.append(f"aformat=sample_fmts=fltp:sample_rates={self.sr}:channel_layouts=stereo")
+
+        gain = clip.audio.gain_db
+        tvol = kf.expr(track.volume, "t", 1.0)
+        if kf.is_kf(gain):
+            e = kf.expr(gain, "t", 0.0)
+            f.append(f"volume=volume={fx.quoted(f'pow(10,({e})/20)')}:eval=frame")
+        else:
+            g = float(kf.sample(gain, 0, 0.0))
+            if abs(g) > 1e-6:
+                f.append(f"volume={n(10 ** (g / 20.0))}")
+        if kf.is_kf(track.volume):
+            f.append(f"volume=volume={fx.quoted(tvol)}:eval=frame")
+        else:
+            tv = float(kf.sample(track.volume, 0, 1.0))
+            if abs(tv - 1.0) > 1e-6:
+                f.append(f"volume={n(tv)}")
+
+        pan = float(kf.sample(clip.audio.pan, 0, 0.0))
+        if abs(pan) > 1e-6:
+            left = max(0.0, 1.0 - max(0.0, pan))
+            right = max(0.0, 1.0 + min(0.0, pan))
+            f.append(f"pan=stereo|c0={n(left)}*c0|c1={n(right)}*c1")
+
+        ctx = fx.Ctx(width=self.w, height=self.h, fps=self.fps, sample_rate=self.sr,
+                     tvar="t", duration=clip.duration, scale=self.scale)
+        f.extend(fx.build_chain(clip.effects, ctx, "audio"))
+        if self.layout == "5.1":
+            # effetti e pan lavorano in stereo come sempre; poi la traccia va al suo posto
+            f.extend(_instrada_51(getattr(track, "surround", "front")))
+
+        # Dissolvenze prima del trim, sul tempo locale che nei segmenti di
+        # anteprima parte dall'offset: come per il video, una clip presa a meta'
+        # non deve ripartire con una dissolvenza d'ingresso, e quella d'uscita
+        # cade dove cade nel render completo.
+        if clip.audio.fade_in > 0:
+            f.append(f"afade=t=in:st=0:d={n(clip.audio.fade_in)}")
+        if clip.audio.fade_out > 0:
+            f.append(f"afade=t=out:st={n(max(0.0, clip.duration - clip.audio.fade_out))}"
+                     f":d={n(clip.audio.fade_out)}")
+        f.append(f"atrim={n(off)}:{n(off + clip_visible(clip))}")
+        f.append("asetpts=PTS-STARTPTS")
+        if clip.start > 1e-6:
+            ms = int(round(clip.start * 1000))
+            f.append(f"adelay={ms}|{ms}:all=1")
+        # Ogni ramo dura quanto il progetto, col silenzio in coda. amix di
+        # ffmpeg 8 si blocca a caso (un render su dieci, per sempre) quando
+        # molti ingressi brevi finiscono mentre uno lungo — la musica — e'
+        # ancora aperto: con tutti gli ingressi della stessa durata no.
+        if self._durata_audio:
+            f.append(f"apad=whole_dur={n(self._durata_audio)}")
+
+        out = self.label("a")
+        self.chain(f"{idx}:a", f, out)
+        return out
+
+    def _submix(self, labels: list[str]) -> str:
+        out = self.label("sub")
+        if len(labels) == 1:
+            self.chains.append(f"[{labels[0]}]anull[{out}]")
+        else:
+            ins = "".join(f"[{l}]" for l in labels)
+            self.chains.append(f"{ins}amix=inputs={len(labels)}:duration=longest:normalize=0"
+                               f":dropout_transition=0[{out}]")
+        return out
+
+    def _sidechain(self, per_traccia: dict[str, list[str]]) -> list[str] | None:
+        """Tracce che si abbassano quando ne suona un'altra (compressore sidechain).
+
+        Serve un sottomix per traccia: quella da abbassare passa nel
+        compressore, quella che comanda viene sdoppiata — una copia va nel mix,
+        l'altra fa da chiave. Senza sidechain attivi torna None e il mix resta
+        quello di sempre, clip per clip.
+        """
+        bersagli = {t.id: t.sidechain for t in self.p.tracks
+                    if t.sidechain and t.sidechain.get("source") in per_traccia
+                    and t.id in per_traccia and t.sidechain.get("source") != t.id}
+        if not bersagli:
+            return None
+        mix = {tid: self._submix(labs) for tid, labs in per_traccia.items()}
+        chiavi: dict[str, list[str]] = {}
+        for tid in {sc["source"] for sc in bersagli.values()}:
+            usi = sum(1 for sc in bersagli.values() if sc["source"] == tid)
+            copie = [self.label("key") for _ in range(usi)]
+            vivo = self.label("sub")
+            # la chiave non deve finire prima del brano da abbassare: il
+            # compressore si fermerebbe con lei
+            self.chains.append(f"[{mix[tid]}]asplit={usi + 1}[{vivo}]" + "".join(f"[{k}]" for k in copie))
+            mix[tid] = vivo
+            chiavi[tid] = copie
+        for tid, sc in bersagli.items():
+            chiave = chiavi[sc["source"]].pop()
+            pad, out = self.label("keyp"), self.label("sc")
+            soglia = max(0.000976563, min(1.0, 10 ** (float(sc.get("threshold", -30)) / 20)))
+            self.chains.append(f"[{chiave}]apad[{pad}]")
+            self.chains.append(
+                f"[{mix[tid]}][{pad}]sidechaincompress=threshold={n(soglia)}"
+                f":ratio={n(sc.get('ratio', 6))}:attack={n(sc.get('attack', 20))}"
+                f":release={n(sc.get('release', 400))}:makeup={n(sc.get('makeup', 1))}[{out}]")
+            mix[tid] = out
+        return list(mix.values())
+
+    def build_audio(self, duration: float) -> str | None:
+        self._durata_audio = duration
+        labels: list[str] = []
+        # Anche le clip su una traccia video portano il loro audio, quindi il mix
+        # le comprende. Ma se una traccia audio e' in solo si ascolta solo quella:
+        # e' il senso del solo, isolare un suono per sentirlo da solo.
+        solo = [t for t in self.p.audio_tracks() if t.solo]
+        sources = solo if solo else self.p.tracks
+        per_traccia: dict[str, list[str]] = {}
+        for track in sources:
+            if track.muted:
+                continue
+            for clip in track.clips:
+                if not clip.enabled or clip.duration <= 0:
+                    continue
+                lab = self.audio_clip(clip, track)
+                if lab:
+                    per_traccia.setdefault(track.id, []).append(lab)
+                    labels.append(lab)
+
+        if not labels:
+            return None
+
+        labels = self._sidechain(per_traccia) or labels
+        mixed = self.label("amix")
+        if len(labels) == 1:
+            self.chains.append(f"[{labels[0]}]anull[{mixed}]")
+        else:
+            ins = "".join(f"[{l}]" for l in labels)
+            self.chains.append(
+                f"{ins}amix=inputs={len(labels)}:duration=longest:normalize=0:dropout_transition=0[{mixed}]"
+            )
+
+        tail: list[str] = []
+        inizio = getattr(self.p, "_slice_start", 0.0)
+        mv = self.p.master.volume
+        if kf.is_kf(mv):
+            tv = f"(t+{n(inizio)})" if inizio > 1e-9 else "t"
+            tail.append(f"volume=volume={fx.quoted(kf.expr(mv, tv, 1.0))}:eval=frame")
+        elif abs(float(kf.sample(mv, 0, 1.0)) - 1.0) > 1e-6:
+            tail.append(f"volume={n(float(kf.sample(mv, 0, 1.0)))}")
+
+        ctx = fx.Ctx(width=self.w, height=self.h, fps=self.fps, sample_rate=self.sr,
+                     duration=duration, scale=self.scale)
+        tail.extend(fx.build_chain(self.p.master.effects, ctx, "audio"))
+
+        ln = self.p.master.loudnorm
+        if ln.enabled:
+            args = [f"I={n(ln.i)}", f"TP={n(ln.tp)}", f"LRA={n(ln.lra)}"]
+            m = ln.measured or {}
+            if all(k in m for k in ("input_i", "input_tp", "input_lra", "input_thresh")):
+                args += [
+                    f"measured_I={m['input_i']}", f"measured_TP={m['input_tp']}",
+                    f"measured_LRA={m['input_lra']}", f"measured_thresh={m['input_thresh']}",
+                    "linear=true",
+                ]
+                if m.get("target_offset") is not None:
+                    args.append(f"offset={m['target_offset']}")
+            tail.append("loudnorm=" + ":".join(args))
+            tail.append(f"aformat=sample_fmts=fltp:sample_rates={self.sr}:channel_layouts={self.layout}")
+
+        tail.append("alimiter=limit=0.98:level=false")
+        # durata esatta del progetto, anche se l'ultima clip finisce prima
+        tail.append("apad")
+        tail.append(f"atrim=0:{n(duration)}")
+        tail.append("asetpts=PTS-STARTPTS")
+
+        out = self.label("aout")
+        self.chain(mixed, tail, out)
+        return out
+
+
+def _instrada_51(dove: str) -> list[str]:
+    """Da stereo a 5.1 (FL FR FC LFE BL BR) secondo l'instradamento della traccia.
+
+    Il centro e il subwoofer prendono la somma dei due canali a meta': un suono
+    in fase non sale di livello passando da due altoparlanti a uno. Il
+    subwoofer riceve solo i bassi, come si fa in sala.
+    """
+    if dove == "center":
+        return ["pan=5.1|FC=0.5*c0+0.5*c1"]
+    if dove == "surround":
+        return ["pan=5.1|BL=c0|BR=c1"]
+    if dove == "all":
+        return ["pan=5.1|FL=c0|FR=c1|BL=0.7*c0|BR=0.7*c1"]
+    if dove == "lfe":
+        return ["lowpass=f=120", "pan=5.1|LFE=0.5*c0+0.5*c1"]
+    return ["pan=5.1|FL=c0|FR=c1"]
+
+
+def compile_project(project: Project, opts: CompileOptions | None = None) -> Compiled:
+    opts = opts or CompileOptions()
+    proj = project
+    if opts.start is not None or opts.end is not None:
+        a = opts.start or 0.0
+        b = opts.end if opts.end is not None else project.duration()
+        proj = slice_project(project, a, b)
+        duration = max(0.0, b - a)
+    else:
+        duration = project.duration()
+
+    if duration <= 0:
+        raise ValueError("empty timeline: no clips to render")
+
+    b = _Builder(proj, opts)
+    vlabel = b.build_video(duration) if opts.video else None
+    alabel = b.build_audio(duration) if opts.audio else None
+    return Compiled(
+        inputs=b.inputs,
+        filtergraph=";\n".join(b.chains),
+        video_label=vlabel,
+        audio_label=alabel,
+        duration=duration,
+        warnings=b.warnings,
+    )
