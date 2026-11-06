@@ -21,7 +21,7 @@ import { join } from 'node:path';
 
 const ROOT = process.cwd();
 const CATALOG = join(ROOT, 'data/rwc-catalog-live.json');
-const PRICES = join(ROOT, 'rank/output/data/pricing/prices.json');
+const PRICES = process.env.PRICE_BOOK_PATH || join(ROOT, 'rank/output/data/pricing/prices.json');
 const VERSION = process.env.SHOPIFY_API_VERSION || '2026-01';
 const EXECUTE = process.argv.includes('--execute');
 
