@@ -14,8 +14,12 @@ export class ShopifyError extends Error {
   }
 }
 
+export function adminToken(): string | undefined {
+  return process.env.SHOPIFY_ADMIN_TOKEN || process.env.SHOPIFY_ADMIN_API_TOKEN || process.env.SHOPIFY_ADMIN_API_KEY;
+}
+
 export function shopifyConfigured(): boolean {
-  return Boolean(process.env.SHOPIFY_STORE_DOMAIN && process.env.SHOPIFY_ADMIN_TOKEN);
+  return Boolean(process.env.SHOPIFY_STORE_DOMAIN && adminToken());
 }
 
 export function storeHost(): string {
@@ -33,7 +37,7 @@ export async function shopifyGraphQL<T>(
   const res = await fetch(`https://${storeHost()}/admin/api/${API_VERSION}/graphql.json`, {
     method: 'POST',
     headers: {
-      'X-Shopify-Access-Token': String(process.env.SHOPIFY_ADMIN_TOKEN),
+      'X-Shopify-Access-Token': String(adminToken()),
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ query, variables }),

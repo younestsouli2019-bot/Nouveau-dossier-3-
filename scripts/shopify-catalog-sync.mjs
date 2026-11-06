@@ -67,7 +67,8 @@ for (const k of ['SHOPIFY_STORE_DOMAIN', 'SHOPIFY_ADMIN_API_TOKEN']) {
   if (!process.env[k]) fail(`missing env: ${k}`);
 }
 const base = `https://${process.env.SHOPIFY_STORE_DOMAIN}/admin/api/${VERSION}`;
-const headers = { 'X-Shopify-Access-Token': process.env.SHOPIFY_ADMIN_API_TOKEN, 'Content-Type': 'application/json' };
+const TOKEN = process.env.SHOPIFY_ADMIN_API_TOKEN || process.env.SHOPIFY_ADMIN_API_KEY || '';
+const headers = { 'X-Shopify-Access-Token': TOKEN, 'Content-Type': 'application/json' };
 
 const call = async (path, init = {}) => {
   const res = await fetch(`${base}${path}`, { headers, ...init });

@@ -28,13 +28,15 @@ try { cfg = JSON.parse(readFileSync('config/shopify.json', 'utf8')); } catch { /
 const STORE_DOMAIN = (process.env.SHOPIFY_STORE_DOMAIN || cfg.store_domain || '').trim();
 const EXPECTED_CURRENCY = (process.env.SHOPIFY_EXPECTED_CURRENCY || cfg.expected_currency || '').trim();
 if (!STORE_DOMAIN) { console.error('[fail-closed] no store domain: set SHOPIFY_STORE_DOMAIN or config/shopify.json'); process.exit(2); }
-if (!process.env.SHOPIFY_ADMIN_API_TOKEN) { console.error('[fail-closed] missing env: SHOPIFY_ADMIN_API_TOKEN. No API call attempted.'); process.exit(2); }
+const TOKEN = process.env.SHOPIFY_ADMIN_API_TOKEN || process.env.SHOPIFY_ADMIN_API_KEY || '';
+if (process.env.SHOPIFY_ADMIN_API_KEY && !process.env.SHOPIFY_ADMIN_API_TOKEN) console.error('[warn] using legacy SHOPIFY_ADMIN_API_KEY; prefer SHOPIFY_ADMIN_API_TOKEN');
+if (!TOKEN) { console.error('[fail-closed] missing env: SHOPIFY_ADMIN_API_TOKEN. No API call attempted.'); process.exit(2); }
 
 const base = `https://${STORE_DOMAIN}/admin/api/${VERSION}`;
 
 async function get(path) {
   const res = await fetch(`${base}${path}`, {
-    headers: { 'X-Shopify-Access-Token': process.env.SHOPIFY_ADMIN_API_TOKEN, Accept: 'application/json' },
+    headers: { 'X-Shopify-Access-Token': TOKEN, Accept: 'application/json' },
   });
   const body = await res.text();
   if (!res.ok) return { ok: false, status: res.status, body: body.slice(0, 300) };
