@@ -26,6 +26,7 @@ scripts/guard/core-integrity.sha256manifest -merge
 scripts/guard/core-files.txt -merge
 scripts/guard/sync-core-guards.ps1 -merge
 scripts/guard/verify-core.ps1 -merge
+scripts/guard/verify-core.js -merge
 scripts/guard/apply-attrib-readonly.ps1 -merge
 scripts/guard/install-core-protect-hook.ps1 -merge
 scripts/guard/commit-msg.hook.sh -merge
