@@ -8,7 +8,7 @@
   },
   "integrations": {
     "shopify": {
-      "secrets": ["SHOPIFY_STORE_DOMAIN", "SHOPIFY_ADMIN_API_TOKEN"],
+      "secrets": ["SHOPIFY_STORE_DOMAIN", "SHOPIFY_ADMIN_API_KEY"],
       "scopes": ["read_products", "write_products", "read_orders"]
     },
     "base44": {
