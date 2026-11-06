@@ -66,7 +66,8 @@
     "test:course-chain": "node scripts/test-course-order-chain.mjs",
     "test:supervisor": "node scripts/test-financial-supervisor.mjs",
     "test:rails": "npm run test:binance-rail && npm run test:po-shape && npm run test:course-chain && npm run test:supervisor",
-    "audit:stuck": "node --import tsx scripts/audit-stuck-payouts-v2.ts"
+    "audit:stuck": "node --import tsx scripts/audit-stuck-payouts-v2.ts",
+    "shopify:sync": "tsx scripts/shopify-revenue-sync.ts"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.13",

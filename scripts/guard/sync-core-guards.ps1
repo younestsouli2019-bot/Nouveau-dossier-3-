@@ -111,7 +111,7 @@ if ($Check) {
       $tag = if ($d.SideIndicator -eq '<=') { 'only in core-files.txt' } else { 'only in .gitattributes' }
       Write-Host ("  " + $tag + ": " + $d.InputObject)
     }
-    Write-Host "Fix: pwsh scripts/guard/sync-core-guards.ps1   then   pwsh scripts/guard/verify-core.ps1 -Init"
+    Write-Host "Fix: pwsh scripts/guard/sync-core-guards.ps1   then   node scripts/guard/verify-core.js -Init"
     exit 1
   }
 
@@ -121,6 +121,7 @@ if ($Check) {
   # the moment anything else changed.
   $consumers = @(
     'scripts/guard/verify-core.ps1',
+    'scripts/guard/verify-core.js',
     'scripts/guard/commit-msg.hook.sh',
     'scripts/guard/apply-attrib-readonly.ps1'
   )
@@ -141,7 +142,7 @@ if ($Check) {
     exit 1
   }
 
-  Write-Host ("[sync-core-guards] PASS -- .gitattributes block + 3 consumers agree with core-files.txt (" + $coreFiles.Count + " entries).")
+  Write-Host ("[sync-core-guards] PASS -- .gitattributes block + " + $consumers.Count + " consumers agree with core-files.txt (" + $coreFiles.Count + " entries).")
   exit 0
 }
 

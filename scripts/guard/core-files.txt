@@ -2,14 +2,15 @@
 #
 # Every consumer of the CORE allowlist reads THIS file. Nothing may inline a
 # second copy of the list:
-#   scripts/guard/verify-core.ps1            Layer 3/5 -- SHA-256 manifest
+#   scripts/guard/verify-core.js             Layer 3/5 -- SHA-256 manifest
+#   scripts/guard/verify-core.ps1            compatible PowerShell verifier
 #   scripts/guard/commit-msg.hook.sh         Layer 2/5 -- staged-path + tag gate
 #   scripts/guard/apply-attrib-readonly.ps1  Layer 5/5 -- filesystem +R bit
 #   scripts/guard/sync-core-guards.ps1       generates the .gitattributes block
 #
 # Adding or removing a path here requires a [CORE-UPDATE] commit plus:
 #   pwsh scripts/guard/sync-core-guards.ps1     # rebuild .gitattributes
-#   pwsh scripts/guard/verify-core.ps1 -Init    # re-bless the manifest
+#   node scripts/guard/verify-core.js -Init    # re-bless the manifest
 # CI (.github/workflows/verify-core.yml) fails on drift between this file and
 # the generated block in .gitattributes.
 #
@@ -34,6 +35,7 @@ scripts/guard/core-integrity.sha256manifest
 scripts/guard/core-files.txt
 scripts/guard/sync-core-guards.ps1
 scripts/guard/verify-core.ps1
+scripts/guard/verify-core.js
 scripts/guard/apply-attrib-readonly.ps1
 scripts/guard/install-core-protect-hook.ps1
 scripts/guard/commit-msg.hook.sh

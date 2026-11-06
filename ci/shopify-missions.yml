@@ -1,0 +1,57 @@
+# Stage this at .github/workflows/shopify-missions.yml to activate.
+# Workflow-file writes need a token with `workflow` scope; this copy is inert.
+name: Shopify missions (M1 verify, M2 sync)
+on:
+  workflow_dispatch:
+    inputs:
+      execute:
+        description: 'Publish to the live store'
+        type: boolean
+        default: false
+  schedule:
+    - cron: '0 6 * * 1'
+permissions:
+  contents: read
+concurrency: shopify-missions
+jobs:
+  missions:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: 'npm' }
+      - run: npm ci --ignore-scripts
+      - name: Mission tests (no network)
+        run: node scripts/test-shopify-missions.mjs
+      - name: Preflight — Shopify secrets present?
+        id: preflight
+        env:
+          DOMAIN: ${{ secrets.SHOPIFY_STORE_DOMAIN }}
+          TOKEN: ${{ secrets.SHOPIFY_ADMIN_API_TOKEN }}
+        run: |
+          if [ -n "$DOMAIN" ] && [ -n "$TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Shopify secrets absent - M1/M2 skipped (the scripts exit 2 by design)."
+          fi
+      - name: M1 verify store
+        if: steps.preflight.outputs.configured == 'true'
+        env:
+          SHOPIFY_STORE_DOMAIN: ${{ secrets.SHOPIFY_STORE_DOMAIN }}
+          SHOPIFY_ADMIN_API_TOKEN: ${{ secrets.SHOPIFY_ADMIN_API_TOKEN }}
+        run: node scripts/shopify-verify.mjs
+      - name: M2 dry run
+        if: steps.preflight.outputs.configured == 'true'
+        env:
+          SHOPIFY_STORE_DOMAIN: ${{ secrets.SHOPIFY_STORE_DOMAIN }}
+          SHOPIFY_ADMIN_API_TOKEN: ${{ secrets.SHOPIFY_ADMIN_API_TOKEN }}
+        run: node scripts/shopify-catalog-sync.mjs
+      - name: M2 execute (manual dispatch only)
+        if: ${{ inputs.execute == true && steps.preflight.outputs.configured == 'true' }}
+        env:
+          SWARM_LIVE: '1'
+          SHOPIFY_STORE_DOMAIN: ${{ secrets.SHOPIFY_STORE_DOMAIN }}
+          SHOPIFY_ADMIN_API_TOKEN: ${{ secrets.SHOPIFY_ADMIN_API_TOKEN }}
+        run: node scripts/shopify-catalog-sync.mjs --execute

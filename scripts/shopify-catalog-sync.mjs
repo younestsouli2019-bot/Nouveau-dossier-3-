@@ -18,10 +18,17 @@
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { resolveShopifyToken, validateTokenShape } from './lib/shopify-credentials.mjs';
 
+// Secret-name alias: base44/humans often label this SHOPIFY_ADMIN_API_KEY.
+// Both names are accepted; the VALUE must be the shpat_ Admin API token.
+// A Client ID in either name is rejected by Shopify with 401.
+if (!process.env.SHOPIFY_ADMIN_API_TOKEN && process.env.SHOPIFY_ADMIN_API_KEY) {
+  process.env.SHOPIFY_ADMIN_API_TOKEN = process.env.SHOPIFY_ADMIN_API_KEY;
+}
 const ROOT = process.cwd();
 const CATALOG = join(ROOT, 'data/rwc-catalog-live.json');
-const PRICES = join(ROOT, 'rank/output/data/pricing/prices.json');
+const PRICES = process.env.PRICE_BOOK_PATH || join(ROOT, 'rank/output/data/pricing/prices.json');
 const VERSION = process.env.SHOPIFY_API_VERSION || '2026-01';
 const EXECUTE = process.argv.includes('--execute');
 
@@ -38,13 +45,13 @@ const skipped = [];
 for (const [slug, entry] of Object.entries(priceBook.courses || {})) {
   const mode = entry.mode;
   if (mode !== 'fixed') { skipped.push({ slug, reason: mode || 'absent' }); continue; }
-  if (entry.amount == null) { skipped.push({ slug, reason: 'fixed-without-amount' }); continue; }
+  if (!Number.isFinite(entry.amountMinor) || entry.amountMinor <= 0) { skipped.push({ slug, reason: 'fixed-without-amountMinor' }); continue; }
   const meta = bySlug.get(slug);
   if (!meta) { skipped.push({ slug, reason: 'not-in-catalog' }); continue; }
   planned.push({
     sku: slug,
     title: meta.title,
-    price: (Number(entry.amount) / 10 ** minor).toFixed(minor),
+    price: (Number(entry.amountMinor) / 10 ** minor).toFixed(minor),
     currency,
     description: (meta.description || '').slice(0, 5000),
     tags: [meta.category, meta.language].filter(Boolean),
@@ -63,11 +70,15 @@ if (!EXECUTE) {
 }
 
 if (process.env.SWARM_LIVE !== '1') fail('--execute requires SWARM_LIVE=1');
-for (const k of ['SHOPIFY_STORE_DOMAIN', 'SHOPIFY_ADMIN_API_TOKEN']) {
-  if (!process.env[k]) fail(`missing env: ${k}`);
+if (!process.env.SHOPIFY_STORE_DOMAIN) fail('missing env: SHOPIFY_STORE_DOMAIN');
+const { value: TOKEN, source: TOKEN_SOURCE, legacy: LEGACY } = resolveShopifyToken();
+if (!TOKEN) fail('missing env: SHOPIFY_ADMIN_API_TOKEN (or SHOPIFY_ADMIN_API_KEY)');
+if (LEGACY) console.error(`[warn] using ${TOKEN_SOURCE}; prefer SHOPIFY_ADMIN_API_TOKEN`);
+if (validateTokenShape(TOKEN).error === 'client_id_detected') {
+  fail('that value is a Client ID / API key, not an Admin API access token (need shpat_...)');
 }
 const base = `https://${process.env.SHOPIFY_STORE_DOMAIN}/admin/api/${VERSION}`;
-const headers = { 'X-Shopify-Access-Token': process.env.SHOPIFY_ADMIN_API_TOKEN, 'Content-Type': 'application/json' };
+const headers = { 'X-Shopify-Access-Token': TOKEN, 'Content-Type': 'application/json' };
 
 const call = async (path, init = {}) => {
   const res = await fetch(`${base}${path}`, { headers, ...init });

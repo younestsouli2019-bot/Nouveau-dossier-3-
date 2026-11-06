@@ -1,6 +1,6 @@
 # verify-core — CORE integrity gate (BLOCKING).
 #
-# Runs scripts/guard/verify-core.ps1 with NO -Init and publishes its full output
+# Runs scripts/guard/verify-core.js with NO -Init and publishes its full output
 # to the job summary + an artifact. It never rewrites the manifest.
 #
 # History: this gate started out report-only because the manifest had been stale
@@ -14,10 +14,10 @@
 # 2 new guard files: scripts/guard/core-files.txt (now the SINGLE source of
 # truth for the allowlist) and scripts/guard/sync-core-guards.ps1 (projects it
 # into .gitattributes).
-# verify-core.ps1 hashes LF-normalised bytes, so a manifest blessed on Windows
+# The verifier hashes LF-normalised bytes, so a manifest blessed on Windows
 # (core.autocrlf=true) now matches a Linux checkout. Previously it could not.
 # This gate is BLOCKING: the "Run verify-core" step propagates the real exit code
-# of verify-core.ps1, so a manifest drift fails the job and blocks the PR. The
+# of verify-core.js, so a manifest drift fails the job and blocks the PR. The
 # CORE-drift step below is likewise blocking.
 #
 # Read-only: no secrets are referenced (scripts/audit-workflow-secrets.mjs lint
@@ -42,6 +42,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
       - name: Guard CORE-list drift (BLOCKING)
         shell: pwsh
         run: |
@@ -54,41 +58,25 @@ jobs:
 
       - name: Run verify-core (BLOCKING, read-only, no -Init)
         id: verify
-        shell: pwsh
+        shell: bash
         run: |
-          $ErrorActionPreference = 'Continue'
-          # verify-core.ps1 ends with `exit <n>` on manifest drift. Running it in
-          # this process would tear the step down before the report is written,
-          # so spawn a child pwsh, read its exit code, then propagate it.
-          $raw  = @()
-          $code = 0
-          try {
-            $raw  = & pwsh -NoProfile -NonInteractive -File ./scripts/guard/verify-core.ps1 2>&1
-            $code = $LASTEXITCODE
-          } catch {
-            $code = 99
-            $raw  = @('verify-core invocation threw: ' + $_.Exception.Message)
-          }
-          $out = ($raw | Out-String)
-          Set-Content -LiteralPath verify-core-output.txt -Value $out -Encoding utf8NoBOM
-          Add-Content -LiteralPath $env:GITHUB_OUTPUT -Value ('exit_code=' + $code) -Encoding utf8NoBOM
-          # Build the markdown from single-quoted fragments. Inside a
-          # double-quoted here-string a trailing backtick escapes the newline and
-          # swallows the closing terminator, which killed this step at parse time
-          # (TerminatorExpectedAtEndOfString) before any output existed.
-          $sh = @(
-            '## verify-core report'
-            ''
-            ('- exit_code: ' + $code)
-            '- manifest: scripts/guard/core-integrity.sha256manifest'
-            ''
-            '```'
-            $out
-            '```'
-          ) -join "`n"
-          Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $sh -Encoding utf8NoBOM
-          Write-Host ('verify-core step complete. exit_code=' + $code)
-          exit $code
+          set +e
+          node scripts/guard/verify-core.js > verify-core-output.txt 2>&1
+          code=$?
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          {
+            printf '## verify-core report\n\n- exit_code: %s\n' "$code"
+            printf '%s\n\n' '- manifest: scripts/guard/core-integrity.sha256manifest'
+            printf '```\n'
+            cat verify-core-output.txt
+            printf '```\n'
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "verify-core step complete. exit_code=$code"
+          exit "$code"
+
+      - name: Test Node verifier
+        run: node --test scripts/guard/verify-core.test.mjs
 
       - name: Annotate result
         if: always()
@@ -96,7 +84,7 @@ jobs:
         run: |
           $rc = '${{ steps.verify.outputs.exit_code }}'
           if ($rc -ne '0') {
-            Write-Host "::error title=verify-core FAILED::CORE manifest drift detected. See job summary and verify-core-output artifact."
+            Write-Host "::error title=verify-core FAILED::CORE verification failed or did not run. See job summary and verify-core-output artifact."
           } else {
             Write-Host "verify-core: PASS"
           }
