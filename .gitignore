@@ -137,3 +137,4 @@ logs/**
 .github/workflows/*.bak-*
 .orchestrator/
 rank/output/data/pricing/prices.usd.json
+pending-shopify-parity/
