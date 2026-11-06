@@ -69,3 +69,34 @@ for the same period. A mismatch means either an order state changed after
 ingest (refund, chargeback) or a gateway fee assumption is wrong. Refunds are
 **not** currently netted — the ledger sums paid orders only; add a refund sync
 before treating the total as net revenue.
+
+## Pricing the catalog
+
+The price book is `rank/output/data/pricing/prices.json`: `currency: MAD`,
+`minorUnits: 2`, entries shaped `{ "mode": "quote_required" | "fixed", "amount": <minor units> }`.
+
+```bash
+# stage a cohort (dry run, writes nothing)
+node scripts/utils-price-generator.mjs --base-mad 4500 --include-quote-required --limit 10
+# commit it (writes a timestamped backup first)
+node scripts/utils-price-generator.mjs --base-mad 4500 --include-quote-required --limit 10 --apply
+```
+
+297 of 298 entries are `quote_required`, meaning they are **deliberately not
+sellable**. Converting them publishes them. Start with a cohort, not the book.
+
+### The currency decision that blocks Step 2
+
+`shopify-catalog-sync.mjs` refuses to publish when the store currency differs
+from the book's currency — a good guard, but it forces a choice:
+
+- **Store MAD + PayPal**: PayPal does not support MAD as a transaction
+  currency, so a MAD store with PayPal as sole gateway cannot complete checkout.
+- **Store MAD + a MAD-capable gateway** (CMI/local acquirer): viable locally,
+  weaker for international buyers.
+- **Store USD/EUR + PayPal**: works, but the price book must then be
+  denominated in that currency; Shopify Markets can display MAD equivalents.
+
+Pick the gateway first, then set the book currency to match it. Do not run
+`--apply` before that decision: a mismatched book makes the sync refuse, and
+a matched one publishes at a price you may not have intended.

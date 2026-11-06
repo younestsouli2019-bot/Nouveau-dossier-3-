@@ -1,124 +1,99 @@
 #!/usr/bin/env node
 /**
- * utils-price-generator.mjs — mass-assign MAD prices to the authoritative book.
+ * utils-price-generator.mjs — convert unpriced entries to fixed MAD prices.
  *
- * SCHEMA (verified): courses[] = { mode: 'fixed'|'quote_required'|'absent',
- *                                  amountMinor?: int, approvedBy?, approvedAt? }
- * There is NO `type` field. A generator written against `type` converts 0 items
- * while printing success — that silent no-op is what this script prevents.
+ * SCHEMA (verified against shopify-catalog-sync.mjs): courses[slug] = { mode, amount }
+ * where `amount` is in MINOR units (450000 = 4500.00 MAD). There is no `type`
+ * field and no `amountMinor` field: a generator written against either marks
+ * every course fixed-without-amount, so the sync publishes nothing.
  *
- * SAFETY:
- *   - dry-run by default; nothing is written without --apply
- *   - --apply REQUIRES --approve-by <name>: prices are a commercial act, and the
- *     book records who approved them (approvedBy/approvedAt)
- *   - a timestamped .bak copy is written before any mutation
- *   - mode 'absent' is never made sellable unless --include-absent is explicit
- *   - loud failure when zero courses convert (schema drift, not success)
- *
- * Usage:
- *   node scripts/utils-price-generator.mjs --base-mad 4500
- *   node scripts/utils-price-generator.mjs --base-mad 4500 --apply --approve-by owner
+ * SAFETY
+ *   - dry-run by default; --apply additionally requires --approve-by <name>
+ *   - timestamped backup before any mutation; atomic rename on write
+ *   - quote_required and absent entries convert only behind explicit flags
+ *   - zero convertible entries is a loud failure, not success
  */
-import { readFileSync, writeFileSync, copyFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, renameSync, mkdirSync, copyFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const BOOK = join(process.cwd(), 'rank/output/data/pricing/prices.json');
+const MIN_MAD = 50;
+const MAX_MAD = 100000;
+
 const argv = process.argv.slice(2);
-const flag = (n) => argv.includes(n);
+const has = (n) => argv.includes(n);
 const val = (n, d) => { const i = argv.indexOf(n); return i >= 0 && argv[i + 1] ? argv[i + 1] : d; };
 
-const baseMad = Number(val('--base-mad', '0'));
-const apply = flag('--apply');
-const approveBy = val('--approve-by', '');
-const includeAbsent = flag('--include-absent');
-const perTier = val('--tier-map', ''); // "category=price|category=price"
+const APPLY = has('--apply');
+const APPROVE_BY = val('--approve-by', '');
+const INCLUDE_QUOTE = has('--include-quote-required');
+const INCLUDE_ABSENT = has('--include-absent');
+const REPRICE_FIXED = has('--reprice-fixed');
+const ONLY = val('--only', '') ? val('--only', '').split(',').map(s => s.trim()).filter(Boolean) : null;
+const LIMIT_RAW = Number(val('--limit', ''));
+const LIMIT = Number.isInteger(LIMIT_RAW) && LIMIT_RAW > 0 ? LIMIT_RAW : Infinity;
+const baseMad = Number(val('--base-mad', ''));
 
-if (!baseMad || Number.isNaN(baseMad) || baseMad <= 0) {
-  console.error('[fail-closed] --base-mad <amount in major units> is required, e.g. --base-mad 4500');
-  process.exit(2);
-}
-if (apply && !approveBy) {
-  console.error('[fail-closed] --apply requires --approve-by <name>. Prices are recorded with an approver.');
-  process.exit(2);
-}
+const die = (m, c = 2) => { console.error(`[fail-closed] ${m}`); process.exit(c); };
 
-let book;
-try { book = JSON.parse(readFileSync(BOOK, 'utf8')); }
-catch (e) { console.error(`[fail-closed] cannot read price book: ${e.message}`); process.exit(1); }
+if (!Number.isInteger(baseMad) || baseMad < MIN_MAD || baseMad > MAX_MAD) die(`--base-mad must be an integer ${MIN_MAD}..${MAX_MAD}`);
+if (APPLY && !APPROVE_BY) die('--apply requires --approve-by <name>: prices are a commercial act');
 
+const book = JSON.parse(readFileSync(BOOK, 'utf8'));
+if (book.currency !== 'MAD') die(`book currency is ${book.currency}, expected MAD`);
+if (book.minorUnits !== 2) die(`book minorUnits is ${book.minorUnits}, expected 2`);
+
+const amount = baseMad * 10 ** book.minorUnits;
 const courses = book.courses || {};
-const minor = book.minorUnits ?? 2;
-const tiers = new Map(perTier ? perTier.split('|').filter(Boolean).map((p) => {
-  const [k, v] = p.split('='); return [k, Number(v)];
-}) : []);
-
-// Optional category lookup so tiers can price by course family rather than flat.
-let categoryOf = () => null;
-try {
-  const cat = JSON.parse(readFileSync(join(process.cwd(), 'data/rwc-catalog-live.json'), 'utf8')).items || [];
-  const m = new Map(cat.map((c) => [c.slug, c.category]));
-  categoryOf = (slug) => m.get(slug) || null;
-} catch { /* catalogue optional; flat price still works */ }
-
-const today = new Date().toISOString().slice(0, 10);
 const changes = [];
-const skipped = { absent: 0, alreadyFixed: 0 };
+const skipped = { quoteNotIncluded: 0, absentNotIncluded: 0, alreadyPriced: 0, filtered: 0 };
 
 for (const [slug, meta] of Object.entries(courses)) {
+  if (ONLY && !ONLY.includes(slug)) { skipped.filtered++; continue; }
+  if (changes.length >= LIMIT) break;
   const mode = meta.mode || 'absent';
-  if (mode === 'absent') {
-    if (!includeAbsent) { skipped.absent++; continue; }
-  }
-  if (mode === 'fixed' && Number.isFinite(meta.amountMinor) && meta.amountMinor > 0) {
-    skipped.alreadyFixed++; continue;
-  }
-  const tierPrice = tiers.get(categoryOf(slug) || '') ?? null;
-  const major = tierPrice ?? baseMad;
-  changes.push({
-    slug,
-    from: mode,
-    major,
-    amountMinor: Math.round(major * 10 ** minor),
-  });
+  if (mode === 'quote_required' && !INCLUDE_QUOTE) { skipped.quoteNotIncluded++; continue; }
+  if (mode === 'absent' && !INCLUDE_ABSENT) { skipped.absentNotIncluded++; continue; }
+  if (mode === 'fixed' && Number.isFinite(meta.amount) && meta.amount > 0 && !REPRICE_FIXED) { skipped.alreadyPriced++; continue; }
+  changes.push({ slug, from: meta.amount ?? null, to: amount, wasMode: mode });
 }
 
 const summary = {
-  book: BOOK,
-  currency: book.currency,
-  minorUnits: minor,
-  base_mad: baseMad,
-  mode: apply ? 'apply' : 'dry-run',
-  convertible: changes.length,
-  skipped_absent: skipped.absent,
-  skipped_already_fixed: skipped.alreadyFixed,
-  total_courses: Object.keys(courses).length,
-  sample: changes.slice(0, 3),
+  applied: APPLY, approveBy: APPROVE_BY || null, baseMad, amountMinor: amount,
+  total: Object.keys(courses).length, toConvert: changes.length, skipped,
+  sumMinorAfter: changes.reduce((n, c) => n + c.to, 0),
+  sample: changes.slice(0, 5).map(c => `${c.slug}: ${c.wasMode} -> ${c.to}`),
 };
+console.log(JSON.stringify(summary, null, 2));
 
-if (!apply) {
-  console.log(JSON.stringify(summary, null, 2));
-  console.log('\nNothing written. Re-run with --apply --approve-by <owner> to commit these prices.');
-  if (changes.length === 0) {
-    console.error('[warn] 0 courses convertible — check schema: expected `mode` + `amountMinor`, NOT `type`/`amount`.');
-  }
+if (changes.length === 0) {
+  console.error('[warn] 0 courses convertible — check schema: mode + amount (minor units), not type/amountMinor.');
+  process.exit(3);
+}
+if (!APPLY) {
+  console.log('\nDRY RUN — nothing written. Re-run with --apply --approve-by <name>.');
   process.exit(0);
 }
 
+const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+const backupDir = join(process.cwd(), 'rank/output/data/pricing/backups');
+mkdirSync(backupDir, { recursive: true });
+const backup = join(backupDir, `prices-${stamp}.json`);
+copyFileSync(BOOK, backup);
+
+const now = new Date().toISOString();
 for (const c of changes) {
   const meta = courses[c.slug];
   meta.mode = 'fixed';
-  meta.amountMinor = c.amountMinor;
-  meta.approvedBy = approveBy;
-  meta.approvedAt = today;
+  meta.amount = c.to;
+  meta.approvedBy = APPROVE_BY;
+  meta.approvedAt = now;
 }
-book.updated = today;
+book.updated = now.slice(0, 10);
 
-const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-copyFileSync(BOOK, `${BOOK}.bak-${stamp}`);
-writeFileSync(BOOK, JSON.stringify(book, null, 2), 'utf8');
+const tmp = `${BOOK}.tmp`;
+writeFileSync(tmp, JSON.stringify(book, null, 2), 'utf8');
+renameSync(tmp, BOOK);
 
-console.log(JSON.stringify({ ...summary, backup: `${BOOK}.bak-${stamp}` }, null, 2));
-console.log(`\nWrote ${changes.length} prices at ${baseMad} MAD (approvedBy=${approveBy}).`);
-if (changes.length === 0) {
-  console.error('[warn] 0 converted — the book may already be priced, or the schema changed.');
-}
+console.log(`Wrote ${changes.length} entries at ${baseMad} MAD. Backup: ${backup}`);
+console.log('Next: node scripts/shopify-catalog-sync.mjs (dry run).');
