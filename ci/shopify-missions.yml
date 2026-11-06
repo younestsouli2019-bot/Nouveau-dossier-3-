@@ -24,18 +24,32 @@ jobs:
       - run: npm ci --ignore-scripts
       - name: Mission tests (no network)
         run: node scripts/test-shopify-missions.mjs
+      - name: Preflight — Shopify secrets present?
+        id: preflight
+        env:
+          DOMAIN: ${{ secrets.SHOPIFY_STORE_DOMAIN }}
+          TOKEN: ${{ secrets.SHOPIFY_ADMIN_API_TOKEN }}
+        run: |
+          if [ -n "$DOMAIN" ] && [ -n "$TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Shopify secrets absent - M1/M2 skipped (the scripts exit 2 by design)."
+          fi
       - name: M1 verify store
+        if: steps.preflight.outputs.configured == 'true'
         env:
           SHOPIFY_STORE_DOMAIN: ${{ secrets.SHOPIFY_STORE_DOMAIN }}
           SHOPIFY_ADMIN_API_TOKEN: ${{ secrets.SHOPIFY_ADMIN_API_TOKEN }}
         run: node scripts/shopify-verify.mjs
-      - name: M2 dry run (always)
+      - name: M2 dry run
+        if: steps.preflight.outputs.configured == 'true'
         env:
           SHOPIFY_STORE_DOMAIN: ${{ secrets.SHOPIFY_STORE_DOMAIN }}
           SHOPIFY_ADMIN_API_TOKEN: ${{ secrets.SHOPIFY_ADMIN_API_TOKEN }}
         run: node scripts/shopify-catalog-sync.mjs
       - name: M2 execute (manual dispatch only)
-        if: ${{ inputs.execute == true }}
+        if: ${{ inputs.execute == true && steps.preflight.outputs.configured == 'true' }}
         env:
           SWARM_LIVE: '1'
           SHOPIFY_STORE_DOMAIN: ${{ secrets.SHOPIFY_STORE_DOMAIN }}
