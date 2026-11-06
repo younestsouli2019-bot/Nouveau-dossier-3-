@@ -13,6 +13,7 @@
  *   SWARM_LIVE=1 ... node scripts/autonomous-sync-runner.mjs --execute
  */
 import { spawnSync } from 'node:child_process';
+import { resolveShopifyToken, validateTokenShape } from './lib/shopify-credentials.mjs';
 
 const args = process.argv.slice(2);
 const EXECUTE = args.includes('--execute');
@@ -44,9 +45,13 @@ if (!EXECUTE) {
 }
 
 const domain = process.env.SHOPIFY_STORE_DOMAIN;
-const token = process.env.SHOPIFY_ADMIN_API_TOKEN;
+const { value: token, source: tokenSource } = resolveShopifyToken();
 if (!domain || !token) {
-  console.error('[runner] --execute requires SHOPIFY_STORE_DOMAIN and SHOPIFY_ADMIN_API_TOKEN');
+  console.error('[runner] --execute requires SHOPIFY_STORE_DOMAIN and SHOPIFY_ADMIN_API_TOKEN (or SHOPIFY_ADMIN_API_KEY)');
+  process.exit(2);
+}
+if (validateTokenShape(token).error === 'client_id_detected') {
+  console.error(`[runner] ${tokenSource} holds a Client ID, not an Admin API access token (need shpat_...)`);
   process.exit(2);
 }
 if (process.env.SWARM_LIVE !== '1') {

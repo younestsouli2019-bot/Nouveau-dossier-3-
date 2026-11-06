@@ -10,12 +10,10 @@
  * Env: SHOPIFY_STORE_DOMAIN, SHOPIFY_ADMIN_API_TOKEN, SHOPIFY_API_VERSION
  */
 import { readFileSync } from 'node:fs';
+import { resolveShopifyToken, validateTokenShape } from './lib/shopify-credentials.mjs';
 // Secret-name alias: base44/humans often label this SHOPIFY_ADMIN_API_KEY.
-// Both names are accepted; the VALUE must be the shpat_ Admin API token.
-// A Client ID in either name is rejected by Shopify with 401.
-if (!process.env.SHOPIFY_ADMIN_API_TOKEN && process.env.SHOPIFY_ADMIN_API_KEY) {
-  process.env.SHOPIFY_ADMIN_API_TOKEN = process.env.SHOPIFY_ADMIN_API_KEY;
-}
+// Both names are accepted by the resolver; the VALUE must be the shpat_ Admin
+// API token. A Client ID in either name is rejected by Shopify with 401.
 const VERSION = process.env.SHOPIFY_API_VERSION || '2026-01';
 
 function requireEnv(keys) {
@@ -34,8 +32,14 @@ try { cfg = JSON.parse(readFileSync('config/shopify.json', 'utf8')); } catch { /
 const STORE_DOMAIN = (process.env.SHOPIFY_STORE_DOMAIN || cfg.store_domain || '').trim();
 const EXPECTED_CURRENCY = (process.env.SHOPIFY_EXPECTED_CURRENCY || cfg.expected_currency || '').trim();
 if (!STORE_DOMAIN) { console.error('[fail-closed] no store domain: set SHOPIFY_STORE_DOMAIN or config/shopify.json'); process.exit(2); }
-const TOKEN = process.env.SHOPIFY_ADMIN_API_TOKEN || process.env.SHOPIFY_ADMIN_API_KEY || '';
-if (process.env.SHOPIFY_ADMIN_API_KEY && !process.env.SHOPIFY_ADMIN_API_TOKEN) console.error('[warn] using legacy SHOPIFY_ADMIN_API_KEY; prefer SHOPIFY_ADMIN_API_TOKEN');
+const { value: TOKEN, source: TOKEN_SOURCE, legacy: LEGACY } = resolveShopifyToken();
+if (LEGACY) console.error(`[warn] using ${TOKEN_SOURCE}; prefer SHOPIFY_ADMIN_API_TOKEN`);
+const SHAPE = validateTokenShape(TOKEN);
+if (SHAPE.error === 'client_id_detected') {
+  console.error('[fail-closed] that value is a Client ID / API key, not an Admin API access token.');
+  console.error('  Send the shpat_ access token: Settings > Apps > Develop apps > your app > API credentials.');
+  process.exit(2);
+}
 if (!TOKEN) { console.error('[fail-closed] missing env: SHOPIFY_ADMIN_API_TOKEN. No API call attempted.'); process.exit(2); }
 
 const base = `https://${STORE_DOMAIN}/admin/api/${VERSION}`;

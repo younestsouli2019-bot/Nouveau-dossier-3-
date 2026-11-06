@@ -18,6 +18,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { resolveShopifyToken, validateTokenShape } from './lib/shopify-credentials.mjs';
 
 // Secret-name alias: base44/humans often label this SHOPIFY_ADMIN_API_KEY.
 // Both names are accepted; the VALUE must be the shpat_ Admin API token.
@@ -69,11 +70,14 @@ if (!EXECUTE) {
 }
 
 if (process.env.SWARM_LIVE !== '1') fail('--execute requires SWARM_LIVE=1');
-for (const k of ['SHOPIFY_STORE_DOMAIN', 'SHOPIFY_ADMIN_API_TOKEN']) {
-  if (!process.env[k]) fail(`missing env: ${k}`);
+if (!process.env.SHOPIFY_STORE_DOMAIN) fail('missing env: SHOPIFY_STORE_DOMAIN');
+const { value: TOKEN, source: TOKEN_SOURCE, legacy: LEGACY } = resolveShopifyToken();
+if (!TOKEN) fail('missing env: SHOPIFY_ADMIN_API_TOKEN (or SHOPIFY_ADMIN_API_KEY)');
+if (LEGACY) console.error(`[warn] using ${TOKEN_SOURCE}; prefer SHOPIFY_ADMIN_API_TOKEN`);
+if (validateTokenShape(TOKEN).error === 'client_id_detected') {
+  fail('that value is a Client ID / API key, not an Admin API access token (need shpat_...)');
 }
 const base = `https://${process.env.SHOPIFY_STORE_DOMAIN}/admin/api/${VERSION}`;
-const TOKEN = process.env.SHOPIFY_ADMIN_API_TOKEN || process.env.SHOPIFY_ADMIN_API_KEY || '';
 const headers = { 'X-Shopify-Access-Token': TOKEN, 'Content-Type': 'application/json' };
 
 const call = async (path, init = {}) => {
