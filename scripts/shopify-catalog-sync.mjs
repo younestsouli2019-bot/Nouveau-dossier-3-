@@ -19,6 +19,12 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+// Secret-name alias: base44/humans often label this SHOPIFY_ADMIN_API_KEY.
+// Both names are accepted; the VALUE must be the shpat_ Admin API token.
+// A Client ID in either name is rejected by Shopify with 401.
+if (!process.env.SHOPIFY_ADMIN_API_TOKEN && process.env.SHOPIFY_ADMIN_API_KEY) {
+  process.env.SHOPIFY_ADMIN_API_TOKEN = process.env.SHOPIFY_ADMIN_API_KEY;
+}
 const ROOT = process.cwd();
 const CATALOG = join(ROOT, 'data/rwc-catalog-live.json');
 const PRICES = process.env.PRICE_BOOK_PATH || join(ROOT, 'rank/output/data/pricing/prices.json');

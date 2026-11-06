@@ -30,6 +30,13 @@ const bookCurrency = JSON.parse(readFileSync('rank/output/data/pricing/prices.js
 ok('config expected currency matches the price book', (cfg.expected_currency || '').toUpperCase() === (bookCurrency || '').toUpperCase());
 ok('M1 makes no network attempt', !/HTTP \d{3}/.test(m1.stdout + m1.stderr));
 
+// SHOPIFY_ADMIN_API_KEY alias: with a (fake) token present under the alias name,
+// M1 must stop complaining about a missing secret. It then fails on the network,
+// which is exit 1 — NOT the fail-closed exit 2 of a missing credential.
+const aliasRun = run('scripts/shopify-verify.mjs', { SHOPIFY_ADMIN_API_KEY: 'shpat_fake_for_alias_test', SHOPIFY_STORE_DOMAIN: 'invalid.example-not-a-store' });
+ok('M1 accepts SHOPIFY_ADMIN_API_KEY alias (no missing-secret refusal)', !/missing env/.test(aliasRun.stderr));
+ok('M1 with alias exits 1 (network/API), not 2 (misconfigured)', aliasRun.status !== 2);
+
 // M2 dry-run must not touch the network and must exit 0
 const m2 = run('scripts/shopify-catalog-sync.mjs');
 ok('M2 dry-run exits 0', m2.status === 0, `got ${m2.status}`);

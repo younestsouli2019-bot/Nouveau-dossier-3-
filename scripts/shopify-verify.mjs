@@ -10,6 +10,12 @@
  * Env: SHOPIFY_STORE_DOMAIN, SHOPIFY_ADMIN_API_TOKEN, SHOPIFY_API_VERSION
  */
 import { readFileSync } from 'node:fs';
+// Secret-name alias: base44/humans often label this SHOPIFY_ADMIN_API_KEY.
+// Both names are accepted; the VALUE must be the shpat_ Admin API token.
+// A Client ID in either name is rejected by Shopify with 401.
+if (!process.env.SHOPIFY_ADMIN_API_TOKEN && process.env.SHOPIFY_ADMIN_API_KEY) {
+  process.env.SHOPIFY_ADMIN_API_TOKEN = process.env.SHOPIFY_ADMIN_API_KEY;
+}
 const VERSION = process.env.SHOPIFY_API_VERSION || '2026-01';
 
 function requireEnv(keys) {
