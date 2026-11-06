@@ -73,17 +73,20 @@ before treating the total as net revenue.
 ## Pricing the catalog
 
 The price book is `rank/output/data/pricing/prices.json`: `currency: MAD`,
-`minorUnits: 2`, entries shaped `{ "mode": "quote_required" | "fixed", "amount": <minor units> }`.
+`minorUnits: 2`, entries shaped `{ "mode": "quote_required" | "fixed", "amountMinor": <minor units> }`.
+The sync reads **`amountMinor`** — a book written with `amount` publishes nothing.
 
 ```bash
 # stage a cohort (dry run, writes nothing)
-node scripts/utils-price-generator.mjs --base-mad 4500 --include-quote-required --limit 10
+node scripts/utils-price-generator.mjs --base-mad 4500 --limit 10
 # commit it (writes a timestamped backup first)
-node scripts/utils-price-generator.mjs --base-mad 4500 --include-quote-required --limit 10 --apply
+node scripts/utils-price-generator.mjs --base-mad 4500 --limit 10 --apply
 ```
 
-297 of 298 entries are `quote_required`, meaning they are **deliberately not
-sellable**. Converting them publishes them. Start with a cohort, not the book.
+297 of 298 entries are `quote_required` and one is already fixed (PPL, 250 MAD),
+so the store has exactly **one** sellable item today. The generator converts
+quote leads by default; `--exclude-quote-required` opts out. `--apply` requires
+`--approve-by`, and every run writes a timestamped backup.
 
 ### The currency decision that blocks Step 2
 

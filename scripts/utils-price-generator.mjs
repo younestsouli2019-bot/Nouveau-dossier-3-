@@ -26,7 +26,7 @@ const val = (n, d) => { const i = argv.indexOf(n); return i >= 0 && argv[i + 1] 
 
 const APPLY = has('--apply');
 const APPROVE_BY = val('--approve-by', '');
-const INCLUDE_QUOTE = has('--include-quote-required');
+const EXCLUDE_QUOTE = has('--exclude-quote-required');
 const INCLUDE_ABSENT = has('--include-absent');
 const REPRICE_FIXED = has('--reprice-fixed');
 const ONLY = val('--only', '') ? val('--only', '').split(',').map(s => s.trim()).filter(Boolean) : null;
@@ -46,23 +46,39 @@ if (book.minorUnits !== 2) die(`book minorUnits is ${book.minorUnits}, expected 
 const amount = baseMad * 10 ** book.minorUnits;
 const courses = book.courses || {};
 const changes = [];
-const skipped = { quoteNotIncluded: 0, absentNotIncluded: 0, alreadyPriced: 0, filtered: 0 };
+const skipped = { quoteExcluded: 0, absentNotIncluded: 0, alreadyPriced: 0, filtered: 0 };
 
 for (const [slug, meta] of Object.entries(courses)) {
   if (ONLY && !ONLY.includes(slug)) { skipped.filtered++; continue; }
   if (changes.length >= LIMIT) break;
   const mode = meta.mode || 'absent';
-  if (mode === 'quote_required' && !INCLUDE_QUOTE) { skipped.quoteNotIncluded++; continue; }
-  if (mode === 'absent' && !INCLUDE_ABSENT) { skipped.absentNotIncluded++; continue; }
-  if (mode === 'fixed' && Number.isFinite(meta.amount) && meta.amount > 0 && !REPRICE_FIXED) { skipped.alreadyPriced++; continue; }
-  changes.push({ slug, from: meta.amount ?? null, to: amount, wasMode: mode });
+  if (mode === 'absent') {
+    if (!INCLUDE_ABSENT) { skipped.absentNotIncluded++; continue; }
+  } else if (mode === 'quote_required') {
+    if (EXCLUDE_QUOTE) { skipped.quoteExcluded++; continue; }
+  } else if (mode === 'fixed') {
+    const priced = Number.isFinite(meta.amountMinor) && meta.amountMinor > 0;
+    if (priced && !REPRICE_FIXED) { skipped.alreadyPriced++; continue; }
+  }
+  changes.push({ slug, from: meta.amountMinor ?? null, to: amount, wasMode: mode });
 }
 
 const summary = {
-  applied: APPLY, approveBy: APPROVE_BY || null, baseMad, amountMinor: amount,
-  total: Object.keys(courses).length, toConvert: changes.length, skipped,
+  applied: APPLY,
+  approveBy: APPROVE_BY || null,
+  baseMad,
+  amountMinor: amount,
+  total: Object.keys(courses).length,
+  convertible: changes.length,
+  skipped_absent: skipped.absentNotIncluded,
+  skipped_already_priced: skipped.alreadyPriced,
+  skipped_quote_excluded: skipped.quoteExcluded,
+  filtered: skipped.filtered,
   sumMinorAfter: changes.reduce((n, c) => n + c.to, 0),
-  sample: changes.slice(0, 5).map(c => `${c.slug}: ${c.wasMode} -> ${c.to}`),
+  warning: changes.some((c) => c.wasMode === 'quote_required')
+    ? 'converting quote_required entries publishes them as sellable; stage with --limit/--only'
+    : null,
+  sample: changes.slice(0, 5).map((c) => `${c.slug}: ${c.wasMode} -> ${c.to}`),
 };
 console.log(JSON.stringify(summary, null, 2));
 
@@ -85,7 +101,7 @@ const now = new Date().toISOString();
 for (const c of changes) {
   const meta = courses[c.slug];
   meta.mode = 'fixed';
-  meta.amount = c.to;
+  meta.amountMinor = c.to;
   meta.approvedBy = APPROVE_BY;
   meta.approvedAt = now;
 }
