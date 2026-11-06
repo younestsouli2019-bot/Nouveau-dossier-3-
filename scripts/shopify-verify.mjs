@@ -9,6 +9,7 @@
  *
  * Env: SHOPIFY_STORE_DOMAIN, SHOPIFY_ADMIN_API_TOKEN, SHOPIFY_API_VERSION
  */
+import { readFileSync } from 'node:fs';
 const VERSION = process.env.SHOPIFY_API_VERSION || '2026-01';
 
 function requireEnv(keys) {
@@ -19,9 +20,17 @@ function requireEnv(keys) {
     process.exit(2);
   }
 }
-requireEnv(['SHOPIFY_STORE_DOMAIN', 'SHOPIFY_ADMIN_API_TOKEN']);
+// Domain may come from env OR config/shopify.json (checked into the repo so the
+// handle is not a per-shell variable). The token is env-only by design: it must
+// never be committed.
+let cfg = {};
+try { cfg = JSON.parse(readFileSync('config/shopify.json', 'utf8')); } catch { /* optional */ }
+const STORE_DOMAIN = (process.env.SHOPIFY_STORE_DOMAIN || cfg.store_domain || '').trim();
+const EXPECTED_CURRENCY = (process.env.SHOPIFY_EXPECTED_CURRENCY || cfg.expected_currency || '').trim();
+if (!STORE_DOMAIN) { console.error('[fail-closed] no store domain: set SHOPIFY_STORE_DOMAIN or config/shopify.json'); process.exit(2); }
+if (!process.env.SHOPIFY_ADMIN_API_TOKEN) { console.error('[fail-closed] missing env: SHOPIFY_ADMIN_API_TOKEN. No API call attempted.'); process.exit(2); }
 
-const base = `https://${process.env.SHOPIFY_STORE_DOMAIN}/admin/api/${VERSION}`;
+const base = `https://${STORE_DOMAIN}/admin/api/${VERSION}`;
 
 async function get(path) {
   const res = await fetch(`${base}${path}`, {
@@ -39,6 +48,11 @@ async function get(path) {
     process.exit(1);
   }
   const s = shop.json.shop || {};
+  const actualCurrency = String(s.currency || '').toUpperCase();
+  if (EXPECTED_CURRENCY && actualCurrency && actualCurrency !== EXPECTED_CURRENCY.toUpperCase()) {
+    console.error(`[M1] CURRENCY MISMATCH: store=${actualCurrency} expected=${EXPECTED_CURRENCY}. M2 would refuse to publish; prices are denominated in the price book's currency.`);
+    process.exit(1);
+  }
   console.log(JSON.stringify({
     mission: 'M1',
     store: s.name,

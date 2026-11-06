@@ -21,7 +21,13 @@ const run = (script, args = [], env = {}) => {
 // M1 must refuse without credentials
 const m1 = run('scripts/shopify-verify.mjs');
 ok('M1 exits 2 without credentials', m1.status === 2, `got ${m1.status}`);
-ok('M1 names the missing vars', /SHOPIFY_STORE_DOMAIN/.test(m1.stderr) && /SHOPIFY_ADMIN_API_TOKEN/.test(m1.stderr));
+// Contract change: the store handle is committed config, the token never is.
+ok('M1 names the missing token', /SHOPIFY_ADMIN_API_TOKEN/.test(m1.stderr));
+ok('M1 does NOT demand the domain as env (it reads config/shopify.json)', !/no store domain/.test(m1.stderr));
+const cfg = JSON.parse(readFileSync('config/shopify.json', 'utf8'));
+ok('config declares a store domain', /^[a-z0-9-]+\.myshopify\.com$/.test(cfg.store_domain || ''));
+const bookCurrency = JSON.parse(readFileSync('rank/output/data/pricing/prices.json', 'utf8')).currency;
+ok('config expected currency matches the price book', (cfg.expected_currency || '').toUpperCase() === (bookCurrency || '').toUpperCase());
 ok('M1 makes no network attempt', !/HTTP \d{3}/.test(m1.stdout + m1.stderr));
 
 // M2 dry-run must not touch the network and must exit 0

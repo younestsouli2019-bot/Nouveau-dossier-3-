@@ -1,0 +1,8 @@
+{
+  "store_domain": "6jd4sq-gu.myshopify.com",
+  "expected_currency": "MAD",
+  "storefront_password_gated": true,
+  "note": "Shopify store currency is fixed at creation and cannot be changed without support. MAD matches rank/output/data/pricing/prices.json, so M2 will not refuse to publish on currency grounds.",
+  "verified_at": "2026-11-06T01:28:41Z",
+  "verification": "storefront HTTP 302 -> /password (Opening soon); Shopify.currency.active = MAD"
+}
