@@ -37,6 +37,7 @@
   ],
   "exclude": [
     "node_modules",
+    "projects",
     "swarm-ops-project",
     "autopublisher-v3-*",
     ".next",

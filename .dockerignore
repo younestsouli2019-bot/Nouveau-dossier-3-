@@ -7,5 +7,6 @@ data/out
 reports
 logs
 download
+projects
 .env.local
 .keys

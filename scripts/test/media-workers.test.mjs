@@ -89,3 +89,67 @@ test("publishing requires explicit approval before side effects", async () => {
 	await assert.rejects(publishPromoAsset({}), /approval/);
 	await assert.rejects(publishPromoAsset({ approved: true }), /mp4Path/);
 });
+
+test("ACE-Step receives a prompt as a single argument and produces validated PCM", async () => {
+	const dir = await mkdtemp(path.join(os.tmpdir(), "audio-runner-test-"));
+	try {
+		const runner = path.join(dir, "runner.mjs");
+		const argumentsPath = path.join(dir, "arguments.json");
+		await writeFile(runner, `
+import { writeFileSync } from "node:fs";
+const args = process.argv.slice(2);
+writeFileSync(${JSON.stringify(argumentsPath)}, JSON.stringify(args));
+writeFileSync(args[args.indexOf("--output") + 1], Buffer.from("524946462600000057415645666d7420100000000100010044ac0000885801000200100064617461020000000000", "hex"));
+`);
+		const prompt = 'music "$(touch never-run)"';
+		const output = await resolveAudioBed({ id: "scene", audio_prompt: prompt, duration: 12 }, dir, {
+			runnerPath: runner, pythonPath: process.execPath,
+		});
+		const args = JSON.parse(await readFile(argumentsPath, "utf8"));
+		assert.equal(args[args.indexOf("--prompt") + 1], prompt);
+		assert.equal(args[args.indexOf("--duration") + 1], "12");
+		assert.equal((await readFile(output)).toString("ascii", 0, 4), "RIFF");
+	} finally {
+		await rm(dir, { recursive: true, force: true });
+	}
+});
+
+test("publishing records only confirmed steps and reports Pinata errors", async () => {
+	const dir = await mkdtemp(path.join(os.tmpdir(), "publish-test-"));
+	const originalPath = process.env.PATH;
+	const originalFetch = globalThis.fetch;
+	try {
+		await writeFile(path.join(dir, "ipfs"), "#!/bin/sh\nprintf 'bafy123\\n'\n", { mode: 0o755 });
+		process.env.PATH = `${dir}${path.delimiter}${originalPath}`;
+		const mp4Path = path.join(dir, "video.mp4");
+		const ledgerPath = path.join(dir, "ledger.jsonl");
+		await writeFile(mp4Path, "video");
+		const input = {
+			approved: true, mp4Path, ledgerPath,
+			metadata: { title: "Test", description: "Description", rightsStatement: "Rights verified" },
+			peertubeConfig: { instanceUrl: "http://127.0.0.1:8188", channelId: 1, licenceId: 1, oauthToken: "secret" },
+		};
+		let calls = 0;
+		globalThis.fetch = async (url, options) => {
+			calls++;
+			assert.equal(new URL(url).pathname, "/api/v1/videos/upload");
+			assert.equal(options.body.get("privacy"), "1");
+			return Response.json({ video: { shortUUID: "abc123" } });
+		};
+		assert.deepEqual(await publishPromoAsset(input), {
+			peertubeUrl: "http://127.0.0.1:8188/w/abc123", ipfsCid: "bafy123", status: "uploaded",
+		});
+		assert.equal(calls, 1);
+		const ledger = (await readFile(ledgerPath, "utf8")).trim().split("\n").map(JSON.parse);
+		assert.deepEqual(ledger.map((entry) => entry.event), ["publication_started", "ipfs_added", "peertube_uploaded"]);
+		assert.ok(!(await readFile(ledgerPath, "utf8")).includes("secret"));
+		globalThis.fetch = async () => new Response("denied", { status: 403 });
+		await assert.rejects(publishPromoAsset({ ...input, pinataConfig: { jwt: "secret" } }), /403/);
+		const events = (await readFile(ledgerPath, "utf8")).trim().split("\n").map((line) => JSON.parse(line).event);
+		assert.deepEqual(events.slice(-2), ["publication_started", "ipfs_added"]);
+	} finally {
+		globalThis.fetch = originalFetch;
+		process.env.PATH = originalPath;
+		await rm(dir, { recursive: true, force: true });
+	}
+});

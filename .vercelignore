@@ -33,6 +33,7 @@ my-project
 quick-squid
 
 # Exclude non-essential dirs
+projects
 archive
 backups
 workflow-logs

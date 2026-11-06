@@ -12,7 +12,8 @@ records; inspect them before starting again.
 
 The default branches are merged under `projects/<name>`. Other source branches
 and tags remain available as `refs/heads/import/<name>/<branch>` and
-`refs/tags/import/<name>/<tag>`. Merely pushing the integration branch does
+`refs/tags/import/<name>/<tag>`. Advertised pull-request refs are retained as
+`refs/heads/import-pulls/<name>/<number>/<head-or-merge>`. Merely pushing the integration branch does
 not push those refs. Check the destination for namespace conflicts, then push
 the branch and the import refs explicitly; never force-push existing refs.
 The commit-map, ref-map and original ref list in `docs/metiutek-migration/`
@@ -20,6 +21,10 @@ record the provenance. Empty and degenerate commits are retained. Rewriting
 paths necessarily changes commit IDs, and commit and tag signatures no longer
 verify. The script aborts for Git LFS histories rather than silently importing
 pointer files without their content.
+
+The root TypeScript, ESLint, Docker and Vercel configurations exclude
+`projects/` to preserve the existing application's build and deployment
+scope. Build and test each imported project using its own tooling.
 
 ## Media adapters
 
@@ -60,5 +65,5 @@ perform the requested caption burn-in or beat alignment. Sequential calls or
 Run the isolated adapter tests with:
 
 ```sh
-node --test scripts/tests/media-workers.test.mjs
+node --test scripts/test/media-workers.test.mjs
 ```

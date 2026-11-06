@@ -5,6 +5,7 @@ export default [
 			"rank/**",
 			"rank_mirror/**",
 			"exports/**",
+			"projects/**",
 			"settlements/**",
 			"reports/**/historic/**",
 			// Next build output. Its generated chunks carry inline

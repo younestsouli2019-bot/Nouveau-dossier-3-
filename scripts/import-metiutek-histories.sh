@@ -20,7 +20,7 @@ fi
 
 repos=(lithophane-studio llm-tier-router rvm-web editorimage-ai Vortelio tube-assistant editorvideo-ai)
 for name in "${repos[@]}"; do
-  if [[ -e "projects/$name" ]] || [[ -n $(git for-each-ref "refs/heads/import/$name/" "refs/tags/import/$name/") ]]; then
+  if [[ -e "projects/$name" ]] || [[ -n $(git for-each-ref "refs/heads/import/$name/" "refs/heads/import-pulls/$name/" "refs/tags/import/$name/") ]]; then
     echo "Destination path or import refs already exist for $name." >&2
     exit 1
   fi
@@ -44,7 +44,12 @@ for name in "${repos[@]}"; do
     echo "$name contains Git LFS objects; migrate and verify LFS storage separately before importing." >&2
     exit 1
   fi
-  git --git-dir="$mirror" for-each-ref --format='%(objectname) %(refname)' refs/heads refs/tags \
+  unexpected_refs=$(git --git-dir="$mirror" for-each-ref --format='%(refname)' | grep -vE '^refs/(heads|tags|pull)/' || true)
+  if [[ -n "$unexpected_refs" ]]; then
+    echo "Unsupported source refs in $name: $unexpected_refs" >&2
+    exit 1
+  fi
+  git --git-dir="$mirror" for-each-ref --format='%(objectname) %(refname)' \
     > "docs/metiutek-migration/$name-original-refs.txt"
   original_count=$(git --git-dir="$mirror" rev-list --all --count)
   (
@@ -68,7 +73,8 @@ for name in "${repos[@]}"; do
   fi
   git fetch --no-tags "$mirror" \
     "+refs/heads/*:refs/heads/import/$name/*" \
-    "+refs/tags/*:refs/tags/import/$name/*"
+    "+refs/tags/*:refs/tags/import/$name/*" \
+    "+refs/pull/*:refs/heads/import-pulls/$name/*"
   branch=${default_ref#refs/heads/}
   message_args=(-m "Import $name history into projects/$name")
   if [[ -n ${MIGRATION_COMMIT_TRAILER:-} ]]; then
@@ -82,4 +88,4 @@ if [[ -n ${MIGRATION_COMMIT_TRAILER:-} ]]; then
   message_args+=(-m "$MIGRATION_COMMIT_TRAILER")
 fi
 git commit "${message_args[@]}"
-echo "Import complete. Push the current branch and the refs/heads/import/ and refs/tags/import/ namespaces separately after review."
+echo "Import complete. Push the current branch and the import, import-pulls and tag namespaces separately after review."
