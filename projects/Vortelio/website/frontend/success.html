@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upgrade successful — Vortelio</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { display:flex; flex-direction:column; min-height:100vh; background:var(--bg2); }
+    .success-wrap {
+      flex:1; display:flex; align-items:center; justify-content:center; padding:80px 24px;
+    }
+    .success-card {
+      text-align:center; max-width:440px; width:100%;
+      background:var(--bg); border:1px solid var(--border); border-radius:16px; padding:48px 36px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.07);
+      display:flex; flex-direction:column; align-items:center; gap:18px;
+    }
+    .check-circle {
+      width:64px; height:64px; border-radius:50%;
+      background:#f0fdf4; border:1px solid #bbf7d0;
+      display:flex; align-items:center; justify-content:center; font-size:28px;
+    }
+    .success-card h1 { font-size:1.6rem; font-weight:700; letter-spacing:-.02em; }
+    .success-card > p { font-size:15px; color:var(--text2); line-height:1.7; }
+    .steps {
+      background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius);
+      padding:20px 22px; text-align:left; width:100%;
+      display:flex; flex-direction:column; gap:12px;
+    }
+    .step { display:flex; align-items:flex-start; gap:12px; font-size:14px; }
+    .step-num {
+      width:22px; height:22px; border-radius:50%; flex-shrink:0;
+      background:var(--accent); color:#fff;
+      display:flex; align-items:center; justify-content:center;
+      font-size:11px; font-weight:700;
+    }
+    .step-text { color:var(--text2); line-height:1.5; padding-top:2px; }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5b5bd6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>
+    </svg>
+    Vortelio
+  </a>
+</nav>
+
+<div class="success-wrap">
+  <div class="success-card">
+    <div class="check-circle">✅</div>
+    <h1>You're all set!</h1>
+    <p>Your plan has been activated. Cloud models are now available in the Vortelio app.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">Open the <strong>Vortelio app</strong> on your PC</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">Sign in with the <strong>same account</strong> you used here</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">Open <strong>☁️ Cloud Models</strong> — your plan is active</div>
+      </div>
+    </div>
+
+    <a href="index.html" class="btn primary lg" style="width:100%;justify-content:center">← Back to homepage</a>
+    <p style="font-size:12px;color:var(--text3)">
+      Plan activation may take a few seconds. If models don't appear, sign out and back in inside the app.
+    </p>
+  </div>
+</div>
+</body>
+</html>

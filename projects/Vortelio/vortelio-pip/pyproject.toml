@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vortelio"
+version = "0.4.6"
+description = "Local-first AI platform. Run LLMs, generate images & video, transcribe audio, create 3D — on your own machine. OpenAI & Ollama API compatible. Apache 2.0."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Vortelio Contributors" }]
+keywords = [
+  "ai", "llm", "local-ai", "local-llm", "offline-ai",
+  "ollama", "ollama-alternative", "lm-studio-alternative",
+  "gpt4all-alternative", "jan-alternative", "localai-alternative",
+  "chatgpt-alternative", "private-ai", "self-hosted-ai",
+  "stable-diffusion", "flux", "sdxl", "diffusers",
+  "whisper", "faster-whisper", "kokoro", "bark", "tts", "stt",
+  "wan-2-1", "animatediff", "cogvideo", "text-to-video",
+  "triposr", "shap-e", "lgm", "trellis", "text-to-3d", "image-to-3d",
+  "llama-cpp", "gguf", "huggingface", "transformers",
+  "openai-api", "openai-compatible", "ollama-api",
+  "image-generation", "video-generation", "audio-generation",
+  "self-hosted", "privacy", "gdpr", "hipaa", "air-gapped",
+  "multimodal", "ai-agent", "rag", "embeddings",
+  "cuda", "rocm", "metal", "apple-silicon",
+  "go", "golang", "single-binary",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: MacOS",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Multimedia :: Graphics",
+  "Topic :: Multimedia :: Sound/Audio",
+  "Topic :: Multimedia :: Video",
+]
+
+[project.scripts]
+vortelio = "vortelio_cli.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/metiu1/Vortelio"
+Source = "https://github.com/metiu1/Vortelio"
+Issues = "https://github.com/metiu1/Vortelio/issues"
+Changelog = "https://github.com/metiu1/Vortelio/blob/main/CHANGELOG.md"
+Releases = "https://github.com/metiu1/Vortelio/releases"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vortelio_cli"]
+artifacts = ["src/vortelio_cli/bin/*"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "README.md", "pyproject.toml"]

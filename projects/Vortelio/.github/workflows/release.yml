@@ -1,0 +1,175 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+    # Also release automatically whenever the version is bumped on main, so
+    # linux/mac users (who download the binary from Releases) never hit a 404.
+    branches: [main]
+    paths:
+      - vortelio/internal/version/version.go
+      - .github/workflows/release.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  version:
+    name: Resolve version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      exists: ${{ steps.v.outputs.exists }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ver=$(awk -F'"' '/^var Version/{print $2}' vortelio/internal/version/version.go)
+          [ -n "$ver" ] || { echo "::error::cannot read version.go"; exit 1; }
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+          if gh release view "v$ver" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release v$ver already exists — skipping."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    name: Build ${{ matrix.goos }}/${{ matrix.goarch }}
+    needs: version
+    if: ${{ needs.version.outputs.exists != 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { goos: linux,   goarch: amd64, ext: '' }
+          - { goos: linux,   goarch: arm64, ext: '' }
+          - { goos: darwin,  goarch: amd64, ext: '' }
+          - { goos: darwin,  goarch: arm64, ext: '' }
+          - { goos: windows, goarch: amd64, ext: '.exe' }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: vortelio/go.mod
+          cache-dependency-path: vortelio/go.sum
+      - name: Build
+        working-directory: vortelio
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: '0'
+        run: |
+          mkdir -p dist
+          go build -trimpath -ldflags="-s -w -X github.com/vortelio/vortelio/internal/version.Version=${{ needs.version.outputs.version }}" \
+            -o "dist/vortelio-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}" \
+            ./cmd/vortelio
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vortelio-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: vortelio/dist/vortelio-*
+
+  # Authenticode-sign the Windows binary via SignPath. Runs ONLY when SignPath is
+  # configured (org id present), so the pipeline keeps working unsigned until the
+  # free OSS signing is approved and the secrets/vars are set. See SIGNING.md.
+  sign-windows:
+    name: Sign Windows binary (SignPath)
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ vars.SIGNPATH_ORG_ID != '' }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: vortelio-windows-amd64
+          path: to-sign
+      - id: sign
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORG_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_POLICY_SLUG }}
+          artifact-configuration-slug: ${{ vars.SIGNPATH_ARTIFACT_SLUG }}
+          github-artifact-id: ${{ github.event.workflow_run.id || '' }}
+          wait-for-completion: true
+          output-artifact-directory: signed
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vortelio-windows-amd64-signed
+          path: signed/*
+
+  release:
+    name: GitHub Release
+    needs: [version, build, sign-windows]
+    if: ${{ always() && !failure() && !cancelled() && needs.version.outputs.exists != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Assemble dist (prefer the SIGNED Windows binary if present)
+        run: |
+          mkdir -p dist
+          # Non-Windows binaries straight from the build job.
+          cp artifacts/vortelio-linux-amd64/*   dist/ 2>/dev/null || true
+          cp artifacts/vortelio-linux-arm64/*   dist/ 2>/dev/null || true
+          cp artifacts/vortelio-darwin-amd64/*  dist/ 2>/dev/null || true
+          cp artifacts/vortelio-darwin-arm64/*  dist/ 2>/dev/null || true
+          # Windows: signed if available, else the unsigned build.
+          if [ -f artifacts/vortelio-windows-amd64-signed/vortelio-windows-amd64.exe ]; then
+            echo "Using SIGNED Windows binary"
+            cp artifacts/vortelio-windows-amd64-signed/vortelio-windows-amd64.exe dist/
+          else
+            echo "::warning::SignPath not configured — shipping UNSIGNED Windows binary"
+            cp artifacts/vortelio-windows-amd64/vortelio-windows-amd64.exe dist/
+          fi
+      - name: Generate checksums
+        working-directory: dist
+        run: sha256sum * > SHA256SUMS.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.version.outputs.version }}
+          name: Vortelio v${{ needs.version.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          make_latest: true
+          files: dist/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+
+  pypi:
+    name: Publish Python wrapper to PyPI
+    needs: [build, sign-windows]
+    # Only on explicit tag pushes; main-branch auto-releases just publish binaries.
+    if: ${{ always() && !failure() && !cancelled() && startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    environment: pypi
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Copy binaries into wheel (signed Windows if present)
+        run: |
+          mkdir -p vortelio-pip/src/vortelio_cli/bin
+          cp artifacts/vortelio-linux-amd64/*   vortelio-pip/src/vortelio_cli/bin/ 2>/dev/null || true
+          cp artifacts/vortelio-linux-arm64/*   vortelio-pip/src/vortelio_cli/bin/ 2>/dev/null || true
+          cp artifacts/vortelio-darwin-amd64/*  vortelio-pip/src/vortelio_cli/bin/ 2>/dev/null || true
+          cp artifacts/vortelio-darwin-arm64/*  vortelio-pip/src/vortelio_cli/bin/ 2>/dev/null || true
+          if [ -f artifacts/vortelio-windows-amd64-signed/vortelio-windows-amd64.exe ]; then
+            cp artifacts/vortelio-windows-amd64-signed/vortelio-windows-amd64.exe vortelio-pip/src/vortelio_cli/bin/
+          else
+            cp artifacts/vortelio-windows-amd64/vortelio-windows-amd64.exe vortelio-pip/src/vortelio_cli/bin/
+          fi
+      - uses: astral-sh/setup-uv@v3
+      - run: uv build
+        working-directory: vortelio-pip
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: vortelio-pip/dist

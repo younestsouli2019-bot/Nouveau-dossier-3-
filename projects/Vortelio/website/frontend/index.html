@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vortelio — Run AI locally, no cloud required</title>
+  <meta name="description" content="Vortelio lets you run open-source AI models on your own hardware. One command to install. Chat, summarize, generate images — fully private." />
+  <meta property="og:title" content="Vortelio — Run AI locally" />
+  <meta property="og:description" content="Run open-source AI on your hardware. Private, fast, free." />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5b5bd6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>
+    </svg>
+    Vortelio
+  </a>
+  <div class="nav-links">
+    <a href="#install">Install</a>
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="https://github.com/metiu1/Vortelio" target="_blank">GitHub</a>
+  </div>
+  <div class="nav-cta">
+    <a href="login.html" class="btn">Sign in</a>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<div class="hero-wrap">
+  <div class="hero-inner">
+    <h1>Run AI on<br><span class="grad">your own machine</span></h1>
+    <p>Open-source local AI platform. Chat, summarize, generate images — no cloud, no subscriptions, fully private.</p>
+
+    <!-- Install block -->
+    <div class="install-block" id="install">
+      <h2>Install</h2>
+      <div class="install-tabs">
+        <button class="install-tab active" onclick="switchTab('unix')">Mac / Linux</button>
+        <button class="install-tab" onclick="switchTab('win')">Windows</button>
+      </div>
+      <div class="install-cmd active" id="cmd-unix">
+        <code>uv tool install vortelio</code>
+        <button class="copy-btn" onclick="copyCmd('uv tool install vortelio', this)">Copy</button>
+      </div>
+      <div class="install-cmd" id="cmd-win">
+        <code>pip install vortelio</code>
+        <button class="copy-btn" onclick="copyCmd('pip install vortelio', this)">Copy</button>
+      </div>
+    </div>
+
+    <a href="https://github.com/metiu1/Vortelio/releases" target="_blank" class="btn">Download binary →</a>
+  </div>
+</div>
+
+<!-- ── What you can do ── -->
+<section class="what-section" id="features">
+  <h2>What you can do</h2>
+  <div class="what-grid">
+    <div class="what-item">
+      <div class="what-icon">💬</div>
+      <h3>Chat with local models</h3>
+      <p>Run Llama, Mistral, Gemma and hundreds of other models entirely on your hardware.</p>
+    </div>
+    <div class="what-item">
+      <div class="what-icon">🖼️</div>
+      <h3>Generate images</h3>
+      <p>Stable Diffusion support built-in. Generate images locally without sending data anywhere.</p>
+    </div>
+    <div class="what-item">
+      <div class="what-icon">📄</div>
+      <h3>Summarize documents</h3>
+      <p>Drop a PDF or paste text and get a concise summary using any model you have installed.</p>
+    </div>
+    <div class="what-item">
+      <div class="what-icon">🔌</div>
+      <h3>OpenAI-compatible API</h3>
+      <p>Drop-in replacement for OpenAI's API. Works with any tool that speaks OpenAI or Ollama.</p>
+    </div>
+    <div class="what-item">
+      <div class="what-icon">☁️</div>
+      <h3>Cloud models (Pro)</h3>
+      <p>Access Claude, GPT-4o, Gemini and more via Vortelio's proxy. Pay one plan, use many models.</p>
+    </div>
+    <div class="what-item">
+      <div class="what-icon">🔒</div>
+      <h3>Fully private</h3>
+      <p>Local inference never leaves your machine. No logs, no tracking, no phone-home.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Pricing strip ── -->
+<div class="pricing-strip" id="pricing">
+  <h2>Plans</h2>
+  <div class="plan-row">
+    <div class="plan-col">
+      <div class="plan-name">Free</div>
+      <div class="plan-price">€0</div>
+      <div class="plan-desc">Local models only.<br>Unlimited, forever.</div>
+      <div class="plan-cta"><a href="#install" class="btn">Get started</a></div>
+    </div>
+    <div class="plan-col highlight">
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">€9.99 <span>/ mo</span></div>
+      <div class="plan-desc">Claude Sonnet, GPT-4o, Gemini 1.5 Pro + local.</div>
+      <div class="plan-cta"><a href="login.html" class="btn primary" onclick="upgrade('pro')">Upgrade</a></div>
+    </div>
+    <div class="plan-col">
+      <div class="plan-name">Business</div>
+      <div class="plan-price">€20 <span>/ mo</span></div>
+      <div class="plan-desc">Opus, o3, Grok + higher limits.</div>
+      <div class="plan-cta"><a href="login.html" class="btn" onclick="upgrade('business')">Upgrade</a></div>
+    </div>
+    <div class="plan-col">
+      <div class="plan-name">Enterprise</div>
+      <div class="plan-price">€150 <span>/ mo</span></div>
+      <div class="plan-desc">Max limits, all frontier models, priority support.</div>
+      <div class="plan-cta"><a href="login.html" class="btn" onclick="upgrade('enterprise')">Upgrade</a></div>
+    </div>
+  </div>
+  <p style="font-size:13px;color:var(--text3);">Local models are always free and open-source. Plans add cloud model access only.</p>
+</div>
+
+<footer>
+  <span>© 2025 Vortelio</span>
+  <div class="footer-links">
+    <a href="https://github.com/metiu1/Vortelio" target="_blank">GitHub</a>
+    <a href="https://github.com/metiu1/Vortelio/blob/main/LICENSE" target="_blank">License (AGPL-3.0)</a>
+    <a href="login.html">Sign in</a>
+  </div>
+</footer>
+
+<div id="toast"></div>
+
+<script type="module" src="js/main.js"></script>
+<script>
+function switchTab(id) {
+  document.querySelectorAll('.install-tab').forEach((t, i) => {
+    const ids = ['unix', 'win'];
+    t.classList.toggle('active', ids[i] === id);
+    document.getElementById('cmd-' + ids[i]).classList.toggle('active', ids[i] === id);
+  });
+}
+function copyCmd(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 1800);
+  });
+}
+function upgrade(plan) {
+  localStorage.setItem('pendingPlan', plan);
+}
+</script>
+</body>
+</html>
