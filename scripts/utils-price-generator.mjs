@@ -29,10 +29,10 @@ const ONLY = val('--only', '') ? val('--only', '').split(',').map((s) => s.trim(
 const LIMIT_RAW = Number(val('--limit', ''));
 const LIMIT = Number.isInteger(LIMIT_RAW) && LIMIT_RAW > 0 ? LIMIT_RAW : Infinity;
 const flatMad = Number(val('--base-mad', ''));
-const TIERED = !Number.isFinite(flatMad) || flatMad === 0;
+const TIERED = has('--tiers');
 const die = (m, c = 2) => { console.error(`[fail-closed] ${m}`); process.exit(c); };
 
-if (!TIERED && (!Number.isInteger(flatMad) || flatMad < MIN_MAD || flatMad > MAX_MAD)) die('bad --base-mad');
+if (!TIERED && (!Number.isInteger(flatMad) || flatMad < MIN_MAD || flatMad > MAX_MAD)) die('provide --tiers or --base-mad <mad>');
 for (const [t, v] of Object.entries(TIERS)) if (v < MIN_MAD || v > MAX_MAD) die(`tier ${t} out of bounds`);
 if (APPLY && !APPROVE_BY) die('--apply requires --approve-by <name>');
 
